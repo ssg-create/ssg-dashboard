@@ -2545,6 +2545,20 @@ function rebuildAll(data){
         // re-render active sections
         var aOp=document.querySelector('#view-op .sec.on');if(aOp){rendered[aOp.id]=true;renderSec(aOp.id);}
         var aCli=document.querySelector('#view-cli .sec.on');if(aCli){rendered[aCli.id]=true;renderSec(aCli.id);}
+        // re-render CS: rebuild empresa selector + seção ativa
+        var csSelEl=document.getElementById('cs-sel-empresa');
+        if(csSelEl){
+          csSelEl.innerHTML='<option value="">— Selecione a conta —</option>';
+          Object.keys(EMPRESAS).forEach(function(k){
+            var o=document.createElement('option');
+            o.value=k;o.textContent=EMPRESAS[k].nome;
+            if(k===csCurrentKey)o.selected=true;
+            csSelEl.appendChild(o);
+          });
+        }
+        if(csCurrentKey&&EMPRESAS[csCurrentKey])loadCS(csCurrentKey);
+        // re-render BC
+        renderBC();
         // update meta
         var total=data.length;
         var dates=data.filter(function(d){return d.criado;}).map(function(d){return d.criado;}).sort(function(a,b){return a-b;});
