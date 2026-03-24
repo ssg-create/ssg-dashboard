@@ -4551,6 +4551,22 @@ function initBC(){
     <div id="at-modal-body" style="overflow-y:auto;flex:1;padding:16px 24px 24px"></div>
   </div>
 </div>
-<script>setTimeout(function(){fetch("dados.xlsx?v="+Date.now()).then(function(r){if(!r.ok)return;return r.arrayBuffer();}).then(function(b){if(!b)return;try{var w=XLSX.read(new Uint8Array(b),{type:"array",cellDates:true});var s=w.Sheets[w.SheetNames[0]];var rows=XLSX.utils.sheet_to_json(s,{defval:""});rebuildAll(parseR(rows));}catch(e){}}).catch(function(){});},600);</script>
+<script>
+function autoFetchXLS(){
+  fetch("dados.xlsx?v="+Date.now())
+    .then(function(r){if(!r.ok)return;return r.arrayBuffer();})
+    .then(function(b){
+      if(!b)return;
+      try{
+        var w=XLSX.read(new Uint8Array(b),{type:"array",cellDates:true});
+        var s=w.Sheets[w.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(s,{defval:""});
+        rebuildAll(parseR(rows));
+      }catch(e){}
+    }).catch(function(){});
+}
+setTimeout(autoFetchXLS, 600);
+setInterval(autoFetchXLS, 30 * 60 * 1000);
+</script>
 </body>
 </html>
