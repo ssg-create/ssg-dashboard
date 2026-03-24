@@ -595,6 +595,10 @@ input[type=file]{display:none}
   </div>
   <div class="sb-footer">
     <div class="sb-status"><span class="sb-status-dot"></span><span id="sb-meta">556 chamados · jan–mar 2026</span></div>
+    <div style="font-size:10px;color:var(--muted);margin:4px 0 6px;display:flex;align-items:center;gap:5px">
+      <span id="auto-sync-dot" style="width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0"></span>
+      <span id="auto-sync-lbl">Aguardando sync…</span>
+    </div>
     <button class="sb-import-btn" id="sb-import-btn" onclick="openImport()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Importar novo XLS
@@ -4571,18 +4575,31 @@ function initBC(){
   </div>
 </div>
 <script>
+var _autoFetching=false;
 function autoFetchXLS(){
+  if(_autoFetching)return;
+  _autoFetching=true;
+  var dot=document.getElementById('auto-sync-dot');
+  var lbl=document.getElementById('auto-sync-lbl');
+  if(dot)dot.style.background='var(--warn)';
+  if(lbl)lbl.textContent='Sincronizando…';
   fetch("dados.xlsx?v="+Date.now())
-    .then(function(r){if(!r.ok)return;return r.arrayBuffer();})
+    .then(function(r){if(!r.ok)throw new Error('not ok');return r.arrayBuffer();})
     .then(function(b){
-      if(!b)return;
-      try{
-        var w=XLSX.read(new Uint8Array(b),{type:"array",cellDates:true});
-        var s=w.Sheets[w.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(s,{defval:""});
-        rebuildAll(parseR(rows));
-      }catch(e){}
-    }).catch(function(){});
+      var w=XLSX.read(new Uint8Array(b),{type:"array",cellDates:true});
+      var s=w.Sheets[w.SheetNames[0]];
+      var rows=XLSX.utils.sheet_to_json(s,{defval:""});
+      rebuildAll(parseR(rows));
+      var now=new Date();
+      var hm=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      if(dot)dot.style.background='var(--ok)';
+      if(lbl)lbl.textContent='Sync '+hm;
+    })
+    .catch(function(){
+      if(dot)dot.style.background='var(--danger)';
+      if(lbl)lbl.textContent='Falha no sync';
+    })
+    .finally(function(){_autoFetching=false;});
 }
 setTimeout(autoFetchXLS, 600);
 setInterval(autoFetchXLS, 10 * 60 * 1000);
