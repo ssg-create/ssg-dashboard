@@ -616,16 +616,16 @@ input[type=file]{display:none}
     </div>
     <div class="page-body">
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val">556</div><div class="kpi-sub">53 dias · fila SSG</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" style="color:var(--warn)">101</div><div class="kpi-sub">18,2% do total</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" style="color:var(--ok)">346</div><div class="kpi-sub">taxa de conclusão</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)">200</div><div class="kpi-sub">36% do volume</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" style="color:var(--teal)">8<span>min</span></div><div class="kpi-sub">excelente performance</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub">chamados fechados</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl">Bloqueados</div><div class="kpi-val" style="color:var(--orange)">119</div><div class="kpi-sub">21,4% aguardando</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl">Atendentes</div><div class="kpi-val">14</div><div class="kpi-sub">fila SSG operando</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">8<span>min</span></div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl">Bloqueados</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">fila SSG operando</div></div>
       </div>
       <div class="grid2">
         <div class="card card-mb fu">
@@ -2542,8 +2542,11 @@ function rebuildAll(data){
         buildMonthFilter();
         var sel=document.getElementById('sel-empresa');while(sel.options.length>1)sel.remove(1);
         initCli();
-        // re-render active sections
-        var aOp=document.querySelector('#view-op .sec.on');if(aOp){rendered[aOp.id]=true;renderSec(aOp.id);}
+        // sempre atualiza totalizadores do overview e alertas, independente da seção ativa
+        rendered['s-ov']=true;renderOv();
+        rendered['s-alertas']=true;renderAlertas();
+        // re-render active sections (se for outra seção, re-renderiza também)
+        var aOp=document.querySelector('#view-op .sec.on');if(aOp&&aOp.id!=='s-ov'&&aOp.id!=='s-alertas'){rendered[aOp.id]=true;renderSec(aOp.id);}
         var aCli=document.querySelector('#view-cli .sec.on');if(aCli){rendered[aCli.id]=true;renderSec(aCli.id);}
         // re-render CS: rebuild empresa selector + seção ativa
         var csSelEl=document.getElementById('cs-sel-empresa');
