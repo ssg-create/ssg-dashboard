@@ -4574,6 +4574,7 @@ function renderBacklog() {
   var rows = [];
   var EMPS = ['Almeida Junior','AutoZone','Grupo Metalnox','Finpec','NSX'];
   EMPS.forEach(function(emp) {
+    if (activeCliente && emp !== activeCliente) return;
     var e = EMPRESAS[emp];
     if (!e || !e.tickets) return;
     e.tickets.forEach(function(t) {
@@ -4643,7 +4644,7 @@ function renderBacklog() {
 
   // ── Por Atendente ─────────────────────────────────────────
   var atCount = {};
-  var op_atend = op.atend || OP.atend;
+  var op_atend = (op.atend && op.atend.length > 0) ? op.atend : OP.atend;
   op_atend.forEach(function(a) {
     if (a.ab > 0) atCount[a.n] = a.ab;
   });
