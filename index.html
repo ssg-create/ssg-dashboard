@@ -617,6 +617,12 @@ input[type=file]{display:none}
     <div class="nav" style="color:var(--warn)" onclick="renderResumo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Resumo Executivo</div>
   </div>
   <div class="sb-footer">
+    <div style="margin-bottom:8px">
+      <div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Cliente</div>
+      <select id="sel-cliente-global" onchange="setClienteGlobal(this.value)" style="width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:10px;font-family:var(--font);cursor:pointer">
+        <option value="">Todos os clientes</option>
+      </select>
+    </div>
     <div class="sb-status"><span class="sb-status-dot"></span><span id="sb-meta">556 chamados · jan–mar 2026</span></div>
     <div style="font-size:10px;color:var(--muted);margin:4px 0 6px;display:flex;align-items:center;gap:5px">
       <span id="auto-sync-dot" style="width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0"></span>
@@ -2562,6 +2568,14 @@ function rebuildAll(data){
           });
         }
         if(csCurrentKey&&EMPRESAS[csCurrentKey])loadCS(csCurrentKey);
+        // Popula seletor global de cliente
+        var selGlobal=document.getElementById('sel-cliente-global');
+        if(selGlobal){
+          selGlobal.innerHTML='<option value="">Todos os clientes</option>';
+          var empIds2=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+          empIds2.sort(function(a,b){return EMPRESAS[b].total-EMPRESAS[a].total;});
+          empIds2.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=EMPRESAS[k].nome;if(k===activeCliente)o.selected=true;selGlobal.appendChild(o);});
+        }
         // update meta
         var total=data.length;
         var dates=data.filter(function(d){return d.criado;}).map(function(d){return d.criado;}).sort(function(a,b){return a-b;});
@@ -3238,6 +3252,9 @@ function setMonth(m) {
   // Re-render CS if active
   var csKey = document.getElementById('cs-sel-empresa').value;
   if(csKey) loadCS(csKey);
+  // Re-render Resumo se estiver ativo
+  var vRg = document.getElementById('view-rg');
+  if(vRg && vRg.classList.contains('on')) renderResumo();
 }
 
 // Filtered data getter
@@ -3278,6 +3295,41 @@ var OP_MESES = {
 
 // Returns the correct dataset for current month filter
 function getActiveOP() {
+  // Filtro global de cliente — aplica antes de qualquer outro filtro
+  if(activeCliente && EMPRESAS[activeCliente]) {
+    var emp = getFilteredEmpresa(EMPRESAS[activeCliente]);
+    if(emp) {
+      // Reconstrói prior dos tickets filtrados (aproximação)
+      var priorEmp = {};
+      (emp.tickets || []).forEach(function(t){ if(t.prior) priorEmp[t.prior]=(priorEmp[t.prior]||0)+1; });
+      if(!Object.keys(priorEmp).length) priorEmp = emp.prior || {};
+      // Filtra criticos globais para só os do cliente
+      var crit = (OP.criticos||[]).filter(function(c){
+        return (emp.tickets||[]).some(function(t){ return t.num===c.num; });
+      });
+      var rawAtendEmp = emp.atend || emp.atendentes || [];
+      var atendEmp = rawAtendEmp.map(function(a){
+        return {n:a.n||'',t:a.t!=null?a.t:(a.total||0),f:a.f!=null?a.f:(a.fe||0),ab:a.ab||0,tm:a.tm||null,rm:a.rm||null,est:{}};
+      });
+      return {
+        total:    emp.total    || 0,
+        abertos:  emp.abertos  || 0,
+        fechados: emp.fechados || 0,
+        resp_med: emp.resp_med || 0,
+        sol_med:  emp.sol_med  || emp.solucao_med_h || 0,
+        estado:   emp.estado   || emp.estados || {},
+        prior:    priorEmp,
+        svc:      emp.svc      || emp.servicos || {},
+        cli:      emp.cli      || {},
+        heat:     emp.heat     || {},
+        volMes:   emp.volMes   || emp.by_mes   || {},
+        atend:    atendEmp,
+        criticos: crit,
+        by_day:   emp.by_day   || [],
+        byDay:    emp.by_day   || []
+      };
+    }
+  }
   var base;
   if(activeFilaOP !== 'all') {
     var filaData = OP_FILAS[activeFilaOP];
@@ -3326,8 +3378,14 @@ function getActiveOP() {
 function buildFilaBtns(containerId, activeFila, onClickFn) {
   var el = document.getElementById(containerId);
   if(!el) return;
+  // Usa filas do cliente ativo quando há filtro global de cliente
+  var listaFiias = FILAS_LIST;
+  if(activeCliente && EMPRESAS[activeCliente] && EMPRESAS[activeCliente].filas) {
+    var filasCli = Object.keys(EMPRESAS[activeCliente].filas).filter(function(f){ return (EMPRESAS[activeCliente].filas[f]||0)>0; }).sort();
+    if(filasCli.length) listaFiias = filasCli;
+  }
   var btns = '<button data-fila="all" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(activeFila==='all'?'var(--blue2)':'var(--border)')+';background:'+(activeFila==='all'?'var(--blue2)':'transparent')+';color:'+(activeFila==='all'?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">Todas</button>';
-  FILAS_LIST.forEach(function(f) {
+  listaFiias.forEach(function(f) {
     var on = activeFila === f;
     btns += '<button data-fila="'+f+'" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(on?'var(--blue2)':'var(--border)')+';background:'+(on?'var(--blue2)':'transparent')+';color:'+(on?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">'+f+'</button>';
   });
@@ -3339,18 +3397,33 @@ function buildFilaBtns(containerId, activeFila, onClickFn) {
 
 function setFilaOP(fila) {
   activeFilaOP = fila;
+  activeFilaCli = fila; // sincroniza
   buildFilaBtns('fila-btns-op', fila, setFilaOP);
+  buildFilaBtns('fila-btns-cli', fila, setFilaCli); // sincroniza
   rendered = {};
   var active = document.querySelector('#view-op .sec.on');
   if(active) renderSec(active.id);
   renderAlertas();
+  // Re-render Portal se houver empresa selecionada
+  var empKey = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : null;
+  if(empKey) loadEmpresa(empKey);
+  // Re-render Resumo se estiver ativo
+  var vRg = document.getElementById('view-rg');
+  if(vRg && vRg.classList.contains('on')) renderResumo();
 }
 
 function setFilaCli(fila) {
   activeFilaCli = fila;
+  activeFilaOP = fila; // sincroniza
   buildFilaBtns('fila-btns-cli', fila, setFilaCli);
+  buildFilaBtns('fila-btns-op', fila, setFilaOP); // sincroniza
   var empKey = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : null;
   if(empKey) loadEmpresa(empKey);
+  // Re-render OP
+  rendered = {};
+  var active = document.querySelector('#view-op .sec.on');
+  if(active) renderSec(active.id);
+  renderAlertas();
 }
 
 function getFilteredDays() {
@@ -3481,6 +3554,44 @@ var OP_FILAS = {
 var FILAS_LIST = ["DATASUL", "DBA", "INFRAESTUTURA", "MONITORAMENTO", "NOC", "PROTHEUS", "SSG", "SSG-MELHORIAS", "TECNOLOGIA"];
 var activeFilaOP = "all";
 var activeFilaCli = "all";
+var activeCliente = '';
+
+function rebuildFilasForCliente(key) {
+  var list;
+  if(key && EMPRESAS[key] && EMPRESAS[key].filas) {
+    list = Object.keys(EMPRESAS[key].filas).filter(function(f){ return (EMPRESAS[key].filas[f]||0) > 0; }).sort();
+  } else {
+    list = FILAS_LIST;
+  }
+  var saved = FILAS_LIST;
+  FILAS_LIST = list;
+  buildFilaBtns('fila-btns-op', activeFilaOP, setFilaOP);
+  buildFilaBtns('fila-btns-cli', activeFilaCli, setFilaCli);
+  FILAS_LIST = saved;
+}
+
+function setClienteGlobal(key) {
+  activeCliente = key;
+  // Sync Portal sel-empresa
+  var selEmp = document.getElementById('sel-empresa');
+  if(selEmp) { selEmp.value = key; loadEmpresa(key); }
+  // Sync CS cs-sel-empresa
+  var selCS = document.getElementById('cs-sel-empresa');
+  if(selCS) { selCS.value = key; if(key) loadCS(key); }
+  // Rebuild fila buttons mostrando só filas do cliente ativo
+  rebuildFilasForCliente(key);
+  // Re-render OP view
+  rendered = {};
+  Object.keys(CH).forEach(function(k){ if(CH[k]){CH[k].destroy();CH[k]=null;} });
+  var aOp = document.querySelector('#view-op .sec.on');
+  if(aOp){rendered[aOp.id]=true;renderSec(aOp.id);}
+  rendered['s-ov']=true; renderOv();
+  rendered['s-alertas']=true; renderAlertas();
+  buildMonthFilter();
+  // Re-render Resumo se estiver ativo
+  var vRg = document.getElementById('view-rg');
+  if(vRg && vRg.classList.contains('on')) renderResumo();
+}
 
 // Filtered empresa getter - filters tickets by month
 var EMP_MESES = {"ALMEIDA JR": {"2026-01": {"total": 78, "abertos": 1, "fechados": 42}, "2026-02": {"total": 44, "abertos": 1, "fechados": 24}, "2026-03": {"total": 20, "abertos": 13, "fechados": 6}}, "AUTOZONE": {"2026-01": {"total": 118, "abertos": 6, "fechados": 98}, "2026-02": {"total": 67, "abertos": 8, "fechados": 43}, "2026-03": {"total": 30, "abertos": 18, "fechados": 9}}, "GRUPO_METALNOX": {"2026-01": {"total": 33, "abertos": 5, "fechados": 27}, "2026-02": {"total": 50, "abertos": 19, "fechados": 31}, "2026-03": {"total": 23, "abertos": 15, "fechados": 8}}, "FINPEC": {"2026-01": {"total": 2, "abertos": 0, "fechados": 1}, "2026-02": {"total": 13, "abertos": 2, "fechados": 5}, "2026-03": {"total": 10, "abertos": 4, "fechados": 6}}, "NSX": {"2026-01": {"total": 11, "abertos": 4, "fechados": 7}, "2026-02": {"total": 11, "abertos": 1, "fechados": 10}, "2026-03": {"total": 0, "abertos": 0, "fechados": 0}}};
