@@ -4580,7 +4580,23 @@ function renderResumo(){
   var pctAbertos=total>0?Math.round(abertos/total*100):0;
   var pctMA=total>0?Math.round(prioMA/total*100):0;
   var numCrit=(OP.criticos||[]).length;
+  // ── by_day reconstruído a partir do RAW_DATA com todos os filtros ativos ──
+  // Garante que Tendência/Ritmo/Previsão usem exatamente o conjunto filtrado
   var byDay=op.by_day||OP.by_day||[];
+  if(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length){
+    var rawFilt=RAW_DATA.filter(function(d){
+      if(!d.criado)return false;
+      if(activeCliente&&d.cli_id!==activeCliente)return false;
+      if(activeMonth!=='all'&&d.criado.toISOString().slice(0,7)!==activeMonth)return false;
+      if(activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
+      return true;
+    });
+    if(rawFilt.length){
+      var dm3={};
+      rawFilt.forEach(function(d){var k=d.criado.toISOString().slice(0,10);dm3[k]=(dm3[k]||0)+1;});
+      byDay=Object.keys(dm3).sort().map(function(k){return{d:k,n:dm3[k]};});
+    }
+  }
   var atendData=op.atend||OP.atend||[];
   var criticos=OP.criticos||[];
 
