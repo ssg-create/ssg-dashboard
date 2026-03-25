@@ -3366,6 +3366,9 @@ function setMonth(m) {
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
   if(vRg && vRg.classList.contains('on')) renderResumo();
+  // Re-render IA se estiver ativo
+  var vIA = document.getElementById('view-ia');
+  if(vIA && vIA.classList.contains('on')) renderIA();
 }
 
 // Filtered data getter
@@ -3521,6 +3524,9 @@ function setFilaOP(fila) {
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
   if(vRg && vRg.classList.contains('on')) renderResumo();
+  // Re-render IA se estiver ativo
+  var vIA = document.getElementById('view-ia');
+  if(vIA && vIA.classList.contains('on')) renderIA();
 }
 
 function setFilaCli(fila) {
@@ -3702,6 +3708,9 @@ function setClienteGlobal(key) {
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
   if(vRg && vRg.classList.contains('on')) renderResumo();
+  // Re-render IA se estiver ativo
+  var vIA = document.getElementById('view-ia');
+  if(vIA && vIA.classList.contains('on')) renderIA();
 }
 
 // Filtered empresa getter - filters tickets by month
@@ -5023,6 +5032,79 @@ setInterval(autoFetchXLS, 10 * 60 * 1000);
 // AI LAYER
 // ════════════════════════════════════════════════════════════
 var AI_DATA = null;
+var AI_LIVE = null;
+
+function computeIAData(op){
+  var total    = op.total    ||0;
+  var fechados = op.fechados ||0;
+  var resp_med = op.resp_med ||0;
+  var estado   = op.estado   ||{};
+  var prior    = op.prior    ||{};
+  var criticos = op.criticos ||[];
+  var byDay    = op.by_day   ||op.byDay||[];
+  var svc      = op.svc      ||{};
+  var META=30;
+  var taxa=total>0?Math.round(fechados/total*100):0;
+  var aguCli=estado['Aguardando Cliente']||0;
+  var aguInt=estado['Aguardando Interno']||0;
+  var aguExt=estado['Aguardando Externo']||0;
+  var bloq=aguCli+aguInt+aguExt;
+  var prioMA=prior['Muito Alta']||0;
+  var aging30=criticos.filter(function(c){return(c.aging||c.dias||0)>=30;}).length;
+  var sConc=taxa>=80?25:taxa>=60?15:5;
+  var sResp=resp_med<=META?25:resp_med<=60?15:5;
+  var sBloq=total>0?(bloq/total<.05?25:bloq/total<.15?15:5):25;
+  var sCrit=total>0?(prioMA/total<.10?25:prioMA/total<.20?15:5):25;
+  var score=sConc+sResp+sBloq+sCrit;
+  var scoreColor=score>=80?'var(--ok)':score>=60?'var(--warn)':'var(--danger)';
+  var scoreSub=score>=80?'bom · meta: >80':score>=60?'atenção · meta: >80':'crítico · meta: >80';
+  var slaR=resp_med<=META?'Baixo':resp_med<=60?'Médio':'Alto';
+  var slaC=resp_med<=META?'var(--ok)':resp_med<=60?'var(--warn)':'var(--danger)';
+  var avgD=byDay.length>0?Math.round(byDay.reduce(function(a,b){return a+b.n;},0)/byDay.length):(total>0?Math.round(total/60):0);
+  var fore=avgD*5;
+  var topS=Object.entries(svc).sort(function(a,b){return b[1]-a[1];})[0];
+  var narr='A operação apresenta <strong>taxa de conclusão de '+taxa+'%</strong>'+(taxa>=80?', considerada excelente.':', abaixo da meta de 80%.')+(!total?' Sem chamados no período filtrado.':'');
+  if(bloq>0)narr+='<br><br>O volume de <strong>'+bloq+' chamados bloqueados</strong>'+(bloq>50?' está crítico e exige triagem imediata.':' requer atenção.');
+  narr+='<br><br>A <strong>primeira resposta ('+resp_med+' min)</strong>'+(resp_med<=META?' está dentro da meta de '+META+' min.':' está acima da meta de '+META+' min.');
+  if(topS)narr+='<br><br>O serviço <strong>'+topS[0]+'</strong> concentra '+Math.round(topS[1]/Math.max(total,1)*100)+'% dos chamados.';
+  var ctx=[];
+  if(activeCliente)ctx.push(activeCliente);
+  if(activeMonth!=='all')ctx.push(({'2026-01':'Jan/26','2026-02':'Fev/26','2026-03':'Mar/26'}[activeMonth]||activeMonth));
+  if(activeFilaOP!=='all')ctx.push(activeFilaOP);
+  var riscos=[];
+  if(resp_med>META)riscos.push({titulo:'Primeira resposta acima da meta',desc:'Mediana de '+resp_med+' min contra meta de '+META+' min.',nivel:resp_med>60?'high':'medium',confianca:85});
+  if(bloq>0)riscos.push({titulo:'Chamados bloqueados aguardando ação',desc:bloq+' parados — Ag.Cliente: '+aguCli+', Ag.Interno: '+aguInt+', Ag.Externo: '+aguExt+'.',nivel:bloq>50?'high':'medium',confianca:90});
+  if(aging30>0)riscos.push({titulo:aging30+' chamados abertos há mais de 30 dias',desc:'Risco de escalonamento pelo cliente.',nivel:'high',confianca:95});
+  if(total>0&&prioMA/total>.10)riscos.push({titulo:'Alto percentual de prioridade Muito Alta ('+Math.round(prioMA/total*100)+'%)',desc:'Concentração acima de 10% indica possível instabilidade.',nivel:'medium',confianca:70});
+  if(!riscos.length)riscos.push({titulo:'Operação dentro dos parâmetros normais',desc:'Nenhum risco crítico detectado com os filtros selecionados.',nivel:'low',confianca:80});
+  // Filtra riscos/insights de cliente pelo filtro ativo
+  var rCli=AI_DATA&&AI_DATA.riscos_clientes?AI_DATA.riscos_clientes:[];
+  var csIns=AI_DATA&&AI_DATA.cs_insights?AI_DATA.cs_insights:[];
+  if(activeCliente){
+    rCli=rCli.filter(function(r){return(r.cliente||'').toUpperCase().indexOf(activeCliente.toUpperCase())!==-1;});
+    csIns=csIns.filter(function(r){return(r.cliente||'').toUpperCase().indexOf(activeCliente.toUpperCase())!==-1;});
+  }
+  return{
+    generated_at:new Date().toISOString(),
+    version:'1.0-live',
+    _filtro:ctx.length?ctx.join(' · '):null,
+    resumo_gestao:{
+      narrativa:narr,
+      kpis:[
+        {label:'Score Operacional',value:String(score),sub:scoreSub,color:scoreColor},
+        {label:'Risco de SLA',value:slaR,sub:'1ª resposta: '+resp_med+' min',color:slaC},
+        {label:'Taxa de Conclusão',value:taxa+'%',sub:fechados+' de '+total+' fechados',color:taxa>=80?'var(--ok)':taxa>=60?'var(--warn)':'var(--danger)'},
+        {label:'Previsão 7 dias',value:'~'+fore+'/semana',sub:'~'+avgD+'/dia (média)',color:'var(--purple)'}
+      ],
+      risco_principal:aging30>0?{label:aging30+' chamados +30 dias',desc:'Chamados críticos sem resolução'}:{label:bloq+' bloqueados',desc:'Aguardando ação interna ou do cliente'},
+      oportunidade:topS?{label:topS[0],desc:'Serviço com maior volume — candidato a treinamento'}:{label:'Distribuição uniforme',desc:'Sem concentração em um único serviço'},
+      previsao:{label:'~'+avgD+'/dia',desc:'~'+fore+' chamados na próxima semana'}
+    },
+    riscos_operacionais:riscos,
+    riscos_clientes:rCli,
+    cs_insights:csIns
+  };
+}
 
 function fetchInsights(){
   fetch('aios-insights.json?v='+Date.now())
@@ -5065,9 +5147,10 @@ function renderNivelBadge(nivel){
 function renderIAResumo(){
   var el=document.getElementById('ia-resumo-content');
   if(!el)return;
-  if(!AI_DATA||!AI_DATA.resumo_gestao){el.innerHTML=aiNoData();return;}
-  var d=AI_DATA.resumo_gestao;
-  var meta=aiMeta(AI_DATA);
+  var _d=AI_LIVE||AI_DATA;
+  if(!_d||!_d.resumo_gestao){el.innerHTML=aiNoData();return;}
+  var d=_d.resumo_gestao;
+  var meta=aiMeta(_d);
   var H='';
   // KPIs de IA se existirem
   if(d.kpis&&d.kpis.length){
@@ -5105,13 +5188,14 @@ function renderIAResumo(){
 function renderIAOp(){
   var el=document.getElementById('ia-op-content');
   if(!el)return;
-  if(!AI_DATA||!AI_DATA.riscos_operacionais||!AI_DATA.riscos_operacionais.length){el.innerHTML=aiNoData();return;}
-  var meta=aiMeta(AI_DATA);
+  var _d=AI_LIVE||AI_DATA;
+  if(!_d||!_d.riscos_operacionais||!_d.riscos_operacionais.length){el.innerHTML=aiNoData();return;}
+  var meta=aiMeta(_d);
   var H='<div class="ai-section-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Padrões Detectados</div>';
   H+='<div class="ai-card">';
   H+=aiCardHeader('Riscos Operacionais · AIOS',meta);
   var colors={high:'var(--danger)',medium:'var(--warn)',low:'var(--ok)',alto:'var(--danger)',medio:'var(--warn)',baixo:'var(--ok)'};
-  AI_DATA.riscos_operacionais.forEach(function(r){
+  _d.riscos_operacionais.forEach(function(r){
     var nivel=String(r.nivel||'').toLowerCase();
     var cor=colors[nivel]||'var(--sub)';
     H+='<div class="ai-risk-item">';
@@ -5128,10 +5212,11 @@ function renderIAOp(){
 function renderIACli(){
   var el=document.getElementById('ia-cli-content');
   if(!el)return;
-  if(!AI_DATA||!AI_DATA.riscos_clientes||!AI_DATA.riscos_clientes.length){el.innerHTML=aiNoData();return;}
-  var meta=aiMeta(AI_DATA);
+  var _d=AI_LIVE||AI_DATA;
+  if(!_d||!_d.riscos_clientes||!_d.riscos_clientes.length){el.innerHTML=aiNoData();return;}
+  var meta=aiMeta(_d);
   var H='<div class="ai-section-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Análise por Cliente</div>';
-  AI_DATA.riscos_clientes.forEach(function(rc){
+  _d.riscos_clientes.forEach(function(rc){
     H+='<div class="ai-card" style="margin-bottom:12px">';
     H+=aiCardHeader(rc.cliente||'Cliente',meta);
     H+='<div class="ai-narrative" style="margin-bottom:10px">'+rc.narrativa+'</div>';
@@ -5156,10 +5241,11 @@ function renderIACli(){
 function renderIACS(){
   var el=document.getElementById('ia-cs-content');
   if(!el)return;
-  if(!AI_DATA||!AI_DATA.cs_insights||!AI_DATA.cs_insights.length){el.innerHTML=aiNoData();return;}
-  var meta=aiMeta(AI_DATA);
+  var _d=AI_LIVE||AI_DATA;
+  if(!_d||!_d.cs_insights||!_d.cs_insights.length){el.innerHTML=aiNoData();return;}
+  var meta=aiMeta(_d);
   var H='<div class="ai-section-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Insights Customer Success</div>';
-  AI_DATA.cs_insights.forEach(function(cs){
+  _d.cs_insights.forEach(function(cs){
     H+='<div class="ai-card" style="margin-bottom:12px">';
     H+=aiCardHeader(cs.cliente||'Conta',meta);
     H+='<div class="ai-narrative">'+cs.narrativa+'</div>';
@@ -5176,6 +5262,8 @@ function renderIACS(){
 }
 
 function renderIA(){
+  // Compute live analysis from current active filters
+  AI_LIVE = computeIAData(getActiveOP());
   renderIAResumo();
   renderIAOp();
   renderIACli();
@@ -5188,13 +5276,18 @@ function renderIA(){
     var sec=document.getElementById(s);if(sec)sec.classList.remove('on');
   });
   var active=document.getElementById('ia-resumo');if(active)active.classList.add('on');
-  // subtitle
+  // subtitle — mostra contexto dos filtros ativos
   var sub=document.getElementById('ia-subtitle');
-  if(sub&&AI_DATA&&AI_DATA.generated_at){
-    var d=new Date(AI_DATA.generated_at);
-    sub.textContent='Análise gerada em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · modelo AIOS';
-  }else if(sub){
-    sub.textContent='Nenhuma análise disponível ainda · execute o AIOS skill para gerar';
+  if(sub){
+    var filtro=AI_LIVE&&AI_LIVE._filtro?AI_LIVE._filtro:null;
+    var base=filtro?'Análise em tempo real · '+filtro:'Análise gerada em ';
+    if(filtro){
+      sub.textContent=base+' · modelo AIOS';
+    }else{
+      var ref=AI_DATA&&AI_DATA.generated_at?AI_DATA:AI_LIVE;
+      if(ref&&ref.generated_at){var d=new Date(ref.generated_at);sub.textContent='Análise gerada em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · modelo AIOS';}
+      else sub.textContent='Nenhuma análise disponível ainda · execute o AIOS skill para gerar';
+    }
   }
 }
 </script>
