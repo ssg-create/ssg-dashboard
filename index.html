@@ -4450,6 +4450,7 @@ function renderBacklogTable(rows) {
 // RESUMO DE GESTÃO
 // ════════════════════════════════════════════════════════════
 function renderResumo(){
+  // ── Dados base ────────────────────────────────────────────
   var op=getActiveOP();
   var total=op.total||OP.total||0;
   var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
@@ -4468,8 +4469,53 @@ function renderResumo(){
   var pctAbertos=total>0?Math.round(abertos/total*100):0;
   var pctMA=total>0?Math.round(prioMA/total*100):0;
   var numCrit=(OP.criticos||[]).length;
+  var byDay=op.by_day||OP.by_day||[];
+  var atendData=op.atend||OP.atend||[];
+  var criticos=OP.criticos||[];
 
-  // Status geral
+  // ── Tendência semana vs semana ────────────────────────────
+  var today=new Date();
+  var thisWeek=0,prevWeek=0;
+  byDay.forEach(function(d){
+    var dt=new Date(d.d+'T12:00:00');
+    var daysAgo=Math.floor((today-dt)/(1000*60*60*24));
+    if(daysAgo>=0&&daysAgo<7)thisWeek+=d.n;
+    else if(daysAgo>=7&&daysAgo<14)prevWeek+=d.n;
+  });
+  var trendPct=prevWeek>0?Math.round((thisWeek-prevWeek)/prevWeek*100):0;
+  var trendDir=trendPct>0?'↑':trendPct<0?'↓':'→';
+  var trendColor=trendPct>15?'var(--danger)':trendPct>5?'var(--warn)':trendPct<-10?'var(--ok)':'var(--sub)';
+
+  // ── Ritmo diário e previsão ───────────────────────────────
+  var last30=byDay.filter(function(d){var dt=new Date(d.d+'T12:00:00');return Math.floor((today-dt)/(1000*60*60*24))<30;});
+  var avgDaily=last30.length>0?Math.round(last30.reduce(function(a,b){return a+b.n;},0)/last30.length):0;
+  var weeklyForecast=avgDaily*7;
+
+  // ── Aging do backlog (OP.criticos = top 40 mais antigos) ──
+  var age0_2=0,age3_7=0,age8_30=0,age30p=0;
+  criticos.forEach(function(c){
+    var d=0;
+    if(c.idade==='hoje')d=0;
+    else if(c.idade==='1 dia')d=1;
+    else{var m=String(c.idade||'').match(/(\d+)/);if(m)d=parseInt(m[1]);}
+    if(d<=2)age0_2++;else if(d<=7)age3_7++;else if(d<=30)age8_30++;else age30p++;
+  });
+
+  // ── Conformidade SLA (estimativa) ────────────────────────
+  var slaResp=respMed<=30?100:respMed<=60?Math.round(100-(respMed-30)/30*40):Math.max(10,Math.round(60-(respMed-60)/60*40));
+  var slaSol=solMed<=48?100:solMed<=72?85:solMed<=96?65:solMed<=120?45:25;
+  var slaGeral=Math.round((slaResp*0.5)+(slaSol*0.5));
+
+  // ── Health Score (0–100) ──────────────────────────────────
+  var scoreResp=respMed<=30?100:respMed<=45?85:respMed<=60?70:respMed<=90?50:30;
+  var scoreSol=solMed<=24?100:solMed<=48?85:solMed<=60?70:solMed<=80?50:30;
+  var scoreBloq=totalBloq===0?100:totalBloq<=5?90:totalBloq<=10?75:totalBloq<=20?55:totalBloq<=40?35:15;
+  var scoreAberto=pctAbertos<=5?100:pctAbertos<=10?85:pctAbertos<=20?70:pctAbertos<=30?50:30;
+  var healthScore=Math.round(scoreResp*0.30+scoreSol*0.25+scoreBloq*0.25+scoreAberto*0.20);
+  var healthLabel=healthScore>=80?'Saudável':healthScore>=60?'Atenção':'Crítico';
+  var healthColor=healthScore>=80?'var(--ok)':healthScore>=60?'var(--warn)':'var(--danger)';
+
+  // ── Status geral ──────────────────────────────────────────
   var statusLevel=0;var statusReasons=[];
   if(totalBloq>20){statusLevel=Math.max(statusLevel,2);statusReasons.push('bloqueados em nível crítico');}
   else if(totalBloq>10){statusLevel=Math.max(statusLevel,1);statusReasons.push('bloqueados acima do normal');}
@@ -4479,51 +4525,78 @@ function renderResumo(){
   else if(solMed>40){statusLevel=Math.max(statusLevel,1);statusReasons.push('tempo de solução acima do ideal');}
   if(pctAbertos>30){statusLevel=Math.max(statusLevel,2);statusReasons.push('muitos chamados em aberto');}
   else if(pctAbertos>20){statusLevel=Math.max(statusLevel,1);statusReasons.push('chamados em aberto acima do normal');}
-
   var statusEmoji=['🟢','🟡','🔴'][statusLevel];
-  var statusLabel=['Saudável','Atenção','Crítico'][statusLevel];
+  var statusLbl=['Saudável','Atenção','Crítico'][statusLevel];
   var statusColor=['var(--ok)','var(--warn)','var(--danger)'][statusLevel];
-  var statusMsg=statusLevel===0
-    ?'Todos os indicadores estão dentro dos parâmetros normais.'
-    :'Pontos que requerem atenção: '+statusReasons.join(', ')+'.';
+  var statusMsg=statusLevel===0?'Todos os indicadores estão dentro dos parâmetros normais.':'Pontos que requerem atenção: '+statusReasons.join(', ')+'.';
 
-  // Texto resumo
+  // ── Textos do resumo automático ───────────────────────────
   var p1='Neste período foram registrados <strong>'+total+' chamados</strong>. A taxa de conclusão foi de <strong>'+taxaConc+'%</strong>, ';
   if(taxaConc>=80)p1+='considerada <strong>excelente</strong>.';
   else if(taxaConc>=65)p1+='considerada <strong>boa</strong>.';
   else if(taxaConc>=50)p1+='considerada <strong>regular</strong> — há espaço para melhoria.';
   else p1+='<strong>abaixo do esperado</strong> — requer atenção imediata.';
-
   var p2='';
   if(abertos>0)p2+='Existem atualmente <strong>'+abertos+' chamados em aberto</strong> ('+pctAbertos+'% do volume). ';
   if(totalBloq>20)p2+='O número de chamados bloqueados está em <strong>'+totalBloq+'</strong>, o que é <strong>crítico e exige ação imediata</strong>.';
   else if(totalBloq>10)p2+='Existem <strong>'+totalBloq+' chamados bloqueados</strong>, o que <strong>exige atenção</strong>.';
   else if(totalBloq>0)p2+='Há <strong>'+totalBloq+' chamados bloqueados</strong>, dentro de um nível aceitável.';
-
   var p3='';
   if(respMed>0){var respH=respMed>=60?(Math.round(respMed/60*10)/10)+'h':Math.round(respMed)+' min';p3+='O tempo médio de <strong>primeira resposta</strong> foi de <strong>'+respH+'</strong>'+(respMed<=30?', dentro da meta de 30 minutos.':', acima da meta de 30 minutos.')+' ';}
-  if(solMed>0){p3+='O tempo médio de <strong>solução</strong> foi de <strong>'+solMed+'h</strong>'+(solMed<=24?', considerado <strong>bom</strong>.':solMed<=40?', dentro de um nível aceitável.':',' +' <strong>acima do ideal</strong> — recomenda-se revisar chamados antigos.');}
-
+  if(solMed>0){p3+='O tempo médio de <strong>solução</strong> foi de <strong>'+solMed+'h</strong>'+(solMed<=24?', considerado <strong>bom</strong>.':solMed<=40?', dentro de um nível aceitável.':', <strong>acima do ideal</strong> — recomenda-se revisar chamados antigos.');}
   var p4='';
   if(prioMA>0){p4+='O volume de chamados de <strong>prioridade muito alta</strong> é de <strong>'+prioMA+'</strong> ('+pctMA+'% do total). ';if(pctMA>40)p4+='Este percentual é <strong>crítico</strong> e requer atenção urgente.';else if(pctMA>30)p4+='Este percentual está <strong>elevado</strong>.';else p4+='Este percentual está dentro do normal.';}
 
-  // Build HTML
+  // ── Itens de ação ─────────────────────────────────────────
+  var actions=[];
+  var critOld=criticos.filter(function(c){var m=String(c.idade||'').match(/(\d+)/);return m&&parseInt(m[1])>5;});
+  if(critOld.length>0)actions.push({i:'🚨',t:'<strong>'+critOld.length+' chamados críticos</strong> abertos há mais de 5 dias sem solução — prioridade máxima.'});
+  if(aguardInt>0)actions.push({i:'🔄',t:'<strong>'+aguardInt+' chamados</strong> aguardando ação interna — equipe precisa dar continuidade.'});
+  if(trendPct>15)actions.push({i:'📈',t:'Volume de chamados <strong>'+trendPct+'% maior</strong> que a semana passada — monitorar capacidade.'});
+  if(solMed>48)actions.push({i:'⏱️',t:'Tempo médio de solução em <strong>'+solMed+'h</strong> — revisar e redistribuir chamados antigos.'});
+  if(pctAbertos>20)actions.push({i:'📂',t:'<strong>'+pctAbertos+'%</strong> do volume ainda em aberto — realizar triagem e fechamento de pendências.'});
+  if(age30p>0)actions.push({i:'⚠️',t:'<strong>'+age30p+' chamados</strong> com mais de 30 dias em aberto — risco de insatisfação do cliente.'});
+  if(actions.length===0)actions.push({i:'✅',t:'Nenhuma ação urgente identificada no momento. Operação dentro dos parâmetros.'});
+
+  // ── HTML ──────────────────────────────────────────────────
   var H='';
 
-  // Card de status
-  H+='<div class="rg-status-card">';
+  // Linha 1: Health Score + Status
+  H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">';
+  H+='<div class="rg-status-card" style="margin:0">';
+  H+='<div style="width:58px;height:58px;border-radius:50%;border:3px solid '+healthColor+';display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px '+healthColor+'44">';
+  H+='<span style="font-family:var(--display);font-size:21px;font-weight:700;color:'+healthColor+'">'+healthScore+'</span></div>';
+  H+='<div><div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Saúde Operacional</div>';
+  H+='<div class="rg-status-label" style="color:'+healthColor+'">'+healthLabel+'</div>';
+  H+='<div class="rg-status-sub">Score de 0–100 · resposta, solução, bloqueios e backlog</div></div></div>';
+  H+='<div class="rg-status-card" style="margin:0">';
   H+='<div class="rg-status-dot" style="background:'+statusColor+';box-shadow:0 0 12px '+statusColor+'66"></div>';
-  H+='<div><div class="rg-status-label" style="color:'+statusColor+'">'+statusEmoji+' '+statusLabel+'</div>';
+  H+='<div><div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Status da Operação</div>';
+  H+='<div class="rg-status-label" style="color:'+statusColor+'">'+statusEmoji+' '+statusLbl+'</div>';
   H+='<div class="rg-status-sub">'+statusMsg+'</div></div></div>';
+  H+='</div>';
 
-  // KPIs
+  // Linha 2: Tendência + Ritmo + Previsão
+  H+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">';
+  H+='<div class="rg-kpi"><div class="rg-kpi-lbl">Tendência Semanal</div>';
+  H+='<div class="rg-kpi-val" style="color:'+trendColor+'">'+trendDir+' '+Math.abs(trendPct)+'%</div>';
+  H+='<div class="rg-kpi-sub">Esta semana ('+thisWeek+') vs anterior ('+prevWeek+')</div></div>';
+  H+='<div class="rg-kpi"><div class="rg-kpi-lbl">Ritmo Diário</div>';
+  H+='<div class="rg-kpi-val" style="color:var(--blue)">'+avgDaily+'</div>';
+  H+='<div class="rg-kpi-sub">chamados/dia (média últimos 30 dias)</div></div>';
+  H+='<div class="rg-kpi"><div class="rg-kpi-lbl">Previsão Semanal</div>';
+  H+='<div class="rg-kpi-val" style="color:var(--purple)">~'+weeklyForecast+'</div>';
+  H+='<div class="rg-kpi-sub">estimativa baseada no ritmo atual</div></div>';
+  H+='</div>';
+
+  // Linha 3: KPIs principais (8 cards)
   H+='<div class="rg-kpi-grid">';
   var kArr=[
     {l:'Total de Chamados',v:total,s:'no período',c:'var(--blue)'},
     {l:'Chamados Fechados',v:fechados,s:taxaConc+'% de conclusão',c:'var(--ok)'},
     {l:'Em Aberto',v:abertos,s:pctAbertos+'% do volume',c:pctAbertos>30?'var(--danger)':pctAbertos>20?'var(--warn)':'var(--sub)'},
     {l:'Bloqueados',v:totalBloq,s:'aguardando alguma ação',c:totalBloq>20?'var(--danger)':totalBloq>10?'var(--warn)':'var(--sub)'},
-    {l:'1ª Resposta',v:respMed>=60?(Math.round(respMed/60*10)/10)+'h':Math.round(respMed)+'min',s:'tempo mediano',c:respMed<=30?'var(--ok)':'var(--warn)'},
+    {l:'Conformidade SLA',v:slaGeral+'%',s:'resposta + solução estimada',c:slaGeral>=90?'var(--ok)':slaGeral>=70?'var(--warn)':'var(--danger)'},
     {l:'Tempo de Solução',v:solMed+'h',s:'média dos encerrados',c:solMed<=40?'var(--ok)':solMed<=60?'var(--warn)':'var(--danger)'},
     {l:'Prioridade Muito Alta',v:prioMA,s:pctMA+'% do volume',c:pctMA>40?'var(--danger)':pctMA>30?'var(--warn)':'var(--sub)'},
     {l:'Críticos em Aberto',v:numCrit,s:'mais antigos sem solução',c:numCrit>20?'var(--danger)':numCrit>5?'var(--warn)':'var(--sub)'}
@@ -4531,7 +4604,13 @@ function renderResumo(){
   kArr.forEach(function(k){H+='<div class="rg-kpi"><div class="rg-kpi-lbl">'+k.l+'</div><div class="rg-kpi-val" style="color:'+k.c+'">'+k.v+'</div><div class="rg-kpi-sub">'+k.s+'</div></div>';});
   H+='</div>';
 
-  // Resumo em texto
+  // O que precisa de ação agora
+  H+='<div class="rg-section-title">⚡ O Que Precisa de Ação Agora</div>';
+  H+='<div class="rg-resumo-card">';
+  actions.forEach(function(a){H+='<div class="rg-item-row"><div class="rg-item-icon">'+a.i+'</div><div class="rg-item-txt">'+a.t+'</div></div>';});
+  H+='</div>';
+
+  // Resumo automático em texto
   H+='<div class="rg-section-title">Resumo Automático</div>';
   H+='<div class="rg-resumo-card">';
   if(p1)H+='<p>'+p1+'</p>';
@@ -4539,6 +4618,23 @@ function renderResumo(){
   if(p3)H+='<p>'+p3+'</p>';
   if(p4)H+='<p>'+p4+'</p>';
   H+='</div>';
+
+  // Aging do backlog
+  if(criticos.length>0){
+    H+='<div class="rg-section-title">Aging do Backlog</div>';
+    H+='<div class="rg-resumo-card">';
+    var agingRows=[{i:'🟢',l:'0 a 2 dias',v:age0_2,c:'var(--ok)'},{i:'🟡',l:'3 a 7 dias',v:age3_7,c:'var(--warn)'},{i:'🔴',l:'8 a 30 dias',v:age8_30,c:'var(--danger)'},{i:'🚨',l:'Mais de 30 dias',v:age30p,c:'var(--danger)'}];
+    agingRows.forEach(function(ag){
+      if(!ag.v)return;
+      var pct=criticos.length>0?Math.round(ag.v/criticos.length*100):0;
+      H+='<div class="rg-item-row"><div class="rg-item-icon">'+ag.i+'</div>';
+      H+='<div class="rg-item-txt" style="flex:1"><strong>'+ag.l+'</strong> — '+ag.v+' chamados ('+pct+'%)</div>';
+      H+='<div style="width:100px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:'+pct+'%;background:'+ag.c+';border-radius:3px"></div></div>';
+      H+='</div>';
+    });
+    H+='<div style="font-size:11px;color:var(--muted);margin-top:8px">Baseado nos '+criticos.length+' chamados mais antigos em aberto</div>';
+    H+='</div>';
+  }
 
   // Chamados em espera
   var items=[];
@@ -4551,15 +4647,35 @@ function renderResumo(){
     H+='</div>';
   }
 
+  // Eficiência da equipe
+  if(atendData.length>0){
+    H+='<div class="rg-section-title">Eficiência da Equipe</div>';
+    H+='<div class="rg-resumo-card">';
+    var avgAtend=atendData.length>0?Math.round(total/atendData.length):0;
+    H+='<div style="font-size:12px;color:var(--sub);margin-bottom:10px">Média: <strong style="color:var(--text)">'+avgAtend+' chamados/atendente</strong> · '+atendData.length+' atendentes ativos</div>';
+    var topAtend=atendData.slice().sort(function(a,b){return b.t-a.t;}).slice(0,5);
+    topAtend.forEach(function(a){
+      var taxa=a.t>0?Math.round(a.f/a.t*100):0;
+      var col=taxa>=80?'var(--ok)':taxa>=60?'var(--warn)':'var(--danger)';
+      H+='<div class="rg-item-row"><div class="rg-item-txt" style="flex:1"><strong>'+a.n+'</strong></div>';
+      H+='<div style="font-family:var(--mono);font-size:11px;color:var(--sub);min-width:70px;text-align:right">'+a.t+' chamados</div>';
+      H+='<div style="font-family:var(--mono);font-size:11px;color:'+col+';min-width:52px;text-align:right;font-weight:600">'+taxa+'% ✓</div></div>';
+    });
+    H+='</div>';
+  }
+
   // Volume por prioridade
   var priorOrder=['Muito Alta','Alta','Normal','Baixa','Muito Baixa'];
   var priorColors={'Muito Alta':'var(--danger)','Alta':'var(--warn)','Normal':'var(--blue)','Baixa':'var(--sub)','Muito Baixa':'var(--muted)'};
   H+='<div class="rg-section-title">Volume por Prioridade</div><div class="rg-resumo-card">';
   priorOrder.forEach(function(p){
-    var n=prior[p]||0; if(!n)return;
+    var n=prior[p]||0;if(!n)return;
     var pct2=total>0?Math.round(n/total*100):0;
     var col=priorColors[p]||'var(--sub)';
-    H+='<div class="rg-item-row"><div class="rg-item-icon" style="color:'+col+'">■</div><div class="rg-item-txt"><strong>'+p+'</strong> — '+n+' chamados ('+pct2+'%)</div><div style="font-family:var(--mono);font-size:11px;color:'+col+'">'+pct2+'%</div></div>';
+    H+='<div class="rg-item-row"><div class="rg-item-icon" style="color:'+col+'">■</div>';
+    H+='<div class="rg-item-txt" style="flex:1"><strong>'+p+'</strong> — '+n+' chamados ('+pct2+'%)</div>';
+    H+='<div style="width:100px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:'+pct2+'%;background:'+col+';border-radius:3px"></div></div>';
+    H+='</div>';
   });
   H+='</div>';
 
