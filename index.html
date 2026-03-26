@@ -3509,10 +3509,12 @@ function getActiveOP() {
         if(t.estado) estadoEmp[t.estado]=(estadoEmp[t.estado]||0)+1;
         var s=t.servico||t.svc; if(s) svcEmp[s]=(svcEmp[s]||0)+1;
       });
-      // Totais: usa filas do cliente quando fila ativa, senão usa emp agregado
-      var filaTotal = activeFilaOP !== 'all' && emp.filas ? (emp.filas[activeFilaOP]||empTks.length) : (emp.total||0);
-      var filaAb    = activeFilaOP !== 'all' ? empTks.filter(function(t){return isAb2(t.estado);}).length : (emp.abertos||0);
-      var filaFe    = activeFilaOP !== 'all' ? empTks.filter(function(t){return isFe2(t.estado);}).length : (emp.fechados||0);
+      // Totais: quando mês ativo, usa EMP_MESES (cobre todos os tickets do mês)
+      // sem mês: usa filas do cliente quando fila ativa, senão usa emp agregado
+      var empMesDat = activeMonth !== 'all' ? (EMP_MESES[emp.id] && EMP_MESES[emp.id][activeMonth]) : null;
+      var filaTotal = empMesDat ? empMesDat.total   : (activeFilaOP !== 'all' && emp.filas ? (emp.filas[activeFilaOP]||empTks.length) : (emp.total||0));
+      var filaAb    = empMesDat ? empMesDat.abertos  : (activeFilaOP !== 'all' ? empTks.filter(function(t){return isAb2(t.estado);}).length : (emp.abertos||0));
+      var filaFe    = empMesDat ? empMesDat.fechados : (activeFilaOP !== 'all' ? empTks.filter(function(t){return isFe2(t.estado);}).length : (emp.fechados||0));
       if(activeFilaOP === 'all' && !Object.keys(priorEmp).length) priorEmp = emp.prior || {};
       if(activeFilaOP === 'all' && !Object.keys(estadoEmp).length) estadoEmp = emp.estado || emp.estados || {};
       if(activeFilaOP === 'all' && !Object.keys(svcEmp).length)   svcEmp   = emp.svc   || emp.servicos || {};
@@ -3856,13 +3858,28 @@ function getFilteredEmpresa(d) {
   var newByMes = {};
   if(d.by_mes[mKey]) newByMes[mKey] = d.by_mes[mKey];
 
+  // Filtra by_day ao mês selecionado (corrige Volume Diário)
+  var filteredByDay = (d.by_day||[]).filter(function(e){ return e.d && e.d.startsWith(activeMonth); });
+
+  // Reconstrói prioridade a partir dos tickets filtrados por mês
+  var prior = {};
+  filteredTickets.forEach(function(t){
+    var p = t.prioridade || t.prior;
+    if(p) prior[p] = (prior[p]||0)+1;
+  });
+  // Se amostra vazia mas temos by_mes, mantém prior original (sem distorção)
+  if(!Object.keys(prior).length) prior = d.prior || {};
+
   return Object.assign({},d,{
-    total: total,
-    abertos: abertos,
+    total:    total,
+    abertos:  abertos,
     fechados: fechados,
-    tickets: filteredTickets,
-    estados: estados,
-    by_mes: newByMes
+    tickets:  filteredTickets,
+    estados:  estados,
+    prior:    prior,
+    by_mes:   newByMes,
+    by_day:   filteredByDay,
+    byDay:    filteredByDay
   });
 }
 
