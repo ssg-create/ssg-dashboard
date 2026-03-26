@@ -2566,7 +2566,7 @@ function renderInf(){
 // ════════════════════════════════════════════════════════════
 // IMPORT
 // ════════════════════════════════════════════════════════════
-var COL_IMP={num:['número do chamado','número','chamado','ticket'],criado:['criado','data de abertura','abertura','created'],fechado:['fechado','data de fechamento','fechamento','closed'],estado:['estado','status','situação'],prior:['prioridade','priority'],atend:['atendente','assignee'],pnome:['primeironome','primeiro nome'],unome:['úlnome','últimonome','último nome'],cli_id:['id do cliente','customer id'],cli_nome:['nome do cliente','customer name','c_cliente','c cliente'],assunto:['assunto','subject'],servico:['serviço','service'],resp_min:['primeira resposta em minutos','first response in minutes'],sol_min:['tempo de solução em minutos','resolution time in minutes'],fila:['fila','queue']};
+var COL_IMP={num:['número do chamado','número','chamado','ticket'],criado:['criado','data de abertura','abertura','created'],fechado:['fechado','data de fechamento','fechamento','closed'],estado:['estado','status','situação'],prior:['prioridade','priority'],atend:['atendente','assignee'],pnome:['primeironome','primeiro nome'],unome:['úlnome','últimonome','último nome'],cli_id:['id do cliente','customer id'],c_cli:['c_cliente','c cliente'],cli_nome:['nome do cliente','customer name'],assunto:['assunto','subject'],servico:['serviço','service'],resp_min:['primeira resposta em minutos','first response in minutes'],sol_min:['tempo de solução em minutos','resolution time in minutes'],fila:['fila','queue']};
 var EM2={'fechado com êxito':'Fechado','fechado sem êxito (auto)':'Fechado s/ Êxito','fechado sem êxito':'Fechado s/ Êxito','aguardando cliente':'Aguardando Cliente','resolvido':'Resolvido','aguardando atendente (interno)':'Aguardando Interno','retorno cliente':'Retorno Cliente','em atendimento':'Em Atendimento','aberto':'Aberto','aguardando agentes externos':'Aguardando Externo','cancelado':'Fechado s/ Êxito','melhoria':'Fechado s/ Êxito','gmud':'Fechado s/ Êxito','agrupado':'Fechado s/ Êxito','novo':'Aberto'};
 var PM2={'1 very low':'Muito Baixa','2 low':'Baixa','3 normal':'Normal','4 high':'Alta','5 very high':'Muito Alta'};
 var ENM2={'ALMEIDA JR':'Almeida Junior','AUTOZONE':'AutoZone','GRUPO_METALNOX':'Grupo Metalnox','FINPEC':'Finpec','NSX':'NSX'};
@@ -2602,7 +2602,12 @@ function parseR(rows){
     var rm=C.resp_min?parseFloat(r[C.resp_min]):null,sm=C.sol_min?parseFloat(r[C.sol_min]):null;
     var eR=C.estado?String(r[C.estado]||'').toLowerCase().trim():'';
     var pR=C.prior?String(r[C.prior]||'').toLowerCase().trim():'';
-    var rawCid=C.cli_id?String(r[C.cli_id]||'').trim():'';var cid=resolveCliId(rawCid);
+    // C_Cliente é o campo mais confiável: sempre contém o ID correto da empresa
+    // ID do Cliente pode ser email interno (monitoramento@groundwork.com.br) → resolveria para ''
+    var cCustom=C.c_cli?String(r[C.c_cli]||'').trim():'';
+    var rawCid=C.cli_id?String(r[C.cli_id]||'').trim():'';
+    // Usa C_Cliente quando presente e não é código interno (começa com _)
+    var cid=(cCustom&&cCustom.charAt(0)!=='_')?resolveCliId(cCustom):resolveCliId(rawCid);
     var cliNome=C.cli_nome?String(r[C.cli_nome]||'').trim():'';
     var fn=C.pnome?String(r[C.pnome]||'').trim():'',ln=C.unome?String(r[C.unome]||'').trim():'';
     var at=(fn+' '+ln).trim()||(C.atend?String(r[C.atend]||'').trim():'')||'—';
