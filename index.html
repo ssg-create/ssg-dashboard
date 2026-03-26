@@ -3406,8 +3406,10 @@ function buildMonthFilter() {
     var isCS  = mode === 'cs';
     // No modo CLI/CS com empresa selecionada, mostra totais da empresa
     var csEmpKey = isCS && document.getElementById('cs-sel-empresa') ? document.getElementById('cs-sel-empresa').value : '';
-    var usaEmp = (isCli && empKey) || (isCS && csEmpKey);
-    var activeEmpKey = isCli ? empKey : csEmpKey;
+    // Filtro global de cliente (activeCliente) também afeta os contadores do modo 'op'
+    var opCliKey = (!isCli && !isCS && typeof activeCliente !== 'undefined') ? activeCliente : '';
+    var usaEmp = (isCli && empKey) || (isCS && csEmpKey) || (opCliKey !== '');
+    var activeEmpKey = isCli ? empKey : (isCS ? csEmpKey : opCliKey);
     var activeEmpData = activeEmpKey && typeof EMP_MESES !== 'undefined' ? (EMP_MESES[activeEmpKey] || {}) : {};
     var activeEmpTotal = activeEmpKey && EMPRESAS[activeEmpKey] ? EMPRESAS[activeEmpKey].total : opTotal;
     var total = usaEmp ? activeEmpTotal : opTotal;
