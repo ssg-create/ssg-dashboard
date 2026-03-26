@@ -3515,9 +3515,11 @@ function getActiveOP() {
       var filaTotal = empMesDat ? empMesDat.total   : (activeFilaOP !== 'all' && emp.filas ? (emp.filas[activeFilaOP]||empTks.length) : (emp.total||0));
       var filaAb    = empMesDat ? empMesDat.abertos  : (activeFilaOP !== 'all' ? empTks.filter(function(t){return isAb2(t.estado);}).length : (emp.abertos||0));
       var filaFe    = empMesDat ? empMesDat.fechados : (activeFilaOP !== 'all' ? empTks.filter(function(t){return isFe2(t.estado);}).length : (emp.fechados||0));
-      if(activeFilaOP === 'all' && !Object.keys(priorEmp).length) priorEmp = emp.prior || {};
-      if(activeFilaOP === 'all' && !Object.keys(estadoEmp).length) estadoEmp = emp.estado || emp.estados || {};
-      if(activeFilaOP === 'all' && !Object.keys(svcEmp).length)   svcEmp   = emp.svc   || emp.servicos || {};
+      // Fallback: quando amostra de tickets está vazia (ex: fila+mês+cliente sem dados)
+      // usa dados do cliente filtrado por mês para não zerar os gráficos
+      if(!Object.keys(priorEmp).length)  priorEmp  = emp.prior  || {};
+      if(!Object.keys(estadoEmp).length) estadoEmp = emp.estado || emp.estados || {};
+      if(!Object.keys(svcEmp).length)    svcEmp    = emp.svc    || emp.servicos || {};
       // Filtra criticos pelo mesmo conjunto de tickets
       var crit = (OP.criticos||[]).filter(function(c){
         return empTks.some(function(t){ return t.num===c.num; });
