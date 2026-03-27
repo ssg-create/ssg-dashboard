@@ -1,0 +1,81 @@
+name: SSG Pipeline
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # a cada 10 min, 24h/dia, 7 dias/semana
+  workflow_dispatch:          # permite rodar manualmente pelo GitHub
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests urllib3 openpyxl
+
+      # Cache dos xlsx mensais (evita re-buscar meses fechados a cada run)
+      - name: Restaurar cache de meses
+        uses: actions/cache@v4
+        with:
+          path: ~/.ssg_cache
+          key: ssg-meses-${{ hashFiles('scripts/znuny_export.py') }}
+          restore-keys: ssg-meses-
+
+      - name: Criar estrutura de pastas
+        run: |
+          mkdir -p "$HOME/Desktop/Arquivo OTRS/.cache"
+          # Restaura cache de meses anteriores se existir
+          if [ -d "$HOME/.ssg_cache" ]; then
+            cp -r "$HOME/.ssg_cache/." "$HOME/Desktop/Arquivo OTRS/.cache/" 2>/dev/null || true
+          fi
+
+      - name: Exportar tickets (znuny_export)
+        env:
+          OTRS_USER: ${{ secrets.OTRS_USER }}
+          OTRS_PASS: ${{ secrets.OTRS_PASS }}
+          OTRS_URL: ${{ secrets.OTRS_URL }}
+        run: python scripts/znuny_export.py
+
+      - name: Salvar cache de meses
+        run: |
+          mkdir -p "$HOME/.ssg_cache"
+          cp -r "$HOME/Desktop/Arquivo OTRS/.cache/." "$HOME/.ssg_cache/" 2>/dev/null || true
+          # Limpeza: remove cache de meses com mais de 6 meses
+          find "$HOME/.ssg_cache" -name "*.xlsx" -mtime +180 -delete 2>/dev/null || true
+
+      - name: Análise AIOS
+        run: python scripts/aios_analysis.py
+
+      - name: Deploy GitHub Pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+        run: python scripts/github_deploy.py
+
+      - name: Notificar falha por email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_FROM }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "⚠️ SSG Dashboard — Falha no pipeline (GitHub Actions)"
+          to: ${{ secrets.EMAIL_TO }}
+          from: SSG Pipeline
+          body: |
+            O pipeline SSG falhou no GitHub Actions.
+
+            Veja os logs em:
+            https://github.com/${{ secrets.GITHUB_REPO }}/actions
+
+            Horário: ${{ github.run_started_at }}
