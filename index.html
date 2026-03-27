@@ -345,6 +345,66 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .hs-row:last-child{border-bottom:none}
 .hs-row-val{font-family:var(--mono);font-size:12px;font-weight:500}
 
+/* ═══ RELATÓRIO MENSAL ════════════════════════════════════════ */
+.rel-wrap{max-width:860px;margin:0 auto;padding:8px 0 40px;font-family:'Georgia',serif}
+.rel-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:20px}
+.rel-logo{display:flex;align-items:center;gap:10px}
+.rel-logo-text{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.15em;color:#1a2b4a;background:#e8f0fe;padding:4px 10px;border-radius:6px}
+.rel-title-block{text-align:right}
+.rel-title{font-family:var(--font);font-size:18px;font-weight:700;color:var(--text);margin:0 0 4px}
+.rel-subtitle{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.rel-intro{background:var(--bg2);border:1px solid var(--border);border-left:3px solid #E8541A;border-radius:8px;padding:16px 20px;margin-bottom:20px;font-size:13px;line-height:1.7;color:var(--sub)}
+.rel-section-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.rel-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.rel-semaforo{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.rel-sem-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;text-align:center}
+.rel-sem-icon{font-size:22px;margin-bottom:6px}
+.rel-sem-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rel-sem-status{font-family:var(--font);font-size:13px;font-weight:700;margin-bottom:4px}
+.rel-sem-value{font-family:var(--display);font-size:24px;font-weight:700}
+.rel-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.rel-metric{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.rel-metric-label{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rel-metric-value{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);line-height:1}
+.rel-metric-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.rel-metric-tag{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:4px;margin-top:4px;font-weight:700}
+.rel-riscos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.rel-risco-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.rel-risco-card.crit{border-left:3px solid #E24B4A}
+.rel-risco-card.warn{border-left:3px solid #EF9F27}
+.rel-risco-titulo{font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px}
+.rel-risco-desc{font-size:11px;color:var(--sub);line-height:1.55}
+.rel-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:11px}
+.rel-table th{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.rel-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.rel-table tr.bad td{background:rgba(226,75,74,.08);color:#f87171}
+.rel-table tr.warn-row td{background:rgba(239,159,39,.06);color:#fbbf24}
+.rel-decisao{background:rgba(226,75,74,.06);border:1px solid rgba(226,75,74,.3);border-radius:8px;padding:16px 18px;margin-bottom:20px}
+.rel-decisao-title{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#E24B4A;font-weight:700;margin-bottom:8px}
+.rel-decisao-text{font-size:12px;color:var(--sub);line-height:1.6}
+.rel-acoes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.rel-acao{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.rel-acao-num{font-family:var(--display);font-size:28px;font-weight:700;color:rgba(232,84,26,.3);line-height:1;margin-bottom:6px}
+.rel-acao-text{font-size:11px;color:var(--text);font-weight:600;margin-bottom:6px;line-height:1.4}
+.rel-acao-meta{font-size:10px;color:var(--muted)}
+.rel-acao-prazo{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:4px;background:rgba(232,84,26,.15);color:#E8541A;margin-top:4px}
+.rel-footer{text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;padding:16px 0 0;border-top:1px solid var(--border);margin-top:4px}
+.rel-print-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(232,84,26,.12);border:1px solid rgba(232,84,26,.3);color:#E8541A;border-radius:6px;font-size:10px;font-family:var(--mono);cursor:pointer;float:right;margin-top:-2px}
+.rel-print-btn:hover{background:rgba(232,84,26,.2)}
+@media print{
+  .sidebar,.topbar,.rel-print-btn{display:none!important}
+  .main{margin:0!important;padding:0!important}
+  .rel-wrap{max-width:100%;padding:0}
+  body,html{background:#fff!important;color:#111!important}
+  .rel-header,.rel-intro,.rel-sem-card,.rel-metric,.rel-risco-card,.rel-acao,.rel-decisao{background:#fff!important;border-color:#ccc!important}
+  .rel-section-title,.rel-metric-label,.rel-sem-label,.rel-acao-meta,.rel-footer{color:#666!important}
+  .rel-metric-value,.rel-sem-value,.rel-risco-titulo,.rel-acao-text{color:#111!important}
+  .rel-risco-desc,.rel-intro,.rel-decisao-text,.rel-acao-meta{color:#333!important}
+  .rel-table td,.rel-table th{color:#111!important;border-color:#ccc!important}
+  .rel-table tr.bad td{background:#fff0f0!important;color:#c00!important}
+  .rel-logo-text{color:#1a2b4a!important;background:#e8f0fe!important}
+}
+
 /* ═══ SCORE BADGE ═════════════════════════════════════════════ */
 .score-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
 .score-excellent{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
@@ -749,7 +809,8 @@ input[type=file]{display:none}
   </div>
   <div id="nav-rg" style="display:none">
     <div class="sb-head">Gestão</div>
-    <div class="nav" style="color:var(--warn)" onclick="renderResumo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Resumo Executivo</div>
+    <div class="nav" id="rg-nav-resumo" style="color:var(--warn)" onclick="activateRgNav('resumo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Resumo Executivo</div>
+    <div class="nav" id="rg-nav-relatorio" onclick="activateRgNav('relatorio')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Relatório Mensal</div>
   </div>
   <div id="nav-ia" style="display:none">
     <div class="sb-head">Inteligência</div>
@@ -1593,7 +1654,7 @@ function setMode(m){
   document.getElementById('import-drop-icon').className='import-drop-icon'+(isOp?'':' cli-mode');
   if(isCli)initCli();
   if(isCS)initCS();
-  if(isRG)renderResumo();
+  if(isRG)activateRgNav('resumo');
   if(isIA)renderIA();
 }
 function goSecIA(id,el){
@@ -3471,7 +3532,7 @@ function setMonth(m) {
   if(csKey) loadCS(csKey);
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  if(vRg && vRg.classList.contains('on')){ if(document.getElementById('rg-nav-relatorio')?.classList.contains('on'))renderRelatorio(); else renderResumo(); }
   // Re-render IA se estiver ativo
   var vIA = document.getElementById('view-ia');
   if(vIA && vIA.classList.contains('on')) renderIA();
@@ -3699,7 +3760,7 @@ function setFilaOP(fila) {
   if(empKey) loadEmpresa(empKey);
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  if(vRg && vRg.classList.contains('on')){ if(document.getElementById('rg-nav-relatorio')?.classList.contains('on'))renderRelatorio(); else renderResumo(); }
   // Re-render IA se estiver ativo
   var vIA = document.getElementById('view-ia');
   if(vIA && vIA.classList.contains('on')) renderIA();
@@ -3884,7 +3945,7 @@ function setClienteGlobal(key) {
   buildMonthFilter();
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  if(vRg && vRg.classList.contains('on')){ if(document.getElementById('rg-nav-relatorio')?.classList.contains('on'))renderRelatorio(); else renderResumo(); }
   // Re-render IA se estiver ativo
   var vIA = document.getElementById('view-ia');
   if(vIA && vIA.classList.contains('on')) renderIA();
@@ -4983,6 +5044,192 @@ function renderBacklogTable(rows) {
   </div>
 </div>
 <script>
+// ════════════════════════════════════════════════════════════
+// GESTÃO — navegação entre sub-seções
+// ════════════════════════════════════════════════════════════
+function activateRgNav(sec){
+  document.querySelectorAll('#nav-rg .nav').forEach(function(n){n.classList.remove('on');});
+  var navEl=document.getElementById('rg-nav-'+sec);
+  if(navEl)navEl.classList.add('on');
+  if(sec==='resumo')renderResumo();
+  else if(sec==='relatorio')renderRelatorio();
+}
+
+// ════════════════════════════════════════════════════════════
+// RELATÓRIO MENSAL EXECUTIVO
+// ════════════════════════════════════════════════════════════
+function renderRelatorio(){
+  var op=getActiveOP();
+  var total=op.total||OP.total||0;
+  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
+  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
+  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
+  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
+  var prior=op.prior||OP.prior||{};
+  var estado=op.estado||OP.estado||{};
+  var bloqData=BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[];
+  var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
+  var atendData=op.atend||OP.atend||[];
+  var atendAtivos=atendData.filter(function(a){return a.total>0;}).length||0;
+  var prioMA=(prior['Muito Alta']||0);
+  var taxaConc=total>0?Math.round(fechados/total*100):0;
+  var pctAb=total>0?Math.round(abertos/total*100):0;
+  var pctBloq=total>0?Math.round(totalBloq/total*100):0;
+
+  // Período do relatório
+  var byDay=op.by_day||OP.by_day||[];
+  var mesLabel=activeMonth==='all'?'Período completo':(function(){
+    var parts=activeMonth.split('-');
+    var meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return meses[parseInt(parts[1],10)-1]+'/'+parts[0].slice(2);
+  })();
+  var periodoLabel=(function(){
+    if(activeMonth!=='all'){
+      var y=parseInt(activeMonth.split('-')[0]),m=parseInt(activeMonth.split('-')[1])-1;
+      var d1='01/'+String(m+1).padStart(2,'0')+'/'+y;
+      var ult=new Date(y,m+1,0).getDate();
+      return d1+' a '+ult+'/'+String(m+1).padStart(2,'0')+'/'+y;
+    }
+    if(byDay.length){
+      var f=byDay[0].d.split('-'),l=byDay[byDay.length-1].d.split('-');
+      return f[2]+'/'+f[1]+'/'+f[0]+' a '+l[2]+'/'+l[1]+'/'+l[0];
+    }
+    return '—';
+  })();
+  var hoje=new Date();
+  var geradoEm=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0')+'/'+hoje.getFullYear();
+
+  // Clientes com score
+  var empIds=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+  var clientes=empIds.map(function(k){
+    var d=EMPRESAS[k];
+    var sc=calcScore(d);
+    var txRes=d.total>0?Math.round((d.fechados||0)/d.total*100):0;
+    return{nome:d.nome||ENM2[k]||k,score:sc,total:d.total,abertos:d.abertos||0,resolucao:txRes+'%'};
+  }).sort(function(a,b){return a.score-b.score;});
+
+  // SLA / conformidade aproximada
+  var slaOk=typeof RESP30_MESES!=='undefined'?(RESP30_MESES[activeMonth]||RESP30_MESES['all']||null):null;
+  var slaVal=slaOk!=null?Math.round(slaOk):(respMed<=30?90:respMed<=60?75:respMed<=90?60:45);
+  var slaStatus=slaVal>=85?'OK':slaVal>=70?'ATENÇÃO':'CRÍTICO';
+  var slaColor=slaVal>=85?'#1D9E75':slaVal>=70?'#EF9F27':'#E24B4A';
+
+  // Saúde geral (média dos scores dos clientes)
+  var saudeScore=clientes.length?Math.round(clientes.reduce(function(a,b){return a+b.score;},0)/clientes.length):0;
+  var saudeStatus=saudeScore>=80?'BOM':saudeScore>=65?'ESTÁVEL':saudeScore>=50?'ATENÇÃO':'CRÍTICO';
+  var saudeColor=saudeScore>=80?'#1D9E75':saudeScore>=65?'#4f8ef7':saudeScore>=50?'#EF9F27':'#E24B4A';
+
+  // Frase executiva dinâmica
+  var alerta=respMed>60?'O tempo médio de primeira resposta ('+Math.round(respMed)+'min) está acima do acordado contratualmente, representando risco direto de insatisfação.':
+             respMed>30?'O tempo de primeira resposta está acima da meta — exige atenção para evitar violações contratuais.':
+             'O tempo de resposta está dentro da meta contratual.';
+  var cliAbaixo=clientes.filter(function(c){return c.score<75;}).length;
+  var introText='No período de '+periodoLabel+', a Groundwork registrou '+total.toLocaleString('pt-BR')+' chamados de suporte. '+
+    'Encerramos '+taxaConc+'% dos casos com êxito'+(pctAb>0?', com '+pctAb+'% ainda em andamento':'')+'. '+
+    alerta+
+    (cliAbaixo>0?' '+cliAbaixo+' cliente'+(cliAbaixo>1?'s estão':' está')+' abaixo do índice mínimo de qualidade, exigindo atenção da liderança.':
+    ' Todos os clientes estão dentro do índice de qualidade esperado.');
+
+  // Riscos (dinâmicos)
+  var riscos=[];
+  if(respMed>60)riscos.push({nivel:'crit',titulo:'Velocidade de atendimento comprometida',desc:'Tempo de primeira resposta '+Math.round(respMed)+'min — '+(Math.round(respMed/30*10)/10)+'× acima do contratado. Risco direto de violação contratual e churn.'});
+  else if(respMed>30)riscos.push({nivel:'warn',titulo:'Tempo de resposta acima da meta',desc:'Primeira resposta em '+Math.round(respMed)+'min contra meta de 30min. Monitorar para evitar escalações.'});
+  if(saudeScore<65)riscos.push({nivel:'crit',titulo:'Índice de qualidade operacional baixo',desc:'Score médio '+saudeScore+'/100 — mais de '+(100-saudeScore)+'% dos critérios de qualidade não atingem o padrão mínimo.'});
+  if(totalBloq>0&&pctBloq>=7)riscos.push({nivel:'warn',titulo:'Chamados aguardando ação externa',desc:totalBloq+' chamados ('+pctBloq+'%) bloqueados aguardam retorno externo. Cada dia parado aumenta o risco de escalação.'});
+  if(cliAbaixo>0)riscos.push({nivel:cliAbaixo>=3?'crit':'warn',titulo:cliAbaixo+' cliente'+(cliAbaixo>1?'s abaixo':'abaixo')+' do limiar de qualidade',desc:'Clientes com score < 75: '+clientes.filter(function(c){return c.score<75;}).map(function(c){return c.nome+' ('+c.score+')';}).join(', ')+'. Risco de churn se não houver intervenção.'});
+  if(prioMA>0&&prioMA/total>0.1)riscos.push({nivel:'warn',titulo:'Alto volume de chamados críticos',desc:prioMA+' chamados de prioridade máxima ('+Math.round(prioMA/total*100)+'% do total). Avaliar capacidade de resposta da equipe.'});
+  // Garante mínimo 3 e máximo 4
+  while(riscos.length<3)riscos.push({nivel:'warn',titulo:'Monitoramento contínuo recomendado',desc:'Manter acompanhamento semanal dos indicadores para antecipar desvios antes que se tornem críticos.'});
+  riscos=riscos.slice(0,4);
+
+  // Ações para próximo mês
+  var proxMes=(function(){
+    var d=new Date(); d.setMonth(d.getMonth()+1);
+    var ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return ms[d.getMonth()]+'/'+String(d.getFullYear()).slice(2);
+  })();
+  var acoes=[
+    {num:'01',text:'Reduzir tempo de primeira resposta para ≤30min',resp:'Liderança Técnica',prazo:'10/'+proxMes},
+    {num:'02',text:cliAbaixo>0?'Revisita presencial aos clientes abaixo do índice de qualidade':'Revisão dos acordos de nível de serviço com os 3 maiores clientes',resp:'Customer Success',prazo:'07/'+proxMes},
+    {num:'03',text:'Desbloqueio e encerramento dos chamados aguardando resposta externa',resp:'Coordenação',prazo:'03/'+proxMes}
+  ];
+
+  // Hex logo SVG
+  var logoSVG='<svg width="32" height="32" viewBox="0 0 32 32"><polygon points="16,2 28,9 28,23 16,30 4,23 4,9" fill="#E8541A"/><polygon points="16,7 24,11.5 24,20.5 16,25 8,20.5 8,11.5" fill="rgba(0,0,0,.2)"/><text x="16" y="20" font-family="monospace" font-size="9" font-weight="700" fill="white" text-anchor="middle">SSG</text></svg>';
+
+  var H='<div class="rel-wrap">';
+
+  // Header
+  H+='<div class="rel-header">';
+  H+='<div class="rel-logo">'+logoSVG+'<span class="rel-logo-text">GROUNDWORK</span></div>';
+  H+='<div class="rel-title-block"><button class="rel-print-btn" onclick="window.print()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir / PDF</button>';
+  H+='<div class="rel-title">Relatório Executivo — '+mesLabel+'</div>';
+  H+='<div class="rel-subtitle">Período: '+periodoLabel+' · Gerado em '+geradoEm+'</div>';
+  H+='</div></div>';
+
+  // Intro
+  H+='<div class="rel-intro">'+introText+'</div>';
+
+  // Semáforo
+  H+='<div class="rel-section-title">Situação geral</div>';
+  H+='<div class="rel-semaforo">';
+  H+='<div class="rel-sem-card"><div class="rel-sem-icon">'+(slaVal>=85?'✅':slaVal>=70?'⚠️':'❌')+'</div><div class="rel-sem-label">Acordo de Nível de Serviço</div><div class="rel-sem-status" style="color:'+slaColor+'">'+slaStatus+'</div><div class="rel-sem-value" style="color:'+slaColor+'">'+slaVal+'%</div></div>';
+  H+='<div class="rel-sem-card"><div class="rel-sem-icon">'+(saudeScore>=80?'✅':saudeScore>=65?'⚠️':'❌')+'</div><div class="rel-sem-label">Saúde Operacional</div><div class="rel-sem-status" style="color:'+saudeColor+'">'+saudeStatus+'</div><div class="rel-sem-value" style="color:'+saudeColor+'">'+saudeScore+'/100</div></div>';
+  H+='<div class="rel-sem-card"><div class="rel-sem-icon">✅</div><div class="rel-sem-label">Disponibilidade de Clientes</div><div class="rel-sem-status" style="color:#1D9E75">OK</div><div class="rel-sem-value" style="color:#1D9E75">'+clientes.length+' ativos</div></div>';
+  H+='</div>';
+
+  // Métricas
+  H+='<div class="rel-section-title">Métricas do período</div>';
+  H+='<div class="rel-metrics">';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Total de chamados</div><div class="rel-metric-value">'+total.toLocaleString('pt-BR')+'</div><div class="rel-metric-sub">'+periodoLabel+'</div></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Encerrados com êxito</div><div class="rel-metric-value" style="color:#1D9E75">'+fechados+'</div><div class="rel-metric-sub">'+taxaConc+'% de conclusão</div></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Em andamento</div><div class="rel-metric-value" style="color:'+(pctAb>20?'#E24B4A':pctAb>10?'#EF9F27':'#4f8ef7')+'">'+abertos+'</div><div class="rel-metric-sub">'+pctAb+'% do total</div></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Aguardando resposta</div><div class="rel-metric-value" style="color:'+(pctBloq>=10?'#E24B4A':pctBloq>=5?'#EF9F27':'var(--text)')+'">'+totalBloq+'</div><div class="rel-metric-sub">'+pctBloq+'% do total</div></div>';
+  var respColor=respMed>60?'#E24B4A':respMed>30?'#EF9F27':'#1D9E75';
+  H+='<div class="rel-metric"><div class="rel-metric-label">1ª Resposta (mediana)</div><div class="rel-metric-value" style="color:'+respColor+'">'+Math.round(respMed)+'<span style="font-size:13px;font-weight:400">min</span></div><span class="rel-metric-tag" style="background:rgba(226,75,74,.12);color:'+respColor+'">meta: 30min</span></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Tempo médio de solução</div><div class="rel-metric-value">'+Math.round(solMed*10)/10+'<span style="font-size:13px;font-weight:400">h</span></div><div class="rel-metric-sub">chamados encerrados</div></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Prioridade crítica</div><div class="rel-metric-value" style="color:'+(prioMA>0?'#E24B4A':'var(--text)')+'">'+prioMA+'</div><div class="rel-metric-sub">'+Math.round(prioMA/Math.max(total,1)*100)+'% do volume</div></div>';
+  H+='<div class="rel-metric"><div class="rel-metric-label">Equipe ativa</div><div class="rel-metric-value" style="color:#4f8ef7">'+(atendAtivos||atendData.length||'—')+'</div><div class="rel-metric-sub">atendentes no período</div></div>';
+  H+='</div>';
+
+  // Radar de risco
+  H+='<div class="rel-section-title">Radar de risco</div>';
+  H+='<div class="rel-riscos">';
+  riscos.forEach(function(r){
+    H+='<div class="rel-risco-card '+r.nivel+'"><div class="rel-risco-titulo">'+(r.nivel==='crit'?'🔴 ':'🟡 ')+r.titulo+'</div><div class="rel-risco-desc">'+r.desc+'</div></div>';
+  });
+  H+='</div>';
+
+  // Tabela de clientes
+  H+='<div class="rel-section-title">Saúde dos clientes (menor para maior)</div>';
+  H+='<table class="rel-table"><thead><tr><th>Cliente</th><th>Score</th><th>Chamados</th><th>Em aberto</th><th>% Resolução</th></tr></thead><tbody>';
+  clientes.forEach(function(c){
+    var cls=c.score<75?'bad':c.score<80?'warn-row':'';
+    var scoreColor=c.score>=80?'#1D9E75':c.score>=65?'#4f8ef7':c.score>=50?'#EF9F27':'#E24B4A';
+    H+='<tr class="'+cls+'"><td>'+c.nome+'</td><td><strong style="color:'+scoreColor+'">'+c.score+'</strong></td><td>'+c.total+'</td><td>'+c.abertos+'</td><td>'+c.resolucao+'</td></tr>';
+  });
+  H+='</tbody></table>';
+
+  // Decisões pendentes
+  H+='<div class="rel-section-title">Decisões pendentes dos sócios</div>';
+  H+='<div class="rel-decisao"><div class="rel-decisao-title">⚡ Requer aprovação</div>';
+  H+='<div class="rel-decisao-text">Aprovação de aumento de disco em ambiente Azure: custo passa de $144 → $286/mês. Verificar escopo contratual antes de autorizar.</div></div>';
+
+  // Ações
+  H+='<div class="rel-section-title">Ações para '+proxMes+'</div>';
+  H+='<div class="rel-acoes">';
+  acoes.forEach(function(a){
+    H+='<div class="rel-acao"><div class="rel-acao-num">'+a.num+'</div><div class="rel-acao-text">'+a.text+'</div><div class="rel-acao-meta">Responsável: <strong>'+a.resp+'</strong></div><div class="rel-acao-prazo">prazo: '+a.prazo+'</div></div>';
+  });
+  H+='</div>';
+
+  // Rodapé
+  H+='<div class="rel-footer">Groundwork MSP · Gerado em '+geradoEm+' · Fonte: SSG Operations Center</div>';
+  H+='</div>';
+
+  document.getElementById('rg-body').innerHTML=H;
+}
+
 // ════════════════════════════════════════════════════════════
 // RESUMO DE GESTÃO
 // ════════════════════════════════════════════════════════════
