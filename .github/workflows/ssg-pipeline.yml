@@ -58,6 +58,9 @@ jobs:
           WORK_DIR: ${{ github.workspace }}/output
         run: python scripts/aios_analysis.py
 
+      - name: Copiar index.html para output
+        run: cp "${{ github.workspace }}/index.html" "${{ github.workspace }}/output/"
+
       - name: Deploy GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
