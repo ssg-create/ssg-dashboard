@@ -10,7 +10,7 @@ from pathlib import Path
 from collections import defaultdict
 
 # ── Configuração ────────────────────────────────────────────
-PASTA       = str(Path.home() / "Desktop" / "Arquivo OTRS")
+PASTA       = os.environ.get("WORK_DIR", str(Path.home() / "Desktop" / "Arquivo OTRS"))
 OUTPUT_PATH = os.path.join(PASTA, "aios-insights.json")
 LOG_PATH    = os.path.join(PASTA, "ssg_log.txt")
 

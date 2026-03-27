@@ -31,11 +31,12 @@ jobs:
           restore-keys: ssg-meses-
 
       - name: Criar estrutura de pastas
+        run: mkdir -p "${{ github.workspace }}/output/.cache"
+
+      - name: Restaurar cache de meses anteriores
         run: |
-          mkdir -p "$HOME/Desktop/Arquivo OTRS/.cache"
-          # Restaura cache de meses anteriores se existir
           if [ -d "$HOME/.ssg_cache" ]; then
-            cp -r "$HOME/.ssg_cache/." "$HOME/Desktop/Arquivo OTRS/.cache/" 2>/dev/null || true
+            cp -r "$HOME/.ssg_cache/." "${{ github.workspace }}/output/.cache/" 2>/dev/null || true
           fi
 
       - name: Exportar tickets (znuny_export)
@@ -43,22 +44,25 @@ jobs:
           OTRS_USER: ${{ secrets.OTRS_USER }}
           OTRS_PASS: ${{ secrets.OTRS_PASS }}
           OTRS_URL: ${{ secrets.OTRS_URL }}
+          WORK_DIR: ${{ github.workspace }}/output
         run: python scripts/znuny_export.py
 
-      - name: Salvar cache de meses
+      - name: Salvar cache de meses (limpeza de +6 meses)
         run: |
           mkdir -p "$HOME/.ssg_cache"
-          cp -r "$HOME/Desktop/Arquivo OTRS/.cache/." "$HOME/.ssg_cache/" 2>/dev/null || true
-          # Limpeza: remove cache de meses com mais de 6 meses
+          cp -r "${{ github.workspace }}/output/.cache/." "$HOME/.ssg_cache/" 2>/dev/null || true
           find "$HOME/.ssg_cache" -name "*.xlsx" -mtime +180 -delete 2>/dev/null || true
 
       - name: Análise AIOS
+        env:
+          WORK_DIR: ${{ github.workspace }}/output
         run: python scripts/aios_analysis.py
 
       - name: Deploy GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          GITHUB_REPO: ${{ secrets.GITHUB_REPO }}
+          GITHUB_REPO: ${{ secrets.GH_REPO }}
+          WORK_DIR: ${{ github.workspace }}/output
         run: python scripts/github_deploy.py
 
       - name: Notificar falha por email
@@ -76,6 +80,6 @@ jobs:
             O pipeline SSG falhou no GitHub Actions.
 
             Veja os logs em:
-            https://github.com/${{ secrets.GITHUB_REPO }}/actions
+            https://github.com/${{ secrets.GH_REPO }}/actions
 
             Horário: ${{ github.run_started_at }}

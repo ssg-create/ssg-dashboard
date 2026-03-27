@@ -20,7 +20,7 @@ _load_env()
 USUARIO = os.environ["OTRS_USER"]
 SENHA   = os.environ["OTRS_PASS"]
 URL     = os.environ["OTRS_URL"]
-PASTA   = str(Path.home() / "Desktop" / "Arquivo OTRS")
+PASTA   = os.environ.get("WORK_DIR", str(Path.home() / "Desktop" / "Arquivo OTRS"))
 CACHE   = os.path.join(PASTA, ".cache")
 
 FILAS = [

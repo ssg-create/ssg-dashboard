@@ -16,7 +16,7 @@ _load_env()
 
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 REPO         = os.environ["GITHUB_REPO"]
-PASTA        = str(Path.home() / "Desktop" / "Arquivo OTRS")
+PASTA        = os.environ.get("WORK_DIR", str(Path.home() / "Desktop" / "Arquivo OTRS"))
 HTML_PATH    = os.path.join(PASTA, "index.html")
 LOG_PATH     = os.path.join(PASTA, "ssg_log.txt")
 API          = "https://api.github.com"
