@@ -89,6 +89,9 @@ jobs:
           cp -r "${{ github.workspace }}/output/.cache/." "$HOME/.ssg_cache/" 2>/dev/null || true
           find "$HOME/.ssg_cache" -name "*.xlsx" -mtime +180 -delete 2>/dev/null || true
 
+      - name: Testes unitários
+        run: node tests/unit.test.js
+
       - name: Análise AIOS
         env:
           WORK_DIR: ${{ github.workspace }}/output
