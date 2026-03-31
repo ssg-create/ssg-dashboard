@@ -4873,7 +4873,10 @@ function renderResumo(){
     oque:'Revisar backlog em aberto com gestor de fila. Identificar chamados que podem ser encerrados sem ação adicional.',
     resp:'Coordenação',prazo:'Próximas 2 semanas',
     justif:'Meta: 70%. Atual: '+taxaConc+'%. '+abertos+' chamados em aberto que reduzem o índice.'});
-  var cliAbaixo65=clientes.filter(function(c){return c.score<65;});
+  // Calcula clientes com score baixo no período (local, não depende de renderRelatorio)
+  var _empIdsCOO=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+  var _clientesCOO=_empIdsCOO.map(function(k){var dRaw=EMPRESAS[k];var d=getFilteredEmpresa(dRaw)||dRaw;if(!d||!d.total)return null;return{nome:dRaw.nome||k,score:calcScore(d)};}).filter(Boolean);
+  var cliAbaixo65=_clientesCOO.filter(function(c){return c.score<65;});
   if(cliAbaixo65.length>0)cooActions.push({p:'p3',area:'Customer Success',
     titulo:cliAbaixo65.length+' cliente(s) com índice de qualidade baixo',
     oque:'Agendar revisita consultiva ou QBR antecipado com as contas críticas. Apresentar tendência e plano de recuperação.',
