@@ -1759,15 +1759,15 @@ var EMPRESAS = {
 // HELPERS
 // ════════════════════════════════════════════════════════════
 var CH = {};
-function mk(id,type,labels,datasets,opts){
+function mkChart(id,type,labels,datasets,opts){
   if(CH[id]){CH[id].destroy();CH[id]=null;}
   var ctx=document.getElementById(id); if(!ctx)return;
   CH[id]=new Chart(ctx,{type:type,data:{labels:labels,datasets:datasets},options:Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}},opts||{})});
 }
-function fd(s){var p=s.split('-');return p[2]+'/'+p[1];}
+function fmtDate(s){var p=s.split('-');return p[2]+'/'+p[1];}
 var G='rgba(255,255,255,0.04)',TK='#5a6278';
 var PAL=['#4f8ef7','#00d4a8','#8b5cf6','#f59e0b','#f43f5e','#10b981','#f97316','#38bdf8'];
-function xy(yL){return{x:{ticks:{color:TK,font:{size:9,family:"'JetBrains Mono'"},maxRotation:45,autoSkip:true},grid:{display:false}},y:{ticks:{color:TK,font:{size:9,family:"'JetBrains Mono'"}},grid:{color:G},title:yL?{display:true,text:yL,color:TK,font:{size:9}}:undefined}};}
+function axisOpts(yL){return{x:{ticks:{color:TK,font:{size:9,family:"'JetBrains Mono'"},maxRotation:45,autoSkip:true},grid:{display:false}},y:{ticks:{color:TK,font:{size:9,family:"'JetBrains Mono'"}},grid:{color:G},title:yL?{display:true,text:yL,color:TK,font:{size:9}}:undefined}};}
 function ePill(e){var m={'Fechado':'pg','Resolvido':'pg','Fechado s/ Êxito':'px','Aberto':'pb','Em Atendimento':'pb','Aguardando Cliente':'py','Aguardando Interno':'py','Retorno Cliente':'py','Aguardando Externo':'pp'};var ic={'Fechado':'<polyline points="20 6 9 17 4 12"/>','Resolvido':'<polyline points="20 6 9 17 4 12"/>','Fechado s/ Êxito':'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>','Aberto':'<circle cx="12" cy="12" r="4"/>','Em Atendimento':'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>','Aguardando Cliente':'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>','Aguardando Interno':'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>','Retorno Cliente':'<polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 01-4 4H4"/>','Aguardando Externo':'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'};var svg=ic[e]?'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">'+ic[e]+'</svg>':'';return'<span class="pill '+(m[e]||'px')+'">'+svg+e+'</span>';}
 function pPill(p){var m={'Muito Alta':'pr','Alta':'py','Normal':'pb','Baixa':'pt','Muito Baixa':'px'};var ic={'Muito Alta':'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>','Alta':'<polyline points="18 15 12 9 6 15"/>','Normal':'<line x1="5" y1="12" x2="19" y2="12"/>','Baixa':'<polyline points="6 9 12 15 18 9"/>','Muito Baixa':'<polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/>'};var svg=ic[p]?'<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">'+ic[p]+'</svg>':'';return'<span class="pill '+(m[p]||'px')+'">'+svg+p+'</span>';}
 function pct(a,b){return b>0?Math.round(a/b*100):0;}
@@ -1864,7 +1864,7 @@ function renderSec(id){
 // ════════════════════════════════════════════════════════════
 function renderOv(){
   var _days=getFilteredDays();
-  var L=_days.map(function(d){return fd(d.d);}),V=_days.map(function(d){return d.n;});
+  var L=_days.map(function(d){return fmtDate(d.d);}),V=_days.map(function(d){return d.n;});
 
   // Sparkline: salva globalmente para updateKPIs usar
   var semAtual=V.slice(-5),semAnterior=V.slice(-10,-5);
@@ -1873,14 +1873,14 @@ function renderOv(){
 
   // Barras com destaque na última semana
   var bgC=L.map(function(l,i){return i>=L.length-5?'rgba(79,142,247,.85)':'rgba(79,142,247,.35)';});
-  mk('c-diario','bar',L,[{data:V,backgroundColor:bgC,borderColor:'#4f8ef7',borderWidth:1,borderRadius:4}],{scales:xy()});
+  mkChart('c-diario','bar',L,[{data:V,backgroundColor:bgC,borderColor:'#4f8ef7',borderWidth:1,borderRadius:4}],{scales:axisOpts()});
 
   // Por estado — usa dados FILTRADOS
   var _op=getActiveOP();
   var _opEstado=_op.estado||{};var eK=Object.keys(_opEstado).sort(function(a,b){return _opEstado[b]-_opEstado[a];});
   var eV=eK.map(function(k){return _op.estado[k];});
   var eC=['#10b981','#5a6278','#f59e0b','#00d4a8','#8b5cf6','#38bdf8','#4f8ef7','#f43f5e','#f97316'];
-  mk('c-estado','doughnut',eK,[{data:eV,backgroundColor:eC,borderWidth:0}],{cutout:'68%'});
+  mkChart('c-estado','doughnut',eK,[{data:eV,backgroundColor:eC,borderWidth:0}],{cutout:'68%'});
   // Legenda usa _op.estado (filtrado), NÃO OP.estado
   var legEl=document.getElementById('leg-estado');
   legEl.innerHTML=eK.map(function(k,i){
@@ -1899,7 +1899,7 @@ function renderOv(){
 
   // Prioridade
   var pK=['Muito Alta','Alta','Normal','Baixa','Muito Baixa'],pC=['#f43f5e','#f59e0b','#4f8ef7','#00d4a8','#5a6278'];
-  mk('c-prior','bar',pK,[{data:pK.map(function(k){return (_op.prior||{})[k]||0;}),backgroundColor:pC,borderRadius:5,borderSkipped:false}],{scales:xy()});
+  mkChart('c-prior','bar',pK,[{data:pK.map(function(k){return (_op.prior||{})[k]||0;}),backgroundColor:pC,borderRadius:5,borderSkipped:false}],{scales:axisOpts()});
 
   // Top serviços — barras e valores CONSISTENTES (ambos de _op.svc)
   var _opSvc=_op.svc||{};var sK=Object.keys(_opSvc).sort(function(a,b){return _opSvc[b]-_opSvc[a];});
@@ -2004,7 +2004,7 @@ function renderAlertas(){
 
   var top=(getActiveOP().atend||OP.atend).slice(0,6);
   var N=top.map(function(a){return a.n.split(' ')[0];});
-  mk('c-backlog','bar',N,[{data:top.map(function(a){return a.ab||0;}),backgroundColor:'rgba(244,63,94,.6)',borderColor:'#f43f5e',borderWidth:1,borderRadius:3}],{scales:xy('Em aberto')});
+  mkChart('c-backlog','bar',N,[{data:top.map(function(a){return a.ab||0;}),backgroundColor:'rgba(244,63,94,.6)',borderColor:'#f43f5e',borderWidth:1,borderRadius:3}],{scales:axisOpts('Em aberto')});
   renderCriticos();
 }
 
@@ -2171,7 +2171,7 @@ function openAtendPendModal(nome){
 function renderCh(){
   var _op2=getActiveOP();_op2=Object.assign({estado:{},prior:{},svc:{},atend:[],criticos:[],by_day:[],byDay:[]},_op2);
   var _days=getFilteredDays();
-  var L=_days.map(function(d){return fd(d.d);}),V=_days.map(function(d){return d.n;});
+  var L=_days.map(function(d){return fmtDate(d.d);}),V=_days.map(function(d){return d.n;});
   var total=_op2.total||0,fechados=_op2.fechados||0;
   var muitaAlta=_op2.prior&&_op2.prior['Muito Alta']||0;
   var aguardCli=_op2.estado&&_op2.estado['Aguardando Cliente']||0;
@@ -2187,10 +2187,10 @@ function renderCh(){
   var picoIdx=V.indexOf(Math.max.apply(null,V));
   var picoVal=Math.max.apply(null,V.concat([0]));
   if(el('ch-pico-txt'))el('ch-pico-txt').textContent='Pico: '+picoVal+' em '+(L[picoIdx]||'—')+' · Média: '+media+'/dia';
-  mk('c-diario2','line',L,[
+  mkChart('c-diario2','line',L,[
     {label:'Volume',data:V,borderColor:'#4f8ef7',backgroundColor:'rgba(79,142,247,.08)',tension:.4,fill:true,pointRadius:V.map(function(v){return v===picoVal?6:2;}),pointBackgroundColor:V.map(function(v){return v===picoVal?'#f43f5e':'#4f8ef7';}),pointHoverRadius:6,borderWidth:2},
     {label:'Média',data:V.map(function(){return media;}),borderColor:'rgba(244,63,94,.5)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
-  ],{plugins:{legend:{display:false}},scales:xy()});
+  ],{plugins:{legend:{display:false}},scales:axisOpts()});
   var eD2={'Fechado':'#10b981','Resolvido':'#00d4a8','Fechado s/ Êxito':'#5a6278','Aberto':'#4f8ef7','Em Atendimento':'#60a5fa','Aguardando Cliente':'#f59e0b','Aguardando Interno':'#a855f7','Retorno Cliente':'#fbbf24','Aguardando Externo':'#8b5cf6'};
   var _op2Est=_op2.estado||{};var eKeys=Object.keys(_op2Est).sort(function(a,b){return (_op2Est[b]||0)-(_op2Est[a]||0);});
   var maxE=Math.max.apply(null,eKeys.map(function(k){return _op2.estado[k];})||[1]);
@@ -2314,7 +2314,7 @@ function renderComp(){
     mColors=mColors.map(function(c,i){return i===ai?c:c.replace('.6','.15');});
     mBorder=mBorder.map(function(c,i){return i===ai?c:'rgba(255,255,255,.08)';});
   }
-  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return OP_MESES[k].total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:xy()});
+  mkChart('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return OP_MESES[k].total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:axisOpts()});
 
   // Tabela comparativa — prev/curr baseado no filtro ativo
   var curIdx=activeMonth==='all'?mOrder.length-1:mOrder.indexOf(activeMonth);
@@ -2367,7 +2367,7 @@ function renderComp(){
 
   // Tendência 1ª resposta — todos os meses
   var respData=mOrder.map(function(k){return OP_MESES[k]?OP_MESES[k].resp_med||0:0;});
-  mk('c-resp-trend','line',mLabels,[{data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2}],{scales:xy('min'),plugins:{legend:{display:false}}});
+  mkChart('c-resp-trend','line',mLabels,[{data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2}],{scales:axisOpts('min'),plugins:{legend:{display:false}}});
 }
 
 function renderAt(){
@@ -2381,11 +2381,11 @@ function renderAt(){
   var dPendAtend=top.map(function(a){return PEND_ATEND.reduce(function(s,e){return s+(a.est&&a.est[e]||0);},0);});
   var dPendCli=top.map(function(a){return PEND_CLI.reduce(function(s,e){return s+(a.est&&a.est[e]||0);},0);});
 
-  mk('c-atend','bar',N,[
+  mkChart('c-atend','bar',N,[
     {label:'Fechados',data:top.map(function(a){return a.f;}),backgroundColor:'rgba(16,185,129,.5)',borderColor:'#10b981',borderWidth:1,borderRadius:3},
     {label:'Ag. cliente',data:dPendCli,backgroundColor:'rgba(245,158,11,.5)',borderColor:'#f59e0b',borderWidth:1,borderRadius:3},
     {label:'Pendente atendente',data:dPendAtend,backgroundColor:'rgba(244,63,94,.6)',borderColor:'#f43f5e',borderWidth:1,borderRadius:3}
-  ],{plugins:{legend:{display:true,labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:12}}},scales:xy()});
+  ],{plugins:{legend:{display:true,labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:12}}},scales:axisOpts()});
 
   var mO3=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var curI3=mO3.indexOf(activeMonth),prevAtend={};
@@ -2538,7 +2538,7 @@ function renderCl(){
   var _opcSvc=_opc.svc||{};var sK=Object.keys(_opcSvc).sort(function(a,b){return _opcSvc[b]-_opcSvc[a];});
   var sV=sK.map(function(k){return _opc.svc[k];});
   var totalSvc=sV.reduce(function(a,b){return a+b;},0);
-  mk('c-svc','doughnut',sK,[{data:sV,backgroundColor:PAL,borderWidth:0}],{cutout:'58%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:8}},afterDraw:function(chart){var ctx2=chart.ctx;var cx=(chart.chartArea.left+chart.chartArea.right)/2,cy=(chart.chartArea.top+chart.chartArea.bottom)/2;ctx2.save();ctx2.font='700 20px JetBrains Mono,monospace';ctx2.fillStyle='#f0f2f7';ctx2.textAlign='center';ctx2.textBaseline='middle';ctx2.fillText(totalSvc,cx,cy-7);ctx2.font='10px Inter,sans-serif';ctx2.fillStyle='#5a6278';ctx2.fillText('chamados',cx,cy+10);ctx2.restore();}}});
+  mkChart('c-svc','doughnut',sK,[{data:sV,backgroundColor:PAL,borderWidth:0}],{cutout:'58%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:8}},afterDraw:function(chart){var ctx2=chart.ctx;var cx=(chart.chartArea.left+chart.chartArea.right)/2,cy=(chart.chartArea.top+chart.chartArea.bottom)/2;ctx2.save();ctx2.font='700 20px JetBrains Mono,monospace';ctx2.fillStyle='#f0f2f7';ctx2.textAlign='center';ctx2.textBaseline='middle';ctx2.fillText(totalSvc,cx,cy-7);ctx2.font='10px Inter,sans-serif';ctx2.fillStyle='#5a6278';ctx2.fillText('chamados',cx,cy+10);ctx2.restore();}}});
   // Evolução mensal
   var evoEl=document.getElementById('cli-evolucao');if(!evoEl)return;
   var mNames5={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
@@ -2593,9 +2593,9 @@ function renderSl(){
   var N=atend.map(function(a){return a.n.split('.')[0]||a.n.split(' ')[0];});
   var META_RESP=30,META_SOL=48;
   var rC=atend.map(function(a){return a.rm==null?'#5a6278':a.rm<=META_RESP?'#10b981':a.rm<=120?'#f59e0b':'#f43f5e';});
-  mk('c-resp','bar',N,[{data:atend.map(function(a){return a.rm?Math.round(a.rm):0;}),backgroundColor:rC,borderRadius:4}],{scales:xy('Minutos'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'min';}}}}});
+  mkChart('c-resp','bar',N,[{data:atend.map(function(a){return a.rm?Math.round(a.rm):0;}),backgroundColor:rC,borderRadius:4}],{scales:axisOpts('Minutos'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'min';}}}}});
   var sC=atend.map(function(a){return a.tm==null?'#5a6278':a.tm<=META_SOL?'#10b981':a.tm<=96?'#f59e0b':'#f43f5e';});
-  mk('c-sol','bar',N,[{data:atend.map(function(a){return a.tm||0;}),backgroundColor:sC,borderRadius:4}],{scales:xy('Horas'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'h';}}}}});
+  mkChart('c-sol','bar',N,[{data:atend.map(function(a){return a.tm||0;}),backgroundColor:sC,borderRadius:4}],{scales:axisOpts('Horas'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'h';}}}}});
   var rm=op.resp_med!=null?op.resp_med:8;
   var sm=op.sol_med!=null?op.sol_med:54.1;
   var kpis=document.querySelectorAll('#s-sl .kpi');
@@ -2692,7 +2692,7 @@ function renderPainel(d){
   // mensal
   if(CH['c-comensal']){CH['c-comensal'].destroy();CH['c-comensal']=null;}
   var mK=Object.keys(d.by_mes);
-  mk('c-comensal','bar',mK,[{data:mK.map(function(k){return d.by_mes[k];}),backgroundColor:'rgba(0,212,168,.5)',borderColor:'#00d4a8',borderWidth:1,borderRadius:3}],{scales:xy()});
+  mkChart('c-comensal','bar',mK,[{data:mK.map(function(k){return d.by_mes[k];}),backgroundColor:'rgba(0,212,168,.5)',borderColor:'#00d4a8',borderWidth:1,borderRadius:3}],{scales:axisOpts()});
   // estados
   var eD={'Fechado':'#10b981','Resolvido':'#00d4a8','Fechado s/ Êxito':'#5a6278','Aberto':'#4f8ef7','Em Atendimento':'#4f8ef7','Aguardando Cliente':'#f59e0b','Aguardando Interno':'#f59e0b','Retorno Cliente':'#f59e0b','Aguardando Externo':'#8b5cf6'};
   document.getElementById('co-estados').innerHTML=Object.keys(d.estados).map(function(k){var v=d.estados[k];return'<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:'+(eD[k]||TK)+'"></div><span>'+k+'</span></div><span style="font-family:var(--mono)">'+v+'</span></div>';}).join('');
@@ -2756,7 +2756,7 @@ function renderHealthScore(d){
   document.getElementById('hs-insight').textContent=insight;
   var pK=Object.keys(d.prior),pV=pK.map(function(k){return d.prior[k];});
   var pC={'Muito Alta':'#f43f5e','Alta':'#f59e0b','Normal':'#4f8ef7','Baixa':'#00d4a8','Muito Baixa':'#5a6278'};
-  mk('c-prior-co','doughnut',pK,[{data:pV,backgroundColor:pK.map(function(k){return pC[k]||TK;}),borderWidth:0}],{cutout:'62%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:8,padding:6}}}});
+  mkChart('c-prior-co','doughnut',pK,[{data:pV,backgroundColor:pK.map(function(k){return pC[k]||TK;}),borderWidth:0}],{cutout:'62%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:8,padding:6}}}});
   // Comparativo com média geral
   var mediaGeral={taxa:62,resp:8,sol:54};var taxa=pct(d.fechados,d.total);
   document.getElementById('hs-comp').innerHTML=[
@@ -2782,17 +2782,17 @@ function renderSlaContrato(d){
   });
   document.getElementById('sla-gauges').innerHTML=gaugeHTML||'<div style="font-size:12px;color:var(--muted);grid-column:1/-1">Dados insuficientes para calcular SLA com os tickets exibidos.</div>';
   var mK=Object.keys(d.by_mes);
-  mk('c-sla-trend','line',mK,[{data:mK.map(function(){return d.resp_med;}),borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00d4a8',borderWidth:2}],{scales:xy('min')});
+  mkChart('c-sla-trend','line',mK,[{data:mK.map(function(){return d.resp_med;}),borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00d4a8',borderWidth:2}],{scales:axisOpts('min')});
   // distribuição tempo de solução
   var sols=d.tickets.filter(function(t){return t.sol;}).map(function(t){return t.sol;});
   var bins=['0–24h','24–48h','48–72h','72h+'];
   var counts=[sols.filter(function(v){return v<=24;}).length,sols.filter(function(v){return v>24&&v<=48;}).length,sols.filter(function(v){return v>48&&v<=72;}).length,sols.filter(function(v){return v>72;}).length];
-  mk('c-sol-dist','bar',bins,[{data:counts,backgroundColor:['rgba(16,185,129,.6)','rgba(79,142,247,.6)','rgba(245,158,11,.6)','rgba(244,63,94,.6)'],borderRadius:4}],{scales:xy()});
+  mkChart('c-sol-dist','bar',bins,[{data:counts,backgroundColor:['rgba(16,185,129,.6)','rgba(79,142,247,.6)','rgba(245,158,11,.6)','rgba(244,63,94,.6)'],borderRadius:4}],{scales:axisOpts()});
 }
 
 function renderInf(){
   var mK=Object.keys(OP.volMes||{});
-  mk('c-vol-inf','bar',mK,[{data:mK.map(function(k){return OP.volMes[k];}),backgroundColor:['rgba(79,142,247,.6)','rgba(0,212,168,.6)','rgba(139,92,246,.6)'],borderColor:['#4f8ef7','#00d4a8','#8b5cf6'],borderWidth:1,borderRadius:4}],{scales:xy()});
+  mkChart('c-vol-inf','bar',mK,[{data:mK.map(function(k){return OP.volMes[k];}),backgroundColor:['rgba(79,142,247,.6)','rgba(0,212,168,.6)','rgba(139,92,246,.6)'],borderColor:['#4f8ef7','#00d4a8','#8b5cf6'],borderWidth:1,borderRadius:4}],{scales:axisOpts()});
 }
 
 // ════════════════════════════════════════════════════════════
