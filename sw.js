@@ -6,7 +6,9 @@ const PRECACHE = [
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './vendor/chart.min.js',
+  './vendor/xlsx.full.min.js'
 ];
 
 self.addEventListener('install', function(e) {
