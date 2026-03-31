@@ -97,6 +97,13 @@ jobs:
       - name: Copiar index.html para output
         run: cp "${{ github.workspace }}/index.html" "${{ github.workspace }}/output/"
 
+      - name: Injetar CACHE_VERSION no sw.js
+        run: |
+          VERSION="$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)"
+          sed -i "s/const CACHE_VERSION = '[^']*'/const CACHE_VERSION = '$VERSION'/" sw.js
+          cp "${{ github.workspace }}/sw.js" "${{ github.workspace }}/output/"
+          echo "CACHE_VERSION atualizada para: $VERSION"
+
       - name: Deploy GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
