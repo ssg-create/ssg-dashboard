@@ -20,31 +20,37 @@
 <div id="lo" style="position:fixed;inset:0;z-index:9999;background:#0D1B2E;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;">
   <div style="background:#fff;border-radius:20px;padding:48px 40px;width:420px;max-width:92vw;box-sizing:border-box;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
     <div style="margin-bottom:28px;">
-      <!-- Logo horizontal: ícone + GROUNDWORK — igual ao modelo -->
-      <div style="display:flex;align-items:center;gap:11px;margin-bottom:22px;">
-        <svg width="50" height="56" viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+        <!-- Hexagon icon: flat-top, square proportions, rounded corners, GW mark inside -->
+        <svg width="52" height="52" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="gwg" x1="0.75" y1="0.05" x2="0.25" y2="0.95">
-              <stop offset="0%" stop-color="#F7A92C"/>
-              <stop offset="50%" stop-color="#E86318"/>
-              <stop offset="100%" stop-color="#C03D00"/>
+            <linearGradient id="gwg" x1="0.15" y1="0.1" x2="0.85" y2="0.9">
+              <stop offset="0%" stop-color="#F9AA30"/>
+              <stop offset="55%" stop-color="#E56015"/>
+              <stop offset="100%" stop-color="#BF3E00"/>
             </linearGradient>
-            <filter id="fr" x="-16%" y="-14%" width="132%" height="128%" color-interpolation-filters="sRGB">
+            <filter id="fr" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
               <feMorphology in="SourceGraphic" operator="erode" radius="7" result="e"/>
               <feMorphology in="e" operator="dilate" radius="7"/>
             </filter>
+            <clipPath id="hcp">
+              <polygon points="71,13 87,50 71,87 29,87 13,50 29,13"/>
+            </clipPath>
           </defs>
-          <!-- Flat-top hexagon, rounded corners via erode+dilate -->
-          <polygon points="66,7 90,52 66,97 34,97 10,52 34,7" fill="url(#gwg)" filter="url(#fr)"/>
-          <!-- G outer: C-shape, open on right, top→left→bottom -->
-          <path d="M64,24 L34,24 Q19,24 19,52 Q19,80 34,80 L64,80" fill="none" stroke="white" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- G crossbar -->
-          <line x1="44" y1="52" x2="64" y2="52" stroke="white" stroke-width="6.5" stroke-linecap="round"/>
-          <!-- G inner arc -->
-          <path d="M64,33 L39,33 Q29,33 29,52 Q29,70 39,70 L64,70" fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- W: 2 vertical bars -->
-          <line x1="73" y1="24" x2="73" y2="80" stroke="white" stroke-width="6.5" stroke-linecap="round"/>
-          <line x1="83" y1="24" x2="83" y2="80" stroke="white" stroke-width="6.5" stroke-linecap="round"/>
+          <!-- Flat-top hexagon with rounded corners -->
+          <polygon points="71,13 87,50 71,87 29,87 13,50 29,13" fill="url(#gwg)" filter="url(#fr)"/>
+          <!-- GW monogram clipped to hexagon bounds -->
+          <g clip-path="url(#hcp)">
+            <!-- G outer arc: smooth cubic bezier C-bracket, open on right -->
+            <path d="M57,22 C12,22 12,78 57,78" fill="none" stroke="white" stroke-width="7.5" stroke-linecap="round"/>
+            <!-- G crossbar -->
+            <line x1="35" y1="50" x2="57" y2="50" stroke="white" stroke-width="7.5" stroke-linecap="round"/>
+            <!-- G inner arc: nested smaller bracket -->
+            <path d="M57,31 C23,31 23,69 57,69" fill="none" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+            <!-- W: two vertical bars (clipped naturally by hexagon taper) -->
+            <line x1="65" y1="12" x2="65" y2="88" stroke="white" stroke-width="7.5" stroke-linecap="round"/>
+            <line x1="74" y1="12" x2="74" y2="88" stroke="white" stroke-width="7.5" stroke-linecap="round"/>
+          </g>
         </svg>
         <span style="font-size:27px;font-weight:800;color:#2D3E52;letter-spacing:.02em;font-family:'Inter',system-ui,sans-serif;">GROUNDWORK</span>
       </div>
