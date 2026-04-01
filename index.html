@@ -1127,8 +1127,15 @@ function renderAlertas(){
   var critFiltrados = filaAtiva==='all' ? critTodos : critTodos.filter(function(c){return c.fila===filaAtiva;});
   _alertState = {criticos:critFiltrados, filtroAtend:'all', filtroFila:filaAtiva};
   var totalCrit = critFiltrados.length;
-  var totalBloq = (BLOQ_MESES[mes]||buildBloqEntry(getActiveOP().estado||{})).reduce(function(a,b){return a+b.n;},0);
-  var semResp = RESP30_MESES[mes]||0;
+  var totalBloq = (activeFilaOP!=='all'?buildBloqEntry(getActiveOP().estado||{}):(BLOQ_MESES[mes]||buildBloqEntry(getActiveOP().estado||{}))).reduce(function(a,b){return a+b.n;},0);
+  var semResp=(function(){
+    if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]){
+      var _fd=OP_FILAS[activeFilaOP];
+      if(mes!=='all'&&_fd.por_mes&&_fd.por_mes[mes]&&_fd.por_mes[mes].resp30!=null)return _fd.por_mes[mes].resp30;
+      return Object.keys(_fd.por_mes||{}).reduce(function(s,k){return s+(_fd.por_mes[k].resp30||0);},0);
+    }
+    return RESP30_MESES[mes]||0;
+  })();
   var estadosBloq=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloqExato=critFiltrados.filter(function(c){return estadosBloq.indexOf(c.estado)!==-1&&c.idade!=='hoje';}).length;
 
@@ -1182,7 +1189,7 @@ function renderAlertas(){
   }
 
   // Distribuição bloqueados com barras
-  var bloqData=BLOQ_MESES[mes]||buildBloqEntry(getActiveOP().estado||{});
+  var bloqData=activeFilaOP!=='all'?buildBloqEntry(getActiveOP().estado||{}):(BLOQ_MESES[mes]||buildBloqEntry(getActiveOP().estado||{}));
   var maxB=Math.max.apply(null,bloqData.map(function(s){return s.n;}));
   document.getElementById('bloq-dist').innerHTML=bloqData.filter(function(s){return s.n>0;}).map(function(s){
     var p=Math.round(s.n/(maxB||1)*100);
@@ -1589,7 +1596,13 @@ function renderAt(){
 
   var mO3=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var curI3=mO3.indexOf(activeMonth),prevAtend={};
-  if(activeMonth!=='all'&&curI3>0){var pk3=mO3[curI3-1];if(OP_MESES[pk3]&&OP_MESES[pk3].atend)OP_MESES[pk3].atend.forEach(function(a){prevAtend[a.n]=a;});}
+  if(activeMonth!=='all'&&curI3>0){
+    var pk3=mO3[curI3-1];
+    var _prevSrc=(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]&&OP_FILAS[activeFilaOP].por_mes&&OP_FILAS[activeFilaOP].por_mes[pk3])
+      ?OP_FILAS[activeFilaOP].por_mes[pk3]
+      :OP_MESES[pk3];
+    if(_prevSrc&&_prevSrc.atend)_prevSrc.atend.forEach(function(a){prevAtend[a.n]=a;});
+  }
 
   var META_TAXA=70,META_RESP=30;
   var pct=function(a,b){return b>0?Math.round(a/b*100):0;};
@@ -1729,7 +1742,13 @@ function renderCl(){
   if(lbl)lbl.textContent=totalCli+' chamados no período';
   var mO5=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var curI5=mO5.indexOf(activeMonth),prevCli={};
-  if(activeMonth!=='all'&&curI5>0){var pk5=mO5[curI5-1];if(OP_MESES[pk5]&&OP_MESES[pk5].cli)prevCli=OP_MESES[pk5].cli;}
+  if(activeMonth!=='all'&&curI5>0){
+    var pk5=mO5[curI5-1];
+    var _prevCliSrc=(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]&&OP_FILAS[activeFilaOP].por_mes&&OP_FILAS[activeFilaOP].por_mes[pk5])
+      ?OP_FILAS[activeFilaOP].por_mes[pk5]
+      :OP_MESES[pk5];
+    if(_prevCliSrc&&_prevCliSrc.cli)prevCli=_prevCliSrc.cli;
+  }
   document.getElementById('cli-bars').innerHTML=cK.map(function(k,i){
     var v=cliRaw[k],pW=Math.round(v/maxC*100),pT=Math.round(v/totalCli*100);
     var col=PAL[i%PAL.length];
@@ -1751,7 +1770,7 @@ function renderCl(){
   mO5.forEach(function(k){html+='<th style="text-align:right;padding:8px 10px;font-size:9.5px;font-weight:600;color:'+(activeMonth===k?'var(--teal)':'var(--muted)')+';text-transform:uppercase;border-bottom:1px solid var(--border)">'+mL5[k]+'</th>';});
   html+='<th style="text-align:right;padding:8px 10px;font-size:9.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Total</th><th style="text-align:right;padding:8px 10px;font-size:9.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Tendência</th></tr></thead><tbody>';
   topCli.forEach(function(k,ri){
-    var vals=mO5.map(function(mk6){var m=OP_MESES[mk6];return m&&m.cli&&m.cli[k]!=null?m.cli[k]:0;});
+    var vals=mO5.map(function(mk6){var _mSrc=(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]&&OP_FILAS[activeFilaOP].por_mes&&OP_FILAS[activeFilaOP].por_mes[mk6])?OP_FILAS[activeFilaOP].por_mes[mk6]:OP_MESES[mk6];return _mSrc&&_mSrc.cli&&_mSrc.cli[k]!=null?_mSrc.cli[k]:0;});
     var total5=(OP.cli&&OP.cli[k])||vals.reduce(function(a,b){return a+b;},0);
     var maxV5=Math.max.apply(null,vals.concat([1]));
     var pts5=vals.map(function(v,si){return(6+si*(60-12)/Math.max(mO5.length-1,1))+','+(20-Math.round(v/maxV5*14));}).join(' ');
@@ -1828,9 +1847,11 @@ function renderBl(){
   if(activeCliente && _opBl.estado && Object.keys(_opBl.estado).length) {
     bloqData=buildBloqEntry(_opBl.estado);
   } else {
-    bloqData=BLOQ_MESES[activeMonth];
-    if(!bloqData&&activeMonth!=='all'&&OP_MESES[activeMonth])bloqData=buildBloqEntry(OP_MESES[activeMonth].estado||{});
-    bloqData=bloqData||buildBloqEntry(getActiveOP().estado||{});
+    if(activeFilaOP!=='all'){
+      bloqData=buildBloqEntry(getActiveOP().estado||{});
+    } else {
+      bloqData=BLOQ_MESES[activeMonth]||buildBloqEntry(getActiveOP().estado||{});
+    }
   }
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var totalGeral=_opBl.total||OP.total;
@@ -2274,12 +2295,13 @@ function rebuildAll(data){
           sub.forEach(function(d){
             if(!d.criado)return;
             var mk=d.criado.toISOString().slice(0,7);
-            if(!mesesFila[mk])mesesFila[mk]={rows:[],eM:{},pM:{},sM:{},hM:{},aM:{}};
+            if(!mesesFila[mk])mesesFila[mk]={rows:[],eM:{},pM:{},sM:{},cM:{},hM:{},aM:{}};
             var m=mesesFila[mk];
             m.rows.push(d);
             m.eM[d.estado]=(m.eM[d.estado]||0)+1;
             m.pM[d.prior]=(m.pM[d.prior]||0)+1;
             m.sM[d.servico]=(m.sM[d.servico]||0)+1;
+            var cn2=ENM2[d.cli_id]||d.cli_id;if(cn2&&d.cli_id)m.cM[cn2]=(m.cM[cn2]||0)+1;
             var dow2=d.criado.getDay(),mapped2=dow2===0?6:dow2-1,h2=d.criado.getHours(),hk2=mapped2+'_'+h2;m.hM[hk2]=(m.hM[hk2]||0)+1;
             var a2=d.atend;if(a2&&a2!=='—'){if(!m.aM[a2])m.aM[a2]={t:0,f:0,ab:0,tm:[],rm:[],est:{}};m.aM[a2].t++;if(isFe2(d.estado))m.aM[a2].f++;else{m.aM[a2].ab++;m.aM[a2].est[d.estado]=(m.aM[a2].est[d.estado]||0)+1;}if(d.sol_h)m.aM[a2].tm.push(d.sol_h);if(d.resp_min!==null)m.aM[a2].rm.push(d.resp_min);}
           });
@@ -2303,7 +2325,8 @@ function rebuildAll(data){
               abertos:m.rows.filter(function(d){return isAb2(d.estado);}).length,
               fechados:m.rows.filter(function(d){return isFe2(d.estado);}).length,
               resp_med:rm3,sol_med:sm3,
-              estado:m.eM,prior:m.pM,svc:m.sM,heat:m.hM,
+              resp30:m.rows.filter(function(d){return d.resp_min!=null&&d.resp_min>30;}).length,
+              estado:m.eM,prior:m.pM,svc:m.sM,cli:m.cM,heat:m.hM,
               atend:Object.keys(m.aM).map(function(k){var s=m.aM[k];return{n:k,t:s.t,f:s.f,ab:s.ab,tm:aa2(s.tm),rm:aa2(s.rm),est:s.est||{}};}).sort(function(a,b){return b.t-a.t;}),
               criticos:crit3,
               by_day:Object.keys(dm2).sort().map(function(k){return{d:k,n:dm2[k]};})
@@ -3491,7 +3514,7 @@ function updateKPIs(op) {
   var taxa=total>0?Math.round(fe/total*100):0;
   var bloqE=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloq=bloqE.reduce(function(s,e){return s+(op.estado&&op.estado[e]||0);},0);
-  if(!bloq)bloq=(BLOQ_MESES[activeMonth]||buildBloqEntry(getActiveOP().estado||{})).reduce(function(a,b){return a+b.n;},0);
+  if(!bloq)bloq=(activeFilaOP!=='all'?buildBloqEntry(getActiveOP().estado||{}):(BLOQ_MESES[activeMonth]||buildBloqEntry(getActiveOP().estado||{}))).reduce(function(a,b){return a+b.n;},0);
   var rm=op.resp_med!=null?op.resp_med:8,sm=op.sol_med!=null?op.sol_med:54.1;
   var vals=[total,ab,fe,maTotal,rm+'<span>min</span>',sm+'<span>h</span>',bloq,14];
   var colors=['var(--text)','var(--warn)','var(--ok)','var(--danger)','var(--teal)','var(--purple)','var(--orange)','var(--blue)'];
@@ -4504,7 +4527,7 @@ function exportRgPDF(){
   var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
   var prior=op.prior||OP.prior||{};
   var estado=op.estado||OP.estado||{};
-  var bloqData=BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{});
+  var bloqData=activeFilaOP!=='all'?buildBloqEntry(op.estado||{}):(BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{}));
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardInt=estado['Aguardando Interno']||0;
   var prioMA=prior['Muito Alta']||0;
@@ -4540,7 +4563,7 @@ function exportRgPDF(){
   var healthColor=healthScore>=80?'#10b981':healthScore>=60?'#f59e0b':'#f43f5e';
 
   // ── Semáforo ───────────────────────────────────────────────
-  var semResp30=(typeof RESP30_MESES!=='undefined'&&RESP30_MESES[activeMonth]!=null)?RESP30_MESES[activeMonth]:null;
+  var semResp30=(function(){if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]){var _fd2=OP_FILAS[activeFilaOP];if(activeMonth!=='all'&&_fd2.por_mes&&_fd2.por_mes[activeMonth]&&_fd2.por_mes[activeMonth].resp30!=null)return _fd2.por_mes[activeMonth].resp30;return Object.keys(_fd2.por_mes||{}).reduce(function(s,k){return s+(_fd2.por_mes[k].resp30||0);},0);}return(typeof RESP30_MESES!=='undefined'&&RESP30_MESES[activeMonth]!=null)?RESP30_MESES[activeMonth]:null;})();
   var slaIcon=semResp30!=null?(semResp30>=90?'✅':semResp30>=70?'⚠️':'❌'):(slaGeral>=85?'✅':slaGeral>=70?'⚠️':'❌');
   var slaVal=semResp30!=null?semResp30+'%':slaGeral+'%';
   var slaLbl=semResp30!=null?(semResp30>=90?'DENTRO DA META':semResp30>=70?'ATENÇÃO':'CRÍTICO'):(slaGeral>=85?'DENTRO DA META':slaGeral>=70?'ATENÇÃO':'CRÍTICO');
@@ -4801,7 +4824,7 @@ function renderRelatorio(){
   var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
   var prior=op.prior||OP.prior||{};
   var estado=op.estado||OP.estado||{};
-  var bloqData=BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{});
+  var bloqData=activeFilaOP!=='all'?buildBloqEntry(op.estado||{}):(BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{}));
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var atendData=op.atend||OP.atend||[];
   var atendAtivos=atendData.filter(function(a){return a.total>0;}).length||0;
@@ -4846,7 +4869,7 @@ function renderRelatorio(){
 
   // SLA: usa RESP30_MESES[activeMonth] quando disponível; NÃO faz fallback para 'all'
   // (fallback 'all' era estático — sempre o mesmo valor independente do mês)
-  var semResp30=(typeof RESP30_MESES!=='undefined'&&RESP30_MESES[activeMonth]!=null)?RESP30_MESES[activeMonth]:null;
+  var semResp30=(function(){if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]){var _fd2=OP_FILAS[activeFilaOP];if(activeMonth!=='all'&&_fd2.por_mes&&_fd2.por_mes[activeMonth]&&_fd2.por_mes[activeMonth].resp30!=null)return _fd2.por_mes[activeMonth].resp30;return Object.keys(_fd2.por_mes||{}).reduce(function(s,k){return s+(_fd2.por_mes[k].resp30||0);},0);}return(typeof RESP30_MESES!=='undefined'&&RESP30_MESES[activeMonth]!=null)?RESP30_MESES[activeMonth]:null;})();
   var slaVal=semResp30!=null&&total>0?Math.max(0,Math.round((1-semResp30/total)*100)):(respMed<=30?90:respMed<=60?75:respMed<=90?60:45);
   var slaStatus=slaVal>=85?'OK':slaVal>=70?'ATENÇÃO':'CRÍTICO';
   var slaColor=slaVal>=85?'#1D9E75':slaVal>=70?'#EF9F27':'#E24B4A';
@@ -5004,7 +5027,7 @@ function renderResumo(){
   var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
   var prior=op.prior||OP.prior||{};
   var estado=op.estado||OP.estado||{};
-  var bloqData=BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{});
+  var bloqData=activeFilaOP!=='all'?buildBloqEntry(op.estado||{}):(BLOQ_MESES[activeMonth]||buildBloqEntry(op.estado||{}));
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardCli=estado['Aguardando Cliente']||0;
   var aguardInt=estado['Aguardando Interno']||0;
@@ -5013,7 +5036,7 @@ function renderResumo(){
   var taxaConc=total>0?Math.round(fechados/total*100):0;
   var pctAbertos=total>0?Math.round(abertos/total*100):0;
   var pctMA=total>0?Math.round(prioMA/total*100):0;
-  var numCrit=(OP.criticos||[]).length;
+  var numCrit=(getActiveOP().criticos||OP.criticos||[]).length;
   // ── by_day reconstruído a partir do RAW_DATA com todos os filtros ativos ──
   // Garante que Tendência/Ritmo/Previsão usem exatamente o conjunto filtrado
   var byDay=op.by_day||OP.by_day||[];
