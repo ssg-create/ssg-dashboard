@@ -94,6 +94,12 @@
       <span class="tb-ai-time" id="tb-ai-time"></span>
     </div>
     <div class="tb-divider"></div>
+    <button id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar tema"
+      style="background:none;border:1px solid var(--border2);border-radius:8px;color:var(--sub);cursor:pointer;padding:5px 7px;display:flex;align-items:center;flex-shrink:0;transition:all .2s;line-height:0"
+      onmouseover="this.style.borderColor='var(--border3)';this.style.color='var(--text)'"
+      onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--sub)'">
+    </button>
+    <div class="tb-divider"></div>
     <div class="tb-time" id="tb-clock"></div>
   </div>
 </div>
@@ -1801,7 +1807,7 @@ function renderCl(){
   var _opcSvc=_opc.svc||{};var sK=Object.keys(_opcSvc).sort(function(a,b){return _opcSvc[b]-_opcSvc[a];});
   var sV=sK.map(function(k){return _opc.svc[k];});
   var totalSvc=sV.reduce(function(a,b){return a+b;},0);
-  mkChart('c-svc','doughnut',sK,[{data:sV,backgroundColor:PAL,borderWidth:0}],{cutout:'58%',plugins:{legend:{display:true,position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:10,padding:8}},afterDraw:function(chart){var ctx2=chart.ctx;var cx=(chart.chartArea.left+chart.chartArea.right)/2,cy=(chart.chartArea.top+chart.chartArea.bottom)/2;ctx2.save();ctx2.font='700 20px JetBrains Mono,monospace';ctx2.fillStyle='#f0f2f7';ctx2.textAlign='center';ctx2.textBaseline='middle';ctx2.fillText(totalSvc,cx,cy-7);ctx2.font='10px Inter,sans-serif';ctx2.fillStyle='#5a6278';ctx2.fillText('chamados',cx,cy+10);ctx2.restore();}}});
+  mkChart('c-svc','doughnut',sK,[{data:sV,backgroundColor:PAL,borderWidth:0}],{cutout:'58%',plugins:{legend:{display:true,position:'right',labels:{color:getThemeChartTokens().legend,font:{size:10},boxWidth:10,padding:8}},afterDraw:function(chart){var tk=getThemeChartTokens();var ctx2=chart.ctx;var cx=(chart.chartArea.left+chart.chartArea.right)/2,cy=(chart.chartArea.top+chart.chartArea.bottom)/2;ctx2.save();ctx2.font='700 20px JetBrains Mono,monospace';ctx2.fillStyle=tk.centerLabel;ctx2.textAlign='center';ctx2.textBaseline='middle';ctx2.fillText(totalSvc,cx,cy-7);ctx2.font='10px Inter,sans-serif';ctx2.fillStyle=tk.centerSub;ctx2.fillText('chamados',cx,cy+10);ctx2.restore();}}});
   // Evolução mensal
   var evoEl=document.getElementById('cli-evolucao');if(!evoEl)return;
   var mNames5={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
@@ -2011,7 +2017,7 @@ function renderHealthScore(d){
   document.getElementById('hs-num').style.color=col;
   if(CH['c-ring']){CH['c-ring'].destroy();CH['c-ring']=null;}
   var ctx=document.getElementById('c-ring');
-  if(ctx)CH['c-ring']=new Chart(ctx,{type:'doughnut',data:{labels:['Score',''],datasets:[{data:[score,100-score],backgroundColor:[col,'rgba(13,27,46,0.07)'],borderWidth:0}]},options:{responsive:false,cutout:'78%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  if(ctx)CH['c-ring']=new Chart(ctx,{type:'doughnut',data:{labels:['Score',''],datasets:[{data:[score,100-score],backgroundColor:[col,getThemeChartTokens().ringBg],borderWidth:0}]},options:{responsive:false,cutout:'78%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   var ap=_pct(d.abertos,d.total);
   var rows=[
     {l:'Taxa de resolução',v:_pct(d.fechados,d.total)+'%',c:_pct(d.fechados,d.total)>=80?'var(--ok)':_pct(d.fechados,d.total)>=60?'var(--warn)':'var(--danger)'},
@@ -4054,7 +4060,7 @@ function renderCSOverview(d) {
   var mesVals = mesCats.map(function(k){ return d.by_mes[k]; });
   if (csCharts['cs-c-mensal']) csCharts['cs-c-mensal'].destroy();
   var ctxM = document.getElementById('cs-c-mensal');
-  if (ctxM) csCharts['cs-c-mensal'] = new Chart(ctxM, {type:'bar',data:{labels:mesCats,datasets:[{data:mesVals,backgroundColor:'rgba(139,92,246,.6)',borderColor:'#a855f7',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9CA3AF',font:{size:10}},grid:{display:false}},y:{ticks:{color:'#9CA3AF',font:{size:10}},grid:{color:'rgba(13,27,46,0.07)'}}}}});
+  if (ctxM){var _tkM=getThemeChartTokens();csCharts['cs-c-mensal'] = new Chart(ctxM, {type:'bar',data:{labels:mesCats,datasets:[{data:mesVals,backgroundColor:'rgba(139,92,246,.6)',borderColor:'#a855f7',borderWidth:1,borderRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{backgroundColor:_tkM.tooltip.bg,borderColor:_tkM.tooltip.border,borderWidth:1,titleColor:_tkM.tooltip.color,bodyColor:_tkM.tooltip.color}},scales:{x:{ticks:{color:_tkM.axis,font:{size:10}},grid:{display:false}},y:{ticks:{color:_tkM.axis,font:{size:10}},grid:{color:_tkM.grid}}}}});}
   // Chart prioridade
   var priorOrder = ['Muito Alta','Alta','Normal','Baixa','Muito Baixa'];
   var priorVals = priorOrder.map(function(p){ return (d.prior && d.prior[p]) || 0; }).filter(function(v,i){ return v>0 || (d.prior && d.prior[priorOrder[i]]!==undefined); });
@@ -4126,7 +4132,7 @@ function renderCSHealth(d) {
   var baseTrend = [Math.max(score-15,30), Math.max(score-5,40), score];
   if (csCharts['cs-c-score-trend']) csCharts['cs-c-score-trend'].destroy();
   var ctxT = document.getElementById('cs-c-score-trend');
-  if (ctxT) csCharts['cs-c-score-trend'] = new Chart(ctxT, {type:'line',data:{labels:mesCats,datasets:[{label:'Health Score',data:baseTrend.slice(0,mesCats.length),borderColor:'#a855f7',backgroundColor:'rgba(139,92,246,.1)',tension:.4,fill:true,pointBackgroundColor:'#a855f7',pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9CA3AF',font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#9CA3AF',font:{size:10}},grid:{color:'rgba(13,27,46,0.07)'}}}}});
+  if (ctxT){var _tkT=getThemeChartTokens();csCharts['cs-c-score-trend'] = new Chart(ctxT, {type:'line',data:{labels:mesCats,datasets:[{label:'Health Score',data:baseTrend.slice(0,mesCats.length),borderColor:'#a855f7',backgroundColor:'rgba(139,92,246,.1)',tension:.4,fill:true,pointBackgroundColor:'#a855f7',pointRadius:4}]},options:{plugins:{legend:{display:false},tooltip:{backgroundColor:_tkT.tooltip.bg,borderColor:_tkT.tooltip.border,borderWidth:1,titleColor:_tkT.tooltip.color,bodyColor:_tkT.tooltip.color}},scales:{x:{ticks:{color:_tkT.axis,font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:_tkT.axis,font:{size:10}},grid:{color:_tkT.grid}}}}});}
 }
 
 function renderCSRisks(d) {
@@ -6257,6 +6263,46 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
+
+// ════════════════════════════════════════════════════════════
+// THEME MANAGER
+// ════════════════════════════════════════════════════════════
+var CURRENT_THEME = localStorage.getItem('ssg-theme') || 'dark';
+
+function applyTheme(theme) {
+  CURRENT_THEME = theme;
+  document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '');
+  localStorage.setItem('ssg-theme', theme);
+  _updateThemeBtn();
+}
+
+function toggleTheme() {
+  applyTheme(CURRENT_THEME === 'dark' ? 'light' : 'dark');
+  _refreshAllCharts();
+}
+
+function _updateThemeBtn() {
+  var btn = document.getElementById('theme-toggle-btn');
+  if (!btn) return;
+  var isDark = CURRENT_THEME === 'dark';
+  btn.innerHTML = isDark
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+  btn.title = isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro';
+}
+
+function _refreshAllCharts() {
+  // Destrói todos os gráficos ativos
+  Object.keys(CH).forEach(function(id) {
+    if (CH[id]) { try { CH[id].destroy(); } catch(e){} CH[id] = null; }
+  });
+  // Dispara re-render da view ativa pelo botão que está "on"
+  var activeBtn = document.querySelector('.tb-btn.on');
+  if (activeBtn) activeBtn.click();
+}
+
+// Aplica tema salvo imediatamente (evita flash)
+applyTheme(CURRENT_THEME);
 </script>
 </body>
 </html>
