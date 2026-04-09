@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-04-09T19:54:54.619249",
+  "generated_at": "2026-04-09T22:04:20.810878",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A operação apresenta <strong>taxa de conclusão de 81%</strong>, considerada excelente.<br><br>O volume de <strong>103 chamados bloqueados</strong> está crítico e exige triagem imediata.<br><br>A <strong>primeira resposta (57.0 min)</strong> está acima da meta de 30 min, mas controlável.<br><br>O pico de volume ocorre na <strong>terça-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
+    "narrativa": "A operação apresenta <strong>taxa de conclusão de 81%</strong>, considerada excelente.<br><br>O volume de <strong>103 chamados bloqueados</strong> está crítico e exige triagem imediata.<br><br>A <strong>primeira resposta (56.0 min)</strong> está acima da meta de 30 min, mas controlável.<br><br>O pico de volume ocorre na <strong>terça-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
     "kpis": [
       {
         "label": "Score Operacional",
@@ -13,7 +13,7 @@
       {
         "label": "Risco de SLA",
         "value": "Médio",
-        "sub": "1ª resposta: 57.0 min",
+        "sub": "1ª resposta: 56.0 min",
         "color": "var(--warn)"
       },
       {
@@ -45,7 +45,7 @@
   "riscos_operacionais": [
     {
       "titulo": "Tempo de primeira resposta acima da meta",
-      "desc": "Mediana de 57.0 min contra meta de 30 min. Tendência de deterioração se não houver intervenção.",
+      "desc": "Mediana de 56.0 min contra meta de 30 min. Tendência de deterioração se não houver intervenção.",
       "nivel": "medium",
       "confianca": 78
     },
