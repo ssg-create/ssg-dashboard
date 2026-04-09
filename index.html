@@ -3551,6 +3551,20 @@ setMode = function(m) {
   });
 };
 
+// ─── Formatação de tempo de resposta (min → h/min legível) ───
+function fmtResp(min) {
+  if (min < 60) return min + '<span>min</span>';
+  var h = Math.floor(min / 60);
+  var m = Math.round(min % 60);
+  return m > 0 ? h + '<span>h' + m + 'min</span>' : h + '<span>h</span>';
+}
+function fmtRespTxt(min) {
+  if (min < 60) return min + 'min';
+  var h = Math.floor(min / 60);
+  var m = Math.round(min % 60);
+  return m > 0 ? h + 'h' + m + 'min' : h + 'h';
+}
+
 // ─── Função pura: extrai KPIs do dado filtrado ───────────────
 function computeHeaderKPIs(op) {
   var total  = op.total    || 0;
@@ -3573,7 +3587,7 @@ function computeHeaderKPIs(op) {
 function renderHeader(k) {
   var t      = k.total || 1;
   var vals   = [k.total, k.ab, k.fe, k.maTotal,
-                k.rm+'<span>min</span>', k.sm+'<span>h</span>', k.bloq, 14];
+                fmtResp(k.rm), k.sm+'<span>h</span>', k.bloq, 14];
   var colors = ['var(--text)','var(--warn)','var(--ok)','var(--danger)',
                 'var(--teal)','var(--purple)','var(--orange)','var(--blue)'];
   var subs   = [
@@ -3595,7 +3609,7 @@ function renderHeader(k) {
   }
   // Pills do topbar
   var respEl = document.getElementById('alert-resposta-txt');
-  if (respEl) respEl.textContent = '1ª resp: ' + k.rm + 'min';
+  if (respEl) respEl.textContent = '1ª resp: ' + fmtRespTxt(k.rm);
   // Fallback para cards sem ID
   var kpis = document.querySelectorAll('#s-ov .kpi');
   if (kpis.length && !document.getElementById('kpi-v-0')) {
