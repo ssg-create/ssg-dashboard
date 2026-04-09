@@ -15,6 +15,29 @@
 <script src="./vendor/xlsx.full.min.js"></script>
 <script src="./vendor/chart.min.js"></script>
 <link rel="stylesheet" href="./styles.css">
+<style>
+/* --- TEMA CLARO -------------------------------------------- */
+[data-theme="light"]{--bg:#f0f2f5;--bg2:#ffffff;--bg3:#f8f9fb;--bg4:#e4e7ec;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);--border3:rgba(0,0,0,0.22);--text:#111827;--muted:#9ca3af;--sub:#4b5563}
+[data-theme="light"] body{background:var(--bg);color:var(--text)}
+[data-theme="light"] .topbar{background:rgba(240,242,245,0.95)}
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:#d1d5db}
+[data-theme="light"] .sidebar{background:var(--bg2);border-right:1px solid var(--border2)}
+[data-theme="light"] .card{background:var(--bg2);border-color:var(--border2)}
+[data-theme="light"] .kpi{background:var(--bg2);border-color:var(--border2)}
+[data-theme="light"] .tb-mode{background:var(--bg3);border-color:var(--border2)}
+[data-theme="light"] .tb-btn{color:var(--sub)}
+[data-theme="light"] .tb-name{color:var(--text)}
+[data-theme="light"] .mob-drawer{background:var(--bg2)}
+[data-theme="light"] .ftip-bubble{background:var(--bg2);border-color:var(--border2);color:var(--text)}
+[data-theme="light"] .ai-card{background:linear-gradient(135deg,var(--bg2),rgba(139,92,246,0.03));border-color:rgba(139,92,246,0.2)}
+[data-theme="light"] .ai-mini-card{background:var(--bg3);border-color:var(--border)}
+[data-theme="light"] .ai-kpi{background:var(--bg3);border-color:rgba(139,92,246,0.15)}
+[data-theme="light"] .rg-status-card{background:var(--bg2);border-color:var(--border)}
+[data-theme="light"] .rg-kpi{background:var(--bg2);border-color:var(--border)}
+[data-theme="light"] .rg-resumo-card{background:var(--bg2);border-color:var(--border)}
+[data-theme="light"] .chart-wrap{background:var(--bg2)}
+[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+</style>
 </head>
 <body>
 <div id="lo" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 65% 35%,rgba(255,100,0,0.08) 0%,transparent 55%),radial-gradient(ellipse at 20% 75%,rgba(79,142,247,0.06) 0%,transparent 50%),#0D1B2E;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;">
