@@ -407,6 +407,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .alert-item-text{flex:1;color:var(--text)}
 .alert-item-age{font-family:var(--mono);font-size:10px;color:var(--danger)}
 
+/* ═══ ACTIONS PANEL ══════════════════════════════════════════ */
+.actions-panel{background:var(--bg2);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:16px 20px;margin-bottom:16px;display:none;position:relative;overflow:hidden}
+.actions-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--danger),var(--warn),var(--orange))}
+.actions-panel.visible{display:block}
+.actions-panel-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(245,158,11,.12)}
+.actions-panel-title{font-family:var(--display);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--warn);flex:1}
+.actions-panel-count{font-family:var(--mono);font-size:10px;color:var(--muted);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:2px 8px;border-radius:10px}
+.action-row{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.action-row:last-child{border-bottom:none}
+.action-badge{font-size:9px;font-weight:700;font-family:var(--mono);padding:2px 7px;border-radius:10px;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.action-badge.crit{background:rgba(244,63,94,.12);color:var(--danger);border:1px solid rgba(244,63,94,.2)}
+.action-badge.atenc{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
+.action-badge.info{background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.2)}
+.action-body{flex:1}
+.action-title{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px}
+.action-desc{font-size:11px;color:var(--sub);line-height:1.5}
+
 /* ═══ SLA GAUGE ═══════════════════════════════════════════════ */
 .sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .sla-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
@@ -733,6 +750,7 @@ input[type=file]{display:none}
       <p id="ov-subtitle">Centro de Operações SSG · Fila ERP Protheus · 02 jan – 13 mar 2026</p>
     </div>
     <div class="page-body">
+      <div id="op-actions-panel" class="actions-panel"></div>
       <div class="kpi-row kpi-row-4">
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
@@ -1686,6 +1704,7 @@ function renderOv(){
   }).join('');
 
   updateKPIs(_op);
+  renderOpActions(_op);
 }
 
 // Bloqueados por mês (dados reais do Excel)
@@ -4182,6 +4201,83 @@ function updateKPIs(op) {
       if(sEl)sEl.textContent=subs[i]||'';
     });
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// PAINEL DE AÇÕES PRIORITÁRIAS — O que fazer agora
+// ════════════════════════════════════════════════════════════
+function renderOpActions(op) {
+  var el = document.getElementById('op-actions-panel');
+  if (!el) return;
+  var actions = [];
+  var total = op.total || 1;
+  var criticos = (OP.criticos || []).filter(function(c){
+    return ['Aberto','Em Atendimento','Aguardando Interno'].indexOf(c.estado) !== -1;
+  });
+  var mes = activeMonth;
+  var bloqTotal = (BLOQ_MESES[mes] || BLOQ_MESES['all'] || []).reduce(function(a,b){return a+b.n;},0);
+  var semResp = RESP30_MESES[mes] || 0;
+  var maTotal = (op.prior && op.prior['Muito Alta']) || 0;
+  var aguardCliente = (op.estado && op.estado['Aguardando Cliente']) || 0;
+  var aguardInterno = (op.estado && op.estado['Aguardando Interno']) || 0;
+
+  // 1) Críticos em aberto (exige ação imediata)
+  if (criticos.length > 0) {
+    actions.push({level:'crit',
+      title: criticos.length + ' chamado' + (criticos.length>1?'s':'') + ' Muito Alta sem resolução',
+      desc: 'Verificar atendentes responsáveis e acionar resolução agora. Risco de SLA e insatisfação do cliente.'
+    });
+  }
+  // 2) Sem 1ª resposta dentro da meta
+  if (semResp > 0) {
+    actions.push({level:'crit',
+      title: semResp + ' chamados sem 1ª resposta em até 30min',
+      desc: 'Revisar triagem e redistribuição de fila. Meta: 100% dentro de 30 min.'
+    });
+  }
+  // 3) Aguardando Interno — equipe precisa agir
+  if (aguardInterno >= 5) {
+    actions.push({level:'atenc',
+      title: aguardInterno + ' chamados parados "Aguardando Interno"',
+      desc: 'A Groundwork é o gargalo nesses chamados. Levantar pendências técnicas e cobrar avanço.'
+    });
+  }
+  // 4) Bloqueados com aging
+  if (bloqTotal > 30) {
+    actions.push({level:'atenc',
+      title: bloqTotal + ' chamados bloqueados — risco de aging',
+      desc: 'Cobrar retorno de clientes (' + aguardCliente + ') e fornecedores externos. Revisar os mais antigos primeiro.'
+    });
+  } else if (bloqTotal > 0) {
+    actions.push({level:'info',
+      title: bloqTotal + ' chamados aguardando resposta externa',
+      desc: 'Monitorar evolução — risco de aging se não evoluírem em 48h.'
+    });
+  }
+  // 5) Concentração excessiva de Muito Alta
+  if (maTotal / total > 0.35) {
+    actions.push({level:'atenc',
+      title: Math.round(maTotal/total*100) + '% dos chamados com prioridade Muito Alta',
+      desc: 'Concentração acima do normal. Revisar critérios de priorização com os clientes para evitar inflação de urgências.'
+    });
+  }
+
+  if (actions.length === 0) { el.classList.remove('visible'); return; }
+
+  var html = '<div class="actions-panel-head">'
+    + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
+    + '<span class="actions-panel-title">Ações Prioritárias</span>'
+    + '<span class="actions-panel-count">' + actions.length + ' item' + (actions.length>1?'s':'') + '</span>'
+    + '</div>';
+  html += actions.map(function(a){
+    var label = a.level==='crit' ? 'CRÍTICO' : a.level==='atenc' ? 'ATENÇÃO' : 'INFO';
+    return '<div class="action-row">'
+      + '<span class="action-badge '+a.level+'">'+label+'</span>'
+      + '<div class="action-body"><div class="action-title">'+a.title+'</div><div class="action-desc">'+a.desc+'</div></div>'
+      + '</div>';
+  }).join('');
+  el.innerHTML = html;
+  el.classList.add('visible');
 }
 
 // ════════════════════════════════════════════════════════════
