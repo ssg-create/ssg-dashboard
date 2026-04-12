@@ -17,27 +17,6 @@
   --font:'Inter',sans-serif;--display:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
   --r:10px;--r2:14px;--r3:20px;
 }
-/* --- TEMA CLARO -------------------------------------------- */
-[data-theme="light"]{--bg:#f0f2f5;--bg2:#ffffff;--bg3:#f8f9fb;--bg4:#e4e7ec;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);--border3:rgba(0,0,0,0.22);--text:#111827;--muted:#9ca3af;--sub:#4b5563}
-[data-theme="light"] body{background:var(--bg);color:var(--text)}
-[data-theme="light"] .topbar{background:rgba(240,242,245,0.95)}
-[data-theme="light"] ::-webkit-scrollbar-thumb{background:#d1d5db}
-[data-theme="light"] .sidebar{background:var(--bg2);border-right:1px solid var(--border2)}
-[data-theme="light"] .card{background:var(--bg2);border-color:var(--border2)}
-[data-theme="light"] .kpi{background:var(--bg2);border-color:var(--border2)}
-[data-theme="light"] .tb-mode{background:var(--bg3);border-color:var(--border2)}
-[data-theme="light"] .tb-btn{color:var(--sub)}
-[data-theme="light"] .tb-name{color:var(--text)}
-[data-theme="light"] .mob-drawer{background:var(--bg2)}
-[data-theme="light"] .ftip-bubble{background:var(--bg2);border-color:var(--border2);color:var(--text)}
-[data-theme="light"] .ai-card{background:linear-gradient(135deg,var(--bg2),rgba(139,92,246,0.03));border-color:rgba(139,92,246,0.2)}
-[data-theme="light"] .ai-mini-card{background:var(--bg3);border-color:var(--border)}
-[data-theme="light"] .ai-kpi{background:var(--bg3);border-color:rgba(139,92,246,0.15)}
-[data-theme="light"] .rg-status-card{background:var(--bg2);border-color:var(--border)}
-[data-theme="light"] .rg-kpi{background:var(--bg2);border-color:var(--border)}
-[data-theme="light"] .rg-resumo-card{background:var(--bg2);border-color:var(--border)}
-[data-theme="light"] .chart-wrap{background:var(--bg2)}
-[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:var(--bg3);color:var(--text);border-color:var(--border2)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
 html{scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
@@ -668,7 +647,6 @@ input[type=file]{display:none}
     </div>
     <div class="tb-divider"></div>
     <div class="tb-time" id="tb-clock"></div>
-    <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:17px;padding:2px 6px;line-height:1;opacity:0.65;transition:opacity .2s;flex-shrink:0" title="Alternar tema claro/escuro">☀️</button>
   </div>
 </div>
 
@@ -1595,25 +1573,6 @@ function updateClock(){
   document.getElementById('tb-clock').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
 }
 setInterval(updateClock,1000);updateClock();
-
-// ════════════════════════════════════════════════════════════
-// THEME TOGGLE
-// ════════════════════════════════════════════════════════════
-function toggleTheme(){
-  var isLight=document.documentElement.getAttribute('data-theme')==='light';
-  var next=isLight?'dark':'light';
-  document.documentElement.setAttribute('data-theme',next==='dark'?'':next);
-  document.getElementById('theme-toggle').textContent=next==='light'?'🌙':'☀️';
-  localStorage.setItem('ssg-theme',next);
-}
-(function(){
-  var saved=localStorage.getItem('ssg-theme');
-  if(saved==='light'){
-    document.documentElement.setAttribute('data-theme','light');
-    var btn=document.getElementById('theme-toggle');
-    if(btn)btn.textContent='🌙';
-  }
-})();
 
 // ════════════════════════════════════════════════════════════
 // MODE
@@ -3804,8 +3763,12 @@ function setMonth(m) {
   var key = document.getElementById('sel-empresa').value;
   if(key) loadEmpresa(key);
   // Re-render CS if active
-  var csKey = document.getElementById('cs-sel-empresa').value;
-  if(csKey) loadCS(csKey);
+  var vCS = document.getElementById('view-cs');
+  if (vCS && vCS.classList.contains('on')) {
+    var csKey = document.getElementById('cs-sel-empresa').value;
+    if(csKey) loadCS(csKey);
+    else renderCSHealthList();
+  }
   // Re-render Resumo se estiver ativo
   var vRg = document.getElementById('view-rg');
   if(vRg && vRg.classList.contains('on')) renderResumo();
