@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-13T20:15:03.736225",
+  "generated_at": "2026-04-13T23:06:31.637657",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>61%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>99 chamados em aberto</strong> (37%) e <strong>70 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>A <strong>primeira resposta (36.0 min)</strong> está acima da meta de 30 min, mas controlável.<br><br>O pico de volume ocorre na <strong>segunda-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
+    "narrativa": "A taxa de conclusão está em <strong>62%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>93 chamados em aberto</strong> (35%) e <strong>63 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>A <strong>primeira resposta (35.0 min)</strong> está acima da meta de 30 min, mas controlável.<br><br>O pico de volume ocorre na <strong>segunda-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
     "kpis": [
       {
         "label": "Score Operacional",
@@ -14,13 +14,13 @@
       {
         "label": "Risco de SLA",
         "value": "Médio",
-        "sub": "1ª resposta: 36.0 min",
+        "sub": "1ª resposta: 35.0 min",
         "color": "var(--warn)"
       },
       {
         "label": "Oportunidade",
         "value": "Capacitação recomendada",
-        "sub": "Foco no módulo (GWMS) Operacional pode reduzir reincidências",
+        "sub": "Foco no módulo Infraestrutura e Cloud pode reduzir reincidências",
         "color": "var(--teal)"
       },
       {
@@ -31,12 +31,12 @@
       }
     ],
     "risco_principal": {
-      "label": "SLA 36.0 min",
+      "label": "SLA 35.0 min",
       "desc": "Acima da meta de 30 min"
     },
     "oportunidade": {
       "label": "Capacitação recomendada",
-      "desc": "Foco no módulo (GWMS) Operacional pode reduzir reincidências"
+      "desc": "Foco no módulo Infraestrutura e Cloud pode reduzir reincidências"
     },
     "previsao": {
       "label": "~5/dia",
@@ -46,13 +46,13 @@
   "riscos_operacionais": [
     {
       "titulo": "Tempo de primeira resposta acima da meta",
-      "desc": "Mediana de 36.0 min contra meta de 30 min. Tendência de deterioração se não houver intervenção.",
+      "desc": "Mediana de 35.0 min contra meta de 30 min. Tendência de deterioração se não houver intervenção.",
       "nivel": "medium",
       "confianca": 78
     },
     {
       "titulo": "Volume crítico de chamados bloqueados",
-      "desc": "70 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
+      "desc": "63 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
       "nivel": "high",
       "confianca": 92
     },
@@ -66,17 +66,17 @@
   "riscos_clientes": [
     {
       "cliente": "AUTOZONE",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 52 chamados (19% do total). O módulo <strong>Banco de Dados</strong> concentra 44% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 53 chamados (20% do total). O módulo <strong>Banco de Dados</strong> concentra 45% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "52 chamados (19% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "53 chamados (20% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
         {
           "titulo": "Reincidência no módulo Banco de Dados",
-          "desc": "44% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
+          "desc": "45% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
           "nivel": "medium",
           "confianca": 75
         }
@@ -84,17 +84,17 @@
     },
     {
       "cliente": "FADEL",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 50 chamados (18% do total). O módulo <strong>Infraestrutura e Cloud</strong> concentra 48% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 51 chamados (19% do total). O módulo <strong>Infraestrutura e Cloud</strong> concentra 49% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "50 chamados (18% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "51 chamados (19% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
         {
           "titulo": "Reincidência no módulo Infraestrutura e Cloud",
-          "desc": "48% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
+          "desc": "49% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
           "nivel": "medium",
           "confianca": 75
         }
@@ -102,11 +102,11 @@
     },
     {
       "cliente": "_GroundWork",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 25 chamados (9% do total).",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 24 chamados (9% do total).",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "25 chamados (9% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "24 chamados (9% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
@@ -138,23 +138,23 @@
     },
     {
       "cliente": "TOTVS",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 21 chamados (8% do total). O módulo <strong>(GWMS) Operacional</strong> concentra 48% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 20 chamados (8% do total). O módulo <strong>(GWMS) Operacional</strong> concentra 45% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "21 chamados (8% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "20 chamados (8% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
         {
-          "titulo": "SLA de resposta fora do contrato (160.0 min)",
-          "desc": "Mediana de primeira resposta nesta conta: 160.0 min. Acima da meta contratual de 30 min.",
+          "titulo": "SLA de resposta fora do contrato (104.0 min)",
+          "desc": "Mediana de primeira resposta nesta conta: 104.0 min. Acima da meta contratual de 30 min.",
           "nivel": "high",
           "confianca": 85
         },
         {
           "titulo": "Reincidência no módulo (GWMS) Operacional",
-          "desc": "48% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
+          "desc": "45% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
           "nivel": "medium",
           "confianca": 75
         }
@@ -164,21 +164,21 @@
   "cs_insights": [
     {
       "cliente": "AUTOZONE",
-      "narrativa": "O módulo <strong>Banco de Dados</strong> representa 44% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.<br><br>Com <strong>46% dos chamados ainda em aberto</strong>, o próximo contato deve incluir um plano de fechamento claro com prazo.",
+      "narrativa": "O módulo <strong>Banco de Dados</strong> representa 45% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.<br><br>Com <strong>45% dos chamados ainda em aberto</strong>, o próximo contato deve incluir um plano de fechamento claro com prazo.",
       "proximo_contato": "nos próximos 7 dias",
       "tom_sugerido": "consultivo",
       "prioridade": "média"
     },
     {
       "cliente": "FADEL",
-      "narrativa": "O módulo <strong>Infraestrutura e Cloud</strong> representa 48% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.",
+      "narrativa": "O módulo <strong>Infraestrutura e Cloud</strong> representa 49% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.",
       "proximo_contato": "nos próximos 7 dias",
       "tom_sugerido": "consultivo",
       "prioridade": "média"
     },
     {
       "cliente": "_GroundWork",
-      "narrativa": "O tempo médio de resposta para esta conta foi de <strong>109.0 min</strong>, acima do SLA contratado. Reconhecer proativamente e apresentar plano de melhoria.<br><br>Com <strong>36% dos chamados ainda em aberto</strong>, o próximo contato deve incluir um plano de fechamento claro com prazo.",
+      "narrativa": "O tempo médio de resposta para esta conta foi de <strong>109.0 min</strong>, acima do SLA contratado. Reconhecer proativamente e apresentar plano de melhoria.<br><br>Com <strong>33% dos chamados ainda em aberto</strong>, o próximo contato deve incluir um plano de fechamento claro com prazo.",
       "proximo_contato": "nos próximos 7 dias",
       "tom_sugerido": "proativo · transparente",
       "prioridade": "média"
