@@ -786,6 +786,18 @@ input[type=file]{display:none}
           <div id="svc-bars"></div>
         </div>
       </div>
+      <!-- ── Produtividade via API (popula ao carregar em Atendentes → API Tempo Real) ── -->
+      <div class="card fu" id="ov-prod-card" style="margin-top:16px">
+        <div class="card-title">Produtividade da equipe
+          <span style="font-weight:400;font-size:10px;color:var(--muted);margin-left:8px" id="ov-prod-period"></span>
+          <span style="margin-left:auto;font-size:9px;font-family:var(--mono);color:var(--teal);opacity:.7" id="ov-prod-source"></span>
+        </div>
+        <div id="ov-prod-body">
+          <div style="padding:20px 0;text-align:center;color:var(--muted);font-size:12px">
+            Acesse <strong style="color:var(--sub)">Atendentes → API Tempo Real</strong> e carregue um período para ver as métricas de produtividade aqui.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2472,6 +2484,7 @@ function fetchAPIProductivity(){
         AT_API_RESULT=stats;
         renderAtAPITable(stats);
         renderAtAPIWip(stats);
+        renderAPIProductivitySummary(stats,from,to);
         prodCard.style.display='block';
         wipCard.style.display='block';
       }
@@ -2579,6 +2592,83 @@ function renderAtAPIWip(stats){
         +'</div>';
     }).join('')
     +'</div>';
+}
+
+// ── Resumo de produtividade no painel de gestão ───────────────────────────
+function renderAPIProductivitySummary(stats,dateFrom,dateTo){
+  var body=document.getElementById('ov-prod-body');
+  var periodEl=document.getElementById('ov-prod-period');
+  var srcEl=document.getElementById('ov-prod-source');
+  if(!body)return;
+
+  var rows=Object.values(stats).filter(function(s){return s.closed>0&&s.active_ms>0;});
+  if(!rows.length){
+    body.innerHTML='<div style="padding:16px 0;text-align:center;color:var(--muted);font-size:12px">Nenhum ticket fechado no período consultado.</div>';
+    return;
+  }
+
+  // Agrega métricas da equipe
+  var totalFechados=rows.reduce(function(s,r){return s+r.closed;},0);
+  var totalActiveH=rows.reduce(function(s,r){return s+r.active_ms;},0)/3600000;
+  var equipeEfic=totalActiveH>0?Math.round(totalFechados/totalActiveH*100)/100:0;
+  var totalWip=Object.values(stats).reduce(function(s,r){return s+r.wip_count;},0);
+
+  // Top 3 por eficiência
+  var top3=rows.slice().sort(function(a,b){
+    var ea=a.active_ms>0?a.closed/(a.active_ms/3600000):0;
+    var eb=b.active_ms>0?b.closed/(b.active_ms/3600000):0;
+    return eb-ea;
+  }).slice(0,3);
+
+  // Período formatado
+  if(periodEl){
+    var fmtDate=function(d){var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];};
+    periodEl.textContent=fmtDate(dateFrom)+' – '+fmtDate(dateTo);
+  }
+  if(srcEl)srcEl.textContent='via API';
+
+  var eficCol=function(v){return v>=1?'var(--ok)':v>=0.5?'var(--warn)':'var(--danger)';};
+
+  // KPIs da equipe
+  var kpiHtml='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px">'
+      +'<div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Fechados (período)</div>'
+      +'<div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--ok)">'+totalFechados+'</div>'
+    +'</div>'
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px">'
+      +'<div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Eficiência equipe</div>'
+      +'<div style="font-family:var(--display);font-size:22px;font-weight:700;color:'+eficCol(equipeEfic)+'">'+equipeEfic+'</div>'
+      +'<div style="font-size:9px;color:var(--muted);margin-top:2px">ch/hora ativa</div>'
+    +'</div>'
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px">'
+      +'<div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Em atendimento agora</div>'
+      +'<div style="font-family:var(--display);font-size:22px;font-weight:700;color:var(--blue)">'+totalWip+'</div>'
+      +'<div style="font-size:9px;color:var(--muted);margin-top:2px">tickets WIP</div>'
+    +'</div>'
+    +'</div>';
+
+  // Top 3 analistas
+  var top3Html='<div style="font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Top eficiência</div>'
+    +'<div style="display:flex;flex-direction:column;gap:6px">'
+    +top3.map(function(s,i){
+      var efic=s.active_ms>0?Math.round(s.closed/(s.active_ms/3600000)*100)/100:0;
+      var activeH=Math.round(s.active_ms/3600000*10)/10;
+      var atv=s.ticket_total_ms>0?Math.min(Math.round(s.active_ms/s.ticket_total_ms*100),100):0;
+      var shortName=s.name.split(' ').slice(0,2).join(' ');
+      var col=PAL[i%PAL.length];
+      var medals=['🥇','🥈','🥉'];
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg4);border-radius:8px">'
+        +'<span style="font-size:14px;flex-shrink:0">'+medals[i]+'</span>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+shortName+'</div>'
+          +'<div style="font-size:10px;color:var(--muted)">'+s.closed+' fechados · '+activeH+'h ativas · '+atv+'% ativ.</div>'
+        +'</div>'
+        +'<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:'+eficCol(efic)+';flex-shrink:0">'+efic+'<span style="font-size:9px;font-weight:400;opacity:.6;margin-left:2px">ch/h</span></div>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+
+  body.innerHTML=kpiHtml+top3Html;
 }
 
 // ── Alterna entre modo XLSX e modo API ────────────────────────────────────
