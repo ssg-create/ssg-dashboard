@@ -621,7 +621,7 @@ input[type=file]{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
       Customer Success
     </button>
-    <button class="tb-btn rg" id="btn-rg" onclick="setMode('rg')">
+    <button class="tb-btn rg" id="btn-rg" onclick="setMode('ia');goSecIA('ia-resumo',document.getElementById('nav-ia-resumo'))">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
       Resumo de Gestão
     </button>
@@ -1355,7 +1355,7 @@ input[type=file]{display:none}
 <div id="view-ia" class="view">
   <div class="ai-view-header">
     <h1>✦ Análise de IA</h1>
-    <p id="ia-subtitle">Camada de inteligência · gerada pelo AIOS a partir dos dados operacionais</p>
+    <p id="ia-subtitle">Análise gerada automaticamente a partir dos dados carregados</p>
   </div>
   <div class="page-body">
 
@@ -2934,14 +2934,24 @@ function renderTimeline(d){
   document.getElementById('tl-list').innerHTML=d.tickets.map(function(t,i){return'<div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:'+eDot(t.estado)+'"></div>'+(i<d.tickets.length-1?'<div class="tl-line"></div>':'')+'</div><div class="tl-body"><div class="tl-title" title="'+t.assunto+'">'+t.assunto+'</div><div class="tl-meta">'+ePill(t.estado)+pPill(t.prioridade)+'<span class="tl-dt">'+t.criado+'</span><span class="tl-num">#'+t.num.slice(-8)+'</span><span class="tl-svc">'+t.servico+'</span>'+(t.resp_min!==null&&t.resp_min!==undefined?'<span class="tl-dt">1ª resp: '+t.resp_min+'min</span>':'')+(t.sol?'<span style="font-size:10px;color:var(--teal)">Concluído em '+t.sol+'h</span>':'')+'</div></div></div>';}).join('');
 }
 
-function calcScore(d){
+function calcScore(d){ return calcUnifiedScore(d); }
+
+// Fórmula unificada — usada em CLI, CS e IA (5 métricas, escala 10–100)
+function calcUnifiedScore(d){
   if(!d)return 0;
-  var s1=pct(d.fechados,d.total);
-  var s2=d.resp_med<=15?100:d.resp_med<=30?80:d.resp_med<=60?60:35;
-  var ap=pct(d.abertos,d.total);
-  var s3=ap<=10?100:ap<=20?75:ap<=35?55:35;
-  var s4=d.solucao_med_h&&d.solucao_med_h<=48?100:d.solucao_med_h<=96?75:55;
-  return Math.round(s1*.35+s2*.25+s3*.25+s4*.15);
+  var total=d.total||1;
+  var taxa=(d.fechados||0)/total;
+  var resp=d.resp_med||99;
+  var sol=d.solucao_med_h||d.sol_med||999;
+  var slaOk=resp<=15?1:resp<=30?0.85:resp<=60?0.65:0.35;
+  var solOk=sol<=24?1:sol<=48?0.85:sol<=72?0.7:sol<=96?0.5:0.3;
+  var est=d.estados||d.estado||{};
+  var aguard=est['Aguardando Cliente']||0;
+  var aguardRatio=1-Math.min(aguard/total,0.5);
+  var pr=d.prior||{};
+  var altaRatio=1-Math.min((pr['Muito Alta']||0)/total*0.8,0.4);
+  var score=Math.round(taxa*30+slaOk*20+solOk*20+aguardRatio*15+altaRatio*15);
+  return Math.max(10,Math.min(100,score));
 }
 
 function renderHealthScore(d){
@@ -3333,6 +3343,7 @@ function rebuildAll(data){
         rendered['s-alertas']=true;renderAlertas();
         if(aCli){rendered[aCli.id]=true;renderSec(aCli.id);}
         if(aOp&&aOp.id!=='s-ov'&&aOp.id!=='s-alertas'){rendered[aOp.id]=true;renderSec(aOp.id);}
+        setTimeout(computeInsights,200);
         setProgress(100,'✓ Importação concluída!');
         setTimeout(function(){setProgress(0,'');closeImport();},1500);
       },200);
@@ -3896,9 +3907,7 @@ function setMonth(m) {
     if(csKey) loadCS(csKey);
     else renderCSHealthList();
   }
-  // Re-render Resumo se estiver ativo
-  var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  computeInsights();
 }
 
 // Filtered data getter
@@ -4051,9 +4060,7 @@ function setFilaOP(fila) {
   // Re-render Portal se houver empresa selecionada
   var empKey = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : null;
   if(empKey) loadEmpresa(empKey);
-  // Re-render Resumo se estiver ativo
-  var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  computeInsights();
 }
 
 function setFilaCli(fila) {
@@ -4068,6 +4075,7 @@ function setFilaCli(fila) {
   var active = document.querySelector('#view-op .sec.on');
   if(active) renderSec(active.id);
   renderAlertas();
+  computeInsights();
 }
 
 function getFilteredDays() {
@@ -4232,9 +4240,7 @@ function setClienteGlobal(key) {
   rendered['s-ov']=true; renderOv();
   rendered['s-alertas']=true; renderAlertas();
   buildMonthFilter();
-  // Re-render Resumo se estiver ativo
-  var vRg = document.getElementById('view-rg');
-  if(vRg && vRg.classList.contains('on')) renderResumo();
+  computeInsights();
 }
 
 // Filtered empresa getter - filters tickets by month
@@ -4637,18 +4643,7 @@ function goSecCS(id, el) {
   if (csCurrentKey) renderCSSection(id, EMPRESAS[csCurrentKey]);
 }
 
-function calcCSScore(d) {
-  if (!d) return 0;
-  var total = d.total || 1;
-  var taxa = d.fechados / total;
-  var slaOk = (d.resp_med || 99) <= 30 ? 1 : 0.5;
-  var solOk = (d.solucao_med_h || 999) <= 48 ? 1 : ((d.solucao_med_h || 999) <= 72 ? 0.7 : 0.4);
-  var aguard = (d.estados && d.estados['Aguardando Cliente'] || 0);
-  var aguardRatio = 1 - Math.min(aguard / total, 0.5);
-  var altaRatio = 1 - Math.min((d.prior && d.prior['Muito Alta'] || 0) / total * 0.8, 0.4);
-  var score = Math.round((taxa * 30 + slaOk * 20 + solOk * 20 + aguardRatio * 15 + altaRatio * 15));
-  return Math.max(10, Math.min(100, score));
-}
+function calcCSScore(d) { return calcUnifiedScore(d); }
 
 function csScoreLabel(score) {
   if (score >= 85) return {label:'Excelente', color:'var(--ok)'};
@@ -5023,6 +5018,7 @@ buildFilaBtns('fila-btns-op', activeFilaOP, setFilaOP);
 buildFilaBtns('fila-btns-cli', activeFilaCli, setFilaCli);
 renderOv();rendered['s-ov']=true;
 renderAlertas();rendered['s-alertas']=true;
+setTimeout(computeInsights,500);
 </script>
 <script>
 function cliFilaFiltro(fila,btn){
@@ -5630,35 +5626,181 @@ setTimeout(autoFetchXLS, 600);
 setInterval(autoFetchXLS, 10 * 60 * 1000);
 
 // ════════════════════════════════════════════════════════════
-// AI LAYER
+// AI LAYER — análise gerada em tempo real a partir dos dados
 // ════════════════════════════════════════════════════════════
 var AI_DATA = null;
 
-function fetchInsights(){
-  fetch('aios-insights.json?v='+Date.now())
-    .then(function(r){if(!r.ok)throw new Error('no insights');return r.json();})
-    .then(function(data){
-      AI_DATA=data;
-      var badge=document.getElementById('tb-ai-badge');
-      var timeEl=document.getElementById('tb-ai-time');
-      if(badge)badge.style.display='flex';
-      if(timeEl&&data.generated_at){
-        var d=new Date(data.generated_at);
-        timeEl.textContent='última análise: '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-      }
-      var iaView=document.getElementById('view-ia');
-      if(iaView&&iaView.classList.contains('on'))renderIA();
-    })
-    .catch(function(){/* sem arquivo — aba IA mostra estado vazio */});
+function computeInsights(){
+  var op=getActiveOP();
+  var total=op.total||OP.total||0;
+  if(!total)return;
+
+  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
+  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
+  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
+  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
+  var prior=op.prior||OP.prior||{};
+  var estado=op.estado||op.estados||OP.estado||{};
+  var bloqData=typeof BLOQ_MESES!=='undefined'?(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[]):[];
+  var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
+  var aguardCli=estado['Aguardando Cliente']||0;
+  var aguardInt=estado['Aguardando Interno']||0;
+  var prioMA=prior['Muito Alta']||0;
+  var taxaConc=total>0?Math.round(fechados/total*100):0;
+  var pctAbertos=total>0?Math.round(abertos/total*100):0;
+  var pctMA=total>0?Math.round(prioMA/total*100):0;
+  var criticos=OP.criticos||[];
+  var atendData=op.atend||OP.atend||[];
+
+  // Tendência semanal
+  var byDay=op.by_day||OP.by_day||[];
+  var refDate=new Date();
+  if(byDay.length>0){var pl=new Date(byDay[byDay.length-1].d+'T12:00:00');if(!isNaN(pl))refDate=pl;}
+  var thisWeek=0,prevWeek=0;
+  byDay.forEach(function(d){
+    var dt=new Date(d.d+'T12:00:00');
+    var da=Math.floor((refDate-dt)/(1000*60*60*24));
+    if(da>=0&&da<7)thisWeek+=d.n;
+    else if(da>=7&&da<14)prevWeek+=d.n;
+  });
+  var trendPct=prevWeek>0?Math.round((thisWeek-prevWeek)/prevWeek*100):0;
+  var avgDaily=byDay.length>0?Math.round(byDay.reduce(function(a,b){return a+b.n;},0)/byDay.length):0;
+  var weeklyForecast=avgDaily*5;
+
+  // SLA estimado
+  var slaResp=respMed<=30?100:respMed<=60?Math.round(100-(respMed-30)/30*40):Math.max(10,Math.round(60-(respMed-60)/60*40));
+  var slaSol=solMed<=48?100:solMed<=72?85:solMed<=96?65:solMed<=120?45:25;
+  var slaGeral=Math.round(slaResp*0.5+slaSol*0.5);
+
+  // Aging
+  var age30p=0;
+  criticos.forEach(function(c){var m=String(c.idade||'').match(/(\d+)/);if(m&&parseInt(m[1])>30)age30p++;});
+
+  // Health score unificado (operacional)
+  var healthScore=calcUnifiedScore({total:total,fechados:fechados,abertos:abertos,resp_med:respMed,solucao_med_h:solMed,estados:estado,prior:prior});
+  var healthLabel=healthScore>=85?'Excelente':healthScore>=70?'Bom':healthScore>=55?'Atenção':'Crítico';
+  var healthColor=healthScore>=85?'#10b981':healthScore>=70?'#00d4a8':healthScore>=55?'#f59e0b':'#f43f5e';
+
+  var now=new Date().toISOString();
+  var respH=respMed>=60?(Math.round(respMed/60*10)/10)+'h':Math.round(respMed)+' min';
+
+  // ── RESUMO DE GESTÃO ─────────────────────────────────────
+  var narrativa='No período analisado foram registrados <strong>'+total+' chamados</strong> com taxa de conclusão de <strong>'+taxaConc+'%</strong>. ';
+  if(taxaConc>=80)narrativa+='Performance <strong>excelente</strong> de resolução. ';
+  else if(taxaConc>=60)narrativa+='Performance <strong>satisfatória</strong>, com espaço para melhoria. ';
+  else narrativa+='Taxa de conclusão <strong>abaixo do esperado</strong> — requer ação. ';
+  if(abertos>0)narrativa+='Há <strong>'+abertos+' chamados em aberto</strong> ('+pctAbertos+'%). ';
+  if(totalBloq>10)narrativa+='<strong>'+totalBloq+' chamados bloqueados</strong> — nível crítico, ação imediata necessária. ';
+  else if(totalBloq>0)narrativa+=totalBloq+' chamados bloqueados. ';
+  narrativa+='Tempo de 1ª resposta: <strong>'+respH+'</strong>. Solução média: <strong>'+solMed+'h</strong>.';
+
+  var riscoPrincipal=null;
+  if(pctMA>40)riscoPrincipal={label:'Alta concentração crítica',desc:pctMA+'% dos chamados em Muito Alta — risco operacional elevado'};
+  else if(totalBloq>20)riscoPrincipal={label:'Backlog bloqueado crítico',desc:totalBloq+' chamados aguardando ação — SLA em risco'};
+  else if(solMed>60)riscoPrincipal={label:'Tempo de solução elevado',desc:'Média de '+solMed+'h para encerrar — acima do ideal'};
+  else if(pctAbertos>25)riscoPrincipal={label:'Alto volume em aberto',desc:pctAbertos+'% do total sem resolução — monitorar aging'};
+  else if(trendPct>20)riscoPrincipal={label:'Volume crescente',desc:trendPct+'% de aumento esta semana — avaliar capacidade'};
+  else riscoPrincipal={label:'Sem risco crítico',desc:'Todos os indicadores dentro dos parâmetros normais'};
+
+  var oportunidade=null;
+  if(aguardCli>5)oportunidade={label:'Retorno de clientes',desc:aguardCli+' chamados aguardando cliente — fechamentos rápidos disponíveis'};
+  else if(taxaConc>=80&&slaGeral>=80)oportunidade={label:'Alta performance',desc:'Taxa de resolução e SLA acima de 80% — apresentar resultados ao cliente'};
+  else if(atendData.length>0){
+    var top=atendData.slice().sort(function(a,b){return(b.f/Math.max(b.t,1))-(a.f/Math.max(a.t,1));});
+    oportunidade={label:'Melhor prática disponível',desc:'Atendente '+top[0].n+' com maior taxa — replicar método para a equipe'};
+  }else oportunidade={label:'Redução de aging',desc:'Fechar chamados mais antigos libera capacidade operacional'};
+
+  var previsao={label:'~'+weeklyForecast+' chamados',desc:'Estimativa próxima semana ('+avgDaily+'/dia'+(trendPct!==0?' · '+(trendPct>0?'+':'')+trendPct+'% vs anterior':'')+')' };
+
+  var kpis=[
+    {label:'Health Score',value:healthScore,sub:healthLabel,color:healthColor},
+    {label:'Conformidade SLA',value:slaGeral+'%',sub:respMed<=30?'meta de resposta OK':'resposta acima da meta',color:slaGeral>=85?'#10b981':slaGeral>=65?'#f59e0b':'#f43f5e'},
+    {label:'Taxa de Resolução',value:taxaConc+'%',sub:fechados+' de '+total+' encerrados',color:taxaConc>=80?'#10b981':taxaConc>=60?'#f59e0b':'#f43f5e'},
+    {label:'Tendência',value:(trendPct>0?'↑':trendPct<0?'↓':'→')+' '+Math.abs(trendPct)+'%',sub:'volume vs semana anterior',color:trendPct>15?'#f43f5e':trendPct<-10?'#10b981':'#8892a4'}
+  ];
+
+  // ── RISCOS OPERACIONAIS ──────────────────────────────────
+  var riscosOp=[];
+  if(pctMA>40)riscosOp.push({titulo:'Concentração crítica de prioridades',desc:prioMA+' chamados Muito Alta ('+pctMA+'%) — SLA em risco',nivel:'high',confianca:92});
+  else if(pctMA>25)riscosOp.push({titulo:'Prioridades críticas elevadas',desc:prioMA+' chamados Muito Alta ('+pctMA+'%) — monitorar',nivel:'medium',confianca:80});
+  if(totalBloq>20)riscosOp.push({titulo:'Backlog bloqueado crítico',desc:totalBloq+' chamados parados — ação interna ou externa necessária',nivel:'high',confianca:95});
+  else if(totalBloq>10)riscosOp.push({titulo:'Chamados bloqueados acima do normal',desc:totalBloq+' bloqueados — revisar dependências',nivel:'medium',confianca:85});
+  if(solMed>72)riscosOp.push({titulo:'Tempo de solução muito elevado',desc:'Média de '+solMed+'h — revisar SLA e distribuição',nivel:'high',confianca:88});
+  else if(solMed>48)riscosOp.push({titulo:'Tempo de solução acima do ideal',desc:solMed+'h médio — acompanhar chamados com maior aging',nivel:'medium',confianca:75});
+  if(respMed>60)riscosOp.push({titulo:'1ª resposta fora da meta',desc:respMed+' min — meta é 30 min. Risco de insatisfação imediata',nivel:'high',confianca:90});
+  else if(respMed>30)riscosOp.push({titulo:'1ª resposta acima da meta',desc:respMed+' min médio — ligeiramente acima dos 30 min',nivel:'medium',confianca:78});
+  if(trendPct>20)riscosOp.push({titulo:'Volume crescendo rapidamente',desc:trendPct+'% de aumento vs semana anterior — avaliar capacidade',nivel:'high',confianca:82});
+  else if(trendPct>10)riscosOp.push({titulo:'Tendência de crescimento',desc:trendPct+'% de aumento semanal — monitorar ritmo',nivel:'medium',confianca:70});
+  if(age30p>3)riscosOp.push({titulo:'Chamados antigos sem resolução',desc:age30p+' chamados com +30 dias em aberto — alto risco de churn',nivel:'high',confianca:93});
+  if(aguardInt>15)riscosOp.push({titulo:'Fila aguardando ação interna alta',desc:aguardInt+' chamados parados por falta de ação da equipe',nivel:'medium',confianca:80});
+  if(riscosOp.length===0)riscosOp.push({titulo:'Operação dentro dos parâmetros',desc:'Nenhum risco crítico ou médio detectado. Manter monitoramento.',nivel:'low',confianca:88});
+
+  // ── RISCOS POR CLIENTE ───────────────────────────────────
+  var riscosClientes=[];
+  var empIds=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+  empIds.sort(function(a,b){return calcUnifiedScore(EMPRESAS[a])-calcUnifiedScore(EMPRESAS[b]);});
+  empIds.slice(0,8).forEach(function(k){
+    var d=EMPRESAS[k];
+    var sc=calcUnifiedScore(d);
+    var tc=d.total>0?Math.round(d.fechados/d.total*100):0;
+    var ap=d.total>0?Math.round(d.abertos/d.total*100):0;
+    var maP=d.total>0?Math.round((d.prior&&d.prior['Muito Alta']||0)/d.total*100):0;
+    var narr=d.nome+' — '+d.total+' chamados, '+tc+'% concluídos. ';
+    if(sc>=85)narr+='Excelente estado de atendimento.';
+    else if(sc>=70)narr+='Atendimento satisfatório, sem riscos imediatos.';
+    else if(sc>=55)narr+='Requer atenção — indicadores abaixo do ideal.';
+    else narr+='Situação crítica — múltiplos indicadores em risco.';
+    var riscos=[];
+    if(ap>30)riscos.push({titulo:ap+'% de chamados em aberto',desc:d.abertos+' de '+d.total+' sem resolução',nivel:ap>40?'high':'medium',confianca:85});
+    if(maP>40)riscos.push({titulo:'Alta concentração Muito Alta',desc:maP+'% dos chamados neste cliente são prioridade máxima',nivel:'high',confianca:90});
+    if(d.resp_med&&d.resp_med>60)riscos.push({titulo:'1ª resposta lenta',desc:d.resp_med+' min — meta é 30 min',nivel:'high',confianca:88});
+    else if(d.resp_med&&d.resp_med>30)riscos.push({titulo:'1ª resposta acima da meta',desc:d.resp_med+' min médio',nivel:'medium',confianca:75});
+    if(d.solucao_med_h&&d.solucao_med_h>72)riscos.push({titulo:'Tempo de solução crítico',desc:d.solucao_med_h+'h médio para este cliente',nivel:'high',confianca:87});
+    var aci=(d.estados&&d.estados['Aguardando Cliente'])||0;
+    if(aci>3)riscos.push({titulo:aci+' chamados aguardando cliente',desc:'Risco de aging acumulado se cliente não responder',nivel:'medium',confianca:72});
+    riscosClientes.push({cliente:d.nome,narrativa:narr,riscos:riscos});
+  });
+
+  // ── CS INSIGHTS ─────────────────────────────────────────
+  var csInsights=[];
+  empIds.slice(0,8).forEach(function(k){
+    var d=EMPRESAS[k];
+    var sc=calcUnifiedScore(d);
+    var tc=d.total>0?Math.round(d.fechados/d.total*100):0;
+    var aci=(d.estados&&d.estados['Aguardando Cliente'])||0;
+    var narr,prox,tom,prio;
+    if(sc<55){narr='Cliente em estado crítico. Taxa: '+tc+'%. Intervenção imediata necessária para evitar churn.';prox='Imediato — contato proativo urgente';tom='Empático e propositivo — trazer plano de ação concreto';prio='🔴 Crítico';}
+    else if(sc<70){narr='Cliente requer atenção. Indicadores que precisam ser endereçados antes da próxima reunião.';prox='Próximos 3 dias — call de alinhamento';tom='Transparente — compartilhar métricas e melhorias previstas';prio='🟡 Atenção';}
+    else if(sc<85){narr='Cliente com boa performance. Oportunidade de reforçar valor entregue e abrir espaço para expansão.';prox='Próximos 7 dias — check-in de rotina';tom='Consultivo — explorar novas necessidades';prio='🔵 Regular';}
+    else{narr='Excelente performance. '+tc+'% de resolução, resposta rápida. Momento ideal para renovação ou upsell.';prox='Próximos 15 dias — reunião de resultados';tom='Celebratório e estratégico — apresentar resultados, propor expansão';prio='🟢 Saudável';}
+    if(aci>3)narr+=' '+aci+' chamados aguardando retorno — lembrar durante o contato.';
+    csInsights.push({cliente:d.nome,narrativa:narr,proximo_contato:prox,tom_sugerido:tom,prioridade:prio});
+  });
+
+  AI_DATA={
+    generated_at:now,
+    resumo_gestao:{kpis:kpis,narrativa:narrativa,risco_principal:riscoPrincipal,oportunidade:oportunidade,previsao:previsao},
+    riscos_operacionais:riscosOp,
+    riscos_clientes:riscosClientes,
+    cs_insights:csInsights
+  };
+
+  // Atualiza badge da topbar
+  var badge=document.getElementById('tb-ai-badge');
+  var timeEl=document.getElementById('tb-ai-time');
+  if(badge)badge.style.display='flex';
+  if(timeEl){var nd=new Date(now);timeEl.textContent='análise: '+nd.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+
+  // Re-renderiza se a aba IA estiver ativa
+  var iaView=document.getElementById('view-ia');
+  if(iaView&&iaView.classList.contains('on'))renderIA();
 }
-setTimeout(fetchInsights,800);
-setInterval(fetchInsights,15*60*1000);
 
 function aiCardHeader(title,meta){
   return '<div class="ai-card-header"><div class="ai-card-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'+title+'</div><div class="ai-card-meta">'+(meta||'')+'</div></div>';
 }
 function aiNoData(){
-  return '<div class="ai-no-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Execute o AIOS skill para gerar esta análise: <code>npx aiox-core install</code> e selecione a skill <strong>status-report</strong> ou <strong>risk-assessment</strong></span></div>';
+  return '<div class="ai-no-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>Importe um arquivo XLSX para gerar a análise automaticamente.</span></div>';
 }
 function aiMeta(data){
   if(!data||!data.generated_at)return '';
@@ -5802,9 +5944,9 @@ function renderIA(){
   var sub=document.getElementById('ia-subtitle');
   if(sub&&AI_DATA&&AI_DATA.generated_at){
     var d=new Date(AI_DATA.generated_at);
-    sub.textContent='Análise gerada em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · modelo AIOS';
+    sub.textContent='Análise gerada em '+d.toLocaleDateString('pt-BR')+' às '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})+' · a partir dos dados carregados';
   }else if(sub){
-    sub.textContent='Nenhuma análise disponível ainda · execute o AIOS skill para gerar';
+    sub.textContent='Importe um arquivo XLSX para gerar a análise automaticamente';
   }
 }
 </script>
