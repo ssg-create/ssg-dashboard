@@ -2999,8 +2999,35 @@ function renderSlaContrato(d){
   mk('c-sol-dist','bar',bins,[{data:counts,backgroundColor:['rgba(16,185,129,.6)','rgba(79,142,247,.6)','rgba(245,158,11,.6)','rgba(244,63,94,.6)'],borderRadius:4}],{scales:xy()});
 }
 
+function getInfDataFromRaw(){
+  var isAb=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
+  var isFe=function(e){return['Fechado','Resolvido','Fechado s/ Êxito'].indexOf(e)!==-1;};
+  var mN={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  var rows=RAW_DATA.filter(function(d){
+    if(!d.criado)return false;
+    if(activeCliente&&d.cli_id!==activeCliente)return false;
+    if(activeMonth!=='all'&&d.criado.toISOString().slice(0,7)!==activeMonth)return false;
+    if(activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
+    return true;
+  });
+  var total=rows.length;
+  var abertos=rows.filter(function(d){return isAb(d.estado);}).length;
+  var fechados=rows.filter(function(d){return isFe(d.estado);}).length;
+  var respRows=rows.filter(function(d){return d.resp_min!=null&&!isNaN(d.resp_min);});
+  var resp_med=respRows.length?Math.round(respRows.reduce(function(s,d){return s+d.resp_min;},0)/respRows.length):null;
+  var solRows=rows.filter(function(d){return isFe(d.estado)&&d.sol_h!=null&&!isNaN(d.sol_h);});
+  var sol_med=solRows.length?Math.round(solRows.reduce(function(s,d){return s+d.sol_h;},0)/solRows.length*10)/10:null;
+  var svc={},prior={},volMes={};
+  rows.forEach(function(d){
+    if(d.servico)svc[d.servico]=(svc[d.servico]||0)+1;
+    if(d.prior)prior[d.prior]=(prior[d.prior]||0)+1;
+    if(d.criado){var p=d.criado.toISOString().slice(0,7).split('-');var k=mN[p[1]]+'/'+p[0].slice(2);volMes[k]=(volMes[k]||0)+1;}
+  });
+  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,sol_med:sol_med,svc:svc,prior:prior,volMes:volMes};
+}
+
 function renderInf(){
-  var _op=getActiveOP();
+  var _op=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?getInfDataFromRaw():getActiveOP();
   // — gráfico de volume
   var volMes=_op.volMes||{};
   var mK=Object.keys(volMes);
