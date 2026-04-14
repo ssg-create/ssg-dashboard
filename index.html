@@ -4072,10 +4072,12 @@ function setFilaCli(fila) {
   buildFilaBtns('fila-btns-op', fila, setFilaOP); // sincroniza
   var empKey = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : null;
   if(empKey) loadEmpresa(empKey);
-  // Re-render OP
+  // Re-render OP e CLI ativos
   rendered = {};
   var active = document.querySelector('#view-op .sec.on');
   if(active) renderSec(active.id);
+  var activeCli = document.querySelector('#view-cli .sec.on');
+  if(activeCli) renderSec(activeCli.id);
   renderAlertas();
   computeInsights();
 }
