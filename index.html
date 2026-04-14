@@ -1184,22 +1184,10 @@ input[type=file]{display:none}
   <div id="c-inf" class="sec">
     <div class="page-header"><h1>Status da Fila</h1><p>Indicadores gerais — sem dados internos de outras empresas</p></div>
     <div class="page-body">
-      <div class="kpi-row kpi-row-4">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">Chamados no período</div><div class="kpi-val" style="color:var(--teal)">556</div><div class="kpi-sub">53 dias</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" style="color:var(--ok)">62<span>%</span></div><div class="kpi-sub">346 resolvidos</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp (mediana)</div><div class="kpi-val" style="color:var(--teal)">8<span>min</span></div><div class="kpi-sub">meta atingida</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução média</div><div class="kpi-val" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub">chamados fechados</div></div>
-      </div>
+      <div id="cinf-kpis" class="kpi-row kpi-row-4"></div>
       <div class="grid2">
         <div class="card"><div class="card-title">Volume mensal da fila</div><div class="cw" style="height:170px"><canvas id="c-vol-inf"></canvas></div></div>
-        <div class="card">
-          <div class="card-title">Indicadores de qualidade</div>
-          <div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--ok)"></div><span>Meta 1ª resposta (&lt;30min)</span></div><span class="pill pg">Atingida</span></div>
-          <div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--blue)"></div><span>Módulo principal</span></div><span class="pill pb">ERP Protheus</span></div>
-          <div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--teal)"></div><span>Serviço mais demandado</span></div><span class="pill pt">Contabilidade</span></div>
-          <div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--danger)"></div><span>Prioridade predominante</span></div><span class="pill pr">Muito Alta</span></div>
-          <div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--warn)"></div><span>Pico de abertura</span></div><span class="pill py">Sex 16–17h</span></div>
-        </div>
+        <div id="cinf-qual" class="card"></div>
       </div>
     </div>
   </div>
@@ -3013,9 +3001,34 @@ function renderSlaContrato(d){
 
 function renderInf(){
   var _op=getActiveOP();
+  // — gráfico de volume
   var volMes=_op.volMes||{};
   var mK=Object.keys(volMes);
   mk('c-vol-inf','bar',mK,[{data:mK.map(function(k){return volMes[k];}),backgroundColor:['rgba(79,142,247,.6)','rgba(0,212,168,.6)','rgba(139,92,246,.6)'],borderColor:['#4f8ef7','#00d4a8','#8b5cf6'],borderWidth:1,borderRadius:4}],{scales:xy()});
+  // — KPIs dinâmicos
+  var total=_op.total||0;
+  var fechados=_op.fechados||0;
+  var abertos=_op.abertos||0;
+  var taxa=total>0?Math.round(fechados/total*100):0;
+  var resp=_op.resp_med!=null?Math.round(_op.resp_med):null;
+  var sol=_op.sol_med!=null?Math.round(_op.sol_med*10)/10:null;
+  var metaResp=resp!=null&&resp<=30;
+  var svc=_op.svc||{};
+  var svcTop=Object.keys(svc).sort(function(a,b){return svc[b]-svc[a];})[0]||'—';
+  var prior=_op.prior||{};
+  var priorTop=Object.keys(prior).sort(function(a,b){return prior[b]-prior[a];})[0]||'—';
+  var kpiEl=document.getElementById('cinf-kpis');
+  if(kpiEl)kpiEl.innerHTML=
+    '<div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">Chamados no período</div><div class="kpi-val" style="color:var(--teal)">'+total+'</div><div class="kpi-sub">'+abertos+' em aberto</div></div>'+
+    '<div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" style="color:var(--ok)">'+taxa+'<span>%</span></div><div class="kpi-sub">'+fechados+' resolvidos</div></div>'+
+    '<div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp (mediana)</div><div class="kpi-val" style="color:var(--teal)">'+(resp!=null?resp:'—')+'<span>min</span></div><div class="kpi-sub">'+(metaResp?'meta atingida':'acima da meta')+'</div></div>'+
+    '<div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução média</div><div class="kpi-val" style="color:var(--purple)">'+(sol!=null?sol:'—')+'<span>h</span></div><div class="kpi-sub">chamados fechados</div></div>';
+  var qualEl=document.getElementById('cinf-qual');
+  if(qualEl)qualEl.innerHTML=
+    '<div class="card-title">Indicadores de qualidade</div>'+
+    '<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--'+(metaResp?'ok':'danger')+')"></div><span>Meta 1ª resposta (&lt;30min)</span></div><span class="pill '+(metaResp?'pg':'pr')+'">'+(metaResp?'Atingida':'Não atingida')+'</span></div>'+
+    '<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--teal)"></div><span>Serviço mais demandado</span></div><span class="pill pt">'+svcTop+'</span></div>'+
+    '<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:var(--danger)"></div><span>Prioridade predominante</span></div><span class="pill pr">'+priorTop+'</span></div>';
 }
 
 // ════════════════════════════════════════════════════════════
