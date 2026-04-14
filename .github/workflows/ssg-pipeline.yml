@@ -97,9 +97,6 @@ jobs:
           WORK_DIR: ${{ github.workspace }}/output
         run: python scripts/aios_analysis.py
 
-      - name: Copiar index.html para output
-        run: cp "${{ github.workspace }}/index.html" "${{ github.workspace }}/output/"
-
       - name: Injetar CACHE_VERSION no sw.js
         run: |
           VERSION="$(date -u +%Y%m%d)-$(git rev-parse --short HEAD)"

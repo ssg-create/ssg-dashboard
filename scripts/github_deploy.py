@@ -56,15 +56,8 @@ def ultimo_xlsx():
 
 def deploy():
     log("Iniciando deploy GitHub Pages...")
-
-    # index.html
-    if not os.path.exists(HTML_PATH):
-        log("ERRO: index.html nao encontrado"); sys.exit(1)
-    with open(HTML_PATH, "rb") as f: html = f.read()
-    log(f"HTML: {len(html):,} bytes")
-    if not upload("index.html", html, "deploy automatico"):
-        log("ERRO ao enviar HTML"); sys.exit(1)
-    log("HTML enviado.")
+    # NOTA: index.html e sw.js são gerenciados via git (Claude Code / commits manuais).
+    # Este script atualiza APENAS arquivos de dados para não sobrescrever mudanças de código.
 
     # dados.xlsx
     xlsx_path = ultimo_xlsx()
