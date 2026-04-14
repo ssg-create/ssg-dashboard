@@ -4089,8 +4089,10 @@ function setFilaCli(fila) {
   rendered = {};
   var active = document.querySelector('#view-op .sec.on');
   if(active) renderSec(active.id);
+  // c-inf sempre re-renderiza: initCli() renderiza seu conteúdo sem marcar .on
+  renderInf();
   var activeCli = document.querySelector('#view-cli .sec.on');
-  if(activeCli) renderSec(activeCli.id);
+  if(activeCli && activeCli.id !== 'c-inf') renderSec(activeCli.id);
   renderAlertas();
   computeInsights();
 }
