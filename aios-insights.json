@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-14T19:56:14.758838",
+  "generated_at": "2026-04-14T22:33:13.687451",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>60%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>82 chamados em aberto</strong> (39%) e <strong>54 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>terça-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>ERP Protheus</strong> concentra <strong>22% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
+    "narrativa": "A taxa de conclusão está em <strong>60%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>81 chamados em aberto</strong> (39%) e <strong>54 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>terça-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>ERP Protheus</strong> concentra <strong>22% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
     "kpis": [
       {
         "label": "Score Operacional",
