@@ -1765,8 +1765,9 @@ function renderAlertas(){
   var critFiltrados = filaAtiva==='all' ? critTodos : critTodos.filter(function(c){return c.fila===filaAtiva;});
   _alertState = {criticos:critFiltrados, filtroAtend:'all', filtroFila:filaAtiva};
   var totalCrit = critFiltrados.length;
-  var totalBloq = (BLOQ_MESES[mes]||BLOQ_MESES['all']).reduce(function(a,b){return a+b.n;},0);
-  var semResp = RESP30_MESES[mes]||0;
+  var _opA=getActiveOP();
+  var totalBloq=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?buildBloqEntry(_opA.estado||{}).reduce(function(a,b){return a+b.n;},0):(BLOQ_MESES[mes]||BLOQ_MESES['all']).reduce(function(a,b){return a+b.n;},0);
+  var semResp=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?(_opA.resp_gt30||0):(RESP30_MESES[mes]||0);
   var estadosBloq=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloqExato=critFiltrados.filter(function(c){return estadosBloq.indexOf(c.estado)!==-1&&c.idade!=='hoje';}).length;
 
@@ -1820,7 +1821,7 @@ function renderAlertas(){
   }
 
   // Distribuição bloqueados com barras
-  var bloqData=BLOQ_MESES[mes]||BLOQ_MESES['all'];
+  var bloqData=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?buildBloqEntry(_opA.estado||{}):(BLOQ_MESES[mes]||BLOQ_MESES['all']||[]);
   var maxB=Math.max.apply(null,bloqData.map(function(s){return s.n;}));
   document.getElementById('bloq-dist').innerHTML=bloqData.filter(function(s){return s.n>0;}).map(function(s){
     var p=Math.round(s.n/(maxB||1)*100);
@@ -2218,7 +2219,7 @@ function renderAt(){
 
   var mO3=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var curI3=mO3.indexOf(activeMonth),prevAtend={};
-  if(activeMonth!=='all'&&curI3>0){var pk3=mO3[curI3-1];if(OP_MESES[pk3]&&OP_MESES[pk3].atend)OP_MESES[pk3].atend.forEach(function(a){prevAtend[a.n]=a;});}
+  if(activeMonth!=='all'&&curI3>0){var pk3=mO3[curI3-1];var prevFD3=getFilteredDataForMonth(pk3);var prevAtendArr=prevFD3?prevFD3.atend:(OP_MESES[pk3]&&OP_MESES[pk3].atend?OP_MESES[pk3].atend:[]);prevAtendArr.forEach(function(a){prevAtend[a.n]=a;});}
 
   var META_TAXA=70,META_RESP=30;
   var hasTend=Object.keys(prevAtend).length>0;
@@ -2734,7 +2735,7 @@ function renderCl(){
   if(lbl)lbl.textContent=totalCli+' chamados no período';
   var mO5=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var curI5=mO5.indexOf(activeMonth),prevCli={};
-  if(activeMonth!=='all'&&curI5>0){var pk5=mO5[curI5-1];if(OP_MESES[pk5]&&OP_MESES[pk5].cli)prevCli=OP_MESES[pk5].cli;}
+  if(activeMonth!=='all'&&curI5>0){var pk5=mO5[curI5-1];var prevFD=getFilteredDataForMonth(pk5);prevCli=prevFD?prevFD.cli:(OP_MESES[pk5]&&OP_MESES[pk5].cli?OP_MESES[pk5].cli:{});}
   document.getElementById('cli-bars').innerHTML=cK.map(function(k,i){
     var v=cliRaw[k],pW=Math.round(v/maxC*100),pT=Math.round(v/totalCli*100);
     var col=PAL[i%PAL.length];
@@ -2749,14 +2750,18 @@ function renderCl(){
   var evoEl=document.getElementById('cli-evolucao');if(!evoEl)return;
   var mNames5={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   var mL5={};mO5.forEach(function(k){var p=k.split('-');mL5[k]=mNames5[p[1]]+'/'+(p[0].slice(2));});
-  var topCli=Object.keys(OP.cli||{}).filter(function(k){return(Object.values(ENM2).indexOf(k)!==-1||ENM2[k])&&k.indexOf('@')===-1;}).sort(function(a,b){return(OP.cli[b]||0)-(OP.cli[a]||0);}).slice(0,5);
+  var _cliAll=_opc.cli||{};
+  var topCli=Object.keys(_cliAll).filter(function(k){return(Object.values(ENM2).indexOf(k)!==-1||ENM2[k])&&k.indexOf('@')===-1;}).sort(function(a,b){return(_cliAll[b]||0)-(_cliAll[a]||0);}).slice(0,5);
   if(!topCli.length){evoEl.innerHTML='';return;}
+  // Dados mensais filtrados por cliente+fila para a tabela de evolução
+  var filtMesCli={};
+  mO5.forEach(function(mk6){var fd=getFilteredDataForMonth(mk6);filtMesCli[mk6]=fd?fd.cli:(OP_MESES[mk6]&&OP_MESES[mk6].cli?OP_MESES[mk6].cli:{});});
   var html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:8px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Empresa</th>';
   mO5.forEach(function(k){html+='<th style="text-align:right;padding:8px 10px;font-size:9.5px;font-weight:600;color:'+(activeMonth===k?'var(--teal)':'var(--muted)')+';text-transform:uppercase;border-bottom:1px solid var(--border)">'+mL5[k]+'</th>';});
   html+='<th style="text-align:right;padding:8px 10px;font-size:9.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Total</th><th style="text-align:right;padding:8px 10px;font-size:9.5px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Tendência</th></tr></thead><tbody>';
   topCli.forEach(function(k,ri){
-    var vals=mO5.map(function(mk6){var m=OP_MESES[mk6];return m&&m.cli&&m.cli[k]!=null?m.cli[k]:0;});
-    var total5=(OP.cli&&OP.cli[k])||vals.reduce(function(a,b){return a+b;},0);
+    var vals=mO5.map(function(mk6){var mc=filtMesCli[mk6];return mc&&mc[k]!=null?mc[k]:0;});
+    var total5=(_cliAll[k])||vals.reduce(function(a,b){return a+b;},0);
     var maxV5=Math.max.apply(null,vals.concat([1]));
     var pts5=vals.map(function(v,si){return(6+si*(60-12)/Math.max(mO5.length-1,1))+','+(20-Math.round(v/maxV5*14));}).join(' ');
     var col5=PAL[ri%PAL.length];
@@ -2826,11 +2831,10 @@ function renderSl(){
 }
 
 function renderBl(){
-  var bloqData=BLOQ_MESES[activeMonth];
-  if(!bloqData&&activeMonth!=='all'&&OP_MESES[activeMonth])bloqData=buildBloqEntry(OP_MESES[activeMonth].estado||{});
-  bloqData=bloqData||BLOQ_MESES['all']||buildBloqEntry(OP.estado||{});
+  var _opBl=getActiveOP();
+  var bloqData=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?buildBloqEntry(_opBl.estado||{}):(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||buildBloqEntry(OP.estado||{}));
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
-  var totalGeral=getActiveOP().total||OP.total;
+  var totalGeral=_opBl.total||0;
   var kpis=document.querySelectorAll('#s-bl .kpi');
   if(kpis[0]){var v=kpis[0].querySelector('.kpi-val'),s=kpis[0].querySelector('.kpi-sub');if(v)v.textContent=totalBloq;if(s)s.textContent=Math.round(totalBloq/(totalGeral||1)*100)+'% do volume';}
   if(kpis[1]){var v2=kpis[1].querySelector('.kpi-val'),s2=kpis[1].querySelector('.kpi-sub');var dq=totalGeral-totalBloq;if(v2)v2.textContent=dq;if(s2)s2.textContent=Math.round(dq/(totalGeral||1)*100)+'% fluindo';}
@@ -3052,7 +3056,14 @@ function getFilteredData(){
     var dt=pad2(d.criado.getDate())+'/'+pad2(d.criado.getMonth()+1)+' '+pad2(d.criado.getHours())+':'+pad2(d.criado.getMinutes());
     return{num:d.num,assunto:d.assunto,atend:d.atend||'—',estado:d.estado,criado:dt,idade:idade,fila:d.fila||'',mes:d.criado.toISOString().slice(0,7)};
   });
-  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,sol_med:sol_med,estado:estado,prior:prior,svc:svc,cli:cli,heat:heat,volMes:volMes,atend:atend,criticos:criticos,by_day:by_day,byDay:by_day};
+  var resp_gt30=rows.filter(function(d){return d.resp_min!=null&&d.resp_min>30;}).length;
+  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,sol_med:sol_med,estado:estado,prior:prior,svc:svc,cli:cli,heat:heat,volMes:volMes,atend:atend,criticos:criticos,by_day:by_day,byDay:by_day,resp_gt30:resp_gt30};
+}
+
+// Helper: aplica os filtros de cliente e fila em um mês específico
+function getFilteredDataForMonth(month){
+  if(!(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length))return null;
+  var saved=activeMonth;activeMonth=month;var r=getFilteredData();activeMonth=saved;return r;
 }
 
 function renderInf(){
@@ -4392,7 +4403,6 @@ function updateKPIs(op) {
   var taxa=total>0?Math.round(fe/total*100):0;
   var bloqE=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloq=bloqE.reduce(function(s,e){return s+(op.estado&&op.estado[e]||0);},0);
-  if(!bloq)bloq=(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[]).reduce(function(a,b){return a+b.n;},0);
   var rm=op.resp_med!=null?op.resp_med:8,sm=op.sol_med!=null?op.sol_med:54.1;
   var vals=[total,ab,fe,maTotal,rm+'<span>min</span>',sm+'<span>h</span>',bloq,14];
   var colors=['var(--text)','var(--warn)','var(--ok)','var(--danger)','var(--teal)','var(--purple)','var(--orange)','var(--blue)'];
@@ -4423,12 +4433,12 @@ function renderOpActions(op) {
   if (!el) return;
   var actions = [];
   var total = op.total || 1;
-  var criticos = (OP.criticos || []).filter(function(c){
+  var criticos = (op.criticos || []).filter(function(c){
     return ['Aberto','Em Atendimento','Aguardando Interno'].indexOf(c.estado) !== -1;
   });
   var mes = activeMonth;
-  var bloqTotal = (BLOQ_MESES[mes] || BLOQ_MESES['all'] || []).reduce(function(a,b){return a+b.n;},0);
-  var semResp = RESP30_MESES[mes] || 0;
+  var bloqTotal = buildBloqEntry(op.estado||{}).reduce(function(a,b){return a+b.n;},0);
+  var semResp = op.resp_gt30!=null?op.resp_gt30:(RESP30_MESES[mes]||0);
   var maTotal = (op.prior && op.prior['Muito Alta']) || 0;
   var aguardCliente = (op.estado && op.estado['Aguardando Cliente']) || 0;
   var aguardInterno = (op.estado && op.estado['Aguardando Interno']) || 0;
@@ -5415,14 +5425,14 @@ function renderBacklogTable(rows) {
 function renderResumo(){
   // ── Dados base ────────────────────────────────────────────
   var op=getActiveOP();
-  var total=op.total||OP.total||0;
-  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
-  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
-  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
-  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
-  var prior=op.prior||OP.prior||{};
-  var estado=op.estado||OP.estado||{};
-  var bloqData=BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[];
+  var total=op.total||0;
+  var fechados=op.fechados||0;
+  var abertos=op.abertos||0;
+  var solMed=op.sol_med||0;
+  var respMed=op.resp_med||0;
+  var prior=op.prior||{};
+  var estado=op.estado||{};
+  var bloqData=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?buildBloqEntry(estado):(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[]);
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardCli=estado['Aguardando Cliente']||0;
   var aguardInt=estado['Aguardando Interno']||0;
@@ -5431,26 +5441,10 @@ function renderResumo(){
   var taxaConc=total>0?Math.round(fechados/total*100):0;
   var pctAbertos=total>0?Math.round(abertos/total*100):0;
   var pctMA=total>0?Math.round(prioMA/total*100):0;
-  var numCrit=(OP.criticos||[]).length;
-  // ── by_day reconstruído a partir do RAW_DATA com todos os filtros ativos ──
-  // Garante que Tendência/Ritmo/Previsão usem exatamente o conjunto filtrado
-  var byDay=op.by_day||OP.by_day||[];
-  if(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length){
-    var rawFilt=RAW_DATA.filter(function(d){
-      if(!d.criado)return false;
-      if(activeCliente&&d.cli_id!==activeCliente)return false;
-      if(activeMonth!=='all'&&d.criado.toISOString().slice(0,7)!==activeMonth)return false;
-      if(activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
-      return true;
-    });
-    if(rawFilt.length){
-      var dm3={};
-      rawFilt.forEach(function(d){var k=d.criado.toISOString().slice(0,10);dm3[k]=(dm3[k]||0)+1;});
-      byDay=Object.keys(dm3).sort().map(function(k){return{d:k,n:dm3[k]};});
-    }
-  }
-  var atendData=op.atend||OP.atend||[];
-  var criticos=OP.criticos||[];
+  var criticos=op.criticos||[];
+  var numCrit=criticos.length;
+  var byDay=op.by_day||[];
+  var atendData=op.atend||[];
 
   // ── Referência de data: última data com dados no dataset filtrado ──
   // Não usa new Date() pois os dados podem ter defasagem em relação à data atual
@@ -5707,16 +5701,16 @@ var AI_DATA = null;
 
 function computeInsights(){
   var op=getActiveOP();
-  var total=op.total||OP.total||0;
+  var total=op.total||0;
   if(!total)return;
 
-  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
-  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
-  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
-  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
-  var prior=op.prior||OP.prior||{};
-  var estado=op.estado||op.estados||OP.estado||{};
-  var bloqData=typeof BLOQ_MESES!=='undefined'?(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[]):[];
+  var fechados=op.fechados||0;
+  var abertos=op.abertos||0;
+  var solMed=op.sol_med||0;
+  var respMed=op.resp_med||0;
+  var prior=op.prior||{};
+  var estado=op.estado||{};
+  var bloqData=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?buildBloqEntry(estado):(typeof BLOQ_MESES!=='undefined'?(BLOQ_MESES[activeMonth]||BLOQ_MESES['all']||[]):[]);
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardCli=estado['Aguardando Cliente']||0;
   var aguardInt=estado['Aguardando Interno']||0;
@@ -5724,11 +5718,11 @@ function computeInsights(){
   var taxaConc=total>0?Math.round(fechados/total*100):0;
   var pctAbertos=total>0?Math.round(abertos/total*100):0;
   var pctMA=total>0?Math.round(prioMA/total*100):0;
-  var criticos=OP.criticos||[];
-  var atendData=op.atend||OP.atend||[];
+  var criticos=op.criticos||[];
+  var atendData=op.atend||[];
 
   // Tendência semanal
-  var byDay=op.by_day||OP.by_day||[];
+  var byDay=op.by_day||[];
   var refDate=new Date();
   if(byDay.length>0){var pl=new Date(byDay[byDay.length-1].d+'T12:00:00');if(!isNaN(pl))refDate=pl;}
   var thisWeek=0,prevWeek=0;
