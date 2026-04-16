@@ -793,6 +793,20 @@ input[type=file]{display:none}
 .aging-track{flex:1;height:4px;border-radius:2px;background:var(--bg3);max-width:60px}
 .aging-fill{height:100%;border-radius:2px}
 
+.sla-fin-kpis{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px}
+.sla-fin-kpi{flex:1;padding:12px 14px;text-align:center;border-right:1px solid var(--border)}
+.sla-fin-kpi:last-child{border-right:none}
+.sla-fin-kpi-val{font-size:20px;font-weight:800;font-family:var(--mono);line-height:1}
+.sla-fin-kpi-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.sla-fin-table{width:100%;border-collapse:collapse;font-size:12px}
+.sla-fin-table th{padding:6px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:2px solid var(--border)}
+.sla-fin-table th:not(:first-child){text-align:right}
+.sla-fin-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.sla-fin-table td:not(:first-child){text-align:right;font-family:var(--mono);font-size:11px}
+.sla-fin-table tr:last-child td{border-bottom:none}
+.sla-fin-table tr:hover td{background:var(--bg3)}
+.sla-fin-exposure{font-weight:800;color:var(--danger)}
+
 /* ── Fullscreen mode ───────────────────────────────────────── */
 .fs-mode .topbar{display:none!important}
 .fs-mode .sidebar{display:none!important}
@@ -891,6 +905,11 @@ input[type=file]{display:none}
         <span class="settings-row-label">Limite SLA em horas úteis</span>
         <input type="number" id="cfg-sla-bh" class="settings-input" min="1" max="240" value="16">
         <span class="settings-row-hint">h úteis</span>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Custo por hora de SLA violado</span>
+        <input type="number" id="cfg-custo-hora-sla" class="settings-input" min="1" max="50000" value="50">
+        <span class="settings-row-hint">R$/h</span>
       </div>
     </div>
     <button class="settings-save" onclick="saveSettings()">Salvar e Aplicar</button>
@@ -1379,6 +1398,7 @@ input[type=file]{display:none}
         <div class="card"><div class="card-title">1ª Resposta por atendente <span class="card-title-right">meta: &lt;30min</span></div><div class="cw" style="height:240px"><canvas id="c-resp"></canvas></div></div>
         <div class="card"><div class="card-title">Solução por atendente <span class="card-title-right">meta: &lt;48h</span></div><div class="cw" style="height:240px"><canvas id="c-sol"></canvas></div></div>
       </div>
+      <div id="sla-fin-card" class="card" style="margin-top:16px;display:none"></div>
     </div>
   </div>
 
@@ -3744,6 +3764,62 @@ function renderSl(){
     function mBar(lbl,pct2,col,meta){return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px"><span>'+lbl+'</span><span style="font-family:var(--mono);font-weight:600;color:'+col+'">'+pct2+'% dentro da meta</span></div><div style="position:relative;height:8px;background:rgba(255,255,255,.06);border-radius:6px"><div style="height:100%;width:'+pct2+'%;background:'+col+';border-radius:6px"></div><div style="position:absolute;left:80%;top:-3px;width:2px;height:14px;background:rgba(255,255,255,.25);border-radius:1px"></div></div></div>';}
     metaEl.innerHTML=mBar('1ª Resposta ≤'+META_RESP+'min',pRP,cR)+mBar('Solução ≤'+META_SOL+'h',pSP,cS)+'<div style="font-size:10px;color:var(--muted);margin-top:4px">Base: '+atend.length+' atendentes · Linha branca = meta 80%</div>';
   }
+  renderSLAFinanceiro();
+}
+
+function computeSLAFinanceiro() {
+  if(!RAW_DATA||!RAW_DATA.length) return {rows:[],totalExposure:0,totalOver:0,totalExcessH:0};
+  var now=new Date();
+  var openSt=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+  var slaThreshDays=SLA_LIMIT_BH_H/8; // ~8 BH per day
+  var cliMap={};
+  (RAW_DATA||[]).forEach(function(d){
+    if(!d.criado||openSt.indexOf(d.estado)===-1||!ticketInFilter(d)) return;
+    var ageDays=Math.floor((now-d.criado)/864e5);
+    if(ageDays<=slaThreshDays) return; // dentro do SLA
+    var excessH=Math.round((ageDays-slaThreshDays)*8*10)/10; // excess BH hours
+    var exposure=Math.round(excessH*CUSTO_HORA_SLA);
+    var id=d.cli_id||'__sem_cli__';
+    if(!cliMap[id]) cliMap[id]={id:id,nome:(typeof EMPRESAS!=='undefined'&&EMPRESAS[id])?EMPRESAS[id].nome:id,tickets:0,excessH:0,exposure:0};
+    cliMap[id].tickets++;
+    cliMap[id].excessH=Math.round((cliMap[id].excessH+excessH)*10)/10;
+    cliMap[id].exposure+=exposure;
+  });
+  var rows=Object.values(cliMap).sort(function(a,b){return b.exposure-a.exposure;});
+  var totalExposure=rows.reduce(function(s,r){return s+r.exposure;},0);
+  var totalOver=rows.reduce(function(s,r){return s+r.tickets;},0);
+  var totalExcessH=Math.round(rows.reduce(function(s,r){return s+r.excessH;},0)*10)/10;
+  return{rows:rows,totalExposure:totalExposure,totalOver:totalOver,totalExcessH:totalExcessH};
+}
+
+function renderSLAFinanceiro() {
+  var el=document.getElementById('sla-fin-card');
+  if(!el) return;
+  var d=computeSLAFinanceiro();
+  if(!d.totalOver){el.style.display='none';return;}
+  el.style.display='';
+  var fmtBRL=function(v){return'R$ '+v.toLocaleString('pt-BR');};
+  var kpisHtml='<div class="sla-fin-kpis">'
+    +'<div class="sla-fin-kpi"><div class="sla-fin-kpi-val" style="color:var(--danger)">'+fmtBRL(d.totalExposure)+'</div><div class="sla-fin-kpi-lbl">Exposição total</div></div>'
+    +'<div class="sla-fin-kpi"><div class="sla-fin-kpi-val" style="color:var(--orange)">'+d.totalOver+'</div><div class="sla-fin-kpi-lbl">Tickets acima do SLA</div></div>'
+    +'<div class="sla-fin-kpi"><div class="sla-fin-kpi-val" style="color:var(--warn)">'+d.totalExcessH+'h</div><div class="sla-fin-kpi-lbl">Horas excedentes</div></div>'
+    +'<div class="sla-fin-kpi"><div class="sla-fin-kpi-val" style="color:var(--muted)">'+fmtBRL(CUSTO_HORA_SLA)+'</div><div class="sla-fin-kpi-lbl">Custo / hora SLA</div></div>'
+    +'</div>';
+  var rows=d.rows.slice(0,10);
+  var tblHtml='<table class="sla-fin-table"><thead><tr>'
+    +'<th>Cliente</th><th>Tickets</th><th>Horas exc.</th><th>Exposição R$</th>'
+    +'</tr></thead><tbody>';
+  rows.forEach(function(r){
+    tblHtml+='<tr>'
+      +'<td><span class="ri-cli-name" onclick="setClienteGlobal(''+r.id+'')">'+r.nome+'</span></td>'
+      +'<td>'+r.tickets+'</td>'
+      +'<td>'+r.excessH+'h</td>'
+      +'<td class="sla-fin-exposure">'+fmtBRL(r.exposure)+'</td>'
+    +'</tr>';
+  });
+  tblHtml+='</tbody></table>';
+  var note='<div style="font-size:10px;color:var(--muted);margin-top:8px">Estimativa baseada em '+CUSTO_HORA_SLA+' R$/hora × horas excedentes ao SLA de '+SLA_LIMIT_BH_H+'h úteis · Configure em ⚙︎</div>';
+  el.innerHTML='<div class="card-title">SLA Financeiro — Exposição Estimada</div>'+kpisHtml+tblHtml+note;
 }
 
 function renderBl(){
@@ -5112,6 +5188,7 @@ function openSettings() {
   document.getElementById('cfg-meta-sol').value  = META_SOL;
   document.getElementById('cfg-meta-taxa').value = META_TAXA;
   document.getElementById('cfg-sla-bh').value    = SLA_LIMIT_BH_H;
+  document.getElementById('cfg-custo-hora-sla').value = CUSTO_HORA_SLA;
   o.classList.add('open');
 }
 function closeSettings() {
@@ -5126,8 +5203,9 @@ function saveSettings() {
   var ms  = parseInt(document.getElementById('cfg-meta-sol').value)  || _CFG_DEFAULTS.metaSol;
   var mt  = parseInt(document.getElementById('cfg-meta-taxa').value) || _CFG_DEFAULTS.metaTaxa;
   var sb  = parseInt(document.getElementById('cfg-sla-bh').value)    || _CFG_DEFAULTS.slaBH;
-  META_RESP = mr; META_SOL = ms; META_TAXA = mt; SLA_LIMIT_BH_H = sb;
-  try { localStorage.setItem('ssg-settings', JSON.stringify({metaResp:mr,metaSol:ms,metaTaxa:mt,slaBH:sb})); } catch(e){}
+  var chs = parseInt(document.getElementById('cfg-custo-hora-sla').value) || _CFG_DEFAULTS.custoHoraSLA;
+  META_RESP = mr; META_SOL = ms; META_TAXA = mt; SLA_LIMIT_BH_H = sb; CUSTO_HORA_SLA = chs;
+  try { localStorage.setItem('ssg-settings', JSON.stringify({metaResp:mr,metaSol:ms,metaTaxa:mt,slaBH:sb,custoHoraSLA:chs})); } catch(e){}
   closeSettings();
   // Re-render affected sections
   Object.keys(rendered).forEach(function(k){rendered[k]=false;});
@@ -5145,6 +5223,7 @@ function resetSettings() {
   document.getElementById('cfg-meta-sol').value  = _CFG_DEFAULTS.metaSol;
   document.getElementById('cfg-meta-taxa').value = _CFG_DEFAULTS.metaTaxa;
   document.getElementById('cfg-sla-bh').value    = _CFG_DEFAULTS.slaBH;
+  document.getElementById('cfg-custo-hora-sla').value = _CFG_DEFAULTS.custoHoraSLA;
 }
 
 function clearDateRange() {
@@ -5710,7 +5789,8 @@ function updateKPIs(op) {
 // Usa horas úteis (Seg-Sex 8h-18h) via calcBusinessHoursH()
 // ════════════════════════════════════════════════════════════
 // ─── METAS CONFIGURÁVEIS (carregadas do localStorage) ────────────────────────
-var _CFG_DEFAULTS = {metaResp:30, metaSol:48, metaTaxa:70, slaBH:16};
+var CUSTO_HORA_SLA = 50;
+var _CFG_DEFAULTS = {metaResp:30, metaSol:48, metaTaxa:70, slaBH:16, custoHoraSLA:50};
 (function(){
   try {
     var saved = JSON.parse(localStorage.getItem('ssg-settings')||'{}');
@@ -5718,9 +5798,11 @@ var _CFG_DEFAULTS = {metaResp:30, metaSol:48, metaTaxa:70, slaBH:16};
     META_SOL        = parseInt(saved.metaSol)  || _CFG_DEFAULTS.metaSol;
     META_TAXA       = parseInt(saved.metaTaxa) || _CFG_DEFAULTS.metaTaxa;
     SLA_LIMIT_BH_H  = parseInt(saved.slaBH)   || _CFG_DEFAULTS.slaBH;
+    CUSTO_HORA_SLA  = parseInt(saved.custoHoraSLA) || _CFG_DEFAULTS.custoHoraSLA;
   } catch(e) {
     META_RESP=_CFG_DEFAULTS.metaResp; META_SOL=_CFG_DEFAULTS.metaSol;
     META_TAXA=_CFG_DEFAULTS.metaTaxa; SLA_LIMIT_BH_H=_CFG_DEFAULTS.slaBH;
+    CUSTO_HORA_SLA=_CFG_DEFAULTS.custoHoraSLA;
   }
 })();
 var SLA_LIMIT_H = 48;    // fallback calendário (não usado no countdown)
