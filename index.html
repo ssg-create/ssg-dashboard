@@ -768,6 +768,24 @@ input[type=file]{display:none}
 .churn-score-fill.medio{background:#eab308}
 .churn-score-fill.baixo{background:#22c55e}
 
+.cap-grid{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
+.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:130px;flex:1;max-width:200px;cursor:default}
+.cap-card:hover{border-color:var(--border2)}
+.cap-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cap-avatar-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.cap-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cap-count{font-size:22px;font-weight:900;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.cap-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.cap-bar-track{height:3px;border-radius:2px;background:var(--bg);margin-bottom:6px}
+.cap-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.cap-status{font-size:9px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:10px;display:inline-block}
+.cap-status.sob{background:rgba(244,63,94,.18);color:#f43f5e;border:1px solid rgba(244,63,94,.3)}
+.cap-status.nor{background:rgba(99,102,241,.15);color:var(--blue);border:1px solid rgba(99,102,241,.25)}
+.cap-status.dis{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.25)}
+.cap-summary{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.cap-sum-item{font-size:11px;color:var(--sub)}
+.cap-sum-item strong{color:var(--text);font-family:var(--mono)}
+
 /* ── Fullscreen mode ───────────────────────────────────────── */
 .fs-mode .topbar{display:none!important}
 .fs-mode .sidebar{display:none!important}
@@ -1225,6 +1243,7 @@ input[type=file]{display:none}
 
       <!-- ── MODO XLSX ── -->
       <div id="at-xlsx-content">
+        <div id="at-capacity" class="card card-mb" style="display:none"></div>
         <div class="card card-mb"><div class="card-title">Volume total × fechados × pendentes</div><div class="cw" style="height:220px"><canvas id="c-atend"></canvas></div></div>
         <div class="card"><div class="card-title">Ranking detalhado</div><div class="tbl-scroll"><table class="tbl" id="atend-tbl"></table></div></div>
       </div>
@@ -2822,6 +2841,62 @@ function renderComp(){
   }});
 }
 
+function computeTeamCapacity(atendList) {
+  var list=(atendList||[]).filter(function(a){return a.t>0;});
+  if(!list.length) return [];
+  // median of ab (open tickets)
+  var sorted=list.map(function(a){return a.ab||0;}).slice().sort(function(a,b){return a-b;});
+  var mid=Math.floor(sorted.length/2);
+  var median=sorted.length%2?sorted[mid]:(sorted[mid-1]+sorted[mid])/2;
+  var maxAb=sorted[sorted.length-1]||1;
+  return list.map(function(a){
+    var ab=a.ab||0;
+    var status=ab===0?'dis':(ab>median*1.5&&ab>=3)?'sob':'nor';
+    return {n:a.n,t:a.t,f:a.f,ab:ab,rm:a.rm,tm:a.tm,status:status,barW:Math.round(ab/maxAb*100)};
+  });
+}
+
+function renderTeamCapacity() {
+  var el=document.getElementById('at-capacity');
+  if(!el) return;
+  var atendFilt=(getActiveOP().atend||OP.atend||[]).filter(function(a){return a.t>0;});
+  if(!atendFilt.length){el.style.display='none';return;}
+  el.style.display='';
+  var list=computeTeamCapacity(atendFilt);
+  var totalOpen=list.reduce(function(s,a){return s+a.ab;},0);
+  var nSob=list.filter(function(a){return a.status==='sob';}).length;
+  var nDis=list.filter(function(a){return a.status==='dis';}).length;
+  var STATUS_LABEL={sob:'Sobrecarr.',nor:'Normal',dis:'Disponível'};
+  var barColors={sob:'#f43f5e',nor:'var(--blue)',dis:'var(--ok)'};
+  // Summary line
+  var sumHtml='<div class="cap-summary">'
+    +'<span class="cap-sum-item">Total abertos: <strong>'+totalOpen+'</strong></span>'
+    +'<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
+    +'<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
+    +'</div>';
+  // Cards
+  var cardsHtml='<div class="cap-grid">';
+  list.forEach(function(a){
+    var initials=a.n.split(' ').slice(0,2).map(function(w){return w[0];}).join('');
+    var colorIdx=Math.abs(a.n.split('').reduce(function(s,ch){return s+ch.charCodeAt(0);},0))%PAL.length;
+    var col=PAL[colorIdx];
+    var shortN=a.n.split(' ').slice(0,2).join(' ');
+    var respTxt=a.rm!=null?Math.round(a.rm)+'min':'—';
+    cardsHtml+='<div class="cap-card" title="1ª resp: '+respTxt+' | Total: '+a.t+'">'
+      +'<div class="cap-card-head">'
+        +'<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
+        +'<div class="cap-name">'+shortN+'</div>'
+      +'</div>'
+      +'<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
+      +'<div class="cap-lbl">abertos</div>'
+      +'<div class="cap-bar-track"><div class="cap-bar-fill" style="width:'+a.barW+'%;background:'+barColors[a.status]+'"></div></div>'
+      +'<span class="cap-status '+a.status+'">'+STATUS_LABEL[a.status]+'</span>'
+    +'</div>';
+  });
+  cardsHtml+='</div>';
+  el.innerHTML='<div class="card-title">Capacidade da Equipe</div>'+sumHtml+cardsHtml;
+}
+
 function renderAt(){
   var atendFiltrado=(getActiveOP().atend||OP.atend);
   var top=atendFiltrado.slice(0,10);
@@ -2963,6 +3038,7 @@ function renderAt(){
   tbl.querySelectorAll('.at-name-link').forEach(function(el){
     el.addEventListener('click',function(e){e.stopPropagation();openAtendProfile(this.dataset.nome);});
   });
+  renderTeamCapacity();
 }
 
 // ════════════════════════════════════════════════════════════
