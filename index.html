@@ -6892,7 +6892,7 @@ buildFilaBtns('fila-btns-op', activeFilaOP, setFilaOP);
 buildFilaBtns('fila-btns-cli', activeFilaCli, setFilaCli);
 renderOv();rendered['s-ov']=true;
 renderAlertas();rendered['s-alertas']=true;
-setTimeout(computeInsights,500);
+setTimeout(function(){if(typeof computeInsights==='function')computeInsights();},500);
 </script>
 <script>
 function cliFilaFiltro(fila,btn){
@@ -8533,6 +8533,7 @@ var _notifTab = 'all';
 function buildNotifications() {
   var notifs = [];
   var now = new Date();
+  var isAb = function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
 
   // ── SLA vencidos e urgentes ──────────────────────────────
   if(typeof RAW_DATA !== 'undefined' && RAW_DATA && RAW_DATA.length) {
