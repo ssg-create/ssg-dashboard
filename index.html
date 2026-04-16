@@ -576,6 +576,19 @@ input[type=file]{display:none}
 .mth-count{font-family:var(--mono);font-size:10px;opacity:.7}
 .mth-all{background:rgba(255,255,255,.03);border-color:var(--border)}
 
+/* ── Fullscreen mode ───────────────────────────────────────── */
+.fs-mode .topbar{display:none!important}
+.fs-mode .sidebar{display:none!important}
+.fs-mode .app{padding-top:0!important}
+.fs-mode .main{margin-left:0!important}
+.fs-mode .sec.on{min-height:100vh}
+/* ── Botão fullscreen flutuante ────────────────────────────── */
+#fs-btn{position:fixed;bottom:22px;right:22px;z-index:9999;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#fs-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.1);transform:scale(1.08)}
+#fs-btn svg{width:16px;height:16px;pointer-events:none}
+.fs-mode #fs-btn{background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.45);color:#f43f5e}
+.fs-mode #fs-btn:hover{background:rgba(244,63,94,.22);transform:scale(1.08)}
+
 </style>
 </head>
 <body>
@@ -6362,6 +6375,25 @@ function renderIA(){
     sub.textContent='Importe um arquivo XLSX para gerar a análise automaticamente';
   }
 }
+</script>
+
+<!-- ── Fullscreen toggle ── -->
+<button id="fs-btn" title="Tela cheia (F)" onclick="toggleFS()">
+  <svg id="fs-ico-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/></svg>
+  <svg id="fs-ico-col" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg>
+</button>
+<script>
+function toggleFS(){
+  var on=document.body.classList.toggle('fs-mode');
+  document.getElementById('fs-ico-exp').style.display=on?'none':'';
+  document.getElementById('fs-ico-col').style.display=on?'':'none';
+  // Redimensiona todos os charts para o novo layout
+  setTimeout(function(){Object.keys(CH).forEach(function(k){if(CH[k])try{CH[k].resize();}catch(e){}});},60);
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&document.body.classList.contains('fs-mode'))toggleFS();
+  if((e.key==='f'||e.key==='F')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&document.activeElement.tagName!=='INPUT')toggleFS();
+});
 </script>
 </body>
 </html>
