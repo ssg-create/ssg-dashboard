@@ -9002,11 +9002,6 @@ function renderAcoes() {
   var el = document.getElementById('acoes-body');
   if(!el) return;
 
-  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:24px 0">Carregando dados…</div>';
-    return;
-  }
-
   var op    = getActiveOP();
   var acoes = gerarAcoes(op);
 
