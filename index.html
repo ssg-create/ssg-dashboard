@@ -639,9 +639,13 @@ input[type=file]{display:none}
       <div class="tb-dot" style="background:var(--warn)"></div>
       <span id="alert-bloqueados-txt">119 bloqueados</span>
     </div>
-    <div class="tb-alert-pill tap-ok">
-      <div class="tb-dot" style="background:var(--ok)"></div>
-      <span>1ª resp: 8min</span>
+    <div class="tb-alert-pill tap-ok" id="pill-resp-med">
+      <div class="tb-dot" id="pill-resp-dot" style="background:var(--ok)"></div>
+      <span id="pill-resp-txt">1ª resp: —</span>
+    </div>
+    <div class="tb-alert-pill tap-danger" id="pill-sla-vencendo" style="display:none" onclick="goSec('op','s-alertas',document.querySelector('.nav[onclick*=s-alertas]'))">
+      <div class="tb-dot" style="background:var(--danger)"></div>
+      <span id="pill-sla-txt">0 vencendo</span>
     </div>
     <div class="tb-divider"></div>
     <div class="tb-ai-badge" id="tb-ai-badge" style="display:none">
@@ -813,6 +817,14 @@ input[type=file]{display:none}
       <p>Chamados que exigem ação imediata da equipe</p>
     </div>
     <div class="page-body">
+      <!-- ── SLA COUNTDOWN BANNER ── -->
+      <div id="sla-countdown-banner" style="display:none;margin-bottom:16px;border-radius:var(--r2);overflow:hidden;border:1px solid rgba(244,63,94,.25)">
+        <div style="background:rgba(244,63,94,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(244,63,94,.15)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.08em">SLA em risco — tickets vencendo nas próximas horas</span>
+        </div>
+        <div id="sla-countdown-list" style="padding:8px 0"></div>
+      </div>
       <div class="kpi-row kpi-row-3">
         <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)" id="kpi-ma-abertos">37</div><div class="kpi-sub" id="kpi-ma-sub">exige atenção imediata</div></div>
         <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Bloqueados totais</div><div class="kpi-val" style="color:var(--orange)" id="kpi-bloq-aging">—</div><div class="kpi-sub" id="kpi-bloq-sub">aguardando ação</div></div>
@@ -1769,6 +1781,9 @@ function renderAlertas(){
   var semResp = RESP30_MESES[mes]||0;
   var estadosBloq=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloqExato=critFiltrados.filter(function(c){return estadosBloq.indexOf(c.estado)!==-1&&c.idade!=='hoje';}).length;
+
+  // Atualiza SLA countdown sempre que alertas são renderizados
+  renderSLACountdown();
 
   var kpiMA=document.getElementById('kpi-ma-abertos');
   var kpiBloq=document.getElementById('kpi-bloq-aging');
@@ -3088,6 +3103,26 @@ function buildBloqEntry(estadoObj){
 
 function impFC(headers,key){var vs=COL_IMP[key];for(var i=0;i<headers.length;i++){var h=headers[i].toLowerCase().trim().replace(/_/g,' ');for(var j=0;j<vs.length;j++){if(h===vs[j]||h.indexOf(vs[j])!==-1)return headers[i];}}return null;}
 
+// ─── BUSINESS HOURS CALCULATOR ── Seg-Sex 8h–18h ─────────────────────────
+function calcBusinessHoursH(start, end) {
+  if(!start||!end||!(start instanceof Date)||!(end instanceof Date)||end<=start) return 0;
+  var totalMs=0, BH_S=8, BH_E=18;
+  // Começa no início do dia de "start" no horário de expediente
+  var cur=new Date(start.getFullYear(),start.getMonth(),start.getDate(),BH_S,0,0,0);
+  var days=0;
+  while(cur<end && days++<400){
+    var dow=cur.getDay();
+    if(dow!==0&&dow!==6){ // Seg-Sex
+      var bEnd=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate(),BH_E,0,0,0);
+      var pStart=start>cur?start:cur;  // não contar antes de "start"
+      var pEnd=end<bEnd?end:bEnd;      // não passar de "end" nem do fim do expediente
+      if(pEnd>pStart) totalMs+=(pEnd-pStart);
+    }
+    cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate()+1,BH_S,0,0,0);
+  }
+  return Math.round(totalMs/3600000*10)/10;
+}
+
 function parseR(rows){
   if(!rows.length)return null;
   var hd=Object.keys(rows[0]),C={};Object.keys(COL_IMP).forEach(function(k){C[k]=impFC(hd,k);});
@@ -3102,7 +3137,10 @@ function parseR(rows){
     var fn=C.pnome?String(r[C.pnome]||'').trim():'',ln=C.unome?String(r[C.unome]||'').trim():'';
     var at=(fn+' '+ln).trim()||(C.atend?String(r[C.atend]||'').trim():'')||'—';
     var sv=C.servico?String(r[C.servico]||'').split('::').pop().trim()||'Outros':'Outros';
-    return{num:C.num?String(r[C.num]||'#'+(i+1)):'#'+(i+1),criado:(cr&&!isNaN(cr))?cr:null,fechado:(fe&&!isNaN(fe))?fe:null,estado:EM2[eR]||eR||'Aberto',prior:PM2[pR]||pR||'Normal',atend:at,cli_id:cid,cli_nome:cliNome,assunto:C.assunto?String(r[C.assunto]||'—').slice(0,70):'—',servico:sv,fila:C.fila?String(r[C.fila]||'').trim().toUpperCase():'',resp_min:(rm&&!isNaN(rm))?rm:null,sol_h:(sm&&!isNaN(sm))?Math.round(sm/60*10)/10:null};
+    var solH=(sm&&!isNaN(sm))?Math.round(sm/60*10)/10:null;
+    var crD=(cr&&!isNaN(cr))?cr:null, feD=(fe&&!isNaN(fe))?fe:null;
+    var solHbh=crD&&feD?calcBusinessHoursH(crD,feD):null;
+    return{num:C.num?String(r[C.num]||'#'+(i+1)):'#'+(i+1),criado:crD,fechado:feD,estado:EM2[eR]||eR||'Aberto',prior:PM2[pR]||pR||'Normal',atend:at,cli_id:cid,cli_nome:cliNome,assunto:C.assunto?String(r[C.assunto]||'—').slice(0,70):'—',servico:sv,fila:C.fila?String(r[C.fila]||'').trim().toUpperCase():'',resp_min:(rm&&!isNaN(rm))?rm:null,sol_h:solH,sol_h_bh:solHbh};
   });
 }
 
@@ -3147,6 +3185,9 @@ function rebuildAll(data){
     OP.resp_med=respArr.length?Math.round(respArr[Math.floor(respArr.length/2)]*10)/10:0;
     var solArr=data.filter(function(d){return d.sol_h;}).map(function(d){return d.sol_h;});
     OP.sol_med=solArr.length?Math.round(solArr.reduce(function(a,b){return a+b;},0)/solArr.length*10)/10:0;
+    // sol_med em horas úteis (usa sol_h_bh calculado no parseR via calcBusinessHoursH)
+    var solBhArr=data.filter(function(d){return d.sol_h_bh!=null;}).map(function(d){return d.sol_h_bh;});
+    OP.sol_med_bh=solBhArr.length?Math.round(solBhArr.reduce(function(a,b){return a+b;},0)/solBhArr.length*10)/10:null;
     // sincronizar by_day (usado em buildMonthFilter) com byDay
     OP.by_day=OP.byDay;
 
@@ -3172,13 +3213,15 @@ function rebuildAll(data){
       var rm2=rs2.length?Math.round(rs2[Math.floor(rs2.length/2)]*10)/10:0;
       var ss2=m.rows.filter(function(d){return d.sol_h;}).map(function(d){return d.sol_h;});
       var sm2=ss2.length?Math.round(ss2.reduce(function(a,b){return a+b;},0)/ss2.length*10)/10:0;
+      var sb2=m.rows.filter(function(d){return d.sol_h_bh!=null;}).map(function(d){return d.sol_h_bh;});
+      var smBh2=sb2.length?Math.round(sb2.reduce(function(a,b){return a+b;},0)/sb2.length*10)/10:null;
       var aa2=function(arr){return arr.length?Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length*10)/10:null;};
       var dm2={};m.rows.forEach(function(d){if(!d.criado)return;var k=d.criado.toISOString().slice(0,10);dm2[k]=(dm2[k]||0)+1;});
       OP_MESES[mk]={
         total:m.rows.length,
         abertos:m.rows.filter(function(d){return isAberto(d.estado);}).length,
         fechados:m.rows.filter(function(d){return isFechado(d.estado);}).length,
-        resp_med:rm2,sol_med:sm2,
+        resp_med:rm2,sol_med:sm2,sol_med_bh:smBh2,
         estado:m.eM,prior:m.pM,svc:m.sM,cli:m.cM,heat:m.hM,
         atend:Object.keys(m.aM).map(function(k){var s=m.aM[k];return{n:k,t:s.t,f:s.f,ab:s.ab,tm:aa2(s.tm),rm:aa2(s.rm),est:s.est||{}};}).sort(function(a,b){return b.t-a.t;}),
         by_day:Object.keys(dm2).sort().map(function(k){return{d:k,n:dm2[k]};})
@@ -4470,10 +4513,139 @@ function updateKPIs(op) {
       if(sEl)sEl.textContent=subs[i]||'';
     });
   }
+  // ── Pill 1ª Resposta dinâmica no topbar ──────────────────────
+  var pillTxt=document.getElementById('pill-resp-txt');
+  var pillDot=document.getElementById('pill-resp-dot');
+  var pillWrap=document.getElementById('pill-resp-med');
+  if(pillTxt&&rm!=null){
+    pillTxt.textContent='1\u00aa resp: '+fmtRespTxt(rm);
+    var isOk=rm<=30;
+    if(pillDot)pillDot.style.background=isOk?'var(--ok)':'var(--warn)';
+    if(pillWrap){
+      pillWrap.classList.toggle('tap-ok',isOk);
+      pillWrap.classList.toggle('tap-warn',!isOk);
+    }
+  }
 }
 
 // ════════════════════════════════════════════════════════════
 // PAINEL DE AÇÕES PRIORITÁRIAS — O que fazer agora
+// ════════════════════════════════════════════════════════════
+// SLA COUNTDOWN — tickets abertos vencendo nas próximas horas
+// Usa horas úteis (Seg-Sex 8h-18h) via calcBusinessHoursH()
+// ════════════════════════════════════════════════════════════
+var SLA_LIMIT_H = 48;    // fallback calendário (não usado no countdown)
+var SLA_LIMIT_BH_H = 16; // SLA em horas úteis (2 dias × 8h) — ajuste conforme contrato
+
+function getSLACountdown() {
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return [];
+  var abertosStates = ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+  var now = new Date();
+  var result = [];
+  RAW_DATA.forEach(function(d) {
+    if(!d.criado || !(d.criado instanceof Date) || isNaN(d.criado)) return;
+    if(abertosStates.indexOf(d.estado) === -1) return;
+    // filtro de mês/fila/cliente ativos
+    if(activeCliente && d.cli_id !== activeCliente) return;
+    if(activeMonth !== 'all') {
+      var mk = d.criado.toISOString().slice(0,7);
+      if(mk !== activeMonth) return;
+    }
+    if(activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+    // ── HORAS ÚTEIS: conta apenas Seg-Sex 8h-18h ──
+    var elapsedH = calcBusinessHoursH(d.criado, now);
+    var remainH = SLA_LIMIT_BH_H - elapsedH;
+    if(remainH > 0 && remainH <= 4) {
+      result.push({
+        num: d.num,
+        assunto: d.assunto,
+        atend: d.atend,
+        estado: d.estado,
+        remainH: remainH,
+        elapsedH: elapsedH
+      });
+    } else if(remainH <= 0) {
+      // já violou — inclui como "vencido"
+      result.push({
+        num: d.num,
+        assunto: d.assunto,
+        atend: d.atend,
+        estado: d.estado,
+        remainH: remainH,
+        elapsedH: elapsedH,
+        vencido: true
+      });
+    }
+  });
+  // ordena: vencidos primeiro, depois por menor tempo restante
+  result.sort(function(a,b){ return a.remainH - b.remainH; });
+  return result;
+}
+
+function renderSLACountdown() {
+  var items = getSLACountdown();
+  var banner = document.getElementById('sla-countdown-banner');
+  var list   = document.getElementById('sla-countdown-list');
+  var pill   = document.getElementById('pill-sla-vencendo');
+  var pillTxt= document.getElementById('pill-sla-txt');
+
+  if(!items.length) {
+    if(banner) banner.style.display = 'none';
+    if(pill)   pill.style.display   = 'none';
+    return;
+  }
+
+  var vencidos  = items.filter(function(i){ return i.vencido; });
+  var em4h      = items.filter(function(i){ return !i.vencido && i.remainH <= 4; });
+  var em2h      = items.filter(function(i){ return !i.vencido && i.remainH <= 2; });
+  var em1h      = items.filter(function(i){ return !i.vencido && i.remainH <= 1; });
+  var totalRisco= items.length;
+
+  // Topbar pill
+  if(pill && pillTxt) {
+    pill.style.display = 'flex';
+    var urgLabel = vencidos.length
+      ? vencidos.length + ' vencido' + (vencidos.length>1?'s':'')
+      : em1h.length
+        ? em1h.length + ' vence em <1h'
+        : em2h.length
+          ? em2h.length + ' vence em <2h'
+          : totalRisco + ' vencendo';
+    pillTxt.textContent = urgLabel;
+  }
+
+  // Banner na seção Alertas
+  if(banner) banner.style.display = 'block';
+  if(list) {
+    list.innerHTML = items.slice(0,10).map(function(it) {
+      var hLeft = it.remainH;
+      var isVenc = it.vencido;
+      var urgColor = isVenc ? 'var(--danger)' : hLeft<=1 ? '#ef4444' : hLeft<=2 ? '#f97316' : 'var(--warn)';
+      var urgBg    = isVenc ? 'rgba(244,63,94,.1)' : hLeft<=1 ? 'rgba(239,68,68,.07)' : hLeft<=2 ? 'rgba(249,115,22,.07)' : 'rgba(245,158,11,.07)';
+      var timeLabel;
+      if(isVenc) {
+        var ov = Math.abs(hLeft);
+        timeLabel = '⚠ VENCIDO há ' + (ov>=1 ? Math.floor(ov)+'h'+(Math.round((ov%1)*60)>0?Math.round((ov%1)*60)+'min':'') : Math.round(ov*60)+'min');
+      } else {
+        var hR = Math.floor(hLeft), mR = Math.round((hLeft - hR) * 60);
+        timeLabel = 'Vence em ' + (hR>0 ? hR+'h':'') + (mR>0 ? mR+'min':'');
+      }
+      var nom = it.atend ? it.atend.split('.')[0] : '—';
+      return '<div style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:'+urgBg+';border-bottom:1px solid rgba(255,255,255,.04)">'
+        +'<div style="min-width:72px;text-align:center;padding:4px 8px;border-radius:20px;background:'+urgColor+';color:#fff;font-size:9px;font-weight:700;font-family:var(--mono);white-space:nowrap">'+timeLabel+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.assunto+'</div>'
+          +'<div style="font-size:10px;color:var(--muted);margin-top:1px">#'+it.num.slice(-8)+' &nbsp;·&nbsp; '+nom+'</div>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</div>'
+      +'</div>';
+    }).join('');
+  }
+}
+
+// Atualiza countdown a cada minuto
+setInterval(renderSLACountdown, 60 * 1000);
+
 // ════════════════════════════════════════════════════════════
 function renderOpActions(op) {
   var el = document.getElementById('op-actions-panel');
