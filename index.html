@@ -1823,7 +1823,7 @@ input[type=file]{display:none}
     <p>Chamados que requerem ação imediata · atualizado automaticamente com os filtros ativos</p>
   </div>
   <div class="page-body" id="acoes-body">
-    <div style="color:var(--muted);font-size:13px;padding:24px 0">Importe um arquivo XLSX para ver as ações necessárias.</div>
+    <div style="color:var(--muted);font-size:13px;padding:24px 0">Carregando dados…</div>
   </div>
 </div><!-- /view-acoes -->
 
@@ -4447,6 +4447,9 @@ function rebuildAll(data){
         rendered['s-alertas']=true;renderAlertas();
         if(aCli){rendered[aCli.id]=true;renderSec(aCli.id);}
         if(aOp&&aOp.id!=='s-ov'&&aOp.id!=='s-alertas'){rendered[aOp.id]=true;renderSec(aOp.id);}
+        // Atualiza aba Ações sempre que dados são carregados (auto-sync ou import)
+        var vAcoesRB = document.getElementById('view-acoes');
+        if(vAcoesRB && vAcoesRB.classList.contains('on')) renderAcoes();
         setTimeout(computeInsights,200);
         setProgress(100,'✓ Importação concluída!');
         setTimeout(function(){setProgress(0,'');closeImport();},1500);
@@ -8869,7 +8872,7 @@ function renderAcoes() {
   if(!el) return;
 
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:24px 0">Importe um arquivo XLSX para ver as ações necessárias.</div>';
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:24px 0">Carregando dados…</div>';
     return;
   }
 
