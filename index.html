@@ -728,6 +728,33 @@ input[type=file]{display:none}
 .ri-cli-bar{flex:1;height:4px;border-radius:2px;background:var(--bg3);min-width:40px}
 .ri-cli-bar-fill{height:100%;border-radius:2px;background:var(--purple)}
 
+.atpf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1900;display:none;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+.atpf-overlay.open{display:flex}
+.atpf-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:700px;max-width:100%;box-shadow:0 28px 70px rgba(0,0,0,.6);flex-shrink:0}
+.atpf-header{display:flex;align-items:center;gap:14px;padding:20px 24px 16px;border-bottom:1px solid var(--border)}
+.atpf-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0}
+.atpf-info{flex:1;min-width:0}
+.atpf-name{font-size:15px;font-weight:700;color:var(--text)}
+.atpf-sub{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.atpf-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px 8px;border-radius:6px;line-height:1;flex-shrink:0}
+.atpf-close:hover{color:var(--text);background:var(--bg3)}
+.atpf-kpis{display:flex;gap:0;border-bottom:1px solid var(--border)}
+.atpf-kpi{flex:1;padding:14px 16px;text-align:center;border-right:1px solid var(--border)}
+.atpf-kpi:last-child{border-right:none}
+.atpf-kpi-val{font-size:22px;font-weight:800;font-family:var(--mono);line-height:1}
+.atpf-kpi-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+.atpf-kpi-rank{font-size:9px;font-family:var(--mono);margin-top:4px;padding:1px 6px;border-radius:10px;display:inline-block}
+.atpf-body{padding:16px 20px}
+.atpf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.atpf-sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
+.atpf-tickets-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.atpf-tickets-tbl th{padding:5px 8px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)}
+.atpf-tickets-tbl td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--sub)}
+.atpf-tickets-tbl tr:last-child td{border-bottom:none}
+.atpf-tickets-tbl tr:hover td{background:var(--bg3)}
+.at-name-link{cursor:pointer;transition:opacity .15s}
+.at-name-link:hover{opacity:.75}
+
 /* ── Fullscreen mode ───────────────────────────────────────── */
 .fs-mode .topbar{display:none!important}
 .fs-mode .sidebar{display:none!important}
@@ -763,6 +790,37 @@ input[type=file]{display:none}
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
 </div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h==="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee"){sessionStorage.setItem("k","1");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+
+<!-- ATENDENTE PROFILE MODAL -->
+<div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
+  <div class="atpf-modal">
+    <div class="atpf-header">
+      <div class="atpf-avatar" id="atpf-avatar"></div>
+      <div class="atpf-info">
+        <div class="atpf-name" id="atpf-name"></div>
+        <div class="atpf-sub"  id="atpf-sub"></div>
+      </div>
+      <button class="atpf-close" onclick="closeAtendProfile()">✕</button>
+    </div>
+    <div class="atpf-kpis" id="atpf-kpis"></div>
+    <div class="atpf-body">
+      <div class="atpf-grid">
+        <div class="card" style="padding:14px">
+          <div class="atpf-sec-title">Volume mensal</div>
+          <div style="height:110px"><canvas id="atpf-trend-chart"></canvas></div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div class="atpf-sec-title">Padrão de horário (seg–sex)</div>
+          <div style="overflow-x:auto"><canvas id="atpf-heat-canvas"></canvas></div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="atpf-sec-title">Chamados abertos <span id="atpf-open-count" style="color:var(--danger)"></span></div>
+        <div id="atpf-tickets" style="max-height:200px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SETTINGS MODAL -->
 <div class="settings-overlay" id="settings-overlay" onclick="closeSettingsOutside(event)">
@@ -2324,6 +2382,152 @@ function renderCriticos(){
   document.getElementById('lista-criticos').innerHTML=html;
 }
 
+function openAtendProfile(nome) {
+  var overlay = document.getElementById('atend-profile-overlay');
+  if(!overlay) return;
+  overlay.classList.add('open');
+
+  var allAtend = (getActiveOP().atend || OP.atend || []);
+  var idx = allAtend.findIndex(function(a){return a.n===nome;});
+  var a = allAtend[idx] || {n:nome,t:0,f:0,ab:0,tm:null,rm:null};
+  var color = PAL[idx%PAL.length] || '#4f8ef7';
+  var initials = nome.split(' ').filter(function(w){return w;}).map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  var shortN = nome.split(' ').slice(0,2).join(' ');
+
+  // ── Header ──────────────────────────────────────────────────────
+  var av = document.getElementById('atpf-avatar');
+  if(av){ av.textContent=initials; av.style.background=color+'22'; av.style.border='2px solid '+color+'55'; av.style.color=color; }
+  var nm = document.getElementById('atpf-name'); if(nm) nm.textContent = nome;
+  var sb = document.getElementById('atpf-sub');
+  if(sb) sb.textContent = a.t + ' chamados · período: ' + (activeRangeStart&&activeRangeEnd ? activeRangeStart.toISOString().slice(0,10)+' a '+activeRangeEnd.toISOString().slice(0,10) : activeMonth==='all'?'todos os meses':activeMonth);
+
+  // ── KPIs + rank ─────────────────────────────────────────────────
+  var taxa = a.t>0 ? Math.round(a.f/a.t*100) : 0;
+  function rank(arr, key, lower) {
+    var vals = arr.map(function(x){return x[key];}).filter(function(v){return v!=null;}).sort(function(a,b){return lower?a-b:b-a;});
+    var myVal = a[key];
+    if(myVal==null||!vals.length) return null;
+    var pos = vals.indexOf(myVal);
+    if(pos<0){ for(var i=0;i<vals.length;i++){if(lower?vals[i]>=myVal:vals[i]<=myVal){pos=i;break;}} }
+    return pos<0?vals.length:pos;
+  }
+  var rankResp = rank(allAtend,'rm',true);  // lower is better
+  var rankSol  = rank(allAtend,'tm',true);
+  function rankBadge(pos, total, lower) {
+    if(pos==null) return '';
+    var pct = total>1 ? Math.round((total-1-pos)/(total-1)*100) : 100;
+    var bg = pct>=70?'rgba(16,185,129,.15)':pct>=40?'rgba(245,158,11,.12)':'rgba(244,63,94,.12)';
+    var col = pct>=70?'var(--ok)':pct>=40?'var(--warn)':'var(--danger)';
+    return '<span class="atpf-kpi-rank" style="background:'+bg+';color:'+col+'">Top '+(100-pct)+'%</span>';
+  }
+  var kpiData = [
+    {lbl:'Total', val:a.t, unit:'', color:'var(--text)', rank:''},
+    {lbl:'Fechados', val:a.f, unit:'', color:'var(--ok)', rank:''},
+    {lbl:'Taxa', val:taxa+'%', unit:'', color:taxa>=META_TAXA?'var(--ok)':taxa>=50?'var(--warn)':'var(--danger)', rank:''},
+    {lbl:'1ª Resp', val:a.rm!=null?Math.round(a.rm)+'min':'—', unit:'', color:a.rm!=null&&a.rm<=META_RESP?'var(--ok)':a.rm!=null&&a.rm<=120?'var(--warn)':'var(--danger)', rank:rankBadge(rankResp,allAtend.length,true)},
+    {lbl:'Solução', val:a.tm!=null?a.tm+'h':'—', unit:'', color:a.tm!=null&&a.tm<=META_SOL?'var(--ok)':'var(--warn)', rank:rankBadge(rankSol,allAtend.length,true)}
+  ];
+  var kpisEl = document.getElementById('atpf-kpis');
+  if(kpisEl) kpisEl.innerHTML = kpiData.map(function(k){
+    return '<div class="atpf-kpi">' +
+      '<div class="atpf-kpi-val" style="color:'+k.color+'">'+k.val+'</div>' +
+      '<div class="atpf-kpi-lbl">'+k.lbl+'</div>' +
+      (k.rank?'<div>'+k.rank+'</div>':'') +
+    '</div>';
+  }).join('');
+
+  // ── Trend chart ────────────────────────────────────────────────
+  if(CH['atpf-trend-chart']){ CH['atpf-trend-chart'].destroy(); CH['atpf-trend-chart']=null; }
+  var mKeys = Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
+  var mLabels=[],mVols=[],mFech=[];
+  var mN={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  mKeys.forEach(function(k){
+    var rec = OP_MESES[k]&&OP_MESES[k].atend ? OP_MESES[k].atend.find(function(x){return x.n===nome;}) : null;
+    var p = k.split('-'); mLabels.push(mN[p[1]]+'/'+(p[0].slice(2)));
+    mVols.push(rec?rec.t:0); mFech.push(rec?rec.f:0);
+  });
+  var trendCtx = document.getElementById('atpf-trend-chart');
+  if(trendCtx && mLabels.length) {
+    CH['atpf-trend-chart'] = new Chart(trendCtx, {
+      type:'bar',
+      data:{labels:mLabels,datasets:[
+        {label:'Fechados',data:mFech,backgroundColor:color+'88',borderRadius:3,order:1},
+        {label:'Total',data:mVols,backgroundColor:'rgba(255,255,255,.06)',borderColor:'rgba(255,255,255,.15)',borderWidth:1,borderRadius:3,order:2}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{color:TK,font:{size:9},boxWidth:10,padding:8}}},scales:{x:{ticks:{color:TK,font:{size:9}},grid:{display:false}},y:{ticks:{color:TK,font:{size:9}},grid:{color:G}}}}
+    });
+  }
+
+  // ── Mini heatmap ────────────────────────────────────────────────
+  var heat={};
+  (RAW_DATA||[]).forEach(function(d){
+    if(d.atend!==nome||!d.criado||!(d.criado instanceof Date)) return;
+    var dow=d.criado.getDay(), mapped=dow===0?6:dow-1, h=d.criado.getHours();
+    if(mapped>4) return; // seg-sex only
+    heat[mapped+'_'+h]=(heat[mapped+'_'+h]||0)+1;
+  });
+  var maxH=0; Object.keys(heat).forEach(function(k){if(heat[k]>maxH)maxH=heat[k];});
+  var hCv=document.getElementById('atpf-heat-canvas');
+  if(hCv){
+    var dias=['Seg','Ter','Qua','Qui','Sex'];
+    var cw=36,ch=14,pL=26,pT=18,W=pL+5*cw,H=pT+10*ch; // 8h–18h only
+    hCv.width=W; hCv.height=H; hCv.style.width=W+'px'; hCv.style.height=H+'px';
+    var ctx=hCv.getContext('2d');
+    ctx.fillStyle='#0e1117'; ctx.fillRect(0,0,W,H);
+    ctx.font="500 9px 'JetBrains Mono'"; ctx.fillStyle='rgba(200,210,230,.7)'; ctx.textAlign='center';
+    for(var d=0;d<5;d++) ctx.fillText(dias[d],pL+d*cw+cw/2,11);
+    ctx.textAlign='right'; ctx.font="8px 'JetBrains Mono'"; ctx.fillStyle='rgba(200,210,230,.5)';
+    for(var h=8;h<18;h++) ctx.fillText(h+'h',pL-2,pT+(h-8)*ch+ch/2+3);
+    for(var d2=0;d2<5;d2++){
+      for(var h2=8;h2<18;h2++){
+        var v=heat[d2+'_'+h2]||0;
+        var p2=maxH>0?v/maxH:0;
+        var r2=Math.round(14+65*p2),g2=Math.round(17+126*p2),b2=Math.round(23+224*p2);
+        ctx.fillStyle='rgb('+r2+','+g2+','+b2+')';
+        ctx.fillRect(pL+d2*cw+1,pT+(h2-8)*ch+1,cw-2,ch-2);
+        if(v>0){ctx.fillStyle=p2>.5?'#fff':'rgba(255,255,255,.5)';ctx.font="8px 'JetBrains Mono'";ctx.textAlign='center';ctx.fillText(v,pL+d2*cw+cw/2,pT+(h2-8)*ch+ch/2+3);}
+      }
+    }
+  }
+
+  // ── Tickets abertos ─────────────────────────────────────────────
+  var openStates=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+  var tix=(RAW_DATA||[]).filter(function(d){
+    return d.atend===nome && openStates.indexOf(d.estado)!==-1 && ticketInFilter(d);
+  }).sort(function(a,b){return (a.criado||0)-(b.criado||0);}); // oldest first
+  var cntEl=document.getElementById('atpf-open-count');
+  if(cntEl) cntEl.textContent=tix.length?'('+tix.length+' aberto'+(tix.length!==1?'s':'')+')':(activeMonth==='all'?'':'(0)');
+  var tixEl=document.getElementById('atpf-tickets');
+  if(tixEl){
+    if(!tix.length){
+      tixEl.innerHTML='<div style="color:var(--ok);font-size:11px;padding:10px 0">Nenhum chamado aberto — ótimo!</div>';
+    } else {
+      var p2f=function(n){return n<10?'0'+n:String(n);};
+      var rows=tix.slice(0,30).map(function(t){
+        var diff=t.criado?Math.floor((new Date()-t.criado)/(864e5)):null;
+        var idade=diff===null?'—':diff===0?'hoje':diff+'d';
+        var dt=t.criado?p2f(t.criado.getDate())+'/'+p2f(t.criado.getMonth()+1):'—';
+        var agingColor=diff===null?'var(--muted)':diff>7?'var(--danger)':diff>3?'var(--warn)':'var(--ok)';
+        return '<tr>'+
+          '<td style="font-family:var(--mono);color:var(--muted)">#'+t.num+'</td>'+
+          '<td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.assunto||'—')+'</td>'+
+          '<td>'+ePill(t.estado)+'</td>'+
+          '<td style="font-size:10px;color:var(--muted)">'+dt+'</td>'+
+          '<td style="font-family:var(--mono);font-size:10px;font-weight:700;color:'+agingColor+'">'+idade+'</td>'+
+        '</tr>';
+      }).join('');
+      tixEl.innerHTML='<table class="atpf-tickets-tbl"><thead><tr><th>#</th><th>Assunto</th><th>Estado</th><th>Criado</th><th>Idade</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    }
+  }
+}
+
+function closeAtendProfile(e) {
+  if(e && e.target !== document.getElementById('atend-profile-overlay')) return;
+  var overlay = document.getElementById('atend-profile-overlay');
+  if(overlay) overlay.classList.remove('open');
+  if(CH['atpf-trend-chart']){ CH['atpf-trend-chart'].destroy(); CH['atpf-trend-chart']=null; }
+}
+
 function openAtendPendModal(nome){
   var PEND=['Retorno Cliente','Em Atendimento','Aberto','Aguardando Interno'];
   var PEND_COLORS={
@@ -2700,7 +2904,7 @@ function renderAt(){
         +'<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,'+PAL[i%PAL.length]+'33,'+PAL[i%PAL.length]+'11);border:1px solid '+PAL[i%PAL.length]+'44;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:'+PAL[i%PAL.length]+'">'
           +shortName.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()
         +'</div>'
-        +'<div>'
+        +'<div class="at-name-link" data-nome="'+fullName+'">'
           +'<div style="font-size:12.5px;font-weight:500;color:var(--text)">'+shortName+'</div>'
           +(fullName!==shortName?'<div style="font-size:10px;color:var(--muted)">'+fullName.split(' ').slice(2).join(' ')+'</div>':'')
         +'</div>'
@@ -2740,6 +2944,10 @@ function renderAt(){
       if(pill){pill.style.background='rgba(244,63,94,.1)';pill.style.borderColor='rgba(244,63,94,.25)';}
     });
     td.addEventListener('click',function(){openAtendPendModal(this.dataset.nome);});
+  });
+  // Profile click
+  tbl.querySelectorAll('.at-name-link').forEach(function(el){
+    el.addEventListener('click',function(e){e.stopPropagation();openAtendProfile(this.dataset.nome);});
   });
 }
 
