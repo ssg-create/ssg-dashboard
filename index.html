@@ -690,6 +690,44 @@ input[type=file]{display:none}
 .dr-clear:hover{border-color:var(--danger);color:var(--danger)}
 .dr-active-badge{font-size:9px;font-family:var(--mono);color:var(--teal);padding:2px 6px;background:rgba(0,212,168,.1);border-radius:10px;margin-top:4px;display:block;word-break:break-all}
 
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:center;justify-content:center}
+.settings-overlay.open{display:flex}
+.settings-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:24px 28px;width:420px;max-width:calc(100vw - 32px);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.settings-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.settings-title button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;border-radius:4px}
+.settings-title button:hover{color:var(--text);background:var(--bg3)}
+.settings-group{margin-bottom:18px}
+.settings-group-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono);margin-bottom:10px;display:block}
+.settings-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-label{font-size:12px;color:var(--sub);flex:1}
+.settings-row-hint{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.settings-input{width:70px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:12px;font-family:var(--mono);text-align:right;outline:none}
+.settings-input:focus{border-color:var(--blue2)}
+.settings-save{width:100%;padding:10px;border-radius:8px;background:var(--blue2);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;margin-top:18px;font-family:var(--font);transition:opacity .15s}
+.settings-save:hover{opacity:.85}
+.settings-reset{background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;font-family:var(--mono);text-decoration:underline;margin-top:8px;display:block;width:100%;text-align:center}
+.settings-reset:hover{color:var(--text)}
+.tb-settings-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center}
+.tb-settings-btn:hover{color:var(--text);background:var(--bg3)}
+.tb-settings-btn svg{width:16px;height:16px}
+
+.ri-cli-section{margin-top:20px}
+.ri-cli-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
+.ri-cli-table{width:100%;border-collapse:collapse;font-size:12px}
+.ri-cli-table th{padding:6px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:2px solid var(--border)}
+.ri-cli-table th:not(:first-child){text-align:right}
+.ri-cli-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ri-cli-table td:not(:first-child){text-align:right;font-family:var(--mono);font-size:11px}
+.ri-cli-table tr:last-child td{border-bottom:none}
+.ri-cli-table tr:hover td{background:var(--bg3)}
+.ri-cli-name{font-weight:600;color:var(--text);cursor:pointer}
+.ri-cli-name:hover{color:var(--blue)}
+.ri-cli-tag{font-size:9px;font-family:var(--mono);background:rgba(168,85,247,.15);color:rgba(200,150,255,.9);border-radius:10px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;display:inline-block}
+.ri-cli-bar-wrap{display:flex;align-items:center;gap:6px}
+.ri-cli-bar{flex:1;height:4px;border-radius:2px;background:var(--bg3);min-width:40px}
+.ri-cli-bar-fill{height:100%;border-radius:2px;background:var(--purple)}
+
 /* ── Fullscreen mode ───────────────────────────────────────── */
 .fs-mode .topbar{display:none!important}
 .fs-mode .sidebar{display:none!important}
@@ -725,6 +763,44 @@ input[type=file]{display:none}
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
 </div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h==="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee"){sessionStorage.setItem("k","1");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+
+<!-- SETTINGS MODAL -->
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettingsOutside(event)">
+  <div class="settings-modal">
+    <div class="settings-title">
+      ⚙ Configurar Metas e SLA
+      <button onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-group">
+      <span class="settings-group-label">Metas de Desempenho</span>
+      <div class="settings-row">
+        <span class="settings-row-label">1ª Resposta — meta</span>
+        <input type="number" id="cfg-meta-resp" class="settings-input" min="1" max="480" value="30">
+        <span class="settings-row-hint">min</span>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Solução — meta</span>
+        <input type="number" id="cfg-meta-sol" class="settings-input" min="1" max="720" value="48">
+        <span class="settings-row-hint">h</span>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">Taxa de conclusão — meta</span>
+        <input type="number" id="cfg-meta-taxa" class="settings-input" min="10" max="100" value="70">
+        <span class="settings-row-hint">%</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <span class="settings-group-label">SLA Contratual</span>
+      <div class="settings-row">
+        <span class="settings-row-label">Limite SLA em horas úteis</span>
+        <input type="number" id="cfg-sla-bh" class="settings-input" min="1" max="240" value="16">
+        <span class="settings-row-hint">h úteis</span>
+      </div>
+    </div>
+    <button class="settings-save" onclick="saveSettings()">Salvar e Aplicar</button>
+    <button class="settings-reset" onclick="resetSettings()">Restaurar padrões</button>
+  </div>
+</div>
 
 <!-- ════════════════ TOPBAR ════════════════ -->
 <div class="topbar">
@@ -789,6 +865,7 @@ input[type=file]{display:none}
       <span id="notif-badge">0</span>
     </button>
     <div class="tb-time" id="tb-clock"></div>
+    <button class="tb-settings-btn" onclick="openSettings()" title="Configurar metas e SLA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     <button class="tb-theme-btn" id="tb-theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
   </div>
 </div>
@@ -1496,6 +1573,7 @@ input[type=file]{display:none}
           <div class="card">
             <div class="card-title">Interpretação</div>
             <div id="cs-hs-interpretation" style="padding:8px 0;font-size:12.5px;color:var(--sub);line-height:1.7"></div>
+            <div id="cs-hs-recurring"></div>
           </div>
         </div>
         <div class="card">
@@ -1666,6 +1744,7 @@ input[type=file]{display:none}
           <div id="ri-wordcloud" class="ri-wordcloud"></div>
           <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Top padrões — clique no card para ver chamados</div>
           <div id="ri-cards" class="ri-top-grid"></div>
+          <div id="ri-cli-rec" class="ri-cli-section" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -2518,7 +2597,7 @@ function renderComp(){
   var mLen=mLabels.length||1;
   mk('c-resp-trend','line',mLabels,[
     {data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2,label:'1ª Resp'},
-    {data:new Array(mLen).fill(30),label:'≤30min — meta GW',borderColor:'rgba(245,158,11,.85)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0},
+    {data:new Array(mLen).fill(META_RESP),label:'≤'+META_RESP+'min — meta GW',borderColor:'rgba(245,158,11,.85)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0},
     {data:new Array(mLen).fill(15),label:'≤15min — ITSM excelente',borderColor:'rgba(16,185,129,.65)',borderDash:[3,5],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
   ],{scales:xy('min'),plugins:{
     legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8,filter:function(item){return item.datasetIndex>0;}}}
@@ -2546,7 +2625,7 @@ function renderAt(){
   var curI3=mO3.indexOf(activeMonth),prevAtend={};
   if(activeMonth!=='all'&&curI3>0){var pk3=mO3[curI3-1];if(OP_MESES[pk3]&&OP_MESES[pk3].atend)OP_MESES[pk3].atend.forEach(function(a){prevAtend[a.n]=a;});}
 
-  var META_TAXA=70,META_RESP=30;
+  // META_TAXA, META_RESP — usando variáveis globais configuráveis
   var hasTend=Object.keys(prevAtend).length>0;
   var tbl=document.getElementById('atend-tbl');
 
@@ -3243,7 +3322,7 @@ function renderSl(){
   var atend=(getActiveOP().atend||OP.atend).slice(0,10);
   var op=getActiveOP();
   var N=atend.map(function(a){return a.n.split('.')[0]||a.n.split(' ')[0];});
-  var META_RESP=30,META_SOL=48;
+  // META_RESP, META_SOL — usando variáveis globais configuráveis
   var rC=atend.map(function(a){return a.rm==null?'#5a6278':a.rm<=META_RESP?'#10b981':a.rm<=120?'#f59e0b':'#f43f5e';});
   var nLen=N.length||1;
   // ── Linhas de benchmark ITSM ────────────────────────────────────────
@@ -4648,6 +4727,48 @@ function applyDateRange(mode) {
   computeInsights();
 }
 
+function openSettings() {
+  var o = document.getElementById('settings-overlay');
+  if(!o) return;
+  document.getElementById('cfg-meta-resp').value = META_RESP;
+  document.getElementById('cfg-meta-sol').value  = META_SOL;
+  document.getElementById('cfg-meta-taxa').value = META_TAXA;
+  document.getElementById('cfg-sla-bh').value    = SLA_LIMIT_BH_H;
+  o.classList.add('open');
+}
+function closeSettings() {
+  var o = document.getElementById('settings-overlay');
+  if(o) o.classList.remove('open');
+}
+function closeSettingsOutside(e) {
+  if(e.target === document.getElementById('settings-overlay')) closeSettings();
+}
+function saveSettings() {
+  var mr  = parseInt(document.getElementById('cfg-meta-resp').value) || _CFG_DEFAULTS.metaResp;
+  var ms  = parseInt(document.getElementById('cfg-meta-sol').value)  || _CFG_DEFAULTS.metaSol;
+  var mt  = parseInt(document.getElementById('cfg-meta-taxa').value) || _CFG_DEFAULTS.metaTaxa;
+  var sb  = parseInt(document.getElementById('cfg-sla-bh').value)    || _CFG_DEFAULTS.slaBH;
+  META_RESP = mr; META_SOL = ms; META_TAXA = mt; SLA_LIMIT_BH_H = sb;
+  try { localStorage.setItem('ssg-settings', JSON.stringify({metaResp:mr,metaSol:ms,metaTaxa:mt,slaBH:sb})); } catch(e){}
+  closeSettings();
+  // Re-render affected sections
+  Object.keys(rendered).forEach(function(k){rendered[k]=false;});
+  Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});
+  var aOp=document.querySelector('#view-op .sec.on');
+  if(aOp){rendered[aOp.id]=true;renderSec(aOp.id);}
+  renderAlertas();
+  refreshNotifBadge();
+  computeInsights();
+  var vCS=document.getElementById('view-cs');
+  if(vCS&&vCS.classList.contains('on')){var csK=document.getElementById('cs-sel-empresa').value;if(csK)loadCS(csK);}
+}
+function resetSettings() {
+  document.getElementById('cfg-meta-resp').value = _CFG_DEFAULTS.metaResp;
+  document.getElementById('cfg-meta-sol').value  = _CFG_DEFAULTS.metaSol;
+  document.getElementById('cfg-meta-taxa').value = _CFG_DEFAULTS.metaTaxa;
+  document.getElementById('cfg-sla-bh').value    = _CFG_DEFAULTS.slaBH;
+}
+
 function clearDateRange() {
   activeRangeStart = null;
   activeRangeEnd   = null;
@@ -5210,8 +5331,22 @@ function updateKPIs(op) {
 // SLA COUNTDOWN — tickets abertos vencendo nas próximas horas
 // Usa horas úteis (Seg-Sex 8h-18h) via calcBusinessHoursH()
 // ════════════════════════════════════════════════════════════
+// ─── METAS CONFIGURÁVEIS (carregadas do localStorage) ────────────────────────
+var _CFG_DEFAULTS = {metaResp:30, metaSol:48, metaTaxa:70, slaBH:16};
+(function(){
+  try {
+    var saved = JSON.parse(localStorage.getItem('ssg-settings')||'{}');
+    META_RESP       = parseInt(saved.metaResp) || _CFG_DEFAULTS.metaResp;
+    META_SOL        = parseInt(saved.metaSol)  || _CFG_DEFAULTS.metaSol;
+    META_TAXA       = parseInt(saved.metaTaxa) || _CFG_DEFAULTS.metaTaxa;
+    SLA_LIMIT_BH_H  = parseInt(saved.slaBH)   || _CFG_DEFAULTS.slaBH;
+  } catch(e) {
+    META_RESP=_CFG_DEFAULTS.metaResp; META_SOL=_CFG_DEFAULTS.metaSol;
+    META_TAXA=_CFG_DEFAULTS.metaTaxa; SLA_LIMIT_BH_H=_CFG_DEFAULTS.slaBH;
+  }
+})();
 var SLA_LIMIT_H = 48;    // fallback calendário (não usado no countdown)
-var SLA_LIMIT_BH_H = 16; // SLA em horas úteis (2 dias × 8h) — ajuste conforme contrato
+// SLA_LIMIT_BH_H já declarado acima via configuração
 
 function getSLACountdown() {
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return [];
@@ -5912,6 +6047,24 @@ function renderCSHealth(d) {
   if ((d.solucao_med_h||0) > 48) interp.push('Tempo médio de solução ('+d.solucao_med_h+'h) acima do SLA de 48h.');
   if (aguard > 0) interp.push(aguard+' chamado(s) aguardando retorno do cliente — pode indicar falta de follow-up.');
   document.getElementById('cs-hs-interpretation').innerHTML = interp.map(function(t){return '<p style="margin-bottom:8px">'+t+'</p>';}).join('');
+  // ── Mini recorrência do cliente ──
+  var recEl=document.getElementById('cs-hs-recurring');
+  if(recEl&&d.tickets&&d.tickets.length){
+    var pats=buildRecurringDataForTickets(d.tickets,'all').slice(0,5);
+    if(!pats.length){ recEl.innerHTML=''; }
+    else {
+      var recHtml='<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono);margin:14px 0 8px">Problemas Recorrentes</div>';
+      pats.forEach(function(p){
+        var openAlert=p.open>0?'<span style="color:var(--danger);margin-left:6px;font-size:10px">'+p.open+' aberto'+(p.open!==1?'s':'')+'</span>':'';
+        recHtml+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">'+
+          '<span class="ri-cli-tag" style="min-width:0;flex:1">'+p.term+'</span>'+
+          '<span style="font-family:var(--mono);font-size:11px;font-weight:700">'+p.count+'×</span>'+
+          openAlert+
+        '</div>';
+      });
+      recEl.innerHTML=recHtml;
+    }
+  }
   // Score trend chart
   var mesCats = Object.keys(d.by_mes||{});
   var baseTrend = [Math.max(score-15,30), Math.max(score-5,40), score];
@@ -6045,17 +6198,17 @@ function renderCSAT() {
   var total = allClosed.length;
   var semExito = allClosed.filter(function(t){return t.estado==='Fechado s/ Êxito';}).length;
   var semExitoPct = total > 0 ? Math.round(semExito/total*100) : 0;
-  var rapidos = allClosed.filter(function(t){return t.resp_min!==null&&t.resp_min<=30;}).length;
+  var rapidos = allClosed.filter(function(t){return t.resp_min!==null&&t.resp_min<=META_RESP;}).length;
   var rapidosPct = total > 0 ? Math.round(rapidos/total*100) : 0;
   var sumEl = document.getElementById('csat-summary');
   if(sumEl) sumEl.innerHTML =
     total + ' chamados fechados analisados · ' +
     '<span style="color:var(--danger)">' + semExitoPct + '% sem êxito</span> · ' +
-    '<span style="color:var(--ok)">' + rapidosPct + '% com resposta ≤30min</span>';
+    '<span style="color:var(--ok)">' + rapidosPct + '% com resposta ≤'+META_RESP+'min</span>';
 
   // Drivers
   var drivers = [
-    {label:'Resposta ≤30min',  val: rapidosPct, max:100, color:'var(--ok)'},
+    {label:'Resposta ≤'+META_RESP+'min',  val: rapidosPct, max:100, color:'var(--ok)'},
     {label:'Solução ≤24h úteis', val: total>0?Math.round(allClosed.filter(function(t){return t.sol_h_bh!==null&&t.sol_h_bh<=24;}).length/total*100):0, max:100, color:'var(--teal)'},
     {label:'Desfecho positivo', val: total>0?Math.round((total-semExito)/total*100):0, max:100, color:'var(--blue)'},
     {label:'Score composto',    val: globalScore!==null?Math.round(globalScore/10*100):0, max:100, color:sl.color}
@@ -7435,6 +7588,58 @@ function renderIACS(){
   el.innerHTML=H;
 }
 
+function buildRecurringDataForTickets(tickets, mode) {
+  var STOP={de:1,da:1,do:1,das:1,dos:1,em:1,no:1,na:1,nos:1,nas:1,e:1,ou:1,a:1,o:1,as:1,os:1,um:1,uma:1,para:1,com:1,por:1,que:1,se:1,ao:1,aos:1,nao:1,mais:1,novo:1,chamado:1,criado:1,re:1,res:1,fwd:1,fw:1,enc:1,ticket:1,otrs:1,suporte:1,solicitacao:1,atualizacao:1,pedido:1,problema:1,ajuda:1,duvida:1,help:1,request:1,issue:1,via:1,sua:1,seu:1,sobre:1,ser:1,foi:1,esta:1,tem:1,ter:1,como:1,quando:1,favor:1,the:1,of:1,in:1,to:1,and:1,for:1,at:1};
+  var filtered = tickets.filter(function(t){
+    if(mode==='open')   return t.estado&&isAb(t.estado);
+    if(mode==='closed') return t.estado&&isFe(t.estado);
+    return true;
+  });
+  var termMap={};
+  filtered.forEach(function(t){
+    if(!t.assunto||t.assunto==='—') return;
+    var words=t.assunto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(function(w){return w.length>=4&&!STOP[w];});
+    var seen={};
+    words.forEach(function(w){
+      if(seen[w]) return; seen[w]=1;
+      if(!termMap[w]) termMap[w]={term:w,count:0,open:0,closed:0};
+      termMap[w].count++;
+      if(isAb(t.estado)) termMap[w].open++; else termMap[w].closed++;
+    });
+    for(var i=0;i<words.length-1;i++){
+      var bg=words[i]+' '+words[i+1];
+      if(seen[bg]) continue; seen[bg]=1;
+      if(!termMap[bg]) termMap[bg]={term:bg,count:0,open:0,closed:0};
+      termMap[bg].count++;
+      if(isAb(t.estado)) termMap[bg].open++; else termMap[bg].closed++;
+    }
+  });
+  return Object.values(termMap).filter(function(x){return x.count>=2;}).sort(function(a,b){return b.count-a.count;});
+}
+
+function buildClientRecurrence() {
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
+  // Group RAW_DATA by client
+  var cliMap={};
+  RAW_DATA.forEach(function(t){
+    if(!t.cli_id) return;
+    if(!cliMap[t.cli_id]) cliMap[t.cli_id]={id:t.cli_id, total:0, tickets:[]};
+    cliMap[t.cli_id].total++;
+    cliMap[t.cli_id].tickets.push(t);
+  });
+  var rows=[];
+  Object.keys(cliMap).forEach(function(id){
+    var cli=cliMap[id];
+    var nome=(EMPRESAS[id]&&EMPRESAS[id].nome)||id;
+    var pats=buildRecurringDataForTickets(cli.tickets,'all');
+    if(!pats.length) return;
+    var totalRec=pats.reduce(function(s,p){return s+p.count;},0);
+    var openRec=pats.reduce(function(s,p){return s+p.open;},0);
+    rows.push({id:id, nome:nome, patterns:pats.length, totalRec:totalRec, openRec:openRec, topTerm:pats[0].term, topCount:pats[0].count, ticketTotal:cli.total});
+  });
+  return rows.sort(function(a,b){return b.totalRec-a.totalRec;});
+}
+
 function buildRecurringData(mode){
   if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
   var tickets=RAW_DATA.filter(function(d){
@@ -7528,6 +7733,33 @@ function renderIARecurring(){
       '<div class="ri-pattern-tickets">'+rows+more+'</div>'+
     '</div>';
   }).join('')||'<div style="color:var(--muted);font-size:12px;padding:20px">Nenhum padr\u00e3o encontrado</div>';
+  // ── Recorrência por Cliente ─────────────────────────────────
+  var cliRecEl=document.getElementById('ri-cli-rec');
+  if(cliRecEl){
+    var cliRows=buildClientRecurrence();
+    if(!cliRows.length){ cliRecEl.style.display='none'; }
+    else {
+      cliRecEl.style.display='';
+      var maxRec=cliRows[0]?cliRows[0].totalRec:1;
+      var cliHtml='<div class="ri-cli-title">Recorr\u00eancia por cliente</div>'+
+        '<table class="ri-cli-table"><thead><tr>'+
+        '<th>Cliente</th><th>Padr\u00f5es</th><th>Repeti\u00e7\u00f5es</th><th>Top termo</th><th style="text-align:left;min-width:100px">Volume</th>'+
+        '</tr></thead><tbody>';
+      cliRows.slice(0,10).forEach(function(row){
+        var barW=Math.round(row.totalRec/maxRec*100);
+        var openAlert=row.openRec>0?' <span style="color:var(--danger);font-size:10px">('+row.openRec+' aberto'+(row.openRec!==1?'s':'')+')</span>':'';
+        cliHtml+='<tr>'+
+          '<td><span class="ri-cli-name" onclick="setClienteGlobal(\''+row.id+'\')" title="Ver '+row.nome+'">'+row.nome+'</span></td>'+
+          '<td>'+row.patterns+'</td>'+
+          '<td>'+row.totalRec+openAlert+'</td>'+
+          '<td><span class="ri-cli-tag" title="'+row.topTerm+'">'+row.topTerm+'</span></td>'+
+          '<td><div class="ri-cli-bar-wrap"><div class="ri-cli-bar"><div class="ri-cli-bar-fill" style="width:'+barW+'%"></div></div><span style="font-size:10px;color:var(--muted)">'+row.ticketTotal+'\u2191</span></div></td>'+
+        '</tr>';
+      });
+      cliHtml+='</tbody></table>';
+      cliRecEl.innerHTML=cliHtml;
+    }
+  }
 }
 
 function renderIA(){
