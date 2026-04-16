@@ -2218,7 +2218,14 @@ function renderComp(){
 
   // Tendência 1ª resposta — todos os meses
   var respData=mOrder.map(function(k){return OP_MESES[k]?OP_MESES[k].resp_med||0:0;});
-  mk('c-resp-trend','line',mLabels,[{data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2}],{scales:xy('min'),plugins:{legend:{display:false}}});
+  var mLen=mLabels.length||1;
+  mk('c-resp-trend','line',mLabels,[
+    {data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2,label:'1ª Resp'},
+    {data:new Array(mLen).fill(30),label:'≤30min — meta GW',borderColor:'rgba(245,158,11,.85)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0},
+    {data:new Array(mLen).fill(15),label:'≤15min — ITSM excelente',borderColor:'rgba(16,185,129,.65)',borderDash:[3,5],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
+  ],{scales:xy('min'),plugins:{
+    legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8,filter:function(item){return item.datasetIndex>0;}}}
+  }});
 }
 
 function renderAt(){
@@ -2821,9 +2828,27 @@ function renderSl(){
   var N=atend.map(function(a){return a.n.split('.')[0]||a.n.split(' ')[0];});
   var META_RESP=30,META_SOL=48;
   var rC=atend.map(function(a){return a.rm==null?'#5a6278':a.rm<=META_RESP?'#10b981':a.rm<=120?'#f59e0b':'#f43f5e';});
-  mk('c-resp','bar',N,[{data:atend.map(function(a){return a.rm?Math.round(a.rm):0;}),backgroundColor:rC,borderRadius:4}],{scales:xy('Minutos'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'min';}}}}});
+  var nLen=N.length||1;
+  // ── Linhas de benchmark ITSM ────────────────────────────────────────
+  var refLine=function(val,lbl,color,dash){return{type:'line',data:new Array(nLen).fill(val),label:lbl,borderColor:color,borderDash:dash,borderWidth:1.5,pointRadius:0,fill:false,tension:0,order:0};};
+  var lgndOpts={display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:10,filter:function(item){return item.datasetIndex>0;}}};
+  mk('c-resp','bar',N,[
+    {data:atend.map(function(a){return a.rm?Math.round(a.rm):0;}),backgroundColor:rC,borderRadius:4},
+    refLine(META_RESP,'≤'+META_RESP+'min — meta GW','rgba(245,158,11,.9)',[6,4]),
+    refLine(15,'≤15min — ITSM excelente','rgba(16,185,129,.7)',[3,5])
+  ],{scales:xy('Minutos'),plugins:{
+    tooltip:{callbacks:{label:function(c){return c.datasetIndex===0?c.raw+'min':c.dataset.label||'';}}},
+    legend:lgndOpts
+  }});
   var sC=atend.map(function(a){return a.tm==null?'#5a6278':a.tm<=META_SOL?'#10b981':a.tm<=96?'#f59e0b':'#f43f5e';});
-  mk('c-sol','bar',N,[{data:atend.map(function(a){return a.tm||0;}),backgroundColor:sC,borderRadius:4}],{scales:xy('Horas'),plugins:{tooltip:{callbacks:{label:function(c){return c.raw+'h';}}}}});
+  mk('c-sol','bar',N,[
+    {data:atend.map(function(a){return a.tm||0;}),backgroundColor:sC,borderRadius:4},
+    refLine(META_SOL,'≤'+META_SOL+'h — meta GW','rgba(245,158,11,.9)',[6,4]),
+    refLine(72,'≤72h — referência mercado','rgba(139,92,246,.7)',[3,5])
+  ],{scales:xy('Horas'),plugins:{
+    tooltip:{callbacks:{label:function(c){return c.datasetIndex===0?c.raw+'h':c.dataset.label||'';}}},
+    legend:lgndOpts
+  }});
   var rm=op.resp_med!=null?op.resp_med:8;
   var sm=op.sol_med!=null?op.sol_med:54.1;
   var kpis=document.querySelectorAll('#s-sl .kpi');
