@@ -50,6 +50,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tb-btn.cs.on{background:linear-gradient(135deg,#7c3aed,#a855f7)}
 .tb-btn.rg.on{background:linear-gradient(135deg,#b45309,#d97706)}
 .tb-btn.ia.on{background:linear-gradient(135deg,#6d28d9,#8b5cf6)}
+.tb-btn.acoes.on{background:linear-gradient(135deg,#be123c,#f43f5e)}
 /* ═══ AI LAYER ════════════════════════════════════════════════ */
 .tb-ai-badge{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(139,92,246,.12);color:#a855f7;border:1px solid rgba(139,92,246,.3)}
 .tb-ai-dot{width:6px;height:6px;border-radius:50%;background:#a855f7;animation:aipulse 2s infinite}
@@ -950,6 +951,10 @@ input[type=file]{display:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       ✦ IA
     </button>
+    <button class="tb-btn acoes" id="btn-acoes" onclick="setMode('acoes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Ações
+    </button>
   </div>
   <div class="tb-alerts" id="tb-alerts">
     <div class="tb-alert-pill tap-danger" id="alert-criticos">
@@ -1061,6 +1066,10 @@ input[type=file]{display:none}
     <div class="nav" id="nav-ia-ri" onclick="goSecIA('ia-ri',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>Problemas Recorrentes</div>
     <div class="nav" id="nav-ia-cs" onclick="goSecIA('ia-cs',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Insights CS</div>
     <div class="nav" id="nav-ia-exec" onclick="goSecIA('ia-exec',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Rel. Executivo</div>
+  </div>
+  <div id="nav-acoes" style="display:none">
+    <div class="sb-head">Ações da Operação</div>
+    <div class="nav on" style="color:#f43f5e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Painel de Ações</div>
   </div>
   <div class="sb-footer">
     <div style="margin-bottom:8px">
@@ -1807,6 +1816,17 @@ input[type=file]{display:none}
 
 </div><!-- /view-cs -->
 
+<!-- ══════ AÇÕES VIEW ══════ -->
+<div id="view-acoes" class="view">
+  <div class="page-header">
+    <h1>🚨 Ações da Operação</h1>
+    <p>Chamados que requerem ação imediata · atualizado automaticamente com os filtros ativos</p>
+  </div>
+  <div class="page-body" id="acoes-body">
+    <div style="color:var(--muted);font-size:13px;padding:24px 0">Importe um arquivo XLSX para ver as ações necessárias.</div>
+  </div>
+</div><!-- /view-acoes -->
+
 <!-- ══════ RESUMO DE GESTÃO VIEW ══════ -->
 <div id="view-rg" class="view">
   <div class="page-header">
@@ -2128,21 +2148,25 @@ function setMode(m){
   var isCS=m==='cs';
   var isRG=m==='rg';
   var isIA=m==='ia';
+  var isAcoes=m==='acoes';
   document.getElementById('view-op').classList.toggle('on',isOp);
   document.getElementById('view-cli').classList.toggle('on',isCli);
   document.getElementById('view-cs').classList.toggle('on',isCS);
   document.getElementById('view-rg').classList.toggle('on',isRG);
   document.getElementById('view-ia').classList.toggle('on',isIA);
+  document.getElementById('view-acoes').classList.toggle('on',isAcoes);
   document.getElementById('nav-op').style.display=isOp?'block':'none';
   document.getElementById('nav-cli').style.display=isCli?'block':'none';
   document.getElementById('nav-cs').style.display=isCS?'block':'none';
   document.getElementById('nav-rg').style.display=isRG?'block':'none';
   document.getElementById('nav-ia').style.display=isIA?'block':'none';
+  document.getElementById('nav-acoes').style.display=isAcoes?'block':'none';
   document.getElementById('btn-op').classList.toggle('on',isOp);
   document.getElementById('btn-cli').classList.toggle('on',isCli);
   document.getElementById('btn-cs').classList.toggle('on',isCS);
   document.getElementById('btn-rg').classList.toggle('on',isRG);
   document.getElementById('btn-ia').classList.toggle('on',isIA);
+  document.getElementById('btn-acoes').classList.toggle('on',isAcoes);
   document.getElementById('tb-alerts').style.display=isOp?'flex':'none';
   document.getElementById('sb-import-btn').className='sb-import-btn'+(isOp?'':' cli-mode');
   document.getElementById('import-drop-zone').className='import-drop-zone'+(isOp?'':' cli-mode');
@@ -2151,6 +2175,7 @@ function setMode(m){
   if(isCS)initCS();
   if(isRG)renderResumo();
   if(isIA){computeInsights();renderIA();}
+  if(isAcoes)renderAcoes();
 }
 function goSecIA(id,el){
   ['ia-resumo','ia-op','ia-cli','ia-cs','ia-ri','ia-exec'].forEach(function(s){
@@ -5305,6 +5330,9 @@ function setMonth(m) {
     if(csKey) loadCS(csKey);
     else renderCSHealthList();
   }
+  // Re-render Ações if active
+  var vAcoes = document.getElementById('view-acoes');
+  if(vAcoes && vAcoes.classList.contains('on')) renderAcoes();
   computeInsights();
 }
 
@@ -5460,6 +5488,9 @@ function setFilaOP(fila) {
   // Re-render Portal se houver empresa selecionada
   var empKey = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : null;
   if(empKey) loadEmpresa(empKey);
+  // Re-render Ações if active
+  var vAcoesF = document.getElementById('view-acoes');
+  if(vAcoesF && vAcoesF.classList.contains('on')) renderAcoes();
   computeInsights();
 }
 
@@ -5641,6 +5672,9 @@ function setClienteGlobal(key) {
   rendered['s-ov']=true; renderOv();
   rendered['s-alertas']=true; renderAlertas(); refreshNotifBadge();
   buildMonthFilter();
+  // Re-render Ações if active
+  var vAcoesCG = document.getElementById('view-acoes');
+  if(vAcoesCG && vAcoesCG.classList.contains('on')) renderAcoes();
   computeInsights();
 }
 
@@ -8739,6 +8773,204 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'&&document.body.classList.contains('fs-mode'))toggleFS();
   if((e.key==='f'||e.key==='F')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&document.activeElement.tagName!=='INPUT')toggleFS();
 });
+</script>
+
+<!-- ════════════════ AÇÕES DA OPERAÇÃO ════════════════ -->
+<script>
+// ──────────────────────────────────────────────────────────────
+// buildAcoes()
+// Itera RAW_DATA, aplica filtros ativos, classifica tickets em
+// 4 grupos de ação prescritiva.
+//
+// NOTA: A regra "Aguardando Cliente" usa idade total do chamado
+// como proxy, pois o XLS do OTRS não exporta histórico de estados.
+// ──────────────────────────────────────────────────────────────
+function buildAcoes() {
+  var result = {
+    slaRisk:   [],   // 🔴 Risco de SLA (alta/muito alta + >48h + aberto)
+    criticos:  [],   // 🔴 Alta criticidade em aberto (muito alta + aberto)
+    aguardCli: [],   // 🟡 Aguardando cliente > 24h
+    backlog:   []    // 🔵 Backlog crítico (aberto > 5 dias)
+  };
+
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return result;
+
+  var now = new Date();
+  var OPEN_ST = ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+  var CLOSED_ST = ['Fechado','Resolvido','Fechado s/ Êxito'];
+
+  var isOpen   = function(e){ return OPEN_ST.indexOf(e) !== -1; };
+  var isClosed = function(e){ return CLOSED_ST.indexOf(e) !== -1; };
+
+  RAW_DATA.forEach(function(d) {
+    // Aplicar filtros globais (mês, fila)
+    if(!ticketInFilter(d)) return;
+    // Aplicar filtro de cliente global
+    if(activeCliente && d.cli_id !== activeCliente) return;
+    // Precisa ter data de criação
+    if(!d.criado) return;
+
+    var ageH = (now - d.criado) / 3600000; // horas desde criação
+    var ageD = ageH / 24;                   // dias
+
+    var cliNome = (typeof EMPRESAS !== 'undefined' && EMPRESAS[d.cli_id])
+      ? EMPRESAS[d.cli_id].nome : (d.cli_id || '—');
+
+    var item = {
+      num:     d.num,
+      assunto: (d.assunto || '—').slice(0, 60),
+      estado:  d.estado,
+      prior:   d.prior,
+      atend:   d.atend || '—',
+      cliNome: cliNome,
+      ageH:    Math.round(ageH),
+      ageD:    Math.round(ageD * 10) / 10
+    };
+
+    // 🔴 Risco de SLA: aberto + >48h + prioridade Alta ou Muito Alta
+    if(!isClosed(d.estado) &&
+       (d.prior === 'Alta' || d.prior === 'Muito Alta') &&
+       ageH > 48) {
+      result.slaRisk.push(item);
+    }
+
+    // 🔴 Alta criticidade: Muito Alta + aberto
+    if(!isClosed(d.estado) && d.prior === 'Muito Alta') {
+      result.criticos.push(item);
+    }
+
+    // 🟡 Aguardando cliente: estado específico + >24h
+    if(d.estado === 'Aguardando Cliente' && ageH > 24) {
+      result.aguardCli.push(item);
+    }
+
+    // 🔵 Backlog crítico: aberto + >5 dias
+    if(!isClosed(d.estado) && ageD > 5) {
+      result.backlog.push(item);
+    }
+  });
+
+  // Ordenar por idade decrescente (mais antigo primeiro)
+  var byAge = function(a, b){ return b.ageH - a.ageH; };
+  result.slaRisk.sort(byAge);
+  result.criticos.sort(byAge);
+  result.aguardCli.sort(byAge);
+  result.backlog.sort(byAge);
+
+  return result;
+}
+
+// ──────────────────────────────────────────────────────────────
+// renderAcoes()
+// Renderiza o painel prescritivo na aba Ações.
+// ──────────────────────────────────────────────────────────────
+function renderAcoes() {
+  var el = document.getElementById('acoes-body');
+  if(!el) return;
+
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:24px 0">Importe um arquivo XLSX para ver as ações necessárias.</div>';
+    return;
+  }
+
+  var data = buildAcoes();
+
+  // Helper: formata idade
+  var fmtAge = function(ageH) {
+    if(ageH < 24) return ageH + 'h';
+    var d = Math.floor(ageH / 24);
+    var h = Math.round(ageH % 24);
+    return h > 0 ? d + 'd ' + h + 'h' : d + 'd';
+  };
+
+  // Helper: lista de até 5 tickets
+  var fmtList = function(items) {
+    if(!items.length) return '';
+    var rows = items.slice(0, 5).map(function(t) {
+      return '<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'
+        + '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);flex-shrink:0;padding-top:1px">#' + t.num + '</span>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.assunto + '</div>'
+        +   '<div style="font-size:10px;color:var(--muted);margin-top:2px">' + t.cliNome + ' · ' + t.atend + ' · <span style="font-family:var(--mono)">' + fmtAge(t.ageH) + '</span></div>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+    var more = items.length > 5
+      ? '<div style="font-size:10px;color:var(--muted);padding:6px 0">+ ' + (items.length - 5) + ' mais</div>'
+      : '';
+    return rows + more;
+  };
+
+  // Helper: bloco de grupo
+  var fmtBloco = function(cor, emoji, titulo, descricao, items) {
+    var count = items.length;
+    var lista = fmtList(items);
+    return '<div class="card card-mb" style="border-left:3px solid ' + cor + ';margin-bottom:16px">'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:' + (lista ? '12' : '0') + 'px">'
+      +   '<span style="font-size:22px;line-height:1">' + emoji + '</span>'
+      +   '<div style="flex:1">'
+      +     '<div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--text)">'
+      +       '<span style="font-family:var(--mono);font-size:20px;font-weight:700;color:' + cor + '">' + count + '</span>'
+      +       '&nbsp;&nbsp;' + titulo
+      +     '</div>'
+      +     '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + descricao + '</div>'
+      +   '</div>'
+      + '</div>'
+      + lista
+      + '</div>';
+  };
+
+  var total = data.slaRisk.length + data.criticos.length + data.aguardCli.length + data.backlog.length;
+
+  var H = '';
+
+  // Cabeçalho resumo
+  H += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)">'
+    + '<div>'
+    +   '<div style="font-family:var(--mono);font-size:28px;font-weight:700;color:' + (total > 0 ? '#f43f5e' : 'var(--ok)') + '">' + total + '</div>'
+    +   '<div style="font-size:11px;color:var(--muted)">ações identificadas</div>'
+    + '</div>'
+    + '<div style="flex:1;border-left:1px solid var(--border);padding-left:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px">'
+    +   '<div><span style="font-size:10px;color:#f43f5e;font-weight:700">🔴 Risco SLA</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;margin-left:6px">' + data.slaRisk.length + '</span></div>'
+    +   '<div><span style="font-size:10px;color:#f43f5e;font-weight:700">🔴 Criticidade</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;margin-left:6px">' + data.criticos.length + '</span></div>'
+    +   '<div><span style="font-size:10px;color:#eab308;font-weight:700">🟡 Aguard. cliente</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;margin-left:6px">' + data.aguardCli.length + '</span></div>'
+    +   '<div><span style="font-size:10px;color:#3b82f6;font-weight:700">🔵 Backlog</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;margin-left:6px">' + data.backlog.length + '</span></div>'
+    + '</div>'
+    + '</div>';
+
+  // ── SEÇÃO CRÍTICOS ──────────────────────────────────────────
+  var temCriticos = data.slaRisk.length > 0 || data.criticos.length > 0;
+  if(temCriticos) {
+    H += '<div style="font-family:var(--display);font-size:11px;font-weight:700;color:#f43f5e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">🔴 Críticos</div>';
+    if(data.slaRisk.length > 0)
+      H += fmtBloco('#f43f5e','⏱️','Risco de SLA','Chamados alta/muito alta prioridade abertos há mais de 48h — priorização imediata',data.slaRisk);
+    if(data.criticos.length > 0)
+      H += fmtBloco('#f43f5e','🚨','Alta criticidade em aberto','Prioridade Muito Alta ainda não encerrada — atenção imediata',data.criticos);
+  }
+
+  // ── SEÇÃO ATENÇÃO ───────────────────────────────────────────
+  if(data.aguardCli.length > 0) {
+    H += '<div style="font-family:var(--display);font-size:11px;font-weight:700;color:#eab308;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;margin-top:8px">🟡 Atenção</div>';
+    H += fmtBloco('#eab308','📞','Aguardando cliente','Em estado "Aguardando Cliente" há mais de 24h — acionar CS para retomada<br><span style="font-size:10px;font-style:italic;opacity:.7">⚠️ Usa idade total do chamado como proxy — o XLS não possui histórico de mudança de estado</span>',data.aguardCli);
+  }
+
+  // ── SEÇÃO OPORTUNIDADES ─────────────────────────────────────
+  if(data.backlog.length > 0) {
+    H += '<div style="font-family:var(--display);font-size:11px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;margin-top:8px">🔵 Oportunidades</div>';
+    H += fmtBloco('#3b82f6','📋','Backlog crítico','Chamados abertos há mais de 5 dias — revisar priorização da fila',data.backlog);
+  }
+
+  // Sem dados
+  if(total === 0) {
+    H += '<div style="text-align:center;padding:48px 24px">'
+      + '<div style="font-size:40px;margin-bottom:12px">✅</div>'
+      + '<div style="font-family:var(--display);font-size:16px;font-weight:700;color:var(--ok)">Nenhuma ação necessária</div>'
+      + '<div style="font-size:12px;color:var(--muted);margin-top:6px">Todos os chamados estão dentro dos critérios de atenção</div>'
+      + '</div>';
+  }
+
+  el.innerHTML = H;
+}
 </script>
 </body>
 </html>
