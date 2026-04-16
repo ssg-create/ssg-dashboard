@@ -1060,6 +1060,7 @@ input[type=file]{display:none}
     <div class="nav" id="nav-ia-cli" onclick="goSecIA('ia-cli',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Riscos de Cliente</div>
     <div class="nav" id="nav-ia-ri" onclick="goSecIA('ia-ri',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>Problemas Recorrentes</div>
     <div class="nav" id="nav-ia-cs" onclick="goSecIA('ia-cs',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Insights CS</div>
+    <div class="nav" id="nav-ia-exec" onclick="goSecIA('ia-exec',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Rel. Executivo</div>
   </div>
   <div class="sb-footer">
     <div style="margin-bottom:8px">
@@ -1846,6 +1847,12 @@ input[type=file]{display:none}
     </div>
 
 
+    <!-- RELATÓRIO EXECUTIVO -->
+    <div id="ia-exec" class="sec">
+      <div class="page-header"><h1>Relatório Executivo</h1><p>Narrativa gerada automaticamente a partir dos dados — pronta para apresentação</p></div>
+      <div class="page-body"><div id="ia-exec-content"></div></div>
+    </div>
+
     <!-- PROBLEMAS RECORRENTES -->
     <div id="ia-ri" class="sec">
       <div class="page-header"><h1>Problemas Recorrentes</h1><p>Termos mais frequentes nos assuntos dos chamados — padrões que podem virar problema sistêmico</p></div>
@@ -2146,7 +2153,7 @@ function setMode(m){
   if(isIA){computeInsights();renderIA();}
 }
 function goSecIA(id,el){
-  ['ia-resumo','ia-op','ia-cli','ia-cs','ia-ri'].forEach(function(s){
+  ['ia-resumo','ia-op','ia-cli','ia-cs','ia-ri','ia-exec'].forEach(function(s){
     var sec=document.getElementById(s);if(sec)sec.classList.remove('on');
   });
   document.querySelectorAll('#nav-ia .nav').forEach(function(n){n.classList.remove('on');});
@@ -8293,12 +8300,182 @@ function renderChurnRisk() {
   el.innerHTML=html;
 }
 
+function buildExecutiveReport() {
+  try {
+    var op=getActiveOP();
+    var now=new Date();
+    var dateStr=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    var timeStr=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    // Period label
+    var periodLabel=(activeRangeStart&&activeRangeEnd)
+      ?activeRangeStart.toLocaleDateString('pt-BR')+' a '+activeRangeEnd.toLocaleDateString('pt-BR')
+      :(activeMonth==='all'?'Todos os meses':activeMonth);
+    // Key metrics
+    var total=op.total||0;
+    var fechados=op.fechados||0;
+    var abertos=op.abertos||0;
+    var taxa=total?Math.round(fechados/total*100):0;
+    var respMed=op.resp_med!=null?Math.round(op.resp_med):null;
+    var solMed=op.sol_med!=null?Math.round(op.sol_med*10)/10:null;
+    // Team
+    var atend=op.atend||[];
+    var cap=computeTeamCapacity(atend);
+    var nSob=cap.filter(function(a){return a.status==='sob';}).length;
+    var nDis=cap.filter(function(a){return a.status==='dis';}).length;
+    var bestAt=atend.filter(function(a){return a.t>0;}).sort(function(a,b){return(b.f/b.t)-(a.f/a.t);})[0];
+    var mostLoad=cap.filter(function(a){return a.status==='sob';}).sort(function(a,b){return b.ab-a.ab;})[0];
+    // Aging
+    var aged=buildAgingData();
+    var aged14=aged.filter(function(t){return t.ageDays>=14;}).length;
+    // Churn
+    var churnAll=computeChurnRisk();
+    var churnRisk=churnAll.filter(function(r){return r.risk!=='baixo';});
+    var churnCrit=churnAll.filter(function(r){return r.risk==='critico';});
+    // SLA Fin
+    var slaFin=computeSLAFinanceiro();
+    // Patterns
+    var pats=buildRecurringData('all');
+    // Clients
+    var empList=(typeof EMPRESAS!=='undefined')?Object.values(EMPRESAS).filter(function(e){return e.total>0;}):[];
+    var cliOK=empList.filter(function(e){return e.abertos===0;}).length;
+    var topCli=empList.slice().sort(function(a,b){return b.total-a.total;}).slice(0,5);
+    var sep='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+    var L=[];
+    L.push('RELATÓRIO EXECUTIVO — '+periodLabel.toUpperCase());
+    L.push('Gerado em '+dateStr+' às '+timeStr+' · SSG Operations Center');
+    L.push('');
+    L.push(sep);
+    L.push('VISÃO GERAL DO PERÍODO');
+    L.push(sep);
+    L.push('');
+    L.push('Volume total: '+total+' chamados ('+fechados+' fechados · '+abertos+' abertos)');
+    L.push('Taxa de conclusão: '+taxa+'% '+(taxa>=META_TAXA?'✅ acima':'⚠️ abaixo')+' da meta de '+META_TAXA+'%');
+    if(respMed!==null) L.push('1ª resposta média: '+respMed+'min '+(respMed<=META_RESP?'✅ dentro':'⚠️ acima')+' da meta de '+META_RESP+'min');
+    if(solMed!==null) L.push('Solução média: '+solMed+'h '+(solMed<=META_SOL?'✅ dentro':'⚠️ acima')+' da meta de '+META_SOL+'h');
+    L.push('');
+    L.push(sep);
+    L.push('DESTAQUES POSITIVOS');
+    L.push(sep);
+    L.push('');
+    var posCount=0;
+    if(bestAt&&bestAt.t>0){var btx=Math.round(bestAt.f/bestAt.t*100);L.push('✅ Melhor performance: '+bestAt.n+' — '+btx+'% de conclusão ('+bestAt.f+'/'+bestAt.t+' chamados)');posCount++;}
+    if(nDis>0){L.push('✅ '+nDis+' atendente'+(nDis!==1?'s':'')+' com capacidade disponível');posCount++;}
+    if(cliOK>0){L.push('✅ '+cliOK+' cliente'+(cliOK!==1?'s':'')+' sem chamados em aberto');posCount++;}
+    if(taxa>=META_TAXA){L.push('✅ Meta de taxa de conclusão atingida neste período');posCount++;}
+    if(respMed!==null&&respMed<=META_RESP){L.push('✅ Meta de 1ª resposta dentro do SLA contratual');posCount++;}
+    if(!posCount) L.push('Nenhum destaque positivo expressivo neste período.');
+    L.push('');
+    L.push(sep);
+    L.push('PONTOS CRÍTICOS');
+    L.push(sep);
+    L.push('');
+    var critCount=0;
+    if(aged14>0){L.push('⚠️  '+aged14+' chamado'+(aged14!==1?'s':'')+' com 14+ dias sem resolução — risco de churn elevado');critCount++;}
+    if(churnCrit.length>0){L.push('🔴 '+churnCrit.length+' cliente'+(churnCrit.length!==1?'s':'')+' com risco de churn CRÍTICO: '+churnCrit.slice(0,3).map(function(r){return r.nome;}).join(', '));critCount++;}
+    else if(churnRisk.length>0){L.push('🟠 '+churnRisk.length+' cliente'+(churnRisk.length!==1?'s':'')+' com risco de churn elevado ou médio');critCount++;}
+    if(mostLoad){L.push('⚠️  '+mostLoad.n+' — '+mostLoad.ab+' chamados abertos (acima da capacidade normal)');critCount++;}
+    if(slaFin.totalOver>0){L.push('💰 '+slaFin.totalOver+' tickets acima do SLA — exposição estimada: R$ '+slaFin.totalExposure.toLocaleString('pt-BR'));critCount++;}
+    if(pats.length>0){L.push('🔄 Padrão recorrente: "'+pats[0].term+'" em '+pats[0].count+' chamados — possível problema sistêmico');critCount++;}
+    if(taxa<META_TAXA){L.push('⚠️  Taxa de conclusão ('+taxa+'%) abaixo da meta de '+META_TAXA+'%');critCount++;}
+    if(!critCount) L.push('Nenhum ponto crítico identificado neste período — operação estável.');
+    L.push('');
+    L.push(sep);
+    L.push('ANÁLISE DA EQUIPE ('+atend.length+' atendentes)');
+    L.push(sep);
+    L.push('');
+    if(nSob>0) L.push('Status: '+nSob+' sobrecarregado'+(nSob!==1?'s':'')+' · '+nDis+' disponível'+(nDis!==1?'is':'')+'  · '+(atend.length-nSob-nDis)+' em carga normal');
+    else L.push('Status: equipe dentro da capacidade normal');
+    L.push('');
+    atend.slice(0,8).forEach(function(a){
+      if(!a.t) return;
+      var tx=Math.round(a.f/a.t*100);
+      var ab=a.ab||0;
+      var line='  '+a.n+': '+a.t+' ch · '+tx+'% concluídos · '+ab+' abertos';
+      if(a.rm!=null) line+=' · 1ª resp '+Math.round(a.rm)+'min';
+      L.push(line);
+    });
+    L.push('');
+    L.push(sep);
+    L.push('ANÁLISE DE CLIENTES ('+empList.length+' contas)');
+    L.push(sep);
+    L.push('');
+    L.push('Top clientes por volume:');
+    topCli.forEach(function(e){
+      var line='  '+e.nome+': '+e.total+' chamados · '+e.abertos+' abertos';
+      if(e.resp_med) line+=' · resp '+Math.round(e.resp_med)+'min';
+      L.push(line);
+    });
+    if(churnRisk.length>0){
+      L.push('');
+      L.push('Clientes em risco de churn:');
+      churnRisk.slice(0,5).forEach(function(r){
+        L.push('  '+r.nome+': score '+r.score+' ('+( r.risk==='critico'?'CRÍTICO':r.risk==='alto'?'Alto':'Médio')+') · '+r.abertos+'/'+r.total+' abertos');
+      });
+    }
+    if(slaFin.rows.length>0){
+      L.push('');
+      L.push('Maior exposição SLA financeira:');
+      slaFin.rows.slice(0,3).forEach(function(r){
+        L.push('  '+r.nome+': R$ '+r.exposure.toLocaleString('pt-BR')+' ('+r.tickets+' tickets · '+r.excessH+'h excedentes)');
+      });
+    }
+    L.push('');
+    L.push(sep);
+    L.push('RECOMENDAÇÕES PRIORITÁRIAS');
+    L.push(sep);
+    L.push('');
+    var r=1;
+    if(aged14>0){L.push(r+'. Priorizar resolução dos '+aged14+' chamados com 14+ dias — revisar diariamente.');r++;}
+    if(churnCrit.length>0){L.push(r+'. Contato proativo com: '+churnCrit.slice(0,3).map(function(x){return x.nome;}).join(', ')+' (risco crítico de churn).');r++;}
+    if(pats.length>0){L.push(r+'. Investigar padrão "'+pats[0].term+'" ('+pats[0].count+'×) — criar KB ou automação.');r++;}
+    if(mostLoad){L.push(r+'. Redistribuir carteira de '+mostLoad.n+' ('+mostLoad.ab+' abertos).');r++;}
+    if(slaFin.totalOver>0&&slaFin.totalExposure>0){L.push(r+'. Resolver '+slaFin.totalOver+' tickets SLA para eliminar exposição de R$ '+slaFin.totalExposure.toLocaleString('pt-BR')+'.');r++;}
+    if(taxa<META_TAXA){L.push(r+'. Plano de ação: aumentar taxa de conclusão de '+taxa+'% para '+META_TAXA+'%.');r++;}
+    if(r===1) L.push('1. Manter padrão atual — indicadores dentro das metas estabelecidas.');
+    L.push('');
+    L.push(sep);
+    L.push('Groundwork Operations Center · '+dateStr);
+    return L.join('\n');
+  } catch(e) {
+    return 'Erro ao gerar relatório: '+e.message+'\nImporte os dados primeiro.';
+  }
+}
+
+function copyExecReport() {
+  var el=document.getElementById('exec-report-text');
+  if(!el) return;
+  var text=el.textContent||el.innerText;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){
+      var btn=document.getElementById('exec-copy-btn');
+      if(btn){btn.textContent='✅ Copiado!';setTimeout(function(){btn.textContent='📋 Copiar relatório';},2000);}
+    }).catch(function(){});
+  }
+}
+
+function renderExecutiveReport() {
+  var el=document.getElementById('ia-exec-content');
+  if(!el) return;
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:24px 0">Importe dados para gerar o relatório executivo.</div>';
+    return;
+  }
+  var report=buildExecutiveReport();
+  var escaped=report.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+    +'<div style="font-size:11px;color:var(--muted);font-family:var(--mono)">Período ativo · Atualiza automaticamente com os filtros</div>'
+    +'<button id="exec-copy-btn" onclick="copyExecReport()" style="padding:6px 14px;font-size:11px;font-weight:600;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--sub);cursor:pointer;transition:all .15s">📋 Copiar relatório</button>'
+    +'</div>'
+    +'<pre id="exec-report-text" style="font-family:var(--mono);font-size:11.5px;line-height:1.8;color:var(--sub);white-space:pre-wrap;word-break:break-word;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:0">'+escaped+'</pre>';
+}
+
 function renderIA(){
   renderIAResumo();
   renderIAOp();
   renderIACli();
   renderIACS();
   renderIARecurring();
+  renderExecutiveReport();
   // atualiza nav active state
   document.querySelectorAll('#nav-ia .nav').forEach(function(n){n.classList.remove('on');});
   var first=document.getElementById('nav-ia-resumo');if(first)first.classList.add('on');
