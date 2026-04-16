@@ -8796,7 +8796,16 @@ function _loadAcoesStatus() {
   catch(e) { return {}; }
 }
 function _saveAcoesStatus(map) {
-  try { localStorage.setItem(ACOES_STATUS_KEY, JSON.stringify(map)); } catch(e) {}
+  try {
+    var keys = Object.keys(map);
+    if(keys.length > 100) {
+      // Mantém apenas as 60 entradas mais recentes por inserção (FIFO simples)
+      var trimmed = {};
+      keys.slice(keys.length - 60).forEach(function(k){ trimmed[k] = map[k]; });
+      map = trimmed;
+    }
+    localStorage.setItem(ACOES_STATUS_KEY, JSON.stringify(map));
+  } catch(e) {}
 }
 function setAcaoStatus(id, status) {
   var map = _loadAcoesStatus();
@@ -8939,7 +8948,7 @@ function gerarAcoes(op) {
   }
 
   // 🟡 Regra 6 — Atendente sobrecarregado
-  if(maxAbAtend && maxAb >= 5) {
+  if(maxAbAtend && maxAb >= 8) {
     var _id = makeId('atend_sobrecarga');
     acoes.push({
       id: _id, prioridade: 'atencao',
@@ -8965,7 +8974,7 @@ function gerarAcoes(op) {
   }
 
   // 💡 Regra 8 — Concentração de serviço
-  if(topSvc && topSvcPct >= 0.35 && op.total >= 5 && acoes.length < 7) {
+  if(topSvc && topSvcPct >= 0.35 && op.total >= 5) {
     var _id = makeId('conc_servico');
     acoes.push({
       id: _id, prioridade: 'oportunidade',
