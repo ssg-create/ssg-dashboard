@@ -5376,25 +5376,54 @@ function getActiveOP() {
   if(activeCliente && EMPRESAS[activeCliente]) {
     var emp = getFilteredEmpresa(EMPRESAS[activeCliente]);
     if(emp) {
-      // Reconstrói prior dos tickets filtrados (aproximação)
+      // Aplica filtro de fila quando ativo (Bug 1 fix: fila+cliente combinados)
+      var empTickets = emp.tickets || [];
+      var useFilaFilter = activeFilaOP !== 'all';
+      if(useFilaFilter && empTickets.length) {
+        empTickets = empTickets.filter(function(t){ return t.fila === activeFilaOP; });
+      }
+      // Reconstrói prior dos tickets filtrados
       var priorEmp = {};
-      (emp.tickets || []).forEach(function(t){ if(t.prior) priorEmp[t.prior]=(priorEmp[t.prior]||0)+1; });
-      if(!Object.keys(priorEmp).length) priorEmp = emp.prior || {};
-      // Filtra criticos globais para só os do cliente
+      empTickets.forEach(function(t){ if(t.prior) priorEmp[t.prior]=(priorEmp[t.prior]||0)+1; });
+      if(!Object.keys(priorEmp).length) priorEmp = useFilaFilter ? {} : (emp.prior || {});
+      // Reconstrói estado dos tickets filtrados
+      var estadoEmp = {};
+      empTickets.forEach(function(t){ if(t.estado) estadoEmp[t.estado]=(estadoEmp[t.estado]||0)+1; });
+      // Helpers de estado
+      var isAbertoE = function(e){ return ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1; };
+      var isFechadoE = function(e){ return e==='Fechado'||e==='Resolvido'||e.indexOf('Fechado s')===0; };
+      // Totais do recorte
+      var totalEmp    = useFilaFilter ? empTickets.length                                                      : (emp.total    || 0);
+      var abertosEmp  = useFilaFilter ? empTickets.filter(function(t){ return isAbertoE(t.estado);  }).length : (emp.abertos  || 0);
+      var fechadosEmp = useFilaFilter ? empTickets.filter(function(t){ return isFechadoE(t.estado); }).length : (emp.fechados || 0);
+      // Críticos do recorte
       var crit = (OP.criticos||[]).filter(function(c){
-        return (emp.tickets||[]).some(function(t){ return t.num===c.num; });
+        return empTickets.some(function(t){ return t.num===c.num; });
       });
-      var rawAtendEmp = emp.atend || emp.atendentes || [];
+      // Atendentes do recorte
+      var rawAtendEmp;
+      if(useFilaFilter && empTickets.length) {
+        var atMap = {};
+        empTickets.forEach(function(t){
+          if(!t.atend) return;
+          if(!atMap[t.atend]) atMap[t.atend]={n:t.atend,t:0,f:0,ab:0,tm:null,rm:null,est:{}};
+          atMap[t.atend].t++;
+          if(isFechadoE(t.estado)) atMap[t.atend].f++; else atMap[t.atend].ab++;
+        });
+        rawAtendEmp = Object.keys(atMap).map(function(k){ return atMap[k]; });
+      } else {
+        rawAtendEmp = emp.atend || emp.atendentes || [];
+      }
       var atendEmp = rawAtendEmp.map(function(a){
         return {n:a.n||'',t:a.t!=null?a.t:(a.total||0),f:a.f!=null?a.f:(a.fe||0),ab:a.ab||0,tm:a.tm||null,rm:a.rm||null,est:{}};
       });
       return {
-        total:    emp.total    || 0,
-        abertos:  emp.abertos  || 0,
-        fechados: emp.fechados || 0,
+        total:    totalEmp,
+        abertos:  abertosEmp,
+        fechados: fechadosEmp,
         resp_med: emp.resp_med || 0,
         sol_med:  emp.sol_med  || emp.solucao_med_h || 0,
-        estado:   emp.estado   || emp.estados || {},
+        estado:   Object.keys(estadoEmp).length ? estadoEmp : (emp.estado || emp.estados || {}),
         prior:    priorEmp,
         svc:      emp.svc      || emp.servicos || {},
         cli:      emp.cli      || {},
@@ -5415,7 +5444,9 @@ function getActiveOP() {
     else if(activeMonth === 'all') { base = filaData; }
     else {
       var mesFila = filaData.por_mes && filaData.por_mes[activeMonth];
-      base = mesFila || filaData;
+      base = mesFila || (filaData.por_mes
+        ? {total:0,abertos:0,fechados:0,resp_med:0,sol_med_h:0,estado:{},prior:{},svc:{},by_mes:{},atend:[],criticos:[],heat:{},bloq:[]}
+        : filaData);
     }
   } else {
     base = (activeMonth === 'all') ? OP : (OP_MESES[activeMonth] || OP);
@@ -5447,7 +5478,7 @@ function getActiveOP() {
     heat:     base.heat     || {},
     volMes:   base.volMes   || base.by_mes   || {},
     atend:    atend,
-    criticos: base.criticos || OP.criticos   || [],
+    criticos: base.criticos || [],
     by_day:   base.by_day   || base.byDay    || [],
     byDay:    base.by_day   || base.byDay    || []
   };
