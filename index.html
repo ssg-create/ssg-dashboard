@@ -2365,7 +2365,7 @@ function renderAlertas(){
   if(activeRangeStart && activeRangeEnd) {
     var isAbRA=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
     critTodos=(RAW_DATA||[]).filter(function(d){
-      return d.criado&&isAbRA(d.estado)&&ticketInFilter(d)&&(!activeCliente||d.cli_id===activeCliente);
+      return d.criado&&isAbRA(d.estado)&&ticketInFilter(d)&&(!activeCliente||d.cli_id===activeCliente)&&(activeFilaOP==='all'||d.fila===activeFilaOP);
     }).map(function(d){
       var diff=Math.floor((new Date()-d.criado)/(864e5));
       var p2=function(n){return n<10?'0'+n:String(n);};
@@ -2374,7 +2374,8 @@ function renderAlertas(){
         idade:diff===0?'hoje':diff===1?'1 dia':diff+' dias',fila:d.fila||'',mes:d.criado.toISOString().slice(0,7)};
     });
   } else {
-    critTodos = mes==='all' ? OP.criticos : OP.criticos.filter(function(c){return c.mes===mes;});
+    var _opCrit = getActiveOP().criticos || [];
+    critTodos = mes==='all' ? _opCrit : _opCrit.filter(function(c){return c.mes===mes;});
   }
   var filaAtiva = _alertState.filtroFila||'all';
   var critFiltrados = filaAtiva==='all' ? critTodos : critTodos.filter(function(c){return c.fila===filaAtiva;});
@@ -2855,6 +2856,11 @@ function renderComp(){
   // Lê meses disponíveis dinamicamente de OP_MESES (calculado no import)
   var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   function mLbl(k){var p=k.split('-');return mNames[p[1]]+'/'+(p[0].slice(2));}
+  function getMesSource(k){
+    if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]&&OP_FILAS[activeFilaOP].por_mes)
+      return OP_FILAS[activeFilaOP].por_mes[k]||null;
+    return OP_MESES[k]||null;
+  }
 
   var mOrder=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var mLabels=mOrder.map(function(k){return mLbl(k);});
@@ -2864,8 +2870,8 @@ function renderComp(){
   var kpisEl=document.getElementById('comp-kpis');
   if(kpisEl){
     kpisEl.innerHTML=mOrder.map(function(k,i){
-      var m=OP_MESES[k]||{};
-      var prev=i>0?OP_MESES[mOrder[i-1]]:null;
+      var m=getMesSource(k)||{};
+      var prev=i>0?getMesSource(mOrder[i-1]):null;
       var taxa=m.total>0?Math.round((m.fechados||0)/m.total*100):0;
       var varHtml='';
       if(prev&&prev.total){
@@ -2905,15 +2911,15 @@ function renderComp(){
     mColors=mColors.map(function(c,i){return i===ai?c:c.replace('.6','.15');});
     mBorder=mBorder.map(function(c,i){return i===ai?c:'rgba(255,255,255,.08)';});
   }
-  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return OP_MESES[k].total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:xy()});
+  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return (getMesSource(k)||{}).total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:xy()});
 
   // Tabela comparativa — prev/curr baseado no filtro ativo
   var curIdx=activeMonth==='all'?mOrder.length-1:mOrder.indexOf(activeMonth);
   if(curIdx<0)curIdx=mOrder.length-1;
   var currKey=mOrder[curIdx];
   var prevKey=curIdx>0?mOrder[curIdx-1]:null;
-  var curr=OP_MESES[currKey]||OP;
-  var prev=prevKey?OP_MESES[prevKey]:null;
+  var curr=getMesSource(currKey)||getActiveOP();
+  var prev=prevKey?getMesSource(prevKey):null;
   var tEl=document.querySelector('#s-comp .card-title');
   if(tEl)tEl.innerHTML='Indicadores — '+(prevKey?mLbl(prevKey):'base')+' <span style="color:var(--muted)">→</span> '+mLbl(currKey);
 
@@ -2937,7 +2943,7 @@ function renderComp(){
   }
 
   document.getElementById('comp-table').innerHTML=rows.map(function(r){
-    var allVals=mOrder.map(function(k){return r.fv(OP_MESES[k]||{});});
+    var allVals=mOrder.map(function(k){return r.fv(getMesSource(k)||{});});
     var currV=r.fv(curr),prevV=prev?r.fv(prev):null;
     var delta=prevV!==null?currV-prevV:0;
     var pctD=prevV?Math.round(Math.abs(delta)/Math.abs(prevV||1)*100):0;
@@ -3853,6 +3859,13 @@ function renderBl(){
   var bloqData;
   if(activeRangeStart && activeRangeEnd) {
     bloqData = buildBloqEntry(buildOPFromRange().estado || {});
+  } else if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]) {
+    var _fBl=OP_FILAS[activeFilaOP];
+    if(activeMonth!=='all'&&_fBl.por_mes&&_fBl.por_mes[activeMonth]) {
+      bloqData=_fBl.por_mes[activeMonth].bloq||buildBloqEntry(_fBl.por_mes[activeMonth].estados||{});
+    } else {
+      bloqData=_fBl.bloq||buildBloqEntry(_fBl.estado||{});
+    }
   } else {
     bloqData=BLOQ_MESES[activeMonth];
     if(!bloqData&&activeMonth!=='all'&&OP_MESES[activeMonth])bloqData=buildBloqEntry(OP_MESES[activeMonth].estado||{});
@@ -7403,6 +7416,7 @@ function renderBacklog() {
     if (!e || !e.tickets) return;
     e.tickets.forEach(function(t) {
       if (estadosAbertos.indexOf(t.estado) !== -1) {
+        if(activeFilaOP!=='all'&&t.fila!==activeFilaOP) return;
         // Calcular aging em dias a partir da data de criação
         var aging = calcAging(t.criado);
         rows.push({
