@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-17T17:36:50.173496",
+  "generated_at": "2026-04-17T20:08:29.996905",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>63%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>82 chamados em aberto</strong> (31%) e <strong>51 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Infraestrutura e Cloud</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
+    "narrativa": "A taxa de conclusão está em <strong>61%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>91 chamados em aberto</strong> (33%) e <strong>54 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Infraestrutura e Cloud</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
     "kpis": [
       {
         "label": "Score Operacional",
@@ -46,7 +46,7 @@
   "riscos_operacionais": [
     {
       "titulo": "Volume crítico de chamados bloqueados",
-      "desc": "51 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
+      "desc": "54 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
       "nivel": "high",
       "confianca": 92
     },
@@ -65,42 +65,42 @@
   ],
   "riscos_clientes": [
     {
-      "cliente": "FADEL",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 70 chamados (27% do total). O módulo <strong>Infraestrutura e Cloud</strong> concentra 46% dos chamados desta conta — possível reincidência.",
+      "cliente": "AUTOZONE",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 74 chamados (27% do total).",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "70 chamados (27% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "74 chamados (27% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "nivel": "medium",
+          "confianca": 78
+        }
+      ]
+    },
+    {
+      "cliente": "FADEL",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 72 chamados (26% do total). O módulo <strong>VDI</strong> concentra 44% dos chamados desta conta — possível reincidência.",
+      "riscos": [
+        {
+          "titulo": "Volume acima da média do período",
+          "desc": "72 chamados (26% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
         {
-          "titulo": "Reincidência no módulo Infraestrutura e Cloud",
-          "desc": "46% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
+          "titulo": "Reincidência no módulo VDI",
+          "desc": "44% dos chamados desta conta são do mesmo módulo. Sugere problema não resolvido na raiz ou gap de treinamento.",
           "nivel": "medium",
           "confianca": 75
         }
       ]
     },
     {
-      "cliente": "AUTOZONE",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 69 chamados (26% do total).",
-      "riscos": [
-        {
-          "titulo": "Volume acima da média do período",
-          "desc": "69 chamados (26% do total). Verificar se há problema sistêmico ou sazonalidade.",
-          "nivel": "medium",
-          "confianca": 78
-        }
-      ]
-    },
-    {
       "cliente": "ALMEIDA JR",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 33 chamados (13% do total). O módulo <strong>ERP Protheus</strong> concentra 100% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 33 chamados (12% do total). O módulo <strong>ERP Protheus</strong> concentra 100% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "33 chamados (13% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "33 chamados (12% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
@@ -145,18 +145,18 @@
   ],
   "cs_insights": [
     {
-      "cliente": "FADEL",
-      "narrativa": "<strong>2 chamado(s) próximos do limite de 30 dias</strong> sem resolução. Contato preventivo recomendado para demonstrar atenção antes do vencimento.<br><br>O módulo <strong>Infraestrutura e Cloud</strong> representa 46% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.",
-      "proximo_contato": "até o fim desta semana",
-      "tom_sugerido": "proativo",
-      "prioridade": "média"
-    },
-    {
       "cliente": "AUTOZONE",
-      "narrativa": "Conta com 69 chamados no período e sem anomalias críticas. Manter relacionamento regular para garantir satisfação.",
+      "narrativa": "Com <strong>35% dos chamados ainda em aberto</strong>, o próximo contato deve incluir um plano de fechamento claro com prazo.",
       "proximo_contato": "nos próximos 7 dias",
       "tom_sugerido": "consultivo",
       "prioridade": "baixa"
+    },
+    {
+      "cliente": "FADEL",
+      "narrativa": "<strong>2 chamado(s) próximos do limite de 30 dias</strong> sem resolução. Contato preventivo recomendado para demonstrar atenção antes do vencimento.<br><br>O módulo <strong>VDI</strong> representa 44% dos chamados desta conta. Sugerir uma <strong>sessão de alinhamento técnico</strong> pode quebrar o ciclo de reincidência e reduzir volume.",
+      "proximo_contato": "até o fim desta semana",
+      "tom_sugerido": "proativo",
+      "prioridade": "média"
     },
     {
       "cliente": "ALMEIDA JR",
