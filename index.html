@@ -1239,18 +1239,14 @@ input[type=file]{display:none}
   <div id="s-comp" class="sec">
     <div class="page-header"><h1>Comparativo Mensal</h1><p>Evolução dos indicadores mês a mês</p></div>
     <div class="page-body">
-      <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Jan/26</div><div class="kpi-val">270</div><div class="kpi-sub">chamados abertos</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">Fev/26</div><div class="kpi-val">197</div><div class="kpi-sub"><span style="color:var(--ok)">↓ 27%</span> vs jan</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Mar/26 (parcial)</div><div class="kpi-val">89</div><div class="kpi-sub">13 dias</div></div>
-      </div>
+      <div class="kpi-row kpi-row-3" id="comp-kpis"></div>
       <div class="grid2">
         <div class="card">
-          <div class="card-title">Volume mensal <span class="card-title-right">jan–mar 2026</span></div>
+          <div class="card-title">Volume mensal <span class="card-title-right" id="comp-periodo"></span></div>
           <div class="cw" style="height:200px"><canvas id="c-mensal"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">Indicadores — jan vs fev</div>
+          <div class="card-title" id="comp-ind-title">Indicadores — jan vs fev</div>
           <div id="comp-table"></div>
         </div>
       </div>
@@ -2856,7 +2852,35 @@ function renderComp(){
   // Lê meses disponíveis dinamicamente de OP_MESES (calculado no import)
   var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   function mLbl(k){var p=k.split('-');return mNames[p[1]]+'/'+(p[0].slice(2));}
+  // Pré-calcula agregados por mês a partir de RAW_DATA quando há filtro de cliente
+  // (OP_MESES/OP_FILAS.por_mes não têm breakdown por cliente)
+  var _compCliAgg=null;
+  if(activeCliente&&typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length){
+    _compCliAgg={};
+    var _isAbC=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
+    var _isFeC=function(e){return['Fechado','Resolvido','Fechado s/ Êxito'].indexOf(e)!==-1;};
+    RAW_DATA.forEach(function(d){
+      if(!d.criado) return;
+      if(activeFilaOP!=='all'&&d.fila!==activeFilaOP) return;
+      if(d.cli_id!==activeCliente) return;
+      var mk=d.criado.toISOString?d.criado.toISOString().slice(0,7):String(d.criado).slice(0,7);
+      if(!_compCliAgg[mk]) _compCliAgg[mk]={total:0,abertos:0,fechados:0,_resps:[],_sols:[],prior:{}};
+      var m=_compCliAgg[mk]; m.total++;
+      if(_isAbC(d.estado)) m.abertos++;
+      if(_isFeC(d.estado)) m.fechados++;
+      if(d.resp_min!=null&&!isNaN(d.resp_min)) m._resps.push(d.resp_min);
+      if(_isFeC(d.estado)&&d.sol_h!=null&&!isNaN(d.sol_h)) m._sols.push(d.sol_h);
+      if(d.prior) m.prior[d.prior]=(m.prior[d.prior]||0)+1;
+    });
+    Object.keys(_compCliAgg).forEach(function(k){
+      var m=_compCliAgg[k];
+      m.resp_med=m._resps.length?Math.round(m._resps.reduce(function(s,v){return s+v;},0)/m._resps.length):0;
+      m.sol_med=m._sols.length?Math.round(m._sols.reduce(function(s,v){return s+v;},0)/m._sols.length*10)/10:0;
+      delete m._resps; delete m._sols;
+    });
+  }
   function getMesSource(k){
+    if(_compCliAgg) return _compCliAgg[k]||null;
     if(activeFilaOP!=='all'&&OP_FILAS[activeFilaOP]&&OP_FILAS[activeFilaOP].por_mes)
       return OP_FILAS[activeFilaOP].por_mes[k]||null;
     return OP_MESES[k]||null;
@@ -2920,7 +2944,7 @@ function renderComp(){
   var prevKey=curIdx>0?mOrder[curIdx-1]:null;
   var curr=getMesSource(currKey)||getActiveOP();
   var prev=prevKey?getMesSource(prevKey):null;
-  var tEl=document.querySelector('#s-comp .card-title');
+  var tEl=document.getElementById('comp-ind-title');
   if(tEl)tEl.innerHTML='Indicadores — '+(prevKey?mLbl(prevKey):'base')+' <span style="color:var(--muted)">→</span> '+mLbl(currKey);
 
   var rows=[
@@ -2963,7 +2987,7 @@ function renderComp(){
   }).join('');
 
   // Tendência 1ª resposta — todos os meses
-  var respData=mOrder.map(function(k){return OP_MESES[k]?OP_MESES[k].resp_med||0:0;});
+  var respData=mOrder.map(function(k){var _m=getMesSource(k);return _m?_m.resp_med||0:0;});
   var mLen=mLabels.length||1;
   mk('c-resp-trend','line',mLabels,[
     {data:respData,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.08)',tension:.4,fill:true,pointRadius:6,pointBackgroundColor:mOrder.map(function(k){return activeMonth==='all'||activeMonth===k?'#00d4a8':'rgba(0,212,168,.3)';}),borderWidth:2,label:'1ª Resp'},
