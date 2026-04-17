@@ -4463,7 +4463,7 @@ function handleFileImport(e){
   setProgress(10,'Lendo '+file.name+'...');
   var reader=new FileReader();
   reader.onload=function(ev){
-    try{var wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});var ws=wb.Sheets[wb.SheetNames[0]];var rows=XLSX.utils.sheet_to_json(ws,{defval:''});rebuildAll(parseR(rows));}
+    try{var wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});var ws=wb.Sheets[wb.SheetNames[0]];var rows=XLSX.utils.sheet_to_json(ws,{defval:''});var _sm2=activeMonth,_sf2=activeFilaOP,_sfc2=activeFilaCli,_sc2=activeCliente,_srs2=activeRangeStart,_sre2=activeRangeEnd;rebuildAll(parseR(rows));if(_sm2!=='all'||_sf2!=='all'||_sc2||_srs2){activeMonth=_sm2;activeFilaOP=_sf2;activeFilaCli=_sfc2;activeCliente=_sc2;activeRangeStart=_srs2;activeRangeEnd=_sre2;buildMonthFilter();Object.keys(rendered).forEach(function(k){rendered[k]=false;});Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});var _aOp2=document.querySelector('#view-op .sec.on');if(_aOp2){rendered[_aOp2.id]=true;renderSec(_aOp2.id);}renderAlertas();computeInsights();}}
     catch(err){setProgress(0,'');alert('Erro ao ler arquivo: '+err.message);}
     document.getElementById('imp-file').value='';
   };
@@ -4474,7 +4474,7 @@ function handleDrop(e){
   var file=e.dataTransfer.files[0];if(!file)return;
   setProgress(10,'Lendo '+file.name+'...');
   var reader=new FileReader();
-  reader.onload=function(ev){try{var wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});var ws=wb.Sheets[wb.SheetNames[0]];var rows=XLSX.utils.sheet_to_json(ws,{defval:''});rebuildAll(parseR(rows));}catch(err){setProgress(0,'');alert('Erro: '+err.message);}};
+  reader.onload=function(ev){try{var wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});var ws=wb.Sheets[wb.SheetNames[0]];var rows=XLSX.utils.sheet_to_json(ws,{defval:''});var _sm2=activeMonth,_sf2=activeFilaOP,_sfc2=activeFilaCli,_sc2=activeCliente,_srs2=activeRangeStart,_sre2=activeRangeEnd;rebuildAll(parseR(rows));if(_sm2!=='all'||_sf2!=='all'||_sc2||_srs2){activeMonth=_sm2;activeFilaOP=_sf2;activeFilaCli=_sfc2;activeCliente=_sc2;activeRangeStart=_srs2;activeRangeEnd=_sre2;buildMonthFilter();Object.keys(rendered).forEach(function(k){rendered[k]=false;});Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});var _aOp2=document.querySelector('#view-op .sec.on');if(_aOp2){rendered[_aOp2.id]=true;renderSec(_aOp2.id);}renderAlertas();computeInsights();}}catch(err){setProgress(0,'');alert('Erro: '+err.message);}};
   reader.readAsBinaryString(file);
 }
 function openImport(){document.getElementById('import-overlay').classList.add('open');}
@@ -5737,7 +5737,20 @@ function getFilteredEmpresa(d) {
       tickets:tixGFE, estados:estGFE, by_mes:{}
     });
   }
-  if(activeMonth==='all') return d;
+  if(activeMonth==='all') {
+    if(activeFilaOP === 'all') return d;
+    // Fila ativa mesmo sem filtro de mês — filtra tickets e reconstrói
+    var allTix = (d.tickets||[]).filter(function(t){ return t.fila === activeFilaOP; });
+    var isAbAll=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
+    var isFeAll=function(e){return e==='Fechado'||e==='Resolvido'||e.indexOf('Fechado s')===0;};
+    var estAll={};allTix.forEach(function(t){if(t.estado)estAll[t.estado]=(estAll[t.estado]||0)+1;});
+    return Object.assign({},d,{
+      total:allTix.length,
+      abertos:allTix.filter(function(t){return isAbAll(t.estado);}).length,
+      fechados:allTix.filter(function(t){return isFeAll(t.estado);}).length,
+      tickets:allTix, estados:estAll
+    });
+  }
 
   var mParts = activeMonth.split('-');
   var mNames2 = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
@@ -6508,14 +6521,14 @@ function renderCSOverview(d) {
   document.getElementById('cs-kpi-total').textContent = total;
   document.getElementById('cs-kpi-total-sub').textContent = 'jan–mar 2026';
   document.getElementById('cs-kpi-abertos').textContent = d.abertos || 0;
-  document.getElementById('cs-kpi-abertos-sub').textContent = Math.round((d.abertos||0)/total*100)+'% do total';
+  document.getElementById('cs-kpi-abertos-sub').textContent = (total>0?Math.round((d.abertos||0)/total*100):0)+'% do total';
   document.getElementById('cs-kpi-taxa').textContent = taxa + '%';
   document.getElementById('cs-kpi-taxa-sub').textContent = d.fechados + ' chamados resolvidos';
   document.getElementById('cs-kpi-sla').textContent = (d.resp_med||'-') + 'min';
   document.getElementById('cs-kpi-sla-sub').textContent = d.resp_med <= 30 ? '✓ dentro da meta' : '⚠ acima de 30min';
   document.getElementById('cs-kpi-sol').textContent = (d.solucao_med_h || '-') + 'h';
   document.getElementById('cs-kpi-alta').textContent = alta;
-  document.getElementById('cs-kpi-alta-sub').textContent = Math.round(alta/total*100)+'% dos chamados';
+  document.getElementById('cs-kpi-alta-sub').textContent = (total>0?Math.round(alta/total*100):0)+'% dos chamados';
   document.getElementById('cs-kpi-aguard').textContent = aguard;
   var svcTop = topSvc ? topSvc.split(' ').slice(0,2).join(' ') : '-';
   document.getElementById('cs-kpi-modulo').textContent = svcTop;
