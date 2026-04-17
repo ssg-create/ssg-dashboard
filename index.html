@@ -9011,24 +9011,26 @@ function renderAcoes() {
 
   var PRAZO_LABEL = { imediato:'⚡ Imediato', hoje:'📅 Hoje', semana:'📆 Esta semana' };
   var PRAZO_COLOR = { imediato:'#f43f5e', hoje:'#f59e0b', semana:'#3b82f6' };
-  var STATUS_COLOR = { pendente:'var(--muted)', andamento:'#f59e0b', concluido:'var(--ok)' };
-  var STATUS_TEXT  = { pendente:'#e2e8f0', andamento:'#000', concluido:'#fff' };
+  var STATUS_COLOR = { pendente:'var(--bg4)', andamento:'#f59e0b', concluido:'var(--ok)' };
+  var STATUS_TEXT  = { pendente:'var(--text)', andamento:'#000', concluido:'#fff' };
+  var STATUS_BORDER = { pendente:'1px solid var(--border3)', andamento:'none', concluido:'none' };
   var PRIORIDADE_LABEL = { critico:'🔴 Crítico', atencao:'🟡 Atenção', oportunidade:'💡 Oportunidade' };
+  var PRIORIDADE_BG    = { critico:'rgba(244,63,94,0.15)', atencao:'rgba(245,158,11,0.15)', oportunidade:'rgba(59,130,246,0.15)' };
 
   function fmtCard(a) {
     var priorCor = a.prioridade === 'critico' ? '#f43f5e' : (a.prioridade === 'atencao' ? '#f59e0b' : '#3b82f6');
     function btnStyle(s) {
       var active = a.status === s;
-      return 'border:none;cursor:pointer;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--font);transition:all .15s;'
+      return 'cursor:pointer;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--font);transition:all .15s;'
         + (active
-          ? 'background:' + STATUS_COLOR[s] + ';color:' + STATUS_TEXT[s] + ';'
-          : 'background:var(--bg3);color:var(--muted);');
+          ? 'background:' + STATUS_COLOR[s] + ';color:' + STATUS_TEXT[s] + ';border:' + STATUS_BORDER[s] + ';'
+          : 'background:var(--bg3);color:var(--muted);border:none;');
     }
     var safeId = a.id.replace(/'/g, "\\'");
     return '<div class="card" style="border-left:3px solid ' + priorCor + ';margin-bottom:12px;padding:14px 16px">'
       + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">'
       +   '<div style="flex:1;min-width:0">'
-      +     '<div style="font-size:10px;font-weight:700;color:' + priorCor + ';margin-bottom:4px;letter-spacing:.03em">' + PRIORIDADE_LABEL[a.prioridade] + '</div>'
+      +     '<div style="margin-bottom:8px"><span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;color:' + priorCor + ';background:' + PRIORIDADE_BG[a.prioridade] + ';letter-spacing:.02em">' + PRIORIDADE_LABEL[a.prioridade] + '</span></div>'
       +     '<div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px">' + a.problema + '</div>'
       +     '<div style="font-size:10px;color:var(--muted)">'
       +       '<span style="color:' + PRAZO_COLOR[a.prazo] + ';font-weight:600">' + PRAZO_LABEL[a.prazo] + '</span>'
