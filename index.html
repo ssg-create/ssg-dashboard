@@ -8227,6 +8227,8 @@ function buildClientRecurrence() {
 function buildRecurringData(mode){
   if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
   var tickets=RAW_DATA.filter(function(d){
+    if(!ticketInFilter(d)) return false;
+    if(typeof activeCliente!=='undefined'&&activeCliente&&d.cli_id!==activeCliente) return false;
     if(mode==='open')   return d.estado&&isAb(d.estado);
     if(mode==='closed') return d.estado&&isFe(d.estado);
     return true;
