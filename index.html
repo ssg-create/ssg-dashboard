@@ -1271,6 +1271,63 @@ input[type=file]{display:none}
 [data-theme="light"] .gw-hero-sub strong,[data-theme="light"] .gw-ring-num{color:#0f172a}
 [data-theme="light"] .gw-ring-bg{stroke:rgba(148,163,184,.4)}
 
+/* ════════════════════════════════════════════════════════════════════
+   VISÃO DO CLIENTE + CUSTOMER SUCCESS — estende .gw-hero-* com novos escopos
+   ════════════════════════════════════════════════════════════════════ */
+#c-tl > .page-header,#c-hs > .page-header,#c-sq > .page-header,#c-inf > .page-header{display:none}
+.tl-hero,.hs-hero,.sq-hero,.inf-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid rgba(40,54,69,.6);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:26px 32px 22px;margin:0 0 18px}
+.tl-hero::before,.hs-hero::before,.sq-hero::before,.inf-hero::before{content:"";position:absolute;inset:-2px;pointer-events:none;z-index:0}
+.tl-hero::before{background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.14),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.08),transparent 45%)}
+.hs-hero::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.16),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.08),transparent 45%)}
+.sq-hero::before{background:radial-gradient(circle at 88% 25%,rgba(245,158,11,.15),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.08),transparent 45%)}
+.inf-hero::before{background:radial-gradient(circle at 88% 25%,rgba(79,142,247,.15),transparent 52%),radial-gradient(circle at 10% 90%,rgba(34,211,238,.08),transparent 45%)}
+.tl-hero::after,.hs-hero::after,.sq-hero::after,.inf-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.015) 50%,transparent 58%,transparent 100%);animation:ialScan 10s linear infinite;pointer-events:none;z-index:1}
+.tl-hero-status{font-size:42px;background:linear-gradient(135deg,#22d3ee 0%,#f37633 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(34,211,238,.3))}
+.hs-hero-status{font-size:50px;background:linear-gradient(135deg,#10b981 0%,#22d3ee 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(16,185,129,.3))}
+.hs-hero-status.hs-s-warn{background:linear-gradient(135deg,#f59e0b 0%,#ff7024 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(245,158,11,.3))}
+.hs-hero-status.hs-s-crit{background:linear-gradient(135deg,#ff7024 0%,#f43f5e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(255,112,36,.4))}
+.sq-hero-status{font-size:42px;background:linear-gradient(135deg,#f59e0b 0%,#ff7024 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(245,158,11,.3))}
+.inf-hero-status{font-size:42px;background:linear-gradient(135deg,#4f8ef7 0%,#22d3ee 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(79,142,247,.3))}
+.hs-ring-fg{stroke:#10b981;filter:drop-shadow(0 0 8px rgba(16,185,129,.5))}
+.hs-ring.hs-s-warn .hs-ring-fg{stroke:#f59e0b;filter:drop-shadow(0 0 8px rgba(245,158,11,.5))}
+.hs-ring.hs-s-crit .hs-ring-fg{stroke:#ff7024;filter:drop-shadow(0 0 8px rgba(255,112,36,.5))}
+/* LIGHT MODE */
+[data-theme="light"] .tl-hero,[data-theme="light"] .hs-hero,[data-theme="light"] .sq-hero,[data-theme="light"] .inf-hero{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08);border-color:rgba(148,163,184,.3)}
+[data-theme="light"] .tl-hero::before{background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.1),transparent 52%)}
+[data-theme="light"] .hs-hero::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.12),transparent 52%)}
+[data-theme="light"] .sq-hero::before{background:radial-gradient(circle at 88% 25%,rgba(245,158,11,.12),transparent 52%)}
+[data-theme="light"] .inf-hero::before{background:radial-gradient(circle at 88% 25%,rgba(79,142,247,.1),transparent 52%)}
+[data-theme="light"] .tl-hero::after,[data-theme="light"] .hs-hero::after,[data-theme="light"] .sq-hero::after,[data-theme="light"] .inf-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+
+/* ═══════════ CUSTOMER SUCCESS heros (7 seções compartilham base) ═══════════ */
+#cs-overview > .page-header,#cs-health > .page-header,#cs-matrix > .page-header,#cs-risks > .page-header,#cs-timeline > .page-header,#cs-csat > .page-header,#cs-actions > .page-header{display:none}
+.cs-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid rgba(40,54,69,.6);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:24px 30px 20px;margin:0 0 18px}
+.cs-hero::before{content:"";position:absolute;inset:-2px;pointer-events:none;z-index:0}
+.cs-hero-overview::before{background:radial-gradient(circle at 88% 25%,rgba(168,85,247,.16),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.08),transparent 45%)}
+.cs-hero-health::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.16),transparent 52%)}
+.cs-hero-risks::before{background:radial-gradient(circle at 88% 25%,rgba(244,63,94,.18),transparent 52%)}
+.cs-hero-matrix::before{background:radial-gradient(circle at 88% 25%,rgba(245,158,11,.16),transparent 52%)}
+.cs-hero-timeline::before{background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.14),transparent 52%)}
+.cs-hero-csat::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.16),transparent 52%)}
+.cs-hero-actions::before{background:radial-gradient(circle at 88% 25%,rgba(255,112,36,.18),transparent 52%)}
+.cs-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.015) 50%,transparent 58%,transparent 100%);animation:ialScan 11s linear infinite;pointer-events:none;z-index:1}
+.cs-ov-hero-status{font-size:38px;background:linear-gradient(135deg,#a855f7 0%,#ff7024 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(168,85,247,.3))}
+.cs-hs-hero-status{font-size:38px;background:linear-gradient(135deg,#10b981 0%,#22d3ee 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(16,185,129,.3))}
+.cs-risk-hero-status{font-size:38px;background:linear-gradient(135deg,#f43f5e 0%,#ff7024 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(244,63,94,.3))}
+.cs-mtx-hero-status{font-size:38px;background:linear-gradient(135deg,#f59e0b 0%,#ff7024 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(245,158,11,.3))}
+.cs-tl-hero-status{font-size:38px;background:linear-gradient(135deg,#22d3ee 0%,#4f8ef7 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(34,211,238,.3))}
+.cs-csat-hero-status{font-size:38px;background:linear-gradient(135deg,#10b981 0%,#22d3ee 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(16,185,129,.3))}
+.cs-act-hero-status{font-size:38px;background:linear-gradient(135deg,#ff7024 0%,#f37633 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(255,112,36,.3))}
+[data-theme="light"] .cs-hero{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08);border-color:rgba(148,163,184,.3)}
+[data-theme="light"] .cs-hero-overview::before{background:radial-gradient(circle at 88% 25%,rgba(168,85,247,.1),transparent 52%)}
+[data-theme="light"] .cs-hero-health::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.1),transparent 52%)}
+[data-theme="light"] .cs-hero-risks::before{background:radial-gradient(circle at 88% 25%,rgba(244,63,94,.1),transparent 52%)}
+[data-theme="light"] .cs-hero-matrix::before{background:radial-gradient(circle at 88% 25%,rgba(245,158,11,.1),transparent 52%)}
+[data-theme="light"] .cs-hero-timeline::before{background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.08),transparent 52%)}
+[data-theme="light"] .cs-hero-csat::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.1),transparent 52%)}
+[data-theme="light"] .cs-hero-actions::before{background:radial-gradient(circle at 88% 25%,rgba(255,112,36,.1),transparent 52%)}
+[data-theme="light"] .cs-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+
 </style>
 </head>
 <body>
@@ -2257,6 +2314,15 @@ input[type=file]{display:none}
   <div id="c-tl" class="sec">
     <div class="page-header"><h1>Linha do Tempo</h1><p>Histórico visual de todos os chamados</p></div>
     <div class="page-body">
+      <div class="tl-hero" id="tl-hero">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#22d3ee;box-shadow:0 0 10px #22d3ee;animation:ialPulse 2.4s ease-in-out infinite"></span>LINHA DO TEMPO · HISTÓRICO VISUAL</div>
+            <div class="gw-hero-status tl-hero-status">Histórico da Conta</div>
+            <div class="gw-hero-sub" id="tl-hero-sub">selecione sua empresa pra navegar o histórico completo ordenado por data</div>
+          </div>
+        </div>
+      </div>
       <div id="tl-empty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><p>Selecione sua empresa</p></div>
       <div id="tl-content" style="display:none">
         <div class="card"><div class="card-title" id="tl-title"></div><div id="tl-list"></div></div>
@@ -2268,6 +2334,26 @@ input[type=file]{display:none}
   <div id="c-hs" class="sec">
     <div class="page-header"><h1>Health Score</h1><p>Indicador de saúde calculado com base nos seus chamados</p></div>
     <div class="page-body">
+      <div class="hs-hero" id="hs-hero">
+        <div class="gw-hero-grid">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#10b981;box-shadow:0 0 10px #10b981;animation:ialPulse 2.4s ease-in-out infinite"></span>HEALTH SCORE · SAÚDE DO RELACIONAMENTO</div>
+            <div class="gw-hero-status hs-hero-status" id="hs-hero-status">—</div>
+            <div class="gw-hero-sub" id="hs-hero-sub">selecione sua empresa pra calcular o score</div>
+            <div class="gw-hero-meta">derivado de volume · SLA · recorrência · priorização</div>
+          </div>
+          <div class="gw-ring hs-ring" id="hs-hero-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="gw-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="gw-ring-fg hs-ring-fg" id="hs-hero-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+            </svg>
+            <div class="gw-ring-core">
+              <div class="gw-ring-num" id="hs-hero-ring-num">—</div>
+              <div class="gw-ring-lbl">score</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="hs-empty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><p>Selecione sua empresa</p></div>
       <div id="hs-content" style="display:none">
         <div class="grid2">
@@ -2293,6 +2379,15 @@ input[type=file]{display:none}
   <div id="c-sq" class="sec">
     <div class="page-header"><h1>SLA do Contrato</h1><p>Cumprimento de prazos por prioridade</p></div>
     <div class="page-body">
+      <div class="sq-hero" id="sq-hero">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b;animation:ialPulse 2.4s ease-in-out infinite"></span>SLA DO CONTRATO · CUMPRIMENTO DE PRAZOS</div>
+            <div class="gw-hero-status sq-hero-status">Cumprimento por Prioridade</div>
+            <div class="gw-hero-sub">selecione sua empresa pra ver cumprimento de 1ª resposta, solução e distribuição</div>
+          </div>
+        </div>
+      </div>
       <div id="sq-empty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg></div><p>Selecione sua empresa</p></div>
       <div id="sq-content" style="display:none">
         <div class="card card-mb"><div class="card-title">Cumprimento por prioridade <span class="card-title-right">chamados com tempo registrado</span></div><div class="sla-grid" id="sla-gauges"></div></div>
@@ -2308,6 +2403,15 @@ input[type=file]{display:none}
   <div id="c-inf" class="sec">
     <div class="page-header"><h1>Status da Fila</h1><p>Indicadores gerais — sem dados internos de outras empresas</p></div>
     <div class="page-body">
+      <div class="inf-hero" id="inf-hero">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#4f8ef7;box-shadow:0 0 10px #4f8ef7;animation:ialPulse 2.4s ease-in-out infinite"></span>STATUS DA FILA · INDICADORES GERAIS</div>
+            <div class="gw-hero-status inf-hero-status">Panorama da Fila</div>
+            <div class="gw-hero-sub">indicadores agregados da operação — sem dados internos de outras empresas</div>
+          </div>
+        </div>
+      </div>
       <div id="cinf-kpis" class="kpi-row kpi-row-4"></div>
       <div class="grid2">
         <div class="card"><div class="card-title">Volume mensal da fila</div><div class="cw" style="height:170px"><canvas id="c-vol-inf"></canvas></div></div>
@@ -2339,6 +2443,15 @@ input[type=file]{display:none}
   <div id="cs-overview" class="sec on">
     <div class="page-header"><h1>Visão Geral da Conta</h1><p>Resumo executivo Customer Success · SSG / Groundwork</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-overview">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#a855f7;box-shadow:0 0 10px #a855f7;animation:ialPulse 2.4s ease-in-out infinite"></span>CUSTOMER SUCCESS · VISÃO GERAL</div>
+            <div class="gw-hero-status cs-ov-hero-status">Painel CS</div>
+            <div class="gw-hero-sub">resumo executivo da carteira — saúde, risco e próximas ações por conta</div>
+          </div>
+        </div>
+      </div>
       <div id="cs-all-health" style="margin-bottom:14px"></div>
       <div id="cs-ov-empty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><p>Selecione uma conta acima</p><span>para ver o painel Customer Success</span></div>
       <div id="cs-ov-content" style="display:none">
@@ -2387,6 +2500,15 @@ input[type=file]{display:none}
   <div id="cs-health" class="sec">
     <div class="page-header"><h1>Health Score Detalhado</h1><p>Composição do indicador de saúde do cliente</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-health">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#10b981;box-shadow:0 0 10px #10b981;animation:ialPulse 2.4s ease-in-out infinite"></span>CS · HEALTH SCORE DETALHADO</div>
+            <div class="gw-hero-status cs-hs-hero-status">Composição do Indicador</div>
+            <div class="gw-hero-sub">selecione uma conta pra ver cada fator que compõe a saúde</div>
+          </div>
+        </div>
+      </div>
       <div id="cs-hs-empty" class="empty"><div class="empty-icon"></div><p>Selecione uma conta</p></div>
       <div id="cs-hs-content" style="display:none">
         <div class="grid2" style="margin-bottom:14px">
@@ -2415,6 +2537,15 @@ input[type=file]{display:none}
   <div id="cs-risks" class="sec">
     <div class="page-header"><h1>Riscos &amp; Alertas</h1><p>Sinais de atenção identificados automaticamente</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-risks">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#f43f5e;box-shadow:0 0 10px #f43f5e;animation:ialPulse 1.8s ease-in-out infinite"></span>CS · RISCOS &amp; ALERTAS</div>
+            <div class="gw-hero-status cs-risk-hero-status">Sinais de Atenção</div>
+            <div class="gw-hero-sub">sinais identificados automaticamente a partir de SLA, volume, recorrência e silêncio</div>
+          </div>
+        </div>
+      </div>
       <div id="cs-risk-empty" class="empty"><div class="empty-icon"></div><p>Selecione uma conta</p></div>
       <div id="cs-risk-content" style="display:none">
         <div class="grid2" style="margin-bottom:14px">
@@ -2430,6 +2561,15 @@ input[type=file]{display:none}
   <div id="cs-matrix" class="sec">
     <div class="page-header"><h1>Matriz de Risco</h1><p>Todos os clientes — volume × saúde. Clique num cliente para abrir o painel.</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-matrix">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b;animation:ialPulse 2.4s ease-in-out infinite"></span>CS · MATRIZ DE RISCO</div>
+            <div class="gw-hero-status cs-mtx-hero-status">Volume × Saúde</div>
+            <div class="gw-hero-sub">todos os clientes posicionados — canto superior direito é o grupo que mais precisa de atenção</div>
+          </div>
+        </div>
+      </div>
       <div id="rm-empty" class="empty"><div class="empty-icon"></div><p>Importe dados para visualizar a matriz</p></div>
       <div id="rm-content" style="display:none">
         <div style="display:flex;align-items:center;gap:18px;margin-bottom:10px;flex-wrap:wrap">
@@ -2452,6 +2592,15 @@ input[type=file]{display:none}
   <div id="cs-timeline" class="sec">
     <div class="page-header"><h1>Histórico da Conta</h1><p>Todos os chamados do período com detalhe</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-timeline">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#22d3ee;box-shadow:0 0 10px #22d3ee;animation:ialPulse 2.4s ease-in-out infinite"></span>CS · HISTÓRICO DA CONTA</div>
+            <div class="gw-hero-status cs-tl-hero-status">Todos os chamados</div>
+            <div class="gw-hero-sub">histórico completo do período com filtros e detalhe por ticket</div>
+          </div>
+        </div>
+      </div>
       <div id="cs-tl-empty" class="empty"><div class="empty-icon"></div><p>Selecione uma conta</p></div>
       <div id="cs-tl-content" style="display:none">
         <div class="card"><div class="card-title" id="cs-tl-title">Chamados</div><div id="cs-tl-list" style="max-height:520px;overflow-y:auto"></div></div>
@@ -2463,6 +2612,15 @@ input[type=file]{display:none}
   <div id="cs-csat" class="sec">
     <div class="page-header"><h1>CSAT Proxy</h1><p>Score estimado de satisfação — derivado de velocidade de resposta, resolução e desfecho</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-csat">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#10b981;box-shadow:0 0 10px #10b981;animation:ialPulse 2.4s ease-in-out infinite"></span>CS · CSAT PROXY</div>
+            <div class="gw-hero-status cs-csat-hero-status">Satisfação Estimada</div>
+            <div class="gw-hero-sub">derivado da velocidade de resposta, tempo de resolução e desfecho dos tickets</div>
+          </div>
+        </div>
+      </div>
       <div id="csat-empty" class="empty" style="display:none"><div class="empty-icon"></div><p>Importe dados para calcular o CSAT proxy</p></div>
       <div id="csat-content">
         <div class="grid2" style="margin-bottom:14px">
@@ -2503,6 +2661,15 @@ input[type=file]{display:none}
   <div id="cs-actions" class="sec">
     <div class="page-header"><h1>Próximas Ações CS</h1><p>Recomendações automáticas baseadas nos dados da conta</p></div>
     <div class="page-body">
+      <div class="cs-hero cs-hero-actions">
+        <div class="gw-hero-grid-min">
+          <div class="gw-hero-left">
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#ff7024;box-shadow:0 0 10px #ff7024;animation:ialPulse 2s ease-in-out infinite"></span>CS · PRÓXIMAS AÇÕES</div>
+            <div class="gw-hero-status cs-act-hero-status">Recomendações Ativas</div>
+            <div class="gw-hero-sub">ações sugeridas automaticamente baseadas no estado atual da conta</div>
+          </div>
+        </div>
+      </div>
       <div id="cs-act-empty" class="empty"><div class="empty-icon"></div><p>Selecione uma conta</p></div>
       <div id="cs-act-content" style="display:none">
         <div class="grid2">
@@ -3116,6 +3283,35 @@ function populateChHero(op){
   if(ringFg){
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(taxa/100)));
   }
+}
+
+function populateHsHero(score,d){
+  var g=function(id){return document.getElementById(id);};
+  var hero=g('hs-hero-status'), ring=g('hs-hero-ring'), ringFg=g('hs-hero-ring-fg'), ringNum=g('hs-hero-ring-num'), sub=g('hs-hero-sub');
+  if(!hero) return;
+  hero.classList.remove('hs-s-warn','hs-s-crit');
+  if(ring) ring.classList.remove('hs-s-warn','hs-s-crit');
+  if(score==null){
+    hero.textContent='—';
+    if(sub) sub.textContent='selecione sua empresa pra calcular o score';
+    if(ringNum) ringNum.textContent='—';
+    if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
+    return;
+  }
+  var lbl=score>=80?'SAÚDE EXCELENTE':score>=65?'SAÚDE BOA':score>=50?'SAÚDE ATENÇÃO':'SAÚDE CRÍTICA';
+  hero.textContent=lbl;
+  if(score<65){hero.classList.add('hs-s-warn');if(ring)ring.classList.add('hs-s-warn');}
+  if(score<50){hero.classList.remove('hs-s-warn');hero.classList.add('hs-s-crit');if(ring){ring.classList.remove('hs-s-warn');ring.classList.add('hs-s-crit');}}
+  if(sub){
+    var tot=d&&d.total||0, resp=d&&d.resp_med, sol=d&&d.sol_med;
+    sub.innerHTML=
+      'score <strong>'+score+'/100</strong> · '
+      +'volume período: <strong>'+tot+'</strong> chamados'
+      +(resp!=null?' · 1ª resp mediana <strong>'+Math.round(resp)+'min</strong>':'')
+      +(sol!=null?' · solução média <strong>'+sol.toFixed(1)+'h</strong>':'');
+  }
+  if(ringNum) ringNum.textContent=score;
+  if(ringFg) ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(score/100)));
 }
 
 function populateBlHero(){
@@ -5448,9 +5644,10 @@ function calcUnifiedScore(d){
 
 function renderHealthScore(d){
   var empty=document.getElementById('hs-empty'),content=document.getElementById('hs-content');
-  if(!d){empty.style.display='block';content.style.display='none';return;}
+  if(!d){empty.style.display='block';content.style.display='none';try{populateHsHero(null);}catch(e){}return;}
   empty.style.display='none';content.style.display='block';
   var score=calcScore(d);
+  try{populateHsHero(score,d);}catch(e){console.warn('hs hero:',e);}
   var col=score>=80?'#10b981':score>=65?'#4f8ef7':score>=50?'#f59e0b':'#f43f5e';
   document.getElementById('hs-num').textContent=score;
   document.getElementById('hs-num').style.color=col;
