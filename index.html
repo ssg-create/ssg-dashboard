@@ -1029,6 +1029,50 @@ input[type=file]{display:none}
 [data-theme="light"] #s-ov .kpi.fu:hover{box-shadow:0 4px 14px rgba(40,54,69,.1)}
 [data-theme="light"] #s-ov .card.fu{background:rgba(255,255,255,.9);border-color:rgba(148,163,184,.3);box-shadow:0 2px 8px rgba(40,54,69,.06)}
 
+/* ════════════════════════════════════════════════════════════════════
+   ALERTAS CRÍTICOS — redesign (escopo: #s-alertas)
+   ════════════════════════════════════════════════════════════════════ */
+#s-alertas{--gw:#ff7024;--gw-2:#f37633;--slate:#283645;--cyan:#22d3ee;--al-surface:rgba(20,29,40,.5);--al-border:rgba(40,54,69,.6);--al-border-bright:rgba(40,54,69,.95);--al-muted:#8a9bb0;--al-text:#e5edf5}
+#s-alertas > .page-header{display:none}
+.al-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--al-border);background:linear-gradient(135deg,#141620 0%,#1c1a24 60%,#241b20 100%);padding:30px 34px 26px;margin:0 0 18px}
+.al-hero::before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 88% 20%,rgba(255,112,36,.3),transparent 52%),radial-gradient(circle at 10% 90%,rgba(244,63,94,.12),transparent 45%);pointer-events:none;z-index:0}
+.al-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.02) 50%,transparent 58%,transparent 100%);animation:ialScan 7s linear infinite;pointer-events:none;z-index:1}
+.al-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
+.al-hero-left{display:flex;flex-direction:column;gap:6px}
+.al-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:var(--al-muted);text-transform:uppercase;letter-spacing:.18em}
+.al-hero-tag .al-dot{width:8px;height:8px;border-radius:50%;background:var(--gw);box-shadow:0 0 10px var(--gw);animation:ialPulse 1.5s ease-in-out infinite}
+.al-hero-status{font-family:'Syne',sans-serif;font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:4px;background:linear-gradient(135deg,var(--gw) 0%,#f43f5e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(255,112,36,.4))}
+.al-hero-status.al-s-ok{background:linear-gradient(135deg,#10b981 0%,#34d399 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(16,185,129,.3))}
+.al-hero-status.al-s-warn{background:linear-gradient(135deg,#f59e0b 0%,#fbbf24 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(245,158,11,.3))}
+.al-hero-sub{font-size:13px;color:var(--al-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
+.al-hero-sub strong{color:var(--al-text);font-weight:600}
+.al-hero-meta{font-size:10px;color:var(--al-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+.al-ring{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center}
+.al-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.al-ring svg circle{fill:none;stroke-width:2}
+.al-ring .al-ring-bg{stroke:rgba(40,54,69,.5)}
+.al-ring .al-ring-fg{stroke:var(--gw);stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(255,112,36,.55));transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.al-ring.al-s-ok .al-ring-fg{stroke:#10b981;filter:drop-shadow(0 0 8px rgba(16,185,129,.5))}
+.al-ring.al-s-warn .al-ring-fg{stroke:#f59e0b;filter:drop-shadow(0 0 8px rgba(245,158,11,.5))}
+.al-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.al-ring-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:700;color:var(--al-text);line-height:1}
+.al-ring-lbl{font-family:var(--mono);font-size:9px;color:var(--al-muted);text-transform:uppercase;letter-spacing:.18em}
+/* KPIs glass — apenas no s-alertas */
+#s-alertas .kpi{background:var(--al-surface);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--al-border);border-radius:10px;padding:14px 16px 12px;transition:border-color .25s,transform .25s;position:relative;overflow:hidden}
+#s-alertas .kpi:hover{border-color:var(--al-border-bright);transform:translateY(-1px)}
+#s-alertas .kpi .kpi-accent{position:absolute;top:0;left:0;right:0;height:2px;width:auto;border-radius:10px 10px 0 0;box-shadow:0 0 10px currentColor}
+#s-alertas .kpi .kpi-lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--al-muted)}
+#s-alertas .kpi .kpi-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1.1}
+#s-alertas .kpi .kpi-sub{font-size:10px;color:var(--al-muted);margin-top:3px}
+/* LIGHT MODE overrides */
+[data-theme="light"] #s-alertas{--al-surface:rgba(255,255,255,.85);--al-border:rgba(148,163,184,.3);--al-border-bright:rgba(100,116,139,.5);--al-muted:#64748b;--al-text:#0f172a}
+[data-theme="light"] .al-hero{background:linear-gradient(135deg,#ffffff 0%,#fff7f2 60%,#ffeadb 100%);box-shadow:0 4px 20px rgba(255,112,36,.12)}
+[data-theme="light"] .al-hero::before{background:radial-gradient(circle at 88% 20%,rgba(255,112,36,.18),transparent 52%),radial-gradient(circle at 10% 90%,rgba(244,63,94,.07),transparent 45%)}
+[data-theme="light"] .al-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+[data-theme="light"] .al-ring-num{color:#0f172a}
+[data-theme="light"] .al-ring .al-ring-bg{stroke:rgba(148,163,184,.4)}
+[data-theme="light"] #s-alertas .kpi{background:rgba(255,255,255,.85);border-color:rgba(148,163,184,.3);box-shadow:0 2px 8px rgba(40,54,69,.06)}
+
 </style>
 </head>
 <body>
@@ -1390,6 +1434,26 @@ input[type=file]{display:none}
       <p>Chamados que exigem ação imediata da equipe</p>
     </div>
     <div class="page-body">
+      <div class="al-hero" id="al-hero">
+        <div class="al-hero-grid">
+          <div class="al-hero-left">
+            <div class="al-hero-tag"><span class="al-dot"></span>ALERTAS CRÍTICOS · AÇÃO IMEDIATA</div>
+            <div class="al-hero-status" id="al-hero-status">—</div>
+            <div class="al-hero-sub" id="al-hero-sub">avaliando panorama…</div>
+            <div class="al-hero-meta" id="al-hero-meta">monitoramento contínuo</div>
+          </div>
+          <div class="al-ring" id="al-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="al-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="al-ring-fg" id="al-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+            </svg>
+            <div class="al-ring-core">
+              <div class="al-ring-num" id="al-ring-num">—</div>
+              <div class="al-ring-lbl">muito alta</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- ── SLA COUNTDOWN BANNER ── -->
       <div id="sla-countdown-banner" style="display:none;margin-bottom:16px;border-radius:var(--r2);overflow:hidden;border:1px solid rgba(244,63,94,.25)">
         <div style="background:rgba(244,63,94,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(244,63,94,.15)">
@@ -2662,6 +2726,39 @@ function populateOvHero(op){
   }
 }
 
+function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
+  var g=function(id){return document.getElementById(id);};
+  // Deriva status global da página de alertas
+  var criticosIA=0;
+  if(window.IAL_DATA&&IAL_DATA.counts) criticosIA=IAL_DATA.counts.crit||0;
+  var soma=totalCrit+(criticosIA*10); // crítico IA pesa mais
+  var status, cls;
+  if(totalCrit>=30 || criticosIA>=1 || bloqExato>=30){status=(totalCrit||'0')+' CRÍTICOS';cls='';}
+  else if(totalCrit>=10 || totalBloq>=100 || semResp>=40){status=(totalCrit||'0')+' CRÍTICOS';cls='al-s-warn';}
+  else if(totalCrit===0){status='ESTÁVEL';cls='al-s-ok';}
+  else {status=totalCrit+' CRÍTICOS';cls='al-s-warn';}
+  var hero=g('al-hero-status'), ring=g('al-ring'), ringFg=g('al-ring-fg'), ringNum=g('al-ring-num'), sub=g('al-hero-sub'), meta=g('al-hero-meta');
+  if(hero){hero.classList.remove('al-s-ok','al-s-warn');hero.textContent=status;if(cls)hero.classList.add(cls);}
+  if(ring){ring.classList.remove('al-s-ok','al-s-warn');if(cls)ring.classList.add(cls);}
+  if(sub){
+    sub.innerHTML=
+      '<strong>'+totalCrit+'</strong> muito alta em aberto · '
+      +'<strong>'+totalBloq+'</strong> bloqueados ('+bloqExato+' com aging) · '
+      +'<strong>'+semResp+'</strong> sem 1ª resposta &gt;30min'
+      +(criticosIA?' · <strong style="color:var(--gw)">'+criticosIA+' crítico'+(criticosIA===1?'':'s')+' IA</strong>':'');
+  }
+  if(meta){
+    var d=new Date();
+    var p2=function(n){return n<10?'0'+n:n;};
+    meta.textContent='monitoramento contínuo · '+p2(d.getHours())+':'+p2(d.getMinutes());
+  }
+  if(ringNum)ringNum.textContent=totalCrit;
+  if(ringFg){
+    var pct=Math.min(1,totalCrit/50); // 50 = ring cheio
+    ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
+  }
+}
+
 // Bloqueados por mês (dados reais do Excel)
 var BLOQ_MESES = {
   'all':     [{l:'Aguardando Cliente',n:54,c:'var(--warn)'},{l:'Aguardando Interno',n:16,c:'var(--purple)'},{l:'Retorno Cliente',n:11,c:'var(--blue)'},{l:'Aguardando Externo',n:2,c:'var(--orange)'},{l:'Outros bloqueados',n:36,c:'var(--muted)'}],
@@ -2783,6 +2880,7 @@ function renderAlertas(){
   if(kpiMA) kpiMA.textContent=totalCrit;
   if(kpiBloq) kpiBloq.textContent=totalBloq;
   if(kpiResp) kpiResp.textContent=semResp;
+  try{populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato);}catch(e){console.warn('alertas hero:',e);}
   var badge=document.getElementById('badge-criticos');
   if(badge) badge.textContent=totalCrit;
   var alertPill=document.getElementById('alert-criticos-txt');
