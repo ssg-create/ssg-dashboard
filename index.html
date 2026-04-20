@@ -1256,6 +1256,21 @@ input[type=file]{display:none}
         <div class="card-title">Comparativo com mês anterior <span class="card-title-right" id="ch-comp-label"></span></div>
         <div id="ch-comp-rows"></div>
       </div>
+      <div class="card card-mb" id="ch-sil-card" style="margin-top:16px">
+        <div class="card-title">Chamados sem interação
+          <span class="card-title-right" style="font-size:10px;color:var(--muted)">
+            <span id="ch-sil-meta">carregando…</span> ·
+            <a href="#" onclick="fetchSilenciosos();return false" style="color:var(--teal);text-decoration:none">recarregar</a>
+          </span>
+        </div>
+        <div class="kpi-row kpi-row-4" style="margin-bottom:12px">
+          <div class="kpi"><div class="kpi-accent" style="background:var(--muted)"></div><div class="kpi-lbl">Total</div><div class="kpi-val" id="ch-sil-kpi-total">—</div><div class="kpi-sub">sem interação ≥ 1d</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Crítico</div><div class="kpi-val" id="ch-sil-kpi-crit" style="color:var(--danger)">—</div><div class="kpi-sub">mais de 30 dias</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Alerta</div><div class="kpi-val" id="ch-sil-kpi-alert" style="color:var(--warn)">—</div><div class="kpi-sub">entre 7 e 30 dias</div></div>
+          <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Recente</div><div class="kpi-val" id="ch-sil-kpi-novo" style="color:var(--blue)">—</div><div class="kpi-sub">entre 1 e 7 dias</div></div>
+        </div>
+        <div class="tbl-scroll" style="max-height:440px;overflow-y:auto"><table class="tbl" id="ch-sil-tbl"></table></div>
+      </div>
     </div>
   </div>
 
@@ -2795,7 +2810,67 @@ function openAtendPendModal(nome){
   document.getElementById('at-modal-search').value='';
 }
 
+var SILENC_DATA=null;
+function fmtSilent(sec){
+  var d=Math.floor(sec/86400), h=Math.floor((sec%86400)/3600);
+  if(d>=1) return d+'d'+(h>0?' '+h+'h':'');
+  return h+'h';
+}
+function silentColor(sec){
+  var d=sec/86400;
+  if(d>30) return 'var(--danger)';
+  if(d>7)  return 'var(--warn)';
+  return 'var(--blue)';
+}
+function renderSilenciosos(data){
+  var getEl=function(id){return document.getElementById(id);};
+  var tbl=getEl('ch-sil-tbl');
+  if(!data||!data.rows){
+    if(tbl) tbl.innerHTML='<tbody><tr><td style="padding:20px;text-align:center;color:var(--muted);font-size:11px">silenciosos.json ainda não disponível — aguarde o workflow rodar</td></tr></tbody>';
+    ['ch-sil-kpi-total','ch-sil-kpi-crit','ch-sil-kpi-alert','ch-sil-kpi-novo'].forEach(function(id){var e=getEl(id);if(e)e.textContent='—';});
+    var m=getEl('ch-sil-meta');if(m)m.textContent='sem dados';
+    return;
+  }
+  var rows=data.rows;
+  var crit=0,alerta=0,novo=0;
+  rows.forEach(function(r){
+    var d=r.silent_sec/86400;
+    if(d>30) crit++; else if(d>7) alerta++; else novo++;
+  });
+  var setv=function(id,v){var e=getEl(id);if(e)e.textContent=v;};
+  setv('ch-sil-kpi-total',rows.length);
+  setv('ch-sil-kpi-crit',crit);
+  setv('ch-sil-kpi-alert',alerta);
+  setv('ch-sil-kpi-novo',novo);
+  var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
+  setv('ch-sil-meta',rows.length+' tickets · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
+  var trs=rows.map(function(r){
+    var col=silentColor(r.silent_sec);
+    var tkUrl='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(r.ticket);
+    var atendShort=(r.atendente||'').split(' ').slice(0,2).join(' ');
+    var cri=(r.criado||'').replace('T',' ').slice(0,16);
+    var mod=(r.modificado||'').replace('T',' ').slice(0,16);
+    return '<tr>'
+      +'<td><a href="'+tkUrl+'" target="_blank" rel="noopener" style="color:var(--teal);font-family:var(--mono);text-decoration:none">'+r.ticket+'</a></td>'
+      +'<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
+      +'<td style="font-size:11px">'+(r.fila||'')+'</td>'
+      +'<td style="font-size:10px;letter-spacing:.04em">'+(r.estado||'')+'</td>'
+      +'<td style="font-size:11px">'+atendShort+'</td>'
+      +'<td style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+cri+'</td>'
+      +'<td style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+mod+'</td>'
+      +'<td style="color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px">'+fmtSilent(r.silent_sec)+'</td>'
+      +'</tr>';
+  }).join('');
+  if(tbl) tbl.innerHTML='<thead><tr><th>Ticket</th><th>Cliente</th><th>Fila</th><th>Estado</th><th>Atendente</th><th>Criado</th><th>Modificado</th><th>Silêncio</th></tr></thead><tbody>'+trs+'</tbody>';
+}
+function fetchSilenciosos(){
+  fetch('silenciosos.json?v='+Date.now())
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){SILENC_DATA=d;renderSilenciosos(d);})
+    .catch(function(){renderSilenciosos(null);});
+}
 function renderCh(){
+  if(!SILENC_DATA||(Date.now()/1000-SILENC_DATA.generated_at)>300) fetchSilenciosos();
   var _op2=getActiveOP();_op2=Object.assign({estado:{},prior:{},svc:{},atend:[],criticos:[],by_day:[],byDay:[]},_op2);
   var _days=getFilteredDays();
   var L=_days.map(function(d){return fd(d.d);}),V=_days.map(function(d){return d.n;});
