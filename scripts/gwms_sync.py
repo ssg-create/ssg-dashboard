@@ -411,58 +411,77 @@ def _rule_tickets_abandonados(triagem: list, silenciosos: list) -> list:
 
 
 def _rule_sobrecarga_atendente(utilizacao: list) -> list:
-    """Atendentes com >= 8 tickets ativos + sugestão de redistribuição."""
+    """Atendentes com carga real alta — só considera tickets na mão do atendente
+    (em_atendimento + abertos). Tickets aguardando cliente/externo/interno NÃO
+    contam porque estão esperando terceiros, não consomem capacidade do atendente."""
     if not utilizacao:
         return []
-    SOBRECARGA = 8
-    FOLGA_MAX  = 3
+    THRESHOLD_WARN = 5
+    THRESHOLD_CRIT = 8
 
-    sobrecarregados = [u for u in utilizacao if (u.get("ativos_total") or 0) >= SOBRECARGA]
-    folga = [u for u in utilizacao if (u.get("ativos_total") or 0) <= FOLGA_MAX]
+    def carga_real(u: dict) -> int:
+        return int((u.get("em_atendimento") or 0) + (u.get("abertos") or 0))
+
+    sobrecarregados = [u for u in utilizacao if carga_real(u) >= THRESHOLD_WARN]
     if not sobrecarregados:
         return []
     out = []
     for u in sobrecarregados:
-        candidatos = sorted(folga, key=lambda x: x.get("ativos_total") or 0)[:3]
-        sugestao_nomes = [c.get("atendente") for c in candidatos]
+        cr = carga_real(u)
         out.append({
-            "id": f"sobrecarga_{u.get('atendente','').replace(' ','_')}",
-            "severity": "warn" if (u.get("ativos_total") or 0) < 12 else "crit",
+            "id": f"sobrecarga_{(u.get('atendente') or '').replace(' ','_')}",
+            "severity": "crit" if cr >= THRESHOLD_CRIT else "warn",
             "category": "capacidade",
-            "title": f"{u.get('atendente')} em sobrecarga ({u.get('ativos_total')} tickets ativos)",
+            "title": f"{u.get('atendente')} com carga real de {cr} tickets",
             "summary": (
-                f"{u.get('atendente')} tem {u.get('ativos_total')} tickets ativos agora, "
-                f"{u.get('em_atendimento', 0)} em atendimento e {u.get('aguardando', 0)} aguardando. "
-                "Risco de gargalo e atraso em resposta."
+                f"{u.get('atendente')} tem {cr} tickets ativos sob sua responsabilidade: "
+                f"{u.get('em_atendimento', 0)} em atendimento + {u.get('abertos', 0)} abertos "
+                f"(além de {u.get('aguardando', 0)} aguardando terceiros, que não consomem capacidade). "
+                "Avaliar se há gargalo ou se é volume esperado para o atendente."
             ),
             "evidence": [{
                 "atendente": u.get("atendente"),
-                "ativos_total": u.get("ativos_total"),
+                "carga_real": cr,
                 "em_atendimento": u.get("em_atendimento"),
-                "aguardando": u.get("aguardando"),
                 "abertos": u.get("abertos"),
+                "aguardando_terceiros": u.get("aguardando"),
+                "ativos_total": u.get("ativos_total"),
             }],
             "recommendation": (
-                f"Redistribuir 2-3 tickets para: {', '.join(sugestao_nomes)} — atualmente com "
-                f"{', '.join(str(c.get('ativos_total')) for c in candidatos)} ativos respectivamente."
-                if candidatos else "Avaliar remanejamento ou contratação temporária."
+                "Revisar prioridades com o atendente. Se mantido o volume, considerar redistribuição — "
+                "mas atribuição depende de skill/fila (não sugiro automaticamente para evitar erro de matching)."
             ),
             "impact_estimate": "médio",
         })
     return out
 
 
+INTERNAL_DOMAINS = ("groundwork.com.br", "groundwork.com", "ssg.com.br")
+
+
+def _is_internal_customer(cli: str) -> bool:
+    """Customer_id do OTRS às vezes é email interno de quem abriu o ticket —
+    não é cliente real. Filtra esses."""
+    if not cli:
+        return False
+    low = cli.lower()
+    return any(d in low for d in INTERNAL_DOMAINS)
+
+
 def _rule_fila_concentrada(silenciosos: list) -> list:
-    """Fila com silenciosos concentrados em um único cliente (>60%)."""
+    """Fila com silenciosos concentrados em um único cliente real (>60%).
+    Ignora tickets cujo customer_id é email interno (não é cliente real)."""
     if not silenciosos:
         return []
+    # Filtra tickets internos globalmente antes de agregar
+    externos = [r for r in silenciosos if not _is_internal_customer(r.get("cliente", ""))]
     by_fila = defaultdict(list)
-    for r in silenciosos:
+    for r in externos:
         by_fila[r.get("fila") or "—"].append(r)
     out = []
     for fila, rows in by_fila.items():
         if len(rows) < 5:
-            continue  # precisa massa mínima
+            continue
         by_cli = Counter(r.get("cliente", "—") for r in rows)
         top_cli, top_n = by_cli.most_common(1)[0]
         pct = top_n / len(rows)
