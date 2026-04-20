@@ -845,6 +845,104 @@ input[type=file]{display:none}
 .fs-mode #fs-btn{background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.45);color:#f43f5e}
 .fs-mode #fs-btn:hover{background:rgba(244,63,94,.22);transform:scale(1.08)}
 
+/* ════════════════════════════════════════════════════════════════════
+   SINAIS AO VIVO — tema Groundwork futurista
+   Paleta: laranja GW #ff7024 + navy slate #283645 + cyan accent #22d3ee
+   Escopo: tudo dentro de #ia-live (não afeta o resto do dash)
+   ════════════════════════════════════════════════════════════════════ */
+#ia-live{--gw:#ff7024;--gw-2:#f37633;--gw-deep:#c94e0e;--slate:#283645;--cyan:#22d3ee;--cyan-soft:#67e8f9;--ial-bg:#0b1118;--ial-surface:#141d28;--ial-surface-2:#1a2432;--ial-border:rgba(40,54,69,.6);--ial-border-bright:rgba(40,54,69,.95);--ial-text:#e5edf5;--ial-muted:#8a9bb0;--ial-danger:#ff7024;--ial-warn:#f59e0b;--ial-ok:#10b981}
+#ia-live *{box-sizing:border-box}
+#ia-live .page-body{padding:0}
+/* ── HERO ─────────────────────────────────────────────────── */
+.ial-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--ial-border);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:32px 36px 28px;margin-bottom:22px}
+.ial-hero::before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 85% 20%,rgba(255,112,36,.22),transparent 50%),radial-gradient(circle at 15% 90%,rgba(34,211,238,.12),transparent 45%);pointer-events:none;z-index:0}
+.ial-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 40%,rgba(255,255,255,.015) 50%,transparent 60%,transparent 100%);animation:ialScan 8s linear infinite;pointer-events:none;z-index:1}
+.ial-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.ial-hero-left{display:flex;flex-direction:column;gap:10px}
+.ial-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:var(--ial-muted);text-transform:uppercase;letter-spacing:.18em}
+.ial-hero-tag .ial-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:ialPulse 2s ease-in-out infinite}
+.ial-hero-status{font-family:'Syne',sans-serif;font-size:64px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:4px;background:linear-gradient(135deg,var(--gw) 0%,var(--gw-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 24px rgba(255,112,36,.35))}
+.ial-hero-status.ial-s-ok{background:linear-gradient(135deg,var(--ial-ok) 0%,#34d399 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 24px rgba(16,185,129,.35))}
+.ial-hero-status.ial-s-warn{background:linear-gradient(135deg,var(--ial-warn) 0%,#fbbf24 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 24px rgba(245,158,11,.35))}
+.ial-hero-sub{font-size:13px;color:var(--ial-muted);font-family:var(--mono);letter-spacing:.02em}
+.ial-hero-sub strong{color:var(--ial-text);font-weight:600}
+.ial-hero-meta{font-size:10px;color:var(--ial-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:8px}
+/* Orbital ring */
+.ial-ring{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
+.ial-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ial-ring svg circle{fill:none;stroke-width:2}
+.ial-ring .ial-ring-bg{stroke:rgba(40,54,69,.5)}
+.ial-ring .ial-ring-fg{stroke:var(--gw);stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(255,112,36,.5));transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.ial-ring.ial-s-ok .ial-ring-fg{stroke:var(--ial-ok);filter:drop-shadow(0 0 8px rgba(16,185,129,.5))}
+.ial-ring.ial-s-warn .ial-ring-fg{stroke:var(--ial-warn);filter:drop-shadow(0 0 8px rgba(245,158,11,.5))}
+.ial-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.ial-ring-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:700;color:var(--ial-text);line-height:1}
+.ial-ring-lbl{font-family:var(--mono);font-size:9px;color:var(--ial-muted);text-transform:uppercase;letter-spacing:.18em}
+/* ── STATS STRIP ─────────────────────────────────────────── */
+.ial-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.ial-stat{background:rgba(20,29,40,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--ial-border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .3s}
+.ial-stat:hover{border-color:var(--ial-border-bright)}
+.ial-stat::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--ial-muted);opacity:.6}
+.ial-stat.ial-stat-crit::before{background:var(--ial-danger);box-shadow:0 0 12px var(--ial-danger)}
+.ial-stat.ial-stat-warn::before{background:var(--ial-warn);box-shadow:0 0 12px var(--ial-warn)}
+.ial-stat.ial-stat-ok::before{background:var(--ial-ok);box-shadow:0 0 12px var(--ial-ok)}
+.ial-stat-lbl{font-size:10px;color:var(--ial-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+.ial-stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--ial-text);line-height:1.1}
+.ial-stat-val.ial-v-crit{color:var(--ial-danger)}
+.ial-stat-val.ial-v-warn{color:var(--ial-warn)}
+.ial-stat-val.ial-v-ok{color:var(--ial-ok)}
+.ial-stat-sub{font-size:10px;color:var(--ial-muted);margin-top:4px}
+/* ── CARDS ─────────────────────────────────────────────── */
+.ial-card{position:relative;background:linear-gradient(180deg,rgba(20,29,40,.6) 0%,rgba(20,29,40,.35) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--ial-border);border-left:3px solid var(--ial-muted);border-radius:12px;padding:22px 24px;margin-bottom:16px;overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.ial-card::before{content:"";position:absolute;top:-1px;right:-1px;width:120px;height:120px;background:radial-gradient(circle at top right,rgba(255,112,36,.08),transparent 70%);pointer-events:none}
+.ial-card:hover{transform:translateY(-2px);border-color:var(--ial-border-bright)}
+.ial-card.ial-sev-crit{border-left-color:var(--ial-danger);box-shadow:0 0 0 1px rgba(255,112,36,.15),0 10px 40px -10px rgba(255,112,36,.2)}
+.ial-card.ial-sev-crit::before{background:radial-gradient(circle at top right,rgba(255,112,36,.18),transparent 60%)}
+.ial-card.ial-sev-warn{border-left-color:var(--ial-warn);box-shadow:0 0 0 1px rgba(245,158,11,.1)}
+.ial-card.ial-sev-warn::before{background:radial-gradient(circle at top right,rgba(245,158,11,.12),transparent 65%)}
+.ial-card.ial-sev-ok{border-left-color:var(--ial-ok)}
+.ial-card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;position:relative;z-index:1}
+.ial-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.ial-badge-crit{background:rgba(255,112,36,.15);color:var(--ial-danger);border:1px solid rgba(255,112,36,.4)}
+.ial-badge-warn{background:rgba(245,158,11,.12);color:var(--ial-warn);border:1px solid rgba(245,158,11,.35)}
+.ial-badge-ok{background:rgba(16,185,129,.12);color:var(--ial-ok);border:1px solid rgba(16,185,129,.35)}
+.ial-badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.ial-card.ial-sev-crit .ial-badge-dot{animation:ialPulse 1.6s ease-in-out infinite}
+.ial-tag{font-family:var(--mono);font-size:10px;color:var(--ial-muted);text-transform:uppercase;letter-spacing:.12em;padding:3px 8px;background:rgba(40,54,69,.4);border-radius:4px}
+.ial-impact{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ial-muted)}
+.ial-impact strong{text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.ial-impact-alto{color:var(--ial-danger)}
+.ial-impact-médio,.ial-impact-medio{color:var(--ial-warn)}
+.ial-impact-baixo{color:var(--ial-ok)}
+.ial-card-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--ial-text);margin-bottom:6px;line-height:1.25;position:relative;z-index:1}
+.ial-card-summary{font-size:13px;color:var(--ial-text);opacity:.85;line-height:1.6;margin-bottom:14px;position:relative;z-index:1}
+/* Evidence terminal-style */
+.ial-evidence{background:rgba(11,17,24,.55);border:1px solid var(--ial-border);border-radius:8px;overflow:hidden;margin-top:4px;position:relative;z-index:1}
+.ial-evidence-head{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(40,54,69,.35);border-bottom:1px solid var(--ial-border);font-family:var(--mono);font-size:10px;color:var(--ial-muted);text-transform:uppercase;letter-spacing:.12em}
+.ial-evidence-head::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--gw);box-shadow:0 0 6px var(--gw)}
+.ial-evidence-body{overflow-x:auto;max-height:300px;overflow-y:auto}
+.ial-evidence-body table{width:100%;border-collapse:collapse}
+.ial-evidence-body th{text-align:left;padding:8px 14px;font-family:var(--mono);font-size:9px;color:var(--ial-muted);text-transform:uppercase;letter-spacing:.1em;background:rgba(40,54,69,.25);border-bottom:1px solid var(--ial-border);position:sticky;top:0}
+.ial-evidence-body td{padding:8px 14px;font-size:11px;color:var(--ial-text);border-bottom:1px solid rgba(40,54,69,.3)}
+.ial-evidence-body tr:last-child td{border-bottom:none}
+.ial-evidence-body tr:hover td{background:rgba(40,54,69,.2)}
+.ial-evidence-body .ial-ticket{font-family:var(--mono);color:var(--cyan);text-decoration:none;transition:color .15s}
+.ial-evidence-body .ial-ticket:hover{color:var(--cyan-soft);text-shadow:0 0 6px rgba(34,211,238,.4)}
+/* Recommendation */
+.ial-rec{margin-top:16px;padding:14px 16px;background:linear-gradient(90deg,rgba(255,112,36,.06) 0%,rgba(255,112,36,.02) 100%);border:1px solid rgba(255,112,36,.2);border-left:2px solid var(--gw);border-radius:8px;position:relative;z-index:1}
+.ial-rec-lbl{font-family:var(--mono);font-size:9px;color:var(--gw);text-transform:uppercase;letter-spacing:.16em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ial-rec-lbl::before{content:"▸";color:var(--gw)}
+.ial-rec-txt{font-size:12px;color:var(--ial-text);line-height:1.6}
+/* Empty state */
+.ial-empty{background:rgba(20,29,40,.4);border:1px dashed var(--ial-border);border-radius:12px;padding:60px 24px;text-align:center;color:var(--ial-muted);font-size:13px;font-family:var(--mono)}
+.ial-empty-icon{font-size:36px;margin-bottom:12px;opacity:.5}
+/* Animações */
+@keyframes ialPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+@keyframes ialScan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+/* Responsivo */
+@media (max-width:980px){.ial-hero-grid{grid-template-columns:1fr}.ial-ring{margin:0 auto}.ial-stats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.ial-stats{grid-template-columns:1fr}.ial-hero-status{font-size:44px}}
+
 </style>
 </head>
 <body>
@@ -1925,18 +2023,50 @@ input[type=file]{display:none}
       <div id="ia-resumo-content"></div>
     </div>
 
-    <!-- SINAIS AO VIVO (GWMS) -->
+    <!-- SINAIS AO VIVO (GWMS) — tema Groundwork futurista -->
     <div id="ia-live" class="sec">
-      <div class="page-header">
-        <h1>Sinais Ao Vivo</h1>
-        <p>Padrões detectados em tempo real a partir dos dados do GWMS · atualiza a cada 10min</p>
-      </div>
       <div class="page-body">
-        <div class="kpi-row kpi-row-4" style="margin-bottom:16px">
-          <div class="kpi"><div class="kpi-accent" style="background:var(--muted)"></div><div class="kpi-lbl">Total de sinais</div><div class="kpi-val" id="ial-kpi-total">—</div><div class="kpi-sub" id="ial-kpi-ts">—</div></div>
-          <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Críticos</div><div class="kpi-val" id="ial-kpi-crit" style="color:var(--danger)">—</div><div class="kpi-sub">ação imediata</div></div>
-          <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Alertas</div><div class="kpi-val" id="ial-kpi-warn" style="color:var(--warn)">—</div><div class="kpi-sub">acompanhar</div></div>
-          <div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Status</div><div class="kpi-val" id="ial-kpi-status" style="color:var(--ok);font-size:20px">—</div><div class="kpi-sub" id="ial-kpi-status-sub">panorama atual</div></div>
+        <div class="ial-hero" id="ial-hero">
+          <div class="ial-hero-grid">
+            <div class="ial-hero-left">
+              <div class="ial-hero-tag"><span class="ial-dot"></span>SINAIS AO VIVO · GWMS</div>
+              <div class="ial-hero-status" id="ial-hero-status">—</div>
+              <div class="ial-hero-sub" id="ial-hero-sub">carregando sinais…</div>
+              <div class="ial-hero-meta" id="ial-hero-meta">—</div>
+            </div>
+            <div class="ial-ring" id="ial-ring">
+              <svg viewBox="0 0 200 200">
+                <circle class="ial-ring-bg" cx="100" cy="100" r="90"/>
+                <circle class="ial-ring-fg" id="ial-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+              </svg>
+              <div class="ial-ring-core">
+                <div class="ial-ring-num" id="ial-ring-num">—</div>
+                <div class="ial-ring-lbl">sinais</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ial-stats">
+          <div class="ial-stat" id="ial-stat-total">
+            <div class="ial-stat-lbl">Total de sinais</div>
+            <div class="ial-stat-val" id="ial-kpi-total">—</div>
+            <div class="ial-stat-sub" id="ial-kpi-ts">—</div>
+          </div>
+          <div class="ial-stat ial-stat-crit">
+            <div class="ial-stat-lbl">Críticos</div>
+            <div class="ial-stat-val ial-v-crit" id="ial-kpi-crit">—</div>
+            <div class="ial-stat-sub">ação imediata</div>
+          </div>
+          <div class="ial-stat ial-stat-warn">
+            <div class="ial-stat-lbl">Alertas</div>
+            <div class="ial-stat-val ial-v-warn" id="ial-kpi-warn">—</div>
+            <div class="ial-stat-sub">acompanhar</div>
+          </div>
+          <div class="ial-stat">
+            <div class="ial-stat-lbl">Status</div>
+            <div class="ial-stat-val" id="ial-kpi-status">—</div>
+            <div class="ial-stat-sub" id="ial-kpi-status-sub">panorama atual</div>
+          </div>
         </div>
         <div id="ial-cards"></div>
       </div>
@@ -3113,45 +3243,99 @@ function _ialEvidenceTable(ev){
   }).join('');
   return '<div style="margin-top:10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:var(--bg3);border-radius:6px"><thead><tr>'+th+'</tr></thead><tbody>'+trs+'</tbody></table></div>';
 }
+function _ialEvidenceBlock(ev){
+  if(!ev||!ev.length) return '';
+  var keys=Object.keys(ev[0]);
+  var th=keys.map(function(k){return '<th>'+_ialEscapeHtml(k.replace(/_/g,' '))+'</th>';}).join('');
+  var trs=ev.map(function(r){
+    var tds=keys.map(function(k){
+      var v=r[k];
+      if(v&&typeof v==='object') v=JSON.stringify(v);
+      if(k==='ticket'&&v){
+        var u='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(v);
+        return '<td><a class="ial-ticket" href="'+u+'" target="_blank" rel="noopener">'+_ialEscapeHtml(v)+'</a></td>';
+      }
+      return '<td>'+_ialEscapeHtml(v)+'</td>';
+    }).join('');
+    return '<tr>'+tds+'</tr>';
+  }).join('');
+  return '<div class="ial-evidence"><div class="ial-evidence-head">evidência · '+ev.length+' registros</div><div class="ial-evidence-body"><table><thead><tr>'+th+'</tr></thead><tbody>'+trs+'</tbody></table></div></div>';
+}
 function renderIALive(data){
   var cards=document.getElementById('ial-cards');
   var g=function(id){return document.getElementById(id);};
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
+  var hero=g('ial-hero-status'), sub=g('ial-hero-sub'), meta=g('ial-hero-meta'), ring=g('ial-ring'), ringFg=g('ial-ring-fg'), ringNum=g('ial-ring-num');
+  // Reset classes
+  if(hero){hero.classList.remove('ial-s-ok','ial-s-warn');}
+  if(ring){ring.classList.remove('ial-s-ok','ial-s-warn');}
   if(!data||!data.insights){
-    if(cards) cards.innerHTML='<div class="card" style="padding:30px;text-align:center;color:var(--muted);font-size:12px">gwms-insights.json ainda não disponível — aguarde o próximo ciclo (~10min)</div>';
+    if(cards) cards.innerHTML='<div class="ial-empty"><div class="ial-empty-icon">◌</div>gwms-insights.json ainda não disponível — aguarde o próximo ciclo (~10min)</div>';
     ['ial-kpi-total','ial-kpi-crit','ial-kpi-warn','ial-kpi-status'].forEach(function(id){var e=g(id);if(e)e.textContent='—';});
+    if(hero){hero.textContent='—';hero.classList.add('ial-s-ok');}
+    if(sub)sub.innerHTML='sem dados ainda';
+    if(meta)meta.textContent='—';
+    if(ringNum)ringNum.textContent='—';
+    if(ringFg){ringFg.setAttribute('stroke-dashoffset','565.48');}
     setv('ial-kpi-ts','sem dados');
     return;
   }
   var insights=data.insights||[];
   var c=data.counts||{crit:0,warn:0,ok:0};
-  setv('ial-kpi-total',insights.length);
+  var total=insights.length;
+  // Hero status
+  var status,cls;
+  if((c.crit||0)>0){status='ALERTA';cls='';}
+  else if((c.warn||0)>0){status='ATENÇÃO';cls='ial-s-warn';}
+  else {status='NORMAL';cls='ial-s-ok';}
+  if(hero){hero.textContent=status;if(cls)hero.classList.add(cls);}
+  if(ring&&cls){ring.classList.add(cls);}
+  if(sub){sub.innerHTML='<strong>'+(c.crit||0)+'</strong> crítico'+((c.crit||0)===1?'':'s')+' · <strong>'+(c.warn||0)+'</strong> em atenção · <strong>'+(total-(c.crit||0)-(c.warn||0))+'</strong> informativos';}
+  var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
+  var tsTxt='atualizado há '+(tsMin<1?'agora':tsMin+' min');
+  if(meta)meta.textContent=tsTxt+' · 4 regras ativas · ciclo 10min';
+  setv('ial-kpi-ts',tsTxt);
+  // Ring progress (porcentagem baseada em total·max6)
+  if(ringFg&&ringNum){
+    ringNum.textContent=total;
+    var pct=Math.min(1,total/8); // 8+ = ring cheio
+    var dash=565.48;
+    ringFg.setAttribute('stroke-dashoffset',dash*(1-pct));
+  }
+  // KPIs
+  setv('ial-kpi-total',total);
   setv('ial-kpi-crit',c.crit||0);
   setv('ial-kpi-warn',c.warn||0);
-  var status=(c.crit||0)>0?'ALERTA':((c.warn||0)>0?'ATENÇÃO':'NORMAL');
-  var statusCol=(c.crit||0)>0?'var(--danger)':((c.warn||0)>0?'var(--warn)':'var(--ok)');
-  var statusEl=g('ial-kpi-status');if(statusEl){statusEl.textContent=status;statusEl.style.color=statusCol;}
-  var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
-  setv('ial-kpi-ts','atualizado há '+(tsMin<1?'agora':tsMin+' min'));
-  // Ordena por severidade (crit primeiro) preservando ordem
+  var statusKpi=g('ial-kpi-status');
+  if(statusKpi){
+    statusKpi.textContent=status;
+    statusKpi.classList.remove('ial-v-crit','ial-v-warn','ial-v-ok');
+    if((c.crit||0)>0)statusKpi.classList.add('ial-v-crit');
+    else if((c.warn||0)>0)statusKpi.classList.add('ial-v-warn');
+    else statusKpi.classList.add('ial-v-ok');
+    statusKpi.style.fontSize='22px';
+  }
+  // Cards (sort crit first)
   var order={crit:0,warn:1,ok:2};
   var sv=function(x){return order[x]==null?9:order[x];};
   var sorted=insights.slice().sort(function(a,b){return sv(a.severity)-sv(b.severity);});
   var html=sorted.map(function(ins){
-    var m=_ialSevMeta(ins.severity);
-    return '<div class="card card-mb" style="border-left:3px solid '+m.cor+';background:'+m.bg+';padding:18px 20px;margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
-        +'<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.08em;background:'+m.cor+';color:#0b0f14">'+m.lbl+'</span>'
-        +'<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+_ialEscapeHtml(ins.category||'')+'</span>'
-        +'<span style="margin-left:auto;font-size:10px;color:var(--muted)">impacto: <strong style="color:'+m.cor+'">'+_ialEscapeHtml(ins.impact_estimate||'—')+'</strong></span>'
+    var sev=ins.severity||'ok';
+    var sevLbl=sev==='crit'?'CRÍTICO':(sev==='warn'?'ATENÇÃO':'OK');
+    var imp=(ins.impact_estimate||'—').replace(/é/g,'e');
+    return '<div class="ial-card ial-sev-'+sev+'">'
+      +'<div class="ial-card-head">'
+        +'<span class="ial-badge ial-badge-'+sev+'"><span class="ial-badge-dot"></span>'+sevLbl+'</span>'
+        +'<span class="ial-tag">'+_ialEscapeHtml(ins.category||'')+'</span>'
+        +'<span class="ial-impact">impacto · <strong class="ial-impact-'+imp+'">'+_ialEscapeHtml(ins.impact_estimate||'—')+'</strong></span>'
       +'</div>'
-      +'<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">'+_ialEscapeHtml(ins.title||'')+'</div>'
-      +'<div style="font-size:12px;color:var(--text);line-height:1.55;margin-bottom:10px">'+_ialEscapeHtml(ins.summary||'')+'</div>'
-      +_ialEvidenceTable(ins.evidence)
-      +'<div style="margin-top:12px;padding-top:10px;border-top:1px dashed '+m.bord+';font-size:11px;color:var(--muted);line-height:1.55"><strong style="color:var(--text)">Recomendação: </strong>'+_ialEscapeHtml(ins.recommendation||'')+'</div>'
+      +'<div class="ial-card-title">'+_ialEscapeHtml(ins.title||'')+'</div>'
+      +'<div class="ial-card-summary">'+_ialEscapeHtml(ins.summary||'')+'</div>'
+      +_ialEvidenceBlock(ins.evidence)
+      +'<div class="ial-rec"><div class="ial-rec-lbl">Recomendação</div><div class="ial-rec-txt">'+_ialEscapeHtml(ins.recommendation||'')+'</div></div>'
     +'</div>';
   }).join('');
-  if(!html) html='<div class="card" style="padding:30px;text-align:center;color:var(--muted);font-size:12px">Nenhum sinal detectado no momento — operação fluindo normal.</div>';
+  if(!html) html='<div class="ial-empty"><div class="ial-empty-icon">✓</div>Nenhum sinal detectado no momento — operação fluindo normal.</div>';
   if(cards) cards.innerHTML=html;
 }
 function fetchIALive(){
