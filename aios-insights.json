@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-20T16:20:42.463701",
+  "generated_at": "2026-04-20T20:06:02.743128",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>62%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>83 chamados em aberto</strong> (30%) e <strong>48 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Banco de Dados</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
+    "narrativa": "A taxa de conclusão está em <strong>64%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>79 chamados em aberto</strong> (28%) e <strong>48 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Banco de Dados</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
     "kpis": [
       {
         "label": "Score Operacional",
