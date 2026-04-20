@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-20T20:06:02.743128",
+  "generated_at": "2026-04-20T22:30:12.478404",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>64%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>79 chamados em aberto</strong> (28%) e <strong>48 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Banco de Dados</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
+    "narrativa": "A operação apresenta <strong>taxa de conclusão de 65%</strong>, com margem para melhoria.<br><br>Existem <strong>78 chamados em aberto</strong> (28%) e <strong>46 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.<br><br>O módulo <strong>Infraestrutura e Cloud</strong> concentra <strong>21% dos chamados</strong> — avaliar capacitação técnica ou documentação de auto-atendimento.",
     "kpis": [
       {
         "label": "Score Operacional",
@@ -20,7 +20,7 @@
       {
         "label": "Oportunidade",
         "value": "Capacitação recomendada",
-        "sub": "Foco no módulo Banco de Dados pode reduzir reincidências",
+        "sub": "Foco no módulo Infraestrutura e Cloud pode reduzir reincidências",
         "color": "var(--teal)"
       },
       {
@@ -36,7 +36,7 @@
     },
     "oportunidade": {
       "label": "Capacitação recomendada",
-      "desc": "Foco no módulo Banco de Dados pode reduzir reincidências"
+      "desc": "Foco no módulo Infraestrutura e Cloud pode reduzir reincidências"
     },
     "previsao": {
       "label": "~5/dia",
@@ -46,7 +46,7 @@
   "riscos_operacionais": [
     {
       "titulo": "Volume crítico de chamados bloqueados",
-      "desc": "48 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
+      "desc": "46 chamados parados aguardando resposta ou ação interna. Representa gargalo operacional que impede o fechamento do backlog.",
       "nivel": "high",
       "confianca": 92
     },
