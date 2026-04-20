@@ -1,0 +1,27 @@
+{
+  "generated_at": 1776721775,
+  "generated_at_iso": "2026-04-20T21:49:35Z",
+  "count": 1,
+  "filas": [
+    "DATASUL",
+    "DBA",
+    "GWMS",
+    "INFRAESTUTURA",
+    "PROTHEUS",
+    "SSG",
+    "SSG-MELHORIAS"
+  ],
+  "rows": [
+    {
+      "ticket": "2025111026000535",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "OPEN",
+      "prioridade": "3 normal",
+      "atendente": "Carlos Fernandes",
+      "criado": "2025-11-10T16:00:28",
+      "triagem_min": 232009,
+      "assunto": "Criação de novo serviço/job - Projeto DailySales"
+    }
+  ]
+}
