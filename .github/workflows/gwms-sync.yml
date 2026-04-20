@@ -1,9 +1,9 @@
-name: GWMS Silenciosos
+name: GWMS Sync
 
 on:
   schedule:
     - cron: '*/10 * * * *'   # a cada 10 min — mesmo ritmo do pipeline Znuny
-  workflow_dispatch:          # permite rodar manualmente
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -40,10 +40,10 @@ jobs:
           fi
           echo "Secrets presentes. OK"
 
-      - name: Puxar silenciosos do GWMS e commitar
+      - name: Puxar dados GWMS (silenciosos + triagem + reaberturas + utilização)
         env:
           GWMS_USER:    ${{ secrets.GWMS_USER }}
           GWMS_PASS:    ${{ secrets.GWMS_PASS }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           GH_REPO:      ${{ secrets.GH_REPO }}
-        run: python scripts/gwms_silenciosos.py
+        run: python scripts/gwms_sync.py
