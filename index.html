@@ -2831,7 +2831,14 @@ function renderSilenciosos(data){
     var m=getEl('ch-sil-meta');if(m)m.textContent='sem dados';
     return;
   }
-  var rows=data.rows;
+  var norm=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
+  var acCli=(typeof activeCliente!=='undefined'&&activeCliente)?norm(activeCliente):'';
+  var acFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
+  var rows=data.rows.filter(function(r){
+    if(acCli && norm(r.cliente)!==acCli) return false;
+    if(acFila && r.fila!==acFila) return false;
+    return true;
+  });
   var crit=0,alerta=0,novo=0;
   rows.forEach(function(r){
     var d=r.silent_sec/86400;
@@ -2843,7 +2850,8 @@ function renderSilenciosos(data){
   setv('ch-sil-kpi-alert',alerta);
   setv('ch-sil-kpi-novo',novo);
   var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
-  setv('ch-sil-meta',rows.length+' tickets · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
+  var filtTxt=(acCli||acFila)?(' (de '+data.rows.length+' · filtrado'+(acCli?' · '+activeCliente:'')+(acFila?' · '+acFila:'')+')'):'';
+  setv('ch-sil-meta',rows.length+' tickets'+filtTxt+' · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
   var trs=rows.map(function(r){
     var col=silentColor(r.silent_sec);
     var tkUrl='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(r.ticket);
@@ -2871,6 +2879,7 @@ function fetchSilenciosos(){
 }
 function renderCh(){
   if(!SILENC_DATA||(Date.now()/1000-SILENC_DATA.generated_at)>300) fetchSilenciosos();
+  else renderSilenciosos(SILENC_DATA);
   var _op2=getActiveOP();_op2=Object.assign({estado:{},prior:{},svc:{},atend:[],criticos:[],by_day:[],byDay:[]},_op2);
   var _days=getFilteredDays();
   var L=_days.map(function(d){return fd(d.d);}),V=_days.map(function(d){return d.n;});
