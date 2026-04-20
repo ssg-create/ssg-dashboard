@@ -1,0 +1,210 @@
+{
+  "generated_at": 1776722730,
+  "generated_at_iso": "2026-04-20T22:05:30Z",
+  "counts": {
+    "crit": 3,
+    "warn": 7,
+    "ok": 0
+  },
+  "insights": [
+    {
+      "id": "reaberturas_recorrentes_NSX",
+      "severity": "warn",
+      "category": "qualidade",
+      "title": "Padrão de reabertura recorrente em NSX",
+      "summary": "3 tickets reabertos 2× ou mais nos últimos 90d em NSX, concentrados em PROTHEUS, SSG-MELHORIAS. Indica fechamento prematuro ou escopo mal definido.",
+      "evidence": [
+        {
+          "ticket": "2026012126000095",
+          "fila": "SSG-MELHORIAS",
+          "atendente": "Tiago Silva",
+          "vezes_fechado": 2,
+          "estado_atual": "AGUARDANDO CLIENTE"
+        },
+        {
+          "ticket": "2026012626000148",
+          "fila": "SSG-MELHORIAS",
+          "atendente": "Tiago Silva",
+          "vezes_fechado": 2,
+          "estado_atual": "AGUARDANDO CLIENTE"
+        },
+        {
+          "ticket": "2026012626000166",
+          "fila": "PROTHEUS",
+          "atendente": "Vilante Marques Alves",
+          "vezes_fechado": 2,
+          "estado_atual": "RETORNO CLIENTE"
+        }
+      ],
+      "recommendation": "Revisar critério de encerramento com Tiago, Vilante. Audit de 5 tickets por atendente pra entender se fechamento está sendo prematuro.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "tickets_abandonados_triagem",
+      "severity": "crit",
+      "category": "sla",
+      "title": "1 ticket(s) em triagem abandonada (>30 dias)",
+      "summary": "1 ticket(s) em estado OPEN sem qualquer movimentação há mais de 30 dias. Risco de violação contínua de SLA e insatisfação crônica do cliente.",
+      "evidence": [
+        {
+          "ticket": "2025111026000535",
+          "cliente": "AUTOZONE",
+          "fila": "SSG",
+          "atendente": "Carlos Fernandes",
+          "dias": 161.1,
+          "criado": "2025-11-10T16:00:28"
+        }
+      ],
+      "recommendation": "Reatribuir a outro atendente ou fechar com justificativa formal. Validar se o cliente ainda precisa.",
+      "impact_estimate": "alto"
+    },
+    {
+      "id": "sobrecarga_Robert_Rodrigues_dos_Santos",
+      "severity": "crit",
+      "category": "capacidade",
+      "title": "Robert Rodrigues dos Santos em sobrecarga (15 tickets ativos)",
+      "summary": "Robert Rodrigues dos Santos tem 15 tickets ativos agora, 0 em atendimento e 15 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Robert Rodrigues dos Santos",
+          "ativos_total": 15,
+          "em_atendimento": 0,
+          "aguardando": 15,
+          "abertos": 0
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Thiago_Trufelli",
+      "severity": "crit",
+      "category": "capacidade",
+      "title": "Thiago Trufelli em sobrecarga (12 tickets ativos)",
+      "summary": "Thiago Trufelli tem 12 tickets ativos agora, 1 em atendimento e 6 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Thiago Trufelli",
+          "ativos_total": 12,
+          "em_atendimento": 1,
+          "aguardando": 6,
+          "abertos": 5
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Dyalef_Abreu_Santos",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "Dyalef Abreu Santos em sobrecarga (10 tickets ativos)",
+      "summary": "Dyalef Abreu Santos tem 10 tickets ativos agora, 1 em atendimento e 9 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Dyalef Abreu Santos",
+          "ativos_total": 10,
+          "em_atendimento": 1,
+          "aguardando": 9,
+          "abertos": 0
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Tiago_Silva",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "Tiago Silva em sobrecarga (9 tickets ativos)",
+      "summary": "Tiago Silva tem 9 tickets ativos agora, 2 em atendimento e 7 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Tiago Silva",
+          "ativos_total": 9,
+          "em_atendimento": 2,
+          "aguardando": 7,
+          "abertos": 0
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_George_Eivazian",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "George Eivazian em sobrecarga (9 tickets ativos)",
+      "summary": "George Eivazian tem 9 tickets ativos agora, 1 em atendimento e 5 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "George Eivazian",
+          "ativos_total": 9,
+          "em_atendimento": 1,
+          "aguardando": 5,
+          "abertos": 3
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Bruno_Fagundes",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "Bruno Fagundes em sobrecarga (8 tickets ativos)",
+      "summary": "Bruno Fagundes tem 8 tickets ativos agora, 1 em atendimento e 7 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Bruno Fagundes",
+          "ativos_total": 8,
+          "em_atendimento": 1,
+          "aguardando": 7,
+          "abertos": 0
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Eduardo_Candido",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "Eduardo Candido em sobrecarga (8 tickets ativos)",
+      "summary": "Eduardo Candido tem 8 tickets ativos agora, 0 em atendimento e 5 aguardando. Risco de gargalo e atraso em resposta.",
+      "evidence": [
+        {
+          "atendente": "Eduardo Candido",
+          "ativos_total": 8,
+          "em_atendimento": 0,
+          "aguardando": 5,
+          "abertos": 2
+        }
+      ],
+      "recommendation": "Redistribuir 2-3 tickets para: Gilberto Sousa, Vinicius Eroico, Gesiel Silva — atualmente com 1, 1, 1 ativos respectivamente.",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "fila_concentrada_DBA_monitoramento@groundwork.com.br",
+      "severity": "warn",
+      "category": "distribuicao",
+      "title": "Fila DBA concentrada em monitoramento@groundwork.com.br",
+      "summary": "3 de 5 tickets silenciosos na fila DBA (60%) são do cliente monitoramento@groundwork.com.br. Concentração alta pode indicar SLA subdimensionado ou problema recorrente.",
+      "evidence": [
+        {
+          "fila": "DBA",
+          "cliente_top": "monitoramento@groundwork.com.br",
+          "n_top": 3,
+          "n_total": 5,
+          "pct_top": 0.6,
+          "distribuicao": {
+            "monitoramento@groundwork.com.br": 3,
+            "enzo.fucitalo@groundwork.com.br": 2
+          }
+        }
+      ],
+      "recommendation": "Revisar contrato/SLA de monitoramento@groundwork.com.br na fila DBA. Avaliar alocação de recurso específico ou negociar volume diferenciado.",
+      "impact_estimate": "médio"
+    }
+  ]
+}
