@@ -1108,6 +1108,118 @@ input[type=file]{display:none}
 [data-theme="light"] .at-ring-num{color:#0f172a}
 [data-theme="light"] .at-ring .at-ring-bg{stroke:rgba(148,163,184,.4)}
 
+/* ════════════════════════════════════════════════════════════════════
+   CHAMADOS — redesign (escopo: #s-ch)
+   ════════════════════════════════════════════════════════════════════ */
+#s-ch{--gw:#ff7024;--gw-2:#f37633;--cyan:#22d3ee;--ch-surface:rgba(20,29,40,.5);--ch-border:rgba(40,54,69,.6);--ch-border-bright:rgba(40,54,69,.95);--ch-muted:#8a9bb0;--ch-text:#e5edf5}
+#s-ch > .page-header{display:none}
+.ch-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--ch-border);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:28px 34px 24px;margin:0 0 18px}
+.ch-hero::before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.15),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.12),transparent 45%);pointer-events:none;z-index:0}
+.ch-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.015) 50%,transparent 58%,transparent 100%);animation:ialScan 10s linear infinite;pointer-events:none;z-index:1}
+.ch-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
+.ch-hero-left{display:flex;flex-direction:column;gap:6px}
+.ch-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:var(--ch-muted);text-transform:uppercase;letter-spacing:.18em}
+.ch-hero-tag .ch-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:ialPulse 2.4s ease-in-out infinite}
+.ch-hero-status{font-family:'Syne',sans-serif;font-size:50px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:4px;background:linear-gradient(135deg,var(--cyan) 0%,var(--gw-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(34,211,238,.3))}
+.ch-hero-status.ch-s-warn{background:linear-gradient(135deg,#f59e0b 0%,var(--gw) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(245,158,11,.35))}
+.ch-hero-status.ch-s-ok{background:linear-gradient(135deg,#10b981 0%,#34d399 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(16,185,129,.3))}
+.ch-hero-sub{font-size:13px;color:var(--ch-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
+.ch-hero-sub strong{color:var(--ch-text);font-weight:600}
+.ch-hero-meta{font-size:10px;color:var(--ch-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+.ch-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
+.ch-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ch-ring svg circle{fill:none;stroke-width:2}
+.ch-ring .ch-ring-bg{stroke:rgba(40,54,69,.5)}
+.ch-ring .ch-ring-fg{stroke:var(--cyan);stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(34,211,238,.5));transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.ch-ring.ch-s-warn .ch-ring-fg{stroke:#f59e0b;filter:drop-shadow(0 0 8px rgba(245,158,11,.5))}
+.ch-ring.ch-s-ok .ch-ring-fg{stroke:#10b981;filter:drop-shadow(0 0 8px rgba(16,185,129,.5))}
+.ch-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.ch-ring-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--ch-text);line-height:1}
+.ch-ring-lbl{font-family:var(--mono);font-size:9px;color:var(--ch-muted);text-transform:uppercase;letter-spacing:.18em}
+/* KPIs glass somente nos 4 primeiros (kpi-row do topo) */
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi{background:var(--ch-surface);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--ch-border);border-radius:10px;padding:14px 16px 12px;position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi:hover{border-color:var(--ch-border-bright);transform:translateY(-1px)}
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi .kpi-accent{position:absolute;top:0;left:0;right:0;height:2px;width:auto;border-radius:10px 10px 0 0;box-shadow:0 0 10px currentColor}
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi .kpi-lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--ch-muted)}
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi .kpi-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;line-height:1.1}
+#s-ch > .page-body > .kpi-row-4:first-of-type .kpi .kpi-sub{font-size:10px;color:var(--ch-muted);margin-top:3px}
+/* LIGHT MODE */
+[data-theme="light"] #s-ch{--ch-surface:rgba(255,255,255,.85);--ch-border:rgba(148,163,184,.3);--ch-muted:#64748b;--ch-text:#0f172a}
+[data-theme="light"] .ch-hero{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08)}
+[data-theme="light"] .ch-hero::before{background:radial-gradient(circle at 88% 25%,rgba(34,211,238,.1),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.07),transparent 45%)}
+[data-theme="light"] .ch-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+[data-theme="light"] .ch-ring-num{color:#0f172a}
+[data-theme="light"] .ch-ring .ch-ring-bg{stroke:rgba(148,163,184,.4)}
+[data-theme="light"] #s-ch > .page-body > .kpi-row-4:first-of-type .kpi{background:rgba(255,255,255,.85);border-color:rgba(148,163,184,.3);box-shadow:0 2px 8px rgba(40,54,69,.06)}
+
+/* ════════════════════════════════════════════════════════════════════
+   SLA & TEMPOS — redesign (escopo: #s-sl)
+   ════════════════════════════════════════════════════════════════════ */
+#s-sl{--gw:#ff7024;--gw-2:#f37633;--cyan:#22d3ee;--sl-surface:rgba(20,29,40,.5);--sl-border:rgba(40,54,69,.6);--sl-muted:#8a9bb0;--sl-text:#e5edf5}
+#s-sl > .page-header{display:none}
+.sl-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--sl-border);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:28px 34px 24px;margin:0 0 18px}
+.sl-hero::before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 90% 25%,rgba(16,185,129,.12),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.12),transparent 45%);pointer-events:none;z-index:0}
+.sl-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.015) 50%,transparent 58%,transparent 100%);animation:ialScan 9s linear infinite;pointer-events:none;z-index:1}
+.sl-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
+.sl-hero-left{display:flex;flex-direction:column;gap:6px}
+.sl-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:var(--sl-muted);text-transform:uppercase;letter-spacing:.18em}
+.sl-hero-tag .sl-dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 10px #10b981;animation:ialPulse 2.4s ease-in-out infinite}
+.sl-hero-status{font-family:'Syne',sans-serif;font-size:50px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:4px;background:linear-gradient(135deg,#10b981 0%,var(--cyan) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(16,185,129,.3))}
+.sl-hero-status.sl-s-warn{background:linear-gradient(135deg,#f59e0b 0%,var(--gw) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(245,158,11,.3))}
+.sl-hero-status.sl-s-crit{background:linear-gradient(135deg,var(--gw) 0%,#f43f5e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(255,112,36,.4))}
+.sl-hero-sub{font-size:13px;color:var(--sl-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
+.sl-hero-sub strong{color:var(--sl-text);font-weight:600}
+.sl-hero-meta{font-size:10px;color:var(--sl-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+.sl-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
+.sl-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.sl-ring svg circle{fill:none;stroke-width:2}
+.sl-ring .sl-ring-bg{stroke:rgba(40,54,69,.5)}
+.sl-ring .sl-ring-fg{stroke:#10b981;stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(16,185,129,.5));transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.sl-ring.sl-s-warn .sl-ring-fg{stroke:#f59e0b;filter:drop-shadow(0 0 8px rgba(245,158,11,.5))}
+.sl-ring.sl-s-crit .sl-ring-fg{stroke:var(--gw);filter:drop-shadow(0 0 8px rgba(255,112,36,.5))}
+.sl-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.sl-ring-num{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:var(--sl-text);line-height:1}
+.sl-ring-lbl{font-family:var(--mono);font-size:9px;color:var(--sl-muted);text-transform:uppercase;letter-spacing:.18em}
+/* LIGHT MODE */
+[data-theme="light"] #s-sl{--sl-surface:rgba(255,255,255,.85);--sl-border:rgba(148,163,184,.3);--sl-muted:#64748b;--sl-text:#0f172a}
+[data-theme="light"] .sl-hero{background:linear-gradient(135deg,#ffffff 0%,#f0fdf4 60%,#dcfce7 100%);box-shadow:0 4px 20px rgba(16,185,129,.08)}
+[data-theme="light"] .sl-hero::before{background:radial-gradient(circle at 90% 25%,rgba(16,185,129,.1),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.07),transparent 45%)}
+[data-theme="light"] .sl-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+[data-theme="light"] .sl-ring-num{color:#0f172a}
+[data-theme="light"] .sl-ring .sl-ring-bg{stroke:rgba(148,163,184,.4)}
+
+/* ════════════════════════════════════════════════════════════════════
+   CLIENTES & SERVIÇOS — redesign (escopo: #s-cl)
+   ════════════════════════════════════════════════════════════════════ */
+#s-cl{--gw:#ff7024;--gw-2:#f37633;--cyan:#22d3ee;--cl-surface:rgba(20,29,40,.5);--cl-border:rgba(40,54,69,.6);--cl-muted:#8a9bb0;--cl-text:#e5edf5}
+#s-cl > .page-header{display:none}
+.cl-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--cl-border);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:28px 34px 24px;margin:0 0 18px}
+.cl-hero::before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 90% 25%,rgba(139,92,246,.14),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.1),transparent 45%);pointer-events:none;z-index:0}
+.cl-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.015) 50%,transparent 58%,transparent 100%);animation:ialScan 10s linear infinite;pointer-events:none;z-index:1}
+.cl-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center}
+.cl-hero-left{display:flex;flex-direction:column;gap:6px}
+.cl-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:var(--cl-muted);text-transform:uppercase;letter-spacing:.18em}
+.cl-hero-tag .cl-dot{width:8px;height:8px;border-radius:50%;background:#8b5cf6;box-shadow:0 0 10px #8b5cf6;animation:ialPulse 2.6s ease-in-out infinite}
+.cl-hero-status{font-family:'Syne',sans-serif;font-size:50px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:4px;background:linear-gradient(135deg,#8b5cf6 0%,var(--gw-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(139,92,246,.3))}
+.cl-hero-sub{font-size:13px;color:var(--cl-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
+.cl-hero-sub strong{color:var(--cl-text);font-weight:600}
+.cl-hero-meta{font-size:10px;color:var(--cl-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+.cl-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
+.cl-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.cl-ring svg circle{fill:none;stroke-width:2}
+.cl-ring .cl-ring-bg{stroke:rgba(40,54,69,.5)}
+.cl-ring .cl-ring-fg{stroke:#8b5cf6;stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(139,92,246,.5));transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)}
+.cl-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.cl-ring-num{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:var(--cl-text);line-height:1}
+.cl-ring-lbl{font-family:var(--mono);font-size:9px;color:var(--cl-muted);text-transform:uppercase;letter-spacing:.18em}
+/* LIGHT MODE */
+[data-theme="light"] #s-cl{--cl-muted:#64748b;--cl-text:#0f172a}
+[data-theme="light"] .cl-hero{background:linear-gradient(135deg,#ffffff 0%,#faf5ff 60%,#f3e8ff 100%);box-shadow:0 4px 20px rgba(139,92,246,.1)}
+[data-theme="light"] .cl-hero::before{background:radial-gradient(circle at 90% 25%,rgba(139,92,246,.1),transparent 52%),radial-gradient(circle at 10% 90%,rgba(255,112,36,.07),transparent 45%)}
+[data-theme="light"] .cl-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
+[data-theme="light"] .cl-ring-num{color:#0f172a}
+[data-theme="light"] .cl-ring .cl-ring-bg{stroke:rgba(148,163,184,.4)}
+
 </style>
 </head>
 <body>
@@ -1538,6 +1650,26 @@ input[type=file]{display:none}
   <div id="s-ch" class="sec">
     <div class="page-header"><h1>Análise de Chamados</h1><p>Distribuição temporal, estados e prioridades</p></div>
     <div class="page-body">
+      <div class="ch-hero" id="ch-hero">
+        <div class="ch-hero-grid">
+          <div class="ch-hero-left">
+            <div class="ch-hero-tag"><span class="ch-dot"></span>CHAMADOS · ANÁLISE DO PERÍODO</div>
+            <div class="ch-hero-status" id="ch-hero-status">—</div>
+            <div class="ch-hero-sub" id="ch-hero-sub">calculando distribuição…</div>
+            <div class="ch-hero-meta" id="ch-hero-meta">centro de operações SSG</div>
+          </div>
+          <div class="ch-ring" id="ch-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="ch-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="ch-ring-fg" id="ch-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+            </svg>
+            <div class="ch-ring-core">
+              <div class="ch-ring-num" id="ch-ring-num">—</div>
+              <div class="ch-ring-lbl" id="ch-ring-lbl">conclusão</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="kpi-row kpi-row-4" style="margin-bottom:16px">
         <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
         <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
@@ -1720,6 +1852,26 @@ input[type=file]{display:none}
   <div id="s-cl" class="sec">
     <div class="page-header"><h1>Clientes & Serviços</h1><p>Volume por empresa e módulo ERP</p></div>
     <div class="page-body">
+      <div class="cl-hero" id="cl-hero">
+        <div class="cl-hero-grid">
+          <div class="cl-hero-left">
+            <div class="cl-hero-tag"><span class="cl-dot"></span>CLIENTES &amp; SERVIÇOS · VOLUME POR EMPRESA</div>
+            <div class="cl-hero-status" id="cl-hero-status">—</div>
+            <div class="cl-hero-sub" id="cl-hero-sub">agregando empresas…</div>
+            <div class="cl-hero-meta" id="cl-hero-meta">distribuição por cliente e módulo ERP</div>
+          </div>
+          <div class="cl-ring" id="cl-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="cl-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="cl-ring-fg" id="cl-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+            </svg>
+            <div class="cl-ring-core">
+              <div class="cl-ring-num" id="cl-ring-num">—</div>
+              <div class="cl-ring-lbl">clientes</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="grid2" style="margin-bottom:16px">
         <div class="card"><div class="card-title">Top clientes por volume <span class="card-title-right" id="cli-total-label"></span></div><div id="cli-bars"></div></div>
         <div class="card"><div class="card-title">Módulos mais demandados</div><div class="cw" style="height:250px"><canvas id="c-svc"></canvas></div></div>
@@ -1778,6 +1930,26 @@ input[type=file]{display:none}
   <div id="s-sl" class="sec">
     <div class="page-header"><h1>SLA & Tempos</h1><p>Análise de primeira resposta e tempo de solução — metas: 1ª resp &lt;30min · solução &lt;48h</p></div>
     <div class="page-body">
+      <div class="sl-hero" id="sl-hero">
+        <div class="sl-hero-grid">
+          <div class="sl-hero-left">
+            <div class="sl-hero-tag"><span class="sl-dot"></span>SLA &amp; TEMPOS · CUMPRIMENTO DE METAS</div>
+            <div class="sl-hero-status" id="sl-hero-status">—</div>
+            <div class="sl-hero-sub" id="sl-hero-sub">calculando indicadores…</div>
+            <div class="sl-hero-meta" id="sl-hero-meta">meta: 1ª resp &lt;30min · solução &lt;48h</div>
+          </div>
+          <div class="sl-ring" id="sl-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="sl-ring-bg" cx="100" cy="100" r="90"/>
+              <circle class="sl-ring-fg" id="sl-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+            </svg>
+            <div class="sl-ring-core">
+              <div class="sl-ring-num" id="sl-ring-num">—</div>
+              <div class="sl-ring-lbl">meta</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="kpi-row kpi-row-4">
         <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
         <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
@@ -2782,6 +2954,100 @@ function populateOvHero(op){
   }
 }
 
+function populateChHero(op){
+  var g=function(id){return document.getElementById(id);};
+  var hero=g('ch-hero-status'), ring=g('ch-ring'), ringFg=g('ch-ring-fg'), ringNum=g('ch-ring-num'), ringLbl=g('ch-ring-lbl'), sub=g('ch-hero-sub'), meta=g('ch-hero-meta');
+  if(!hero) return;
+  hero.classList.remove('ch-s-warn','ch-s-ok');
+  if(ring) ring.classList.remove('ch-s-warn','ch-s-ok');
+  var total=op.total||0, abertos=op.abertos||0, fechados=op.fechados||0;
+  var estado=op.estado||{};
+  var bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
+  var muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+  var taxa=total>0?Math.round((fechados/total)*100):0;
+  // Deriva status
+  var pctAberto=total>0?abertos/total:0;
+  var status, cls;
+  if(pctAberto>=.25 || muitoAlta>=40){status=total.toLocaleString('pt-BR')+' CHAMADOS';cls='ch-s-warn';}
+  else if(taxa>=70){status=total.toLocaleString('pt-BR')+' CHAMADOS';cls='ch-s-ok';}
+  else {status=total.toLocaleString('pt-BR')+' CHAMADOS';cls='';}
+  hero.textContent=status;
+  if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
+  if(sub){
+    sub.innerHTML=
+      '<strong>'+abertos+'</strong> em aberto · '
+      +'<strong>'+fechados+'</strong> fechados · '
+      +'<strong>'+taxa+'%</strong> taxa de conclusão · '
+      +'<strong>'+muitoAlta+'</strong> prioridade muito alta · '
+      +'<strong>'+bloq+'</strong> bloqueados';
+  }
+  if(meta)meta.textContent='distribuição temporal, estados e prioridades';
+  if(ringNum)ringNum.textContent=taxa+'%';
+  if(ringLbl)ringLbl.textContent='conclusão';
+  if(ringFg){
+    ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(taxa/100)));
+  }
+}
+
+function populateSlHero(op){
+  var g=function(id){return document.getElementById(id);};
+  var hero=g('sl-hero-status'), ring=g('sl-ring'), ringFg=g('sl-ring-fg'), ringNum=g('sl-ring-num'), sub=g('sl-hero-sub'), meta=g('sl-hero-meta');
+  if(!hero) return;
+  hero.classList.remove('sl-s-warn','sl-s-crit');
+  if(ring) ring.classList.remove('sl-s-warn','sl-s-crit');
+  var atend=op.atend||[];
+  var resps=atend.map(function(a){return a.rm;}).filter(function(x){return x!=null&&!isNaN(x);});
+  var respMedian=0;
+  if(resps.length){var sorted=resps.slice().sort(function(a,b){return a-b;});var m=Math.floor(sorted.length/2);respMedian=sorted.length%2?sorted[m]:(sorted[m-1]+sorted[m])/2;}
+  var META=30; // 1ª resp meta
+  var okCount=resps.filter(function(v){return v<=META;}).length;
+  var totalResp=resps.length;
+  var pctMeta=totalResp?Math.round((okCount/totalResp)*100):0;
+  var status, cls;
+  if(pctMeta>=80){status=pctMeta+'% NA META';cls='';}
+  else if(pctMeta>=60){status=pctMeta+'% NA META';cls='sl-s-warn';}
+  else {status=pctMeta+'% NA META';cls='sl-s-crit';}
+  hero.textContent=status;
+  if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
+  var abertosAbr=atend.reduce(function(s,a){return s+(a.ab||0);},0);
+  if(sub){
+    var mediana=Math.round(respMedian);
+    sub.innerHTML=
+      '<strong>'+okCount+'</strong> de <strong>'+totalResp+'</strong> atendentes dentro da meta de 30min · '
+      +'mediana <strong>'+mediana+'min</strong> · '
+      +'<strong>'+abertosAbr+'</strong> chamados em aberto atualmente';
+  }
+  if(meta)meta.textContent='meta: 1ª resposta <30min · solução <48h';
+  if(ringNum)ringNum.textContent=pctMeta+'%';
+  if(ringFg) ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(pctMeta/100)));
+}
+
+function populateClHero(op){
+  var g=function(id){return document.getElementById(id);};
+  var hero=g('cl-hero-status'), ringFg=g('cl-ring-fg'), ringNum=g('cl-ring-num'), sub=g('cl-hero-sub'), meta=g('cl-hero-meta');
+  if(!hero) return;
+  var cli=op.cli||{};
+  var clientesReais=Object.keys(cli).filter(function(k){return k&&k.indexOf('@')===-1;});
+  var totalCli=clientesReais.length;
+  var total=op.total||0;
+  // Top cliente
+  var topK='', topN=0;
+  clientesReais.forEach(function(k){if(cli[k]>topN){topN=cli[k];topK=k;}});
+  var topPct=total>0?Math.round((topN/total)*100):0;
+  hero.textContent=totalCli+' CLIENTES';
+  if(sub){
+    sub.innerHTML=
+      '<strong>'+total.toLocaleString('pt-BR')+'</strong> chamados no período · '
+      +'top: <strong>'+(topK||'—')+'</strong> com <strong>'+topN+'</strong> ('+topPct+'% do volume)';
+  }
+  if(meta)meta.textContent='distribuição por cliente e módulo ERP';
+  if(ringNum)ringNum.textContent=totalCli;
+  if(ringFg){
+    var pct=Math.min(1,totalCli/20);
+    ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
+  }
+}
+
 function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
   var g=function(id){return document.getElementById(id);};
   // Deriva status global da página de alertas
@@ -3695,6 +3961,7 @@ function renderCh(){
   if(!REAB_DATA||(Date.now()/1000-REAB_DATA.generated_at)>300) fetchReaberturas();
   else renderReaberturas(REAB_DATA);
   var _op2=getActiveOP();_op2=Object.assign({estado:{},prior:{},svc:{},atend:[],criticos:[],by_day:[],byDay:[]},_op2);
+  try{populateChHero(_op2);}catch(e){console.warn('ch hero:',e);}
   var _days=getFilteredDays();
   var L=_days.map(function(d){return fd(d.d);}),V=_days.map(function(d){return d.n;});
   var total=_op2.total||0,fechados=_op2.fechados||0;
@@ -4526,6 +4793,7 @@ function setAtMode(mode){
 
 function renderCl(){
   var _opc=getActiveOP();
+  try{populateClHero(_opc);}catch(e){console.warn('cl hero:',e);}
   var cliRaw=_opc.cli||{};
   var cK=Object.keys(cliRaw).filter(function(k){return(Object.values(ENM2).indexOf(k)!==-1||ENM2[k])&&k.indexOf('@')===-1;});
   cK.sort(function(a,b){return cliRaw[b]-cliRaw[a];});
@@ -4725,6 +4993,7 @@ function renderSl(){
   else renderTriagem(TRI_DATA);
   var atend=(getActiveOP().atend||OP.atend).slice(0,10);
   var op=getActiveOP();
+  try{populateSlHero(op);}catch(e){console.warn('sl hero:',e);}
   var N=atend.map(function(a){return a.n.split('.')[0]||a.n.split(' ')[0];});
   // META_RESP, META_SOL — usando variáveis globais configuráveis
   var rC=atend.map(function(a){return a.rm==null?'#5a6278':a.rm<=META_RESP?'#10b981':a.rm<=120?'#f59e0b':'#f43f5e';});
