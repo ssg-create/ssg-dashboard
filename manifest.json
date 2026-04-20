@@ -1,7 +1,7 @@
 {
-  "name": "SSG Operations Center",
-  "short_name": "SSG Ops",
-  "description": "Dashboard operacional Groundwork — tickets, SLA e CS em tempo real",
+  "name": "Groundwork Command Center",
+  "short_name": "GW Command",
+  "description": "Groundwork Command Center — operações, tickets, SLA, CS e insights em tempo real",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait-primary",
