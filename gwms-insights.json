@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776803351,
-  "generated_at_iso": "2026-04-21T20:29:11Z",
+  "generated_at": 1776810376,
+  "generated_at_iso": "2026-04-21T22:26:16Z",
   "counts": {
     "crit": 1,
     "warn": 5,
@@ -113,19 +113,20 @@
       "severity": "warn",
       "category": "distribuicao",
       "title": "Fila SSG concentrada em AUTOZONE",
-      "summary": "10 de 16 tickets silenciosos na fila SSG (62%) são do cliente AUTOZONE. Concentração alta pode indicar SLA subdimensionado ou problema recorrente.",
+      "summary": "12 de 19 tickets silenciosos na fila SSG (63%) são do cliente AUTOZONE. Concentração alta pode indicar SLA subdimensionado ou problema recorrente.",
       "evidence": [
         {
           "fila": "SSG",
           "cliente_top": "AUTOZONE",
-          "n_top": 10,
-          "n_total": 16,
-          "pct_top": 0.62,
+          "n_top": 12,
+          "n_total": 19,
+          "pct_top": 0.63,
           "distribuicao": {
-            "AUTOZONE": 10,
+            "AUTOZONE": 12,
             "ALMEIDA JR": 3,
             "NSX": 2,
-            "nicole.g@grupometalnox.com.br": 1
+            "nicole.g@grupometalnox.com.br": 1,
+            "FINPEC": 1
           }
         }
       ],
