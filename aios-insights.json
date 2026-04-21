@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-21T19:55:28.320355",
+  "generated_at": "2026-04-21T22:25:51.644495",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
-    "narrativa": "A taxa de conclusão está em <strong>64%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>76 chamados em aberto</strong> (27%) e <strong>40 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
+    "narrativa": "A taxa de conclusão está em <strong>63%</strong>, abaixo do esperado — requer atenção imediata.<br><br>Existem <strong>78 chamados em aberto</strong> (27%) e <strong>40 bloqueados</strong> aguardando ação — combinação que indica gargalo operacional.<br><br>O pico de volume ocorre na <strong>quarta-feira às 9h</strong> — dimensionar equipe para esse intervalo pode reduzir o SLA médio.",
     "kpis": [
       {
         "label": "Score Operacional",
@@ -78,11 +78,11 @@
     },
     {
       "cliente": "FADEL",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 73 chamados (26% do total). O módulo <strong>Infraestrutura e Cloud</strong> concentra 45% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 73 chamados (25% do total). O módulo <strong>Infraestrutura e Cloud</strong> concentra 45% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "73 chamados (26% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "73 chamados (25% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
@@ -96,11 +96,11 @@
     },
     {
       "cliente": "ALMEIDA JR",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 33 chamados (12% do total). O módulo <strong>ERP Protheus</strong> concentra 100% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 33 chamados (11% do total). O módulo <strong>ERP Protheus</strong> concentra 100% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "33 chamados (12% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "33 chamados (11% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
