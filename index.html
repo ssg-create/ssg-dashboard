@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Groundwork Command Center</title>
+<script>
+// Redireciona acessos antigos do GitHub Pages para a URL oficial no Vercel.
+// No Vercel (ou localhost) não faz nada e segue a renderização normal.
+(function(){
+  var h=location.hostname;
+  if(h==='ssg-create.github.io'){
+    location.replace('https://gw-command.vercel.app'+location.pathname.replace(/^\/ssg-dashboard/,'')+location.search+location.hash);
+  }
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
