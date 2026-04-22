@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776810375,
-  "generated_at_iso": "2026-04-21T22:26:15Z",
+  "generated_at": 1776816295,
+  "generated_at_iso": "2026-04-22T00:04:55Z",
   "count": 178,
   "filas": [
     "DATASUL",
@@ -241,6 +241,78 @@
       "assunto": "GROUNDWORK - GROUNDWORK_Web-Server - API:ces_broker_x_gwms_cstg - Errors - POST incompleto - 26042104540183"
     },
     {
+      "ticket": "2026041426000245",
+      "cliente": "FINPEC",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-14T13:55:11",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 7,
+      "assunto": "ENC: CERTIFICADOS_2026"
+    },
+    {
+      "ticket": "2026041426000076",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-14T08:45:37",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 7,
+      "assunto": "falha ao acessar aba protheus"
+    },
+    {
+      "ticket": "2026041726000212",
+      "cliente": "FADEL",
+      "fila": "INFRAESTUTURA",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Fabiano Souza",
+      "criado": "2026-04-17T12:25:22",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 4,
+      "assunto": "CRÍTICO - ENGENHARIA SOCIAL PELO TEAMS"
+    },
+    {
+      "ticket": "2026041426000138",
+      "cliente": "cida@adelco.com.br",
+      "fila": "INFRAESTUTURA",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Gilberto Sousa",
+      "criado": "2026-04-14T09:50:12",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 7,
+      "assunto": "Solicitação urgente – GPO para controle de versão do Edge"
+    },
+    {
+      "ticket": "2026041626000483",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-16T18:07:06",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 5,
+      "assunto": "Refaz saldos - PD8 - USGAAP"
+    },
+    {
+      "ticket": "2026041526000154",
+      "cliente": "valdeson.silva.ma@riopiranhas.com.br",
+      "fila": "GWMS",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "1 very low",
+      "atendente": "Thiago Trufelli",
+      "criado": "2026-04-15T09:10:15",
+      "modificado": "2026-04-21T05:00:21",
+      "idade_dias": 6,
+      "assunto": "Solicitação de  acesso  ao  GWMS para  monitoramento de infra."
+    },
+    {
       "ticket": "2026041726000098",
       "cliente": "ALMEIDA JR",
       "fila": "SSG",
@@ -301,102 +373,6 @@
       "assunto": "Verificação cases gerados via automação GW x SN"
     },
     {
-      "ticket": "2026041426000245",
-      "cliente": "FINPEC",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-14T13:55:11",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 7,
-      "assunto": "ENC: CERTIFICADOS_2026"
-    },
-    {
-      "ticket": "2026041426000076",
-      "cliente": "ALMEIDA JR",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-14T08:45:37",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 7,
-      "assunto": "falha ao acessar aba protheus"
-    },
-    {
-      "ticket": "2026041726000212",
-      "cliente": "FADEL",
-      "fila": "INFRAESTUTURA",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Fabiano Souza",
-      "criado": "2026-04-17T12:25:22",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 4,
-      "assunto": "CRÍTICO - ENGENHARIA SOCIAL PELO TEAMS"
-    },
-    {
-      "ticket": "2026041426000138",
-      "cliente": "cida@adelco.com.br",
-      "fila": "INFRAESTUTURA",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Gilberto Sousa",
-      "criado": "2026-04-14T09:50:12",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 7,
-      "assunto": "Solicitação urgente – GPO para controle de versão do Edge"
-    },
-    {
-      "ticket": "2026041526000154",
-      "cliente": "valdeson.silva.ma@riopiranhas.com.br",
-      "fila": "GWMS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "1 very low",
-      "atendente": "Thiago Trufelli",
-      "criado": "2026-04-15T09:10:15",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 6,
-      "assunto": "Solicitação de  acesso  ao  GWMS para  monitoramento de infra."
-    },
-    {
-      "ticket": "2026041626000483",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-16T18:07:06",
-      "modificado": "2026-04-21T05:00:21",
-      "idade_dias": 5,
-      "assunto": "Refaz saldos - PD8 - USGAAP"
-    },
-    {
-      "ticket": "2026040926000121",
-      "cliente": "andrei.honorio@teletex.com",
-      "fila": "GWMS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "1 very low",
-      "atendente": "Bruno Fagundes",
-      "criado": "2026-04-09T10:15:18",
-      "modificado": "2026-04-21T05:00:20",
-      "idade_dias": 12,
-      "assunto": "UNIMED-CURITIBA | Solicitação de mudança para o cliente Unimed "
-    },
-    {
-      "ticket": "2026040926000264",
-      "cliente": "andrei.honorio@teletex.com",
-      "fila": "GWMS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "1 very low",
-      "atendente": "Thiago Trufelli",
-      "criado": "2026-04-09T16:20:09",
-      "modificado": "2026-04-21T05:00:20",
-      "idade_dias": 12,
-      "assunto": "CASTROLANDA | Relatório de servidores Windows e Linux monitorado via SNMP"
-    },
-    {
       "ticket": "2026041326000523",
       "cliente": "TJBA",
       "fila": "GWMS",
@@ -421,6 +397,18 @@
       "assunto": "ARCO - GWMS-SERVER - Load - 26040808414074"
     },
     {
+      "ticket": "2026041626000161",
+      "cliente": "FINPEC",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-16T08:50:16",
+      "modificado": "2026-04-21T05:00:20",
+      "idade_dias": 5,
+      "assunto": "Filial Comendador Gomes/MG"
+    },
+    {
       "ticket": "2026041526000538",
       "cliente": "andrei.honorio@teletex.com",
       "fila": "GWMS",
@@ -443,18 +431,6 @@
       "modificado": "2026-04-21T05:00:20",
       "idade_dias": 6,
       "assunto": "Dual Duarte - Configuração ODBC"
-    },
-    {
-      "ticket": "2026041626000161",
-      "cliente": "FINPEC",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-16T08:50:16",
-      "modificado": "2026-04-21T05:00:20",
-      "idade_dias": 5,
-      "assunto": "Filial Comendador Gomes/MG"
     },
     {
       "ticket": "2026041426000101",
@@ -493,6 +469,18 @@
       "assunto": "GWMS > New Ticket"
     },
     {
+      "ticket": "2026041426000291",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "2 low",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-14T14:56:04",
+      "modificado": "2026-04-21T05:00:20",
+      "idade_dias": 7,
+      "assunto": "IMPORTAÇÃO DE APLICAÇÃO AUTOMATICA GESPLAN X PROTHEUS"
+    },
+    {
       "ticket": "2026041326000381",
       "cliente": "TJBA",
       "fila": "GWMS",
@@ -517,76 +505,28 @@
       "assunto": "COMPENSAÇÃO DE PA"
     },
     {
-      "ticket": "2026041426000291",
-      "cliente": "ALMEIDA JR",
-      "fila": "SSG",
+      "ticket": "2026040926000121",
+      "cliente": "andrei.honorio@teletex.com",
+      "fila": "GWMS",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "2 low",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-14T14:56:04",
+      "prioridade": "1 very low",
+      "atendente": "Bruno Fagundes",
+      "criado": "2026-04-09T10:15:18",
       "modificado": "2026-04-21T05:00:20",
-      "idade_dias": 7,
-      "assunto": "IMPORTAÇÃO DE APLICAÇÃO AUTOMATICA GESPLAN X PROTHEUS"
+      "idade_dias": 12,
+      "assunto": "UNIMED-CURITIBA | Solicitação de mudança para o cliente Unimed "
     },
     {
-      "ticket": "2026012926000455",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
+      "ticket": "2026040926000264",
+      "cliente": "andrei.honorio@teletex.com",
+      "fila": "GWMS",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Tiago Silva",
-      "criado": "2026-01-29T18:25:55",
-      "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 82,
-      "assunto": "LP - TES COMPLEMENTO DE ICMS + IPI"
-    },
-    {
-      "ticket": "2026012626000148",
-      "cliente": "NSX",
-      "fila": "SSG-MELHORIAS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 85,
-      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
-    },
-    {
-      "ticket": "2026032626000073",
-      "cliente": "AUMOVIO",
-      "fila": "DATASUL",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-03-26T07:22:06",
-      "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 26,
-      "assunto": "Cadastro bancario de fornecedor"
-    },
-    {
-      "ticket": "2026041426000371",
-      "cliente": "PECVAL",
-      "fila": "DATASUL",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-04-14T16:19:19",
-      "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 7,
-      "assunto": "Relatório de Lucratividade."
-    },
-    {
-      "ticket": "2026040726000517",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-07T19:55:11",
-      "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 13,
-      "assunto": "AutoZone - Correção de combo rules - 07.04 - PD08 FY26"
+      "prioridade": "1 very low",
+      "atendente": "Thiago Trufelli",
+      "criado": "2026-04-09T16:20:09",
+      "modificado": "2026-04-21T05:00:20",
+      "idade_dias": 12,
+      "assunto": "CASTROLANDA | Relatório de servidores Windows e Linux monitorado via SNMP"
     },
     {
       "ticket": "2026041026000083",
@@ -625,6 +565,18 @@
       "assunto": "Alteração Dashboard Logmein"
     },
     {
+      "ticket": "2026041726000356",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-17T16:27:41",
+      "modificado": "2026-04-21T05:00:19",
+      "idade_dias": 4,
+      "assunto": "Contabilização offline"
+    },
+    {
       "ticket": "2026040726000384",
       "cliente": "ALMEIDA JR",
       "fila": "SSG",
@@ -637,16 +589,16 @@
       "assunto": "Liberar Modo Financeiro"
     },
     {
-      "ticket": "2026041726000356",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
+      "ticket": "2026012626000148",
+      "cliente": "NSX",
+      "fila": "SSG-MELHORIAS",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-17T16:27:41",
+      "prioridade": "5 very high",
+      "atendente": "Tiago Silva",
+      "criado": "2026-01-26T10:21:55",
       "modificado": "2026-04-21T05:00:19",
-      "idade_dias": 4,
-      "assunto": "Contabilização offline"
+      "idade_dias": 85,
+      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
     {
       "ticket": "2026041426000183",
@@ -673,28 +625,52 @@
       "assunto": "Alinhamento: Processo de Contatos Telefônicos"
     },
     {
-      "ticket": "2026011226000209",
+      "ticket": "2026012926000455",
       "cliente": "AUTOZONE",
       "fila": "SSG",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
+      "prioridade": "3 normal",
       "atendente": "Tiago Silva",
-      "criado": "2026-01-12T10:18:38",
-      "modificado": "2026-04-21T05:00:18",
-      "idade_dias": 99,
-      "assunto": "RETENÇÃO INSS"
+      "criado": "2026-01-29T18:25:55",
+      "modificado": "2026-04-21T05:00:19",
+      "idade_dias": 82,
+      "assunto": "LP - TES COMPLEMENTO DE ICMS + IPI"
     },
     {
-      "ticket": "2026012926000393",
-      "cliente": "NSX",
-      "fila": "SSG",
+      "ticket": "2026032626000073",
+      "cliente": "AUMOVIO",
+      "fila": "DATASUL",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Guilherme Rosa",
+      "criado": "2026-03-26T07:22:06",
+      "modificado": "2026-04-21T05:00:19",
+      "idade_dias": 26,
+      "assunto": "Cadastro bancario de fornecedor"
+    },
+    {
+      "ticket": "2026041426000371",
+      "cliente": "PECVAL",
+      "fila": "DATASUL",
       "estado": "AGUARDANDO CLIENTE",
       "prioridade": "5 very high",
-      "atendente": "Francisco Silva",
-      "criado": "2026-01-29T16:21:37",
-      "modificado": "2026-04-21T05:00:18",
-      "idade_dias": 82,
-      "assunto": "Fazer carga para criar titulos de Imposto no financeiro"
+      "atendente": "Guilherme Rosa",
+      "criado": "2026-04-14T16:19:19",
+      "modificado": "2026-04-21T05:00:19",
+      "idade_dias": 7,
+      "assunto": "Relatório de Lucratividade."
+    },
+    {
+      "ticket": "2026040726000517",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-07T19:55:11",
+      "modificado": "2026-04-21T05:00:19",
+      "idade_dias": 14,
+      "assunto": "AutoZone - Correção de combo rules - 07.04 - PD08 FY26"
     },
     {
       "ticket": "2026041526000207",
@@ -709,6 +685,18 @@
       "assunto": "V2 Customização PCC para trazer o anexo da NF no novo Titulo gerado"
     },
     {
+      "ticket": "2026012926000393",
+      "cliente": "NSX",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Francisco Silva",
+      "criado": "2026-01-29T16:21:37",
+      "modificado": "2026-04-21T05:00:18",
+      "idade_dias": 82,
+      "assunto": "Fazer carga para criar titulos de Imposto no financeiro"
+    },
+    {
       "ticket": "2026031326000169",
       "cliente": "GroundWork",
       "fila": "GWMS",
@@ -719,6 +707,18 @@
       "modificado": "2026-04-21T05:00:18",
       "idade_dias": 39,
       "assunto": "Revisão de alertas FADEL"
+    },
+    {
+      "ticket": "2026011226000209",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Tiago Silva",
+      "criado": "2026-01-12T10:18:38",
+      "modificado": "2026-04-21T05:00:18",
+      "idade_dias": 99,
+      "assunto": "RETENÇÃO INSS"
     },
     {
       "ticket": "2026042026000242",
@@ -1509,7 +1509,7 @@
       "atendente": "Eduardo Candido",
       "criado": "2026-04-16T20:45:11",
       "modificado": "2026-04-17T14:15:33",
-      "idade_dias": 4,
+      "idade_dias": 5,
       "assunto": "AUTOZONE - URLS - Url:https://wsazex.groundwork.com.br:9001/v1/autozone/ZLWSRT02ponumeroaz50063561 - 26041620405370"
     },
     {
@@ -1557,7 +1557,7 @@
       "atendente": "Marcelo David",
       "criado": "2026-04-01T20:02:59",
       "modificado": "2026-04-17T12:38:09",
-      "idade_dias": 19,
+      "idade_dias": 20,
       "assunto": "Configurar Compilador"
     },
     {
