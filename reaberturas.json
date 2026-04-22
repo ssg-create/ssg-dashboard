@@ -1,7 +1,7 @@
 {
-  "generated_at": 1776839155,
-  "generated_at_iso": "2026-04-22T06:25:55Z",
-  "count": 5,
+  "generated_at": 1776855004,
+  "generated_at_iso": "2026-04-22T10:50:04Z",
+  "count": 4,
   "filas": [
     "DATASUL",
     "DBA",
@@ -20,7 +20,7 @@
       "prioridade": "5 very high",
       "atendente": "Tiago Silva",
       "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-21T05:00:19",
+      "modificado": "2026-04-22T05:00:15",
       "vezes_fechado": 2,
       "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
@@ -44,21 +44,9 @@
       "prioridade": "3 normal",
       "atendente": "Robert Rodrigues dos Santos",
       "criado": "2026-04-14T08:55:24",
-      "modificado": "2026-04-21T05:00:20",
+      "modificado": "2026-04-22T05:00:16",
       "vezes_fechado": 1,
       "assunto": "Your message could not be delivered"
-    },
-    {
-      "ticket": "2026012926000393",
-      "cliente": "NSX",
-      "fila": "SSG",
-      "estado_atual": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Francisco Silva",
-      "criado": "2026-01-29T16:21:37",
-      "modificado": "2026-04-21T05:00:18",
-      "vezes_fechado": 1,
-      "assunto": "Fazer carga para criar titulos de Imposto no financeiro"
     },
     {
       "ticket": "2026032526000459",
