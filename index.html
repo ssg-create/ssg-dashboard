@@ -7376,10 +7376,26 @@ var EMP_MESES = {"ALMEIDA JR": {"2026-01": {"total": 78, "abertos": 1, "fechados
 
 function getFilteredEmpresa(d) {
   if(!d) return null;
+  // Helper — reconstrói by_day filtrado por cliente + mês + fila a partir do RAW_DATA.
+  // Necessário porque o by_day original da empresa não respeita filtro de mês/fila.
+  var _buildByDayFiltered = function(cliId) {
+    if(typeof RAW_DATA==='undefined' || !RAW_DATA || !RAW_DATA.length) return [];
+    var m = {};
+    RAW_DATA.forEach(function(t){
+      if(!t || !t.criado || !(t.criado instanceof Date) || isNaN(t.criado)) return;
+      if(cliId && t.cli_id !== cliId) return;
+      if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
+      if(activeMonth && activeMonth !== 'all' && t.criado.toISOString().slice(0,7) !== activeMonth) return;
+      if(activeRangeStart && activeRangeEnd && !ticketInFilter(t)) return;
+      var k = t.criado.toISOString().slice(0,10);
+      m[k] = (m[k]||0) + 1;
+    });
+    return Object.keys(m).sort().map(function(k){return {d:k,n:m[k]};});
+  };
   // Range mode: filter from RAW_DATA for accurate results
   if(activeRangeStart && activeRangeEnd) {
     var rTix=(RAW_DATA||[]).filter(function(t){return t.cli_id===d.id&&ticketInFilter(t)&&(activeFilaOP==='all'||t.fila===activeFilaOP);});
-    if(!rTix.length) return Object.assign({},d,{total:0,abertos:0,fechados:0,tickets:[],estados:{},by_mes:{}});
+    if(!rTix.length) return Object.assign({},d,{total:0,abertos:0,fechados:0,tickets:[],estados:{},by_mes:{},by_day:[],byDay:[]});
     var isAbGFE=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
     var isFGFE=function(e){return['Fechado','Resolvido','Fechado s/ Êxito'].indexOf(e)!==-1;};
     var estGFE={};
@@ -7389,25 +7405,33 @@ function getFilteredEmpresa(d) {
       var dt=t.criado?p2g(t.criado.getDate())+'/'+p2g(t.criado.getMonth()+1)+' '+p2g(t.criado.getHours())+'h':'—';
       return Object.assign({},t,{criado:dt});
     });
+    var _bdr = _buildByDayFiltered(d.id);
     return Object.assign({},d,{
       total:rTix.length,
       abertos:rTix.filter(function(t){return isAbGFE(t.estado);}).length,
       fechados:rTix.filter(function(t){return isFGFE(t.estado);}).length,
-      tickets:tixGFE, estados:estGFE, by_mes:{}
+      tickets:tixGFE, estados:estGFE, by_mes:{},
+      by_day:_bdr, byDay:_bdr
     });
   }
   if(activeMonth==='all') {
-    if(activeFilaOP === 'all') return d;
+    if(activeFilaOP === 'all') {
+      // Sem filtros extras — mas ainda precisa garantir by_day filtrado por cliente
+      var _bdC = _buildByDayFiltered(d.id);
+      return Object.assign({},d,{by_day:_bdC, byDay:_bdC});
+    }
     // Fila ativa mesmo sem filtro de mês — filtra tickets e reconstrói
     var allTix = (d.tickets||[]).filter(function(t){ return t.fila === activeFilaOP; });
     var isAbAll=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
     var isFeAll=function(e){return e==='Fechado'||e==='Resolvido'||e.indexOf('Fechado s')===0;};
     var estAll={};allTix.forEach(function(t){if(t.estado)estAll[t.estado]=(estAll[t.estado]||0)+1;});
+    var _bdF = _buildByDayFiltered(d.id);
     return Object.assign({},d,{
       total:allTix.length,
       abertos:allTix.filter(function(t){return isAbAll(t.estado);}).length,
       fechados:allTix.filter(function(t){return isFeAll(t.estado);}).length,
-      tickets:allTix, estados:estAll
+      tickets:allTix, estados:estAll,
+      by_day:_bdF, byDay:_bdF
     });
   }
 
@@ -7455,13 +7479,16 @@ function getFilteredEmpresa(d) {
   var newByMes = {};
   if(d.by_mes[mKey]) newByMes[mKey] = d.by_mes[mKey];
 
+  var _bdMM = _buildByDayFiltered(d.id);
   return Object.assign({},d,{
     total: total,
     abertos: abertos,
     fechados: fechados,
     tickets: filteredTickets,
     estados: estados,
-    by_mes: newByMes
+    by_mes: newByMes,
+    by_day: _bdMM,
+    byDay: _bdMM
   });
 }
 
