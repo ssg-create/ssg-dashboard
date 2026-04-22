@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776839158,
-  "generated_at_iso": "2026-04-22T06:25:58Z",
+  "generated_at": 1776855009,
+  "generated_at_iso": "2026-04-22T10:50:09Z",
   "counts": {
     "crit": 1,
     "warn": 5,
@@ -44,7 +44,7 @@
           "cliente": "AUTOZONE",
           "fila": "SSG",
           "atendente": "Carlos Fernandes",
-          "dias": 162.5,
+          "dias": 162.7,
           "criado": "2025-11-10T16:00:28"
         }
       ],
@@ -56,15 +56,15 @@
       "severity": "warn",
       "category": "capacidade",
       "title": "Thiago Trufelli com carga real de 6 tickets",
-      "summary": "Thiago Trufelli tem 6 tickets ativos sob sua responsabilidade: 1 em atendimento + 5 abertos (além de 6 aguardando terceiros, que não consomem capacidade). Avaliar se há gargalo ou se é volume esperado para o atendente.",
+      "summary": "Thiago Trufelli tem 6 tickets ativos sob sua responsabilidade: 1 em atendimento + 5 abertos (além de 5 aguardando terceiros, que não consomem capacidade). Avaliar se há gargalo ou se é volume esperado para o atendente.",
       "evidence": [
         {
           "atendente": "Thiago Trufelli",
           "carga_real": 6,
           "em_atendimento": 1,
           "abertos": 5,
-          "aguardando_terceiros": 6,
-          "ativos_total": 12
+          "aguardando_terceiros": 5,
+          "ativos_total": 11
         }
       ],
       "recommendation": "Revisar prioridades com o atendente. Se mantido o volume, considerar redistribuição — mas atribuição depende de skill/fila (não sugiro automaticamente para evitar erro de matching).",
