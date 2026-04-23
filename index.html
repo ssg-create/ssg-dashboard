@@ -3225,15 +3225,24 @@ function populateOvHero(op){
   var g=function(id){return document.getElementById(id);};
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
   var total=op.total||0;
-  var abertos=op.abertos||0;
   var fechados=op.fechados||0;
-  // Bloqueados derivados dos estados (aguardando cliente, interno, externo, retorno)
-  var estado=op.estado||{};
-  var bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
-  // Críticos a partir do insights (se carregado) + prioridade muito alta
+  // Abertos/bloqueados/muito alta vêm do GWMS se disponível (estado atual real).
+  var live=liveStats(), liveTag='';
+  var abertos, bloq, muitoAlta;
+  if(live){
+    abertos=live.abertos;
+    bloq=live.bloqueados;
+    muitoAlta=live.muitoAlta;
+    liveTag=' <span style="font-family:var(--mono);font-size:9px;color:#10b981;letter-spacing:.08em">● AO VIVO</span>';
+  } else {
+    abertos=op.abertos||0;
+    var estado=op.estado||{};
+    bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
+    muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+  }
+  // Críticos do insights IA
   var crit=0;
   if(window.IAL_DATA&&IAL_DATA.counts) crit=IAL_DATA.counts.crit||0;
-  var muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
   // Derivar status
   var pctAberto=total>0?abertos/total:0;
   var status, cls;
@@ -3248,8 +3257,9 @@ function populateOvHero(op){
       '<strong>'+total.toLocaleString('pt-BR')+'</strong> chamados no período · '
       +'<strong>'+abertos+'</strong> em aberto ('+(total>0?Math.round(pctAberto*100):0)+'%) · '
       +'<strong>'+bloq+'</strong> bloqueados · '
-      +'<strong>'+muitoAlta+'</strong> prioridade muito alta'
-      +(crit?' · <strong style="color:var(--gw)">'+crit+' crítico'+(crit===1?'':'s')+' IA</strong>':'');
+      +'<strong>'+muitoAlta+'</strong> prioridade muito alta em aberto'
+      +(crit?' · <strong style="color:var(--gw)">'+crit+' crítico'+(crit===1?'':'s')+' IA</strong>':'')
+      +liveTag;
   }
   var subtitle=(g('ov-subtitle')||{}).textContent||'';
   if(meta)meta.textContent=subtitle||'groundwork command center · operações';
@@ -3267,12 +3277,22 @@ function populateChHero(op){
   if(!hero) return;
   hero.classList.remove('ch-s-warn','ch-s-ok');
   if(ring) ring.classList.remove('ch-s-warn','ch-s-ok');
-  var total=op.total||0, abertos=op.abertos||0, fechados=op.fechados||0;
-  var estado=op.estado||{};
-  var bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
-  var muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+  // Total e fechados continuam do XLSX (histórico). Abertos/bloqueados/MA vêm do GWMS se disponível.
+  var total=op.total||0, fechados=op.fechados||0;
+  var live=liveStats(), liveTag='';
+  var abertos, bloq, muitoAlta;
+  if(live){
+    abertos=live.abertos;
+    bloq=live.bloqueados;
+    muitoAlta=live.muitoAlta;
+    liveTag=' <span style="font-family:var(--mono);font-size:9px;color:#10b981;letter-spacing:.08em">● AO VIVO</span>';
+  } else {
+    abertos=op.abertos||0;
+    var estado=op.estado||{};
+    bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
+    muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+  }
   var taxa=total>0?Math.round((fechados/total)*100):0;
-  // Deriva status
   var pctAberto=total>0?abertos/total:0;
   var status, cls;
   if(pctAberto>=.25 || muitoAlta>=40){status=total.toLocaleString('pt-BR')+' CHAMADOS';cls='ch-s-warn';}
@@ -3285,8 +3305,9 @@ function populateChHero(op){
       '<strong>'+abertos+'</strong> em aberto · '
       +'<strong>'+fechados+'</strong> fechados · '
       +'<strong>'+taxa+'%</strong> taxa de conclusão · '
-      +'<strong>'+muitoAlta+'</strong> prioridade muito alta · '
-      +'<strong>'+bloq+'</strong> bloqueados';
+      +'<strong>'+muitoAlta+'</strong> prioridade muito alta em aberto · '
+      +'<strong>'+bloq+'</strong> bloqueados'
+      +liveTag;
   }
   if(meta)meta.textContent='distribuição temporal, estados e prioridades';
   if(ringNum)ringNum.textContent=taxa+'%';
@@ -3470,10 +3491,16 @@ function populateClHero(op){
 
 function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
   var g=function(id){return document.getElementById(id);};
+  // Usa live para muito alta em aberto e bloqueados (estado atual sempre via GWMS)
+  var live=liveStats(), liveTag='';
+  if(live){
+    totalCrit=live.muitoAlta;
+    totalBloq=live.bloqueados;
+    liveTag=' <span style="font-family:var(--mono);font-size:9px;color:#10b981;letter-spacing:.08em">● AO VIVO</span>';
+  }
   // Deriva status global da página de alertas
   var criticosIA=0;
   if(window.IAL_DATA&&IAL_DATA.counts) criticosIA=IAL_DATA.counts.crit||0;
-  var soma=totalCrit+(criticosIA*10); // crítico IA pesa mais
   var status, cls;
   if(totalCrit>=30 || criticosIA>=1 || bloqExato>=30){status=(totalCrit||'0')+' CRÍTICOS';cls='';}
   else if(totalCrit>=10 || totalBloq>=100 || semResp>=40){status=(totalCrit||'0')+' CRÍTICOS';cls='al-s-warn';}
@@ -3487,7 +3514,8 @@ function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
       '<strong>'+totalCrit+'</strong> muito alta em aberto · '
       +'<strong>'+totalBloq+'</strong> bloqueados ('+bloqExato+' com aging) · '
       +'<strong>'+semResp+'</strong> sem 1ª resposta &gt;30min'
-      +(criticosIA?' · <strong style="color:var(--gw)">'+criticosIA+' crítico'+(criticosIA===1?'':'s')+' IA</strong>':'');
+      +(criticosIA?' · <strong style="color:var(--gw)">'+criticosIA+' crítico'+(criticosIA===1?'':'s')+' IA</strong>':'')
+      +liveTag;
   }
   if(meta){
     var d=new Date();
@@ -7818,15 +7846,26 @@ function liveFilteredTickets(){
     return true;
   });
 }
-function applyLiveKPIs(){
+// Fonte única de verdade para "estado atual" — consumida pelos heros e KPIs.
+// Retorna null se dados GWMS ainda não carregaram (aí chamador usa XLSX como fallback).
+function liveStats(){
   var rows=liveFilteredTickets();
-  if(!rows) return;
+  if(!rows) return null;
   var BLOQ_STATES=['AGUARDANDO CLIENTE','AGUARDANDO INTERNO','AGUARDANDO EXTERNO','RETORNO CLIENTE','AGUARDANDO ATENDENTE (INTERNO)','AGUARDANDO AGENTES EXTERNOS','AGUARDANDO ATENDENTE','MELHORIA','GMUD'];
-  var isMuitoAlta=function(p){var l=(p||'').toLowerCase();return l.indexOf('muito alta')!==-1||l.indexOf('very high')!==-1||l.charAt(0)==='5';};
+  var isMA=function(p){var l=(p||'').toLowerCase();return l.indexOf('muito alta')!==-1||l.indexOf('very high')!==-1||l.charAt(0)==='5';};
   var isBloq=function(e){return BLOQ_STATES.indexOf((e||'').toUpperCase())!==-1;};
-  var total=rows.length;
-  var muitoAlta=rows.filter(function(r){return isMuitoAlta(r.prioridade);}).length;
-  var bloqueados=rows.filter(function(r){return isBloq(r.estado);}).length;
+  return {
+    abertos:rows.length,
+    bloqueados:rows.filter(function(r){return isBloq(r.estado);}).length,
+    muitoAlta:rows.filter(function(r){return isMA(r.prioridade);}).length,
+    emAtendimento:rows.filter(function(r){return (r.estado||'').toUpperCase()==='EM ATENDIMENTO';}).length,
+    rows:rows
+  };
+}
+function applyLiveKPIs(){
+  var s=liveStats();
+  if(!s) return;
+  var total=s.abertos, muitoAlta=s.muitoAlta, bloqueados=s.bloqueados;
   var setText=function(id,val){var e=document.getElementById(id);if(e)e.textContent=val;};
   var addLiveBadge=function(subId){
     var e=document.getElementById(subId);
