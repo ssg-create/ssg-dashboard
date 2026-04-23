@@ -16,7 +16,7 @@ import os
 import sys
 import time
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -183,6 +183,101 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     return query_mysql(session, sql)
 
 
+def q_historico_completo(session: requests.Session) -> list[dict]:
+    """Equivalente completo ao XLSX do dashcompleto — todos os campos que o
+    dashboard consome, direto do MySQL OTRS. Substitui (no futuro) dados.xlsx.
+
+    Traz tickets criados nos últimos 4 meses (2000-3000 linhas típicas).
+    Campos computados server-side: resp_min_raw, fechado (via ticket_history),
+    primeira_resposta (via article). Horas úteis e sol_min são calculados
+    em Python no pós-processamento pra não estourar timeout do SQL."""
+    sql = f"""
+    SELECT
+      t.tn                                                      AS num,
+      t.title                                                   AS assunto,
+      DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s')           AS criado,
+      DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s')           AS modificado,
+      q.name                                                    AS fila,
+      ts.name                                                   AS estado,
+      tp.name                                                   AS prioridade,
+      CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) AS atendente,
+      COALESCE(u.first_name, '')                                AS primeiro_nome,
+      COALESCE(u.last_name, '')                                 AS ultimo_nome,
+      t.customer_id                                             AS cli_id,
+      t.customer_user_id                                        AS cli_user,
+      COALESCE(s.name, '')                                      AS servico,
+      (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
+       FROM ticket_history th
+       WHERE th.ticket_id = t.id
+         AND th.state_id IN (2, 3, 5, 9, 17, 18, 19))            AS fechado,
+      (SELECT TIMESTAMPDIFF(MINUTE, t.create_time, MIN(a.create_time))
+       FROM article a
+       WHERE a.ticket_id = t.id
+         AND a.article_sender_type_id = 1
+         AND a.is_visible_for_customer = 1
+         AND a.create_time > t.create_time)                      AS resp_min_raw
+    FROM ticket t
+    JOIN queue           q  ON t.queue_id           = q.id
+    JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
+    JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
+    LEFT JOIN users      u  ON t.user_id            = u.id
+    LEFT JOIN service    s  ON t.service_id         = s.id
+    WHERE q.name IN ({FILAS_SQL})
+      AND t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+    ORDER BY t.create_time DESC
+    LIMIT 5000
+    """
+    rows = query_mysql(session, sql)
+    # Pós-processa: horas úteis em minutos (sol_min e resp_min_bh)
+    # Business hours: Seg–Sex 08h–18h (mesma regra do calcBusinessHoursH em JS)
+    def _parse_dt(s):
+        if not s:
+            return None
+        try:
+            return datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+        except Exception:
+            return None
+
+    def _business_minutes(start: datetime, end: datetime) -> int | None:
+        if not start or not end or end <= start:
+            return 0 if end == start else None
+        BH_S, BH_E = 8, 18
+        total = 0
+        cur = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        max_days = 400
+        while cur < end and max_days > 0:
+            max_days -= 1
+            if cur.weekday() < 5:  # Seg-Sex
+                b_start = cur.replace(hour=BH_S)
+                b_end = cur.replace(hour=BH_E)
+                p_start = start if start > b_start else b_start
+                p_end = end if end < b_end else b_end
+                if p_end > p_start:
+                    total += int((p_end - p_start).total_seconds() // 60)
+            cur = cur.replace(hour=0) + timedelta(days=1)
+        return total
+
+    for r in rows:
+        cr = _parse_dt(r.get("criado"))
+        fe = _parse_dt(r.get("fechado"))
+        resp_raw = r.get("resp_min_raw")
+        # Solução em minutos (wall-clock) e em minutos úteis
+        if cr and fe and fe > cr:
+            r["sol_min_raw"] = int((fe - cr).total_seconds() // 60)
+            r["sol_min_bh"] = _business_minutes(cr, fe)
+        else:
+            r["sol_min_raw"] = None
+            r["sol_min_bh"] = None
+        # Primeira resposta: resp_min_raw já vem em minutos wall-clock.
+        # resp_min_bh = horas úteis entre criado e primeira resposta.
+        if resp_raw is not None and cr:
+            fr = cr + timedelta(minutes=int(resp_raw))
+            r["resp_min_bh"] = _business_minutes(cr, fr)
+        else:
+            r["resp_min_bh"] = None
+    return rows
+
+
 def q_tickets_ativos(session: requests.Session) -> list[dict]:
     """Snapshot atual de todos os tickets ativos (não fechados).
     Usado para o modal de detalhe de ticket (Alertas Críticos, Silenciosos, etc.)
@@ -285,11 +380,12 @@ def main() -> None:
     login(s, user, password)
 
     datasets = [
-        ("silenciosos.json",    q_silenciosos,    {"silencio_min_sec": 86400}),
-        ("triagem.json",        q_triagem,        None),
-        ("reaberturas.json",    q_reaberturas,    {"janela_dias": 90}),
-        ("utilizacao.json",     q_utilizacao,     None),
-        ("tickets_ativos.json", q_tickets_ativos, None),
+        ("silenciosos.json",       q_silenciosos,       {"silencio_min_sec": 86400}),
+        ("triagem.json",           q_triagem,           None),
+        ("reaberturas.json",       q_reaberturas,       {"janela_dias": 90}),
+        ("utilizacao.json",        q_utilizacao,        None),
+        ("tickets_ativos.json",    q_tickets_ativos,    None),
+        ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
     ]
 
     collected = {}
