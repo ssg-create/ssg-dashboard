@@ -1,7 +1,7 @@
 {
-  "generated_at": 1776887836,
-  "generated_at_iso": "2026-04-22T19:57:16Z",
-  "count": 6,
+  "generated_at": 1776961854,
+  "generated_at_iso": "2026-04-23T16:30:54Z",
+  "count": 7,
   "filas": [
     "DATASUL",
     "DBA",
@@ -28,11 +28,11 @@
       "ticket": "2026012626000148",
       "cliente": "NSX",
       "fila": "SSG-MELHORIAS",
-      "estado_atual": "AGUARDANDO CLIENTE",
+      "estado_atual": "GMUD",
       "prioridade": "5 very high",
       "atendente": "Tiago Silva",
       "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-22T05:00:15",
+      "modificado": "2026-04-23T11:06:27",
       "vezes_fechado": 2,
       "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
@@ -47,6 +47,30 @@
       "modificado": "2026-03-26T11:52:50",
       "vezes_fechado": 2,
       "assunto": "Levantamento Referente Cotação de cambio para importações"
+    },
+    {
+      "ticket": "2026040726000384",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado_atual": "AGUARDANDO CLIENTE",
+      "prioridade": "2 low",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-07T14:54:52",
+      "modificado": "2026-04-23T13:12:03",
+      "vezes_fechado": 1,
+      "assunto": "Liberar Modo Financeiro"
+    },
+    {
+      "ticket": "2026040926000184",
+      "cliente": "FADEL",
+      "fila": "SSG",
+      "estado_atual": "EM ATENDIMENTO",
+      "prioridade": "5 very high",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-09T13:02:17",
+      "modificado": "2026-04-23T08:29:18",
+      "vezes_fechado": 1,
+      "assunto": "AJUSTE DICIONARIO DE DADOS - MIGRAÇÃO"
     },
     {
       "ticket": "2026032526000459",
@@ -71,18 +95,6 @@
       "modificado": "2026-04-22T09:14:40",
       "vezes_fechado": 1,
       "assunto": "E-mails do portal não estão disparando"
-    },
-    {
-      "ticket": "2026041426000101",
-      "cliente": "postmaster@autozone.com",
-      "fila": "SSG",
-      "estado_atual": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-14T08:55:24",
-      "modificado": "2026-04-22T05:00:16",
-      "vezes_fechado": 1,
-      "assunto": "Your message could not be delivered"
     }
   ],
   "janela_dias": 90
