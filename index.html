@@ -5805,8 +5805,17 @@ function openRptModal(){
   if(!m)return;
   _rptPopulateFilters();
   _rptSyncOpts();
+  _rptPrefetchSideData();
   m.classList.add('on');
   document.addEventListener('keydown',_rptEscClose);
+}
+// Pré-carrega JSONs usados por FCR (reaberturas) e Utilização
+// caso o usuário abra o modal sem ter visitado as abas que carregam esses dados.
+function _rptPrefetchSideData(){
+  try{
+    if((typeof REAB_DATA==='undefined'||!REAB_DATA)&&typeof fetchReaberturas==='function')fetchReaberturas();
+    if((typeof UTIL_DATA==='undefined'||!UTIL_DATA)&&typeof fetchUtilizacao==='function')fetchUtilizacao();
+  }catch(e){console.warn('rpt prefetch:',e);}
 }
 function closeRptModal(){
   var m=document.getElementById('rpt-modal');
@@ -5840,15 +5849,37 @@ function _rptSyncOpts(){
   }
 }
 function _rptPopulateFilters(){
-  // Período
+  // Período — monta dinamicamente a partir dos meses que realmente têm dados em RAW_DATA
   var mSel=document.getElementById('rpt-f-mes');
-  var mOpts=[{k:'all',l:'Todos os meses'},{k:'2026-01',l:'Janeiro 2026'},{k:'2026-02',l:'Fevereiro 2026'},{k:'2026-03',l:'Março 2026'},{k:'2026-04',l:'Abril 2026'}];
   if(mSel){
+    var mesesComDados={};
+    if(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length){
+      RAW_DATA.forEach(function(d){
+        if(d&&d.criado){
+          var mk=d.criado.toISOString?d.criado.toISOString().slice(0,7):String(d.criado).slice(0,7);
+          mesesComDados[mk]=(mesesComDados[mk]||0)+1;
+        }
+      });
+    }
+    var mNames={'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+    var mKeys=Object.keys(mesesComDados).sort();
+    var mOpts=[{k:'all',l:'Todos os meses (completo)'}];
+    mKeys.forEach(function(k){
+      var p=k.split('-'); var lbl=(mNames[p[1]]||p[1])+' '+p[0]+' ('+mesesComDados[k]+' tickets)';
+      mOpts.push({k:k,l:lbl});
+    });
+    // Se RAW_DATA não carregou ainda, fallback seguro
+    if(mOpts.length===1){
+      mOpts.push({k:'2026-01',l:'Janeiro 2026'},{k:'2026-02',l:'Fevereiro 2026'},{k:'2026-03',l:'Março 2026'});
+    }
     mSel.innerHTML=mOpts.map(function(o){return '<option value="'+o.k+'">'+o.l+'</option>';}).join('');
-    var curMes=(typeof activeMonth!=='undefined'&&activeMonth)?activeMonth:'all';
+    // Default: herda da tela se tiver; senão "Todos"
+    var curMes=(typeof activeMonth!=='undefined'&&activeMonth&&activeMonth!=='all')?activeMonth:'all';
+    // Se herdou um mês que não está nos dados, cai pra "all"
+    if(curMes!=='all'&&mOpts.findIndex(function(o){return o.k===curMes;})===-1)curMes='all';
     mSel.value=curMes;
     var tag=document.getElementById('rpt-f-mes-tag');
-    if(tag)tag.style.display=(curMes&&curMes!=='all')?'inline-block':'none';
+    if(tag)tag.style.display=(curMes&&curMes!=='all'&&typeof activeMonth!=='undefined'&&activeMonth===curMes)?'inline-block':'none';
   }
   // Cliente
   var cSel=document.getElementById('rpt-f-cli');
@@ -6042,6 +6073,15 @@ function exportExecutivePDF(scope){
   var hashInput=scope.mes+'|'+scope.cli+'|'+scope.fila+'|'+rows.length+'|'+now.toISOString().slice(0,13);
   var dsHash=_rptHash(hashInput);
 
+  // Flags de disponibilidade de datasets auxiliares
+  var hasReab=(typeof REAB_DATA!=='undefined'&&REAB_DATA&&REAB_DATA.rows);
+  var hasUtil=(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows);
+  var hasRaw=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length);
+  var missingDs=[];
+  if(!hasRaw)missingDs.push('historico_completo');
+  if(!hasReab)missingDs.push('reaberturas');
+  if(!hasUtil)missingDs.push('utilizacao');
+
   // ── Calcula os 8 KPIs
   var k1=calcKPI_response(rows);
   var k2=calcKPI_sla(rows);
@@ -6102,63 +6142,65 @@ function exportExecutivePDF(scope){
   var k1_val=k1.val!=null?fmtRespTxt(k1.val):null;
   var k1_status=k1.val==null?'none':(k1.val<=30?'ok':k1.val<=60?'warn':'bad');
   var k1_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Tempo mediano entre a abertura do chamado e a primeira resposta efetiva do atendente.</div><div class="tlbl">Fórmula</div><div class="tval">mediana(primeira_resposta_min) · horário útil</div>':'';
-  var k1_leitura=k1.val==null?'Sem dados suficientes no escopo selecionado.':
-    k1.val<=30?'Dentro da meta contratual. Indica triagem ágil e canal de entrada saudável.':
-    k1.val<=60?'Acima da meta de 30min mas próximo do benchmark. Vale revisar picos de demanda.':
-    'Acima da meta em mais de 2x. Triagem gargalada — avaliar capacidade do N1 ou automação de resposta inicial.';
+  var k1_leitura=k1.val==null?'Nenhum chamado com tempo de 1ª resposta registrado no escopo selecionado. Tente ampliar o período ou remover filtros de cliente/fila.':
+    k1.val<=30?'Dentro da meta contratual. Indica triagem ágil e canal de entrada saudável. Baseado em <strong>'+k1.n+'</strong> chamados.':
+    k1.val<=60?'Acima da meta de 30min mas próximo do benchmark. Vale revisar picos de demanda. Baseado em <strong>'+k1.n+'</strong> chamados.':
+    'Acima da meta em mais de 2x. Triagem gargalada — avaliar capacidade do N1 ou automação de resposta inicial. Baseado em <strong>'+k1.n+'</strong> chamados.';
 
   // K2 — SLA
   var k2_status=k2.val==null?'none':(k2.val>=95?'ok':k2.val>=85?'warn':'bad');
   var k2_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados resolvidos dentro do SLA contratado (padrão 48h úteis).</div><div class="tlbl">Fórmula</div><div class="tval">(chamados_no_prazo ÷ total_fechados) × 100</div>':'';
-  var k2_leitura=k2.val==null?'Sem dados suficientes no escopo selecionado.':
-    k2.val>=95?'Dentro da meta contratual. Risco de penalidade baixo.':
-    k2.val>=85?'Abaixo da meta contratual, mas dentro do benchmark MSP. '+(k2.violados||0)+' violação(ões) no período — revisar causas.':
-    'Abaixo de meta e de mercado. '+(k2.violados||0)+' violação(ões) — risco contratual imediato.';
+  var k2_leitura=k2.val==null?'Nenhum chamado fechado no escopo selecionado — sem base para calcular aderência ao SLA. Amplie o período ou remova filtros.':
+    k2.val>=95?'Dentro da meta contratual. Risco de penalidade baixo. Baseado em <strong>'+k2.n+'</strong> chamados fechados.':
+    k2.val>=85?'Abaixo da meta contratual, mas dentro do benchmark MSP. <strong>'+(k2.violados||0)+'</strong> violação(ões) de <strong>'+k2.n+'</strong> fechados — revisar causas.':
+    'Abaixo de meta e de mercado. <strong>'+(k2.violados||0)+'</strong> violação(ões) em <strong>'+k2.n+'</strong> fechados — risco contratual imediato.';
 
   // K3 — Resolution
   var k3_status=k3.val==null?'none':(k3.val<=48?'ok':k3.val<=72?'warn':'bad');
   var k3_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Média de horas úteis entre abertura e fechamento de chamado.</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tempo_solução_h) ÷ total_fechados</div>':'';
-  var k3_leitura=k3.val==null?'Sem dados suficientes no escopo selecionado.':
-    k3.val<=48?'Dentro do SLA de 48h úteis. Operação eficiente.':
-    k3.val<=72?'Acima do SLA, mas dentro da tolerância operacional. Focar em tickets >72h.':
-    'Tempo médio crítico. Provável acúmulo de tickets complexos — priorizar triagem por severidade.';
+  var k3_leitura=k3.val==null?'Nenhum chamado fechado no escopo selecionado. Amplie o período ou remova filtros.':
+    k3.val<=48?'Dentro do SLA de 48h úteis. Operação eficiente. Baseado em <strong>'+k3.n+'</strong> chamados.':
+    k3.val<=72?'Acima do SLA, mas dentro da tolerância operacional. Focar em tickets >72h. Baseado em <strong>'+k3.n+'</strong> chamados.':
+    'Tempo médio crítico. Provável acúmulo de tickets complexos — priorizar triagem por severidade. Baseado em <strong>'+k3.n+'</strong> chamados.';
 
   // K4 — FCR
+  var k4_reabReady=(typeof REAB_DATA!=='undefined'&&REAB_DATA&&REAB_DATA.rows);
   var k4_status=k4.val==null?'none':(k4.val>=85?'ok':k4.val>=75?'warn':'bad');
   var k4_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados resolvidos sem reabertura nos 90 dias seguintes.</div><div class="tlbl">Fórmula</div><div class="tval">(fechados − reabertos) ÷ fechados × 100</div>':'';
-  var k4_leitura=k4.val==null?'Sem dados suficientes — aguarde ciclo de reaberturas.json.':
-    k4.val>=85?'Acima da meta. Equipe com alta resolutividade em primeiro contato — KB madura.':
-    k4.val>=75?'Dentro do benchmark MSP mas abaixo da meta. '+(k4.reabertos||0)+' reabertura(s) — analisar padrão.':
-    'Abaixo de meta e mercado. '+(k4.reabertos||0)+' reabertura(s) indica qualidade de solução inicial comprometida.';
+  var k4_leitura=k4.val==null?(k4_reabReady?'Nenhum chamado fechado no escopo selecionado para calcular FCR.':'Dataset de reaberturas (<code>reaberturas.json</code>) ainda não sincronizado. Abra a aba <strong>Chamados → Reaberturas</strong> ou aguarde o próximo ciclo do GWMS (~10min) e gere o relatório novamente.'):
+    k4.val>=85?'Acima da meta. Equipe com alta resolutividade em primeiro contato — KB madura. Baseado em <strong>'+k4.n+'</strong> fechados e <strong>'+(k4.reabertos||0)+'</strong> reabertura(s).':
+    k4.val>=75?'Dentro do benchmark MSP mas abaixo da meta. <strong>'+(k4.reabertos||0)+'</strong> reabertura(s) em <strong>'+k4.n+'</strong> fechados — analisar padrão.':
+    'Abaixo de meta e mercado. <strong>'+(k4.reabertos||0)+'</strong> reabertura(s) em <strong>'+k4.n+'</strong> fechados indica qualidade de solução inicial comprometida.';
 
   // K5 — Volume
   var k5_status='none';
   var k5_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Total de chamados abertos pelo cliente no escopo selecionado.</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados) onde criado ∈ período</div>':'';
-  var k5_leitura='Volume de '+(k5.val||0)+' chamados no período. Comparar com mês anterior e com contratado.';
+  var k5_leitura=k5.val===0?'Nenhum chamado no escopo selecionado. Amplie o período ou remova filtros para ver o volume.':'Volume de <strong>'+(k5.val||0)+'</strong> chamados no escopo. Comparar com mês anterior e com o contratado para avaliar tendência.';
 
   // K6 — Utilization
+  var k6_utilReady=(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows);
   var k6_status=k6.val==null?'none':(k6.val<=70?'ok':k6.val<=85?'warn':'bad');
-  var k6_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% da capacidade operacional da equipe em uso no momento.</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tickets_ativos) ÷ (atendentes × 6 capacidade) × 100</div>':'';
-  var k6_leitura=k6.val==null?'Sem dados — utilizacao.json aguardando sync GWMS.':
-    k6.val<=70?'Capacidade saudável. Equipe com margem para picos de demanda.':
-    k6.val<=85?'Capacidade apertada. Monitorar — risco de atraso se volume subir.':
-    'Sobrecarga. Com '+(k6.carga||0)+' tickets ativos para '+(k6.n||0)+' atendentes — risco de SLA.';
+  var k6_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% da capacidade operacional da equipe em uso no momento (snapshot tempo real).</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tickets_ativos) ÷ (atendentes × 6 capacidade) × 100</div>':'';
+  var k6_leitura=k6.val==null?'Dataset de utilização (<code>utilizacao.json</code>) ainda não sincronizado. Abra a aba <strong>Atendentes</strong> ou aguarde o próximo ciclo do GWMS (~10min) e gere o relatório novamente.':
+    k6.val<=70?'Capacidade saudável. Equipe com margem para picos de demanda. <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes.':
+    k6.val<=85?'Capacidade apertada. <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes — risco de atraso se volume subir.':
+    'Sobrecarga. Com <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes — risco imediato de SLA.';
 
   // K7 — Backlog
   var k7_status=k7.n==0?'none':(k7.val<=k7.n*0.15?'ok':k7.val<=k7.n*0.25?'warn':'bad');
   var k7_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Chamados abertos/pendentes aguardando resolução.</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados) onde estado ∈ {Aberto, Em Atendimento, Aguardando, Retorno}</div>':'';
-  var k7_leitura=k7.n==0?'Sem chamados no escopo selecionado.':
-    k7.val<=k7.n*0.15?'Backlog controlado — '+Math.round(k7.val/k7.n*100)+'% do volume do período.':
-    k7.val<=k7.n*0.25?'Backlog em atenção — '+Math.round(k7.val/k7.n*100)+'% do volume. Revisar priorização.':
-    'Backlog elevado — '+Math.round(k7.val/k7.n*100)+'% do volume. Indica gargalo de capacidade.';
+  var k7_leitura=k7.n==0?'Nenhum chamado no escopo selecionado. Amplie o período ou remova filtros.':
+    k7.val<=k7.n*0.15?'Backlog controlado — <strong>'+Math.round(k7.val/k7.n*100)+'%</strong> do volume do período ('+k7.val+' de '+k7.n+').':
+    k7.val<=k7.n*0.25?'Backlog em atenção — <strong>'+Math.round(k7.val/k7.n*100)+'%</strong> do volume ('+k7.val+' de '+k7.n+'). Revisar priorização.':
+    'Backlog elevado — <strong>'+Math.round(k7.val/k7.n*100)+'%</strong> do volume ('+k7.val+' de '+k7.n+'). Indica gargalo de capacidade.';
 
   // K8 — Escalation
   var k8_status=k8.val==null?'none':(k8.val<=15?'ok':k8.val<=25?'warn':'bad');
   var k8_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados que passaram por filas especializadas (DBA, Infra, GWMS, Melhorias).</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados em filas_escalação) ÷ total × 100</div>':'';
-  var k8_leitura=k8.val==null?'Sem dados suficientes no escopo.':
-    k8.val<=15?'Dentro da meta. N1 resolvendo bem sem necessidade de escalação.':
-    k8.val<=25?'Escalação moderada. '+(k8.escalados||0)+' chamados em filas especializadas — dentro do mercado.':
-    'Taxa elevada de escalação ('+ (k8.escalados||0) +' tickets). Indica N1 subcapacitado ou chamados de alta complexidade.';
+  var k8_leitura=k8.val==null?'Nenhum chamado no escopo para calcular taxa de escalação. Amplie o período.':
+    k8.val<=15?'Dentro da meta. N1 resolvendo bem sem necessidade de escalação. <strong>'+(k8.escalados||0)+'</strong> de <strong>'+k8.n+'</strong> em filas especializadas.':
+    k8.val<=25?'Escalação moderada. <strong>'+(k8.escalados||0)+'</strong> de <strong>'+k8.n+'</strong> chamados em filas especializadas — dentro do mercado.':
+    'Taxa elevada de escalação (<strong>'+(k8.escalados||0)+'</strong> de <strong>'+k8.n+'</strong>). Indica N1 subcapacitado ou chamados de alta complexidade.';
 
   // Logo GW base64 (oficial, mesmo do exportPDF)
   var LOGO='<img src="data:image/png;base64,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" height="52" style="display:block;max-width:180px">';
@@ -6249,6 +6291,12 @@ function exportExecutivePDF(scope){
   H+='<div class="cover-score-num">'+score+'</div>';
   H+='<div><div class="cover-score-lbl">Score Operacional</div><div class="cover-score-pill">'+scoreLabel+'</div></div>';
   H+='</div>';
+  if(missingDs.length){
+    H+='<div style="margin-top:22px;padding:10px 16px;background:#fef3c7;border:1px solid #f59e0b;border-left:4px solid #f59e0b;border-radius:8px;display:flex;align-items:center;gap:10px;max-width:560px">';
+    H+='<span style="font-size:16px">⚠️</span>';
+    H+='<span style="font-size:11px;color:#78350f;line-height:1.5"><strong>Dataset parcial:</strong> alguns dados auxiliares ('+missingDs.join(', ')+') não estavam sincronizados no momento da geração. KPIs afetados podem aparecer sem valor. Aguarde o próximo ciclo do GWMS (~10min) e regenere.</span>';
+    H+='</div>';
+  }
   H+='</div>';
   H+='<div class="cover-orbit"></div><div class="cover-orbit2"></div>';
   H+='<div class="cover-ft"><span>Groundwork · www.groundwork.com.br</span><span>Gerado em '+nowStr+'</span></div>';
