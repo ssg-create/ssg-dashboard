@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776979706,
-  "generated_at_iso": "2026-04-23T21:28:26Z",
+  "generated_at": 1776982996,
+  "generated_at_iso": "2026-04-23T22:23:16Z",
   "count": 182,
   "filas": [
     "DATASUL",
@@ -12,6 +12,30 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "ticket": "2026042326000371",
+      "cliente": "eduardo.candido@groundwork.com.br",
+      "fila": "DBA",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Eduardo Candido",
+      "criado": "2026-04-23T14:55:23",
+      "modificado": "2026-04-23T19:00:15",
+      "idade_dias": 0,
+      "assunto": "RE: Novo Fluxo de Compras - RELEASE (PRJ)"
+    },
+    {
+      "ticket": "2026042326000415",
+      "cliente": "TJBA",
+      "fila": "GWMS",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Bruno Fagundes",
+      "criado": "2026-04-23T16:14:58",
+      "modificado": "2026-04-23T18:53:40",
+      "idade_dias": 0,
+      "assunto": "Inclusão de serviços nos hosts ADP"
+    },
     {
       "ticket": "2026042326000273",
       "cliente": "PECVAL",
@@ -169,18 +193,6 @@
       "assunto": "Solicitação de Ajuste - Dashboard: Infrastructure / PJE Geral"
     },
     {
-      "ticket": "2026042326000415",
-      "cliente": "TJBA",
-      "fila": "GWMS",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "5 very high",
-      "atendente": "Bruno Fagundes",
-      "criado": "2026-04-23T16:14:58",
-      "modificado": "2026-04-23T17:10:27",
-      "idade_dias": 0,
-      "assunto": "Inclusão de serviços nos hosts ADP"
-    },
-    {
       "ticket": "2026042326000184",
       "cliente": "AUTOZONE",
       "fila": "SSG",
@@ -311,18 +323,6 @@
       "modificado": "2026-04-23T15:28:52",
       "idade_dias": 11,
       "assunto": "AUTOZONE - SRV-MASTER-PRD - AppServer:.Z11-TOTVS-P12-Autozone_S12-12031-FECHAMENTO - 26041209095268"
-    },
-    {
-      "ticket": "2026042326000371",
-      "cliente": "eduardo.candido@groundwork.com.br",
-      "fila": "DBA",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "criado": "2026-04-23T14:55:23",
-      "modificado": "2026-04-23T15:17:01",
-      "idade_dias": 0,
-      "assunto": "RE: Novo Fluxo de Compras - RELEASE (PRJ)"
     },
     {
       "ticket": "2026042326000219",
@@ -705,7 +705,7 @@
       "atendente": "Sergio Luiz Glovatinski Jr",
       "criado": "2026-04-22T18:50:08",
       "modificado": "2026-04-23T08:43:40",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "GROUNDWORK - GROUNDWORK_ELK-Server - Load - 26042218460024"
     },
     {
@@ -1809,7 +1809,7 @@
       "atendente": "Marcelo David",
       "criado": "2026-04-13T18:55:11",
       "modificado": "2026-04-17T12:39:01",
-      "idade_dias": 9,
+      "idade_dias": 10,
       "assunto": "ABERTURA CHAMADO  CLIENTE AUMOVIO"
     },
     {
@@ -1941,7 +1941,7 @@
       "atendente": "Pedro Luiz",
       "criado": "2026-04-10T18:35:22",
       "modificado": "2026-04-14T16:59:59",
-      "idade_dias": 12,
+      "idade_dias": 13,
       "assunto": "BUG reload/restart centreon"
     },
     {
