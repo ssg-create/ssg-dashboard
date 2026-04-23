@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776982996,
-  "generated_at_iso": "2026-04-23T22:23:16Z",
+  "generated_at": 1776986724,
+  "generated_at_iso": "2026-04-23T23:25:24Z",
   "count": 182,
   "filas": [
     "DATASUL",
@@ -12,6 +12,30 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "ticket": "2026012626000148",
+      "cliente": "NSX",
+      "fila": "SSG-MELHORIAS",
+      "estado": "GMUD",
+      "prioridade": "5 very high",
+      "atendente": "Tiago Silva",
+      "criado": "2026-01-26T10:21:55",
+      "modificado": "2026-04-23T20:01:25",
+      "idade_dias": 87,
+      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
+    },
+    {
+      "ticket": "2026041626000214",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Tiago Silva",
+      "criado": "2026-04-16T09:38:46",
+      "modificado": "2026-04-23T19:30:39",
+      "idade_dias": 7,
+      "assunto": "Processo Workflow com aviso: Processo IGNORADO, FINALIZADO anteriormente"
+    },
     {
       "ticket": "2026042326000371",
       "cliente": "eduardo.candido@groundwork.com.br",
@@ -529,18 +553,6 @@
       "assunto": "RETENÇÃO INSS"
     },
     {
-      "ticket": "2026012626000148",
-      "cliente": "NSX",
-      "fila": "SSG-MELHORIAS",
-      "estado": "GMUD",
-      "prioridade": "5 very high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-23T11:06:27",
-      "idade_dias": 87,
-      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
-    },
-    {
       "ticket": "2026012126000095",
       "cliente": "NSX",
       "fila": "SSG-MELHORIAS",
@@ -693,7 +705,7 @@
       "atendente": "Sergio Luiz Glovatinski Jr",
       "criado": "2026-04-22T19:45:15",
       "modificado": "2026-04-23T08:44:37",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "GROUNDWORK - GROUNDWORK_ELK-Server - Load: Top 5 process - 26042219444015"
     },
     {
@@ -1681,18 +1693,6 @@
       "assunto": "Erro \"PHP Warning\" no \"Deploy da stack GWMS\""
     },
     {
-      "ticket": "2026041626000214",
-      "cliente": "ALMEIDA JR",
-      "fila": "SSG",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "5 very high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-04-16T09:38:46",
-      "modificado": "2026-04-20T10:18:17",
-      "idade_dias": 7,
-      "assunto": "Processo Workflow com aviso: Processo IGNORADO, FINALIZADO anteriormente"
-    },
-    {
       "ticket": "2026042026000091",
       "cliente": "DKT",
       "fila": "PROTHEUS",
@@ -1821,7 +1821,7 @@
       "atendente": "Marcelo David",
       "criado": "2026-04-01T20:02:59",
       "modificado": "2026-04-17T12:38:09",
-      "idade_dias": 21,
+      "idade_dias": 22,
       "assunto": "Configurar Compilador"
     },
     {
