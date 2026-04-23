@@ -239,21 +239,25 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
             return None
 
     def _business_minutes(start: datetime, end: datetime) -> int | None:
+        """Horas úteis compatível com Znuny: Seg-Sex 8h-12h + 13h-18h (9h/dia,
+        pausa almoço 12-13 excluída)."""
         if not start or not end or end <= start:
             return 0 if end == start else None
-        BH_S, BH_E = 8, 18
+        # Dois blocos por dia: manhã (8-12) e tarde (13-18)
+        BLOCKS = [(8, 12), (13, 18)]
         total = 0
         cur = start.replace(hour=0, minute=0, second=0, microsecond=0)
         max_days = 400
         while cur < end and max_days > 0:
             max_days -= 1
             if cur.weekday() < 5:  # Seg-Sex
-                b_start = cur.replace(hour=BH_S)
-                b_end = cur.replace(hour=BH_E)
-                p_start = start if start > b_start else b_start
-                p_end = end if end < b_end else b_end
-                if p_end > p_start:
-                    total += int((p_end - p_start).total_seconds() // 60)
+                for bs, be in BLOCKS:
+                    b_start = cur.replace(hour=bs)
+                    b_end = cur.replace(hour=be)
+                    p_start = start if start > b_start else b_start
+                    p_end = end if end < b_end else b_end
+                    if p_end > p_start:
+                        total += int((p_end - p_start).total_seconds() // 60)
             cur = cur.replace(hour=0) + timedelta(days=1)
         return total
 
