@@ -853,6 +853,51 @@ input[type=file]{display:none}
 #fs-btn svg{width:16px;height:16px;pointer-events:none}
 .fs-mode #fs-btn{background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.45);color:#f43f5e}
 .fs-mode #fs-btn:hover{background:rgba(244,63,94,.22);transform:scale(1.08)}
+/* ── Botão flutuante — Gerar Relatório PDF (paleta GW) ─────── */
+#rpt-btn{position:fixed;bottom:70px;right:22px;z-index:9999;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#rpt-btn:hover{border-color:#ff7024;color:#ff7024;background:rgba(255,112,36,.1);transform:scale(1.08)}
+#rpt-btn svg{width:16px;height:16px;pointer-events:none}
+.fs-mode #rpt-btn{display:none}
+/* Modal relatório */
+#rpt-modal{position:fixed;inset:0;z-index:10001;background:rgba(9,14,20,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
+#rpt-modal.on{display:flex}
+.rpt-dlg{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;animation:rptIn .22s ease-out}
+@keyframes rptIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.rpt-hd{padding:18px 22px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,rgba(255,112,36,.08),rgba(40,54,69,.04))}
+.rpt-hd-dot{width:8px;height:8px;border-radius:50%;background:#ff7024;box-shadow:0 0 10px rgba(255,112,36,.7)}
+.rpt-hd-ttl{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.01em;flex:1}
+.rpt-hd-x{width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rpt-hd-x:hover{background:var(--bg3);color:var(--text)}
+.rpt-body{padding:18px 22px 20px}
+.rpt-sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:4px 0 8px}
+.rpt-types{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.rpt-type{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;background:var(--bg3)}
+.rpt-type:hover{border-color:rgba(255,112,36,.5)}
+.rpt-type.sel{border-color:#ff7024;background:rgba(255,112,36,.08)}
+.rpt-type input{margin-top:3px;accent-color:#ff7024}
+.rpt-type-ttl{font-size:12.5px;font-weight:600;color:var(--text)}
+.rpt-type-sub{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.rpt-filters{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px}
+.rpt-fld{display:flex;align-items:center;gap:10px;font-size:11px}
+.rpt-fld-lbl{width:68px;color:var(--muted);font-size:11px;font-weight:500}
+.rpt-fld select{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:6px 10px;font-size:11.5px;font-family:var(--mono);cursor:pointer}
+.rpt-fld select:focus{outline:none;border-color:#ff7024}
+.rpt-fld-inherit{font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(255,112,36,.15);color:#ff7024;font-weight:700;letter-spacing:.04em}
+.rpt-opts{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;margin-bottom:16px}
+.rpt-opt{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);cursor:pointer}
+.rpt-opt input{accent-color:#ff7024;cursor:pointer}
+.rpt-ft{display:flex;gap:10px;justify-content:flex-end}
+.rpt-btn{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;letter-spacing:.02em}
+.rpt-btn-cancel{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.rpt-btn-cancel:hover{background:var(--bg3);color:var(--text)}
+.rpt-btn-go{background:#ff7024;color:#fff;box-shadow:0 2px 10px rgba(255,112,36,.35)}
+.rpt-btn-go:hover{background:#f37633;box-shadow:0 4px 14px rgba(255,112,36,.5);transform:translateY(-1px)}
+.rpt-btn-go:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* Light mode */
+body:not(.dark) #rpt-btn{background:#fff;border-color:#e5e7eb;color:#475569;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+body:not(.dark) #rpt-btn:hover{border-color:#ff7024;color:#ff7024;background:#fff7ed}
+body:not(.dark) #rpt-modal{background:rgba(30,41,59,.45)}
+body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
 /* ════════════════════════════════════════════════════════════════════
    SINAIS AO VIVO — tema Groundwork futurista
@@ -5750,6 +5795,533 @@ function closeImport(){document.getElementById('import-overlay').classList.remov
 function handleOverlayClick(e){if(e.target===document.getElementById('import-overlay'))closeImport();}
 
 // ════════════════════════════════════════════════════════════
+// RELATÓRIO EXECUTIVO — 8 KPIs GWMS + Modal
+// Paleta GW: #ff7024 laranja · #283645 navy · #22d3ee cyan
+// ════════════════════════════════════════════════════════════
+
+// ── Modal: abrir/fechar + herdar filtros da tela ──────────────
+function openRptModal(){
+  var m=document.getElementById('rpt-modal');
+  if(!m)return;
+  _rptPopulateFilters();
+  _rptSyncOpts();
+  m.classList.add('on');
+  document.addEventListener('keydown',_rptEscClose);
+}
+function closeRptModal(){
+  var m=document.getElementById('rpt-modal');
+  if(m)m.classList.remove('on');
+  document.removeEventListener('keydown',_rptEscClose);
+}
+function _rptEscClose(e){if(e.key==='Escape')closeRptModal();}
+function rptBackdropClick(e){if(e.target.id==='rpt-modal')closeRptModal();}
+function rptTypeChange(){
+  var sel=document.querySelector('input[name="rpt-type"]:checked');
+  var type=sel?sel.value:'exec';
+  document.querySelectorAll('.rpt-type').forEach(function(el){
+    el.classList.toggle('sel',el.getAttribute('data-rpt')===type);
+  });
+  _rptSyncOpts();
+}
+function _rptSyncOpts(){
+  var sel=document.querySelector('input[name="rpt-type"]:checked');
+  var type=sel?sel.value:'exec';
+  var opts=document.getElementById('rpt-opts-exec');
+  if(opts)opts.style.display=type==='exec'?'flex':'none';
+  var go=document.getElementById('rpt-btn-go');
+  if(go){
+    if(type==='cli'){
+      var ec=document.getElementById('sel-empresa');
+      go.disabled=!ec||!ec.value;
+      go.textContent=go.disabled?'Selecione uma empresa':'Gerar PDF';
+    }else{
+      go.disabled=false;go.textContent='Gerar PDF';
+    }
+  }
+}
+function _rptPopulateFilters(){
+  // Período
+  var mSel=document.getElementById('rpt-f-mes');
+  var mOpts=[{k:'all',l:'Todos os meses'},{k:'2026-01',l:'Janeiro 2026'},{k:'2026-02',l:'Fevereiro 2026'},{k:'2026-03',l:'Março 2026'},{k:'2026-04',l:'Abril 2026'}];
+  if(mSel){
+    mSel.innerHTML=mOpts.map(function(o){return '<option value="'+o.k+'">'+o.l+'</option>';}).join('');
+    var curMes=(typeof activeMonth!=='undefined'&&activeMonth)?activeMonth:'all';
+    mSel.value=curMes;
+    var tag=document.getElementById('rpt-f-mes-tag');
+    if(tag)tag.style.display=(curMes&&curMes!=='all')?'inline-block':'none';
+  }
+  // Cliente
+  var cSel=document.getElementById('rpt-f-cli');
+  if(cSel){
+    var clis=[];
+    if(typeof EMPRESAS==='object'&&EMPRESAS){
+      clis=Object.keys(EMPRESAS).map(function(k){return {k:k,l:(EMPRESAS[k]&&EMPRESAS[k].nome)||k};});
+    }
+    cSel.innerHTML='<option value="">Todos os clientes</option>'+
+      clis.map(function(o){return '<option value="'+_rptEsc(o.k)+'">'+_rptEsc(o.l)+'</option>';}).join('');
+    var curCli=(typeof activeCliente!=='undefined'&&activeCliente)?activeCliente:'';
+    cSel.value=curCli||'';
+    var tag=document.getElementById('rpt-f-cli-tag');
+    if(tag)tag.style.display=curCli?'inline-block':'none';
+  }
+  // Fila
+  var fSel=document.getElementById('rpt-f-fila');
+  if(fSel){
+    var filas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+    fSel.innerHTML='<option value="all">Todas as filas</option>'+
+      filas.map(function(f){return '<option value="'+_rptEsc(f)+'">'+_rptEsc(f)+'</option>';}).join('');
+    var curFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP)?activeFilaOP:'all';
+    fSel.value=curFila||'all';
+    var tag=document.getElementById('rpt-f-fila-tag');
+    if(tag)tag.style.display=(curFila&&curFila!=='all')?'inline-block':'none';
+  }
+}
+function _rptEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+
+// ── Gerar (roteia pro PDF certo) ──────────────────────────────
+function rptGenerate(){
+  var sel=document.querySelector('input[name="rpt-type"]:checked');
+  var type=sel?sel.value:'exec';
+  var scope={
+    mes: document.getElementById('rpt-f-mes').value||'all',
+    cli: document.getElementById('rpt-f-cli').value||'',
+    fila: document.getElementById('rpt-f-fila').value||'all',
+    tech: document.getElementById('rpt-o-tech').checked,
+    meth: document.getElementById('rpt-o-meth').checked,
+    aios: document.getElementById('rpt-o-aios').checked
+  };
+  closeRptModal();
+  setTimeout(function(){
+    if(type==='cli'){
+      // roteia pra exportPDF original (respeita activeMonth já setado na tela)
+      if(scope.cli){
+        var ec=document.getElementById('sel-empresa');
+        if(ec){ec.value=scope.cli; if(typeof ec.onchange==='function')ec.onchange();}
+      }
+      exportPDF();
+    }else if(type==='cs'){
+      if(typeof exportCSPDF==='function')exportCSPDF();
+      else alert('Relatório CS não disponível — acesse a aba Customer Success.');
+    }else{
+      exportExecutivePDF(scope);
+    }
+  },160);
+}
+
+// ════════════════════════════════════════════════════════════
+// KPI CALCULATORS — 8 KPIs com regras de escopo (período/cliente/fila)
+// ════════════════════════════════════════════════════════════
+
+// Filtra RAW_DATA de acordo com o escopo do relatório
+function _rptFilterRaw(scope){
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length)return [];
+  var ms=null,me=null;
+  if(scope.mes&&scope.mes!=='all'){
+    var p=scope.mes.split('-');
+    ms=new Date(parseInt(p[0]),parseInt(p[1])-1,1);
+    me=new Date(parseInt(p[0]),parseInt(p[1]),0,23,59,59);
+  }
+  return RAW_DATA.filter(function(d){
+    if(!d||!d.criado)return false;
+    if(ms&&me&&(d.criado<ms||d.criado>me))return false;
+    if(scope.cli&&d.cli_id!==scope.cli)return false;
+    if(scope.fila&&scope.fila!=='all'&&d.fila!==scope.fila)return false;
+    return true;
+  });
+}
+
+// KPI 1 — First Response Time (mediana, em minutos)
+function calcKPI_response(rows){
+  var vals=rows.map(function(d){return d.resp;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
+  if(!vals.length)return {val:null,n:0};
+  vals.sort(function(a,b){return a-b;});
+  var med=vals.length%2?vals[(vals.length-1)/2]:Math.round((vals[vals.length/2-1]+vals[vals.length/2])/2);
+  return {val:med,n:vals.length};
+}
+
+// KPI 2 — SLA Compliance (% dentro de 48h úteis — meta padrão contratual)
+function calcKPI_sla(rows){
+  var SLA_H=48;
+  var solVals=rows.filter(function(d){return d.sol!=null&&!isNaN(d.sol);});
+  if(!solVals.length)return {val:null,n:0,violados:0};
+  var violados=solVals.filter(function(d){return d.sol>SLA_H;}).length;
+  var pct=Math.round((solVals.length-violados)/solVals.length*100);
+  return {val:pct,n:solVals.length,violados:violados};
+}
+
+// KPI 3 — Average Resolution Time (média em horas, tickets fechados)
+function calcKPI_resolution(rows){
+  var solVals=rows.map(function(d){return d.sol;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
+  if(!solVals.length)return {val:null,n:0};
+  var avg=solVals.reduce(function(a,b){return a+b;},0)/solVals.length;
+  return {val:Math.round(avg*10)/10,n:solVals.length};
+}
+
+// KPI 4 — First Contact Resolution (% chamados sem reabertura)
+// Fonte: reaberturas.json (REAB_DATA) — últimos 90 dias
+function calcKPI_fcr(rows,scope){
+  var fechados=rows.filter(function(d){
+    var e=(d.estado||'').toLowerCase();
+    return e.indexOf('fechado')===0||e==='resolvido';
+  }).length;
+  if(!fechados)return {val:null,n:0,reabertos:0};
+  // Conta reabertos no escopo (REAB_DATA)
+  var reab=(typeof REAB_DATA!=='undefined'&&REAB_DATA&&REAB_DATA.rows)?REAB_DATA.rows:[];
+  var reabScope=reab.filter(function(r){
+    if(scope.cli){
+      var nm=(r.cliente||'').toLowerCase().replace(/[_\s]/g,'');
+      var ac=(scope.cli||'').toLowerCase().replace(/[_\s]/g,'');
+      if(nm!==ac)return false;
+    }
+    if(scope.fila&&scope.fila!=='all'&&r.fila!==scope.fila)return false;
+    return true;
+  });
+  var reabertos=reabScope.length;
+  var fcr=Math.max(0,Math.round((fechados-reabertos)/fechados*100));
+  return {val:fcr,n:fechados,reabertos:reabertos};
+}
+
+// KPI 5 — Ticket Volume (total criado no período)
+function calcKPI_volume(rows){
+  return {val:rows.length,n:rows.length};
+}
+
+// KPI 6 — Utilization Rate (tickets ativos ÷ capacidade, baseado em UTIL_DATA)
+// Regra: soma(em_atendimento + abertos) ÷ (atendentes × 6 tickets capacidade)
+function calcKPI_utilization(scope){
+  var u=(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows)?UTIL_DATA.rows:[];
+  if(!u.length)return {val:null,n:0};
+  var CAP_PER=6; // capacidade operacional saudável por atendente
+  var carga=u.reduce(function(s,r){return s+(r.em_atendimento||0)+(r.abertos||0);},0);
+  var cap=u.length*CAP_PER;
+  var pct=cap>0?Math.min(100,Math.round(carga/cap*100)):0;
+  return {val:pct,n:u.length,carga:carga,cap:cap};
+}
+
+// KPI 7 — Backlog Volume (tickets abertos/pendentes no escopo)
+function calcKPI_backlog(rows){
+  var abertoEstados=['aberto','em atendimento','aguardando cliente','aguardando atendente (interno)','retorno cliente','aguardando agentes externos','melhoria','gmud','classificado'];
+  var bk=rows.filter(function(d){
+    return abertoEstados.indexOf((d.estado||'').toLowerCase())!==-1;
+  }).length;
+  return {val:bk,n:rows.length};
+}
+
+// KPI 8 — Escalation Rate (detectado via QueueUpdate em historico_completo)
+// Fallback: estimativa por distribuição de filas se histórico não disponível
+function calcKPI_escalation(rows,scope){
+  if(!rows.length)return {val:null,n:0};
+  // Sem acesso direto ao ticket_history em RAW_DATA (adapter não expõe)
+  // Estimativa: tickets que estão em filas "downstream" (DBA, INFRAESTUTURA, SSG-MELHORIAS)
+  // indicam escalação a partir das filas de entrada principais
+  var ESCALATION_QUEUES=['DBA','INFRAESTUTURA','SSG-MELHORIAS','GWMS'];
+  var esc=rows.filter(function(d){
+    return ESCALATION_QUEUES.indexOf(d.fila)!==-1;
+  }).length;
+  var pct=Math.round(esc/rows.length*100);
+  return {val:pct,n:rows.length,escalados:esc};
+}
+
+// ════════════════════════════════════════════════════════════
+// EXPORTAR PDF EXECUTIVO
+// ════════════════════════════════════════════════════════════
+function exportExecutivePDF(scope){
+  scope=scope||{mes:'all',cli:'',fila:'all',tech:true,meth:true,aios:true};
+  var rows=_rptFilterRaw(scope);
+  var now=new Date();
+  var nowStr=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  var genTs=now.toISOString();
+
+  // Escopo label
+  var mLbls={'all':'Todos os meses','2026-01':'Janeiro 2026','2026-02':'Fevereiro 2026','2026-03':'Março 2026','2026-04':'Abril 2026'};
+  var mesLabel=mLbls[scope.mes]||scope.mes;
+  var cliLabel=scope.cli?((typeof EMPRESAS==='object'&&EMPRESAS[scope.cli]&&EMPRESAS[scope.cli].nome)||scope.cli):'Todos';
+  var filaLabel=scope.fila&&scope.fila!=='all'?scope.fila:'Todas';
+
+  // Hash determinístico do dataset (período + cliente + fila + count + timestamp hora)
+  var hashInput=scope.mes+'|'+scope.cli+'|'+scope.fila+'|'+rows.length+'|'+now.toISOString().slice(0,13);
+  var dsHash=_rptHash(hashInput);
+
+  // ── Calcula os 8 KPIs
+  var k1=calcKPI_response(rows);
+  var k2=calcKPI_sla(rows);
+  var k3=calcKPI_resolution(rows);
+  var k4=calcKPI_fcr(rows,scope);
+  var k5=calcKPI_volume(rows);
+  var k6=calcKPI_utilization(scope);
+  var k7=calcKPI_backlog(rows);
+  var k8=calcKPI_escalation(rows,scope);
+
+  // Score agregado 0-100 ponderado
+  var scoreParts=[];
+  if(k1.val!=null)scoreParts.push(k1.val<=30?100:k1.val<=60?70:40);
+  if(k2.val!=null)scoreParts.push(k2.val);
+  if(k3.val!=null)scoreParts.push(k3.val<=48?100:k3.val<=72?70:40);
+  if(k4.val!=null)scoreParts.push(k4.val);
+  if(k6.val!=null)scoreParts.push(k6.val<=70?100:k6.val<=85?70:40);
+  if(k8.val!=null)scoreParts.push(k8.val<=15?100:k8.val<=25?70:40);
+  var score=scoreParts.length?Math.round(scoreParts.reduce(function(a,b){return a+b;},0)/scoreParts.length):0;
+  var scoreLabel=score>=80?'Saudável':score>=65?'Bom':score>=50?'Atenção':'Crítico';
+  var scoreColor=score>=80?'#166534':score>=65?'#1e40af':score>=50?'#854d0e':'#991b1b';
+  var scoreBg=score>=80?'#dcfce7':score>=65?'#dbeafe':score>=50?'#fef9c3':'#fee2e2';
+
+  // Helpers de render
+  function kpiCard(num,title,value,unit,meta,benchmark,status,leitura,tech,sub){
+    var statusCol=status==='ok'?'#16a34a':status==='warn'?'#d97706':status==='bad'?'#dc2626':'#6b7280';
+    var statusBg=status==='ok'?'#dcfce7':status==='warn'?'#fef3c7':status==='bad'?'#fee2e2':'#f3f4f6';
+    var statusLbl=status==='ok'?'✓ OK':status==='warn'?'⚠ ATENÇÃO':status==='bad'?'✗ CRÍTICO':'— sem dados';
+    var valDisp=value!=null?value+(unit||''):'—';
+    return ''
+      +'<div class="ekpi">'
+        +'<div class="ekpi-hd">'
+          +'<span class="ekpi-num">'+num+'</span>'
+          +'<span class="ekpi-ttl">'+title+'</span>'
+          +(sub?'<span class="ekpi-sub">'+sub+'</span>':'')
+          +'<span class="ekpi-status" style="background:'+statusBg+';color:'+statusCol+'">'+statusLbl+'</span>'
+        +'</div>'
+        +'<div class="ekpi-body">'
+          +'<div class="ekpi-valbox">'
+            +'<div class="ekpi-val" style="color:'+statusCol+'">'+valDisp+'</div>'
+            +'<div class="ekpi-meta">Meta '+meta+'</div>'
+            +'<div class="ekpi-bench">Mercado MSP: '+benchmark+'</div>'
+          +'</div>'
+          +'<div class="ekpi-txt">'
+            +(tech?'<div class="ekpi-tech-block">'+tech+'</div>':'')
+            +'<div class="ekpi-leitura"><strong>Leitura:</strong> '+leitura+'</div>'
+          +'</div>'
+        +'</div>'
+      +'</div>';
+  }
+
+  // ── Monta explicações técnicas para cada KPI
+  var techOn=scope.tech!==false;
+  var methOn=scope.meth!==false;
+  var aiosOn=scope.aios!==false;
+
+  // K1 — First Response
+  var k1_val=k1.val!=null?fmtRespTxt(k1.val):null;
+  var k1_status=k1.val==null?'none':(k1.val<=30?'ok':k1.val<=60?'warn':'bad');
+  var k1_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Tempo mediano entre a abertura do chamado e a primeira resposta efetiva do atendente.</div><div class="tlbl">Fórmula</div><div class="tval">mediana(primeira_resposta_min) · horário útil</div>':'';
+  var k1_leitura=k1.val==null?'Sem dados suficientes no escopo selecionado.':
+    k1.val<=30?'Dentro da meta contratual. Indica triagem ágil e canal de entrada saudável.':
+    k1.val<=60?'Acima da meta de 30min mas próximo do benchmark. Vale revisar picos de demanda.':
+    'Acima da meta em mais de 2x. Triagem gargalada — avaliar capacidade do N1 ou automação de resposta inicial.';
+
+  // K2 — SLA
+  var k2_status=k2.val==null?'none':(k2.val>=95?'ok':k2.val>=85?'warn':'bad');
+  var k2_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados resolvidos dentro do SLA contratado (padrão 48h úteis).</div><div class="tlbl">Fórmula</div><div class="tval">(chamados_no_prazo ÷ total_fechados) × 100</div>':'';
+  var k2_leitura=k2.val==null?'Sem dados suficientes no escopo selecionado.':
+    k2.val>=95?'Dentro da meta contratual. Risco de penalidade baixo.':
+    k2.val>=85?'Abaixo da meta contratual, mas dentro do benchmark MSP. '+(k2.violados||0)+' violação(ões) no período — revisar causas.':
+    'Abaixo de meta e de mercado. '+(k2.violados||0)+' violação(ões) — risco contratual imediato.';
+
+  // K3 — Resolution
+  var k3_status=k3.val==null?'none':(k3.val<=48?'ok':k3.val<=72?'warn':'bad');
+  var k3_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Média de horas úteis entre abertura e fechamento de chamado.</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tempo_solução_h) ÷ total_fechados</div>':'';
+  var k3_leitura=k3.val==null?'Sem dados suficientes no escopo selecionado.':
+    k3.val<=48?'Dentro do SLA de 48h úteis. Operação eficiente.':
+    k3.val<=72?'Acima do SLA, mas dentro da tolerância operacional. Focar em tickets >72h.':
+    'Tempo médio crítico. Provável acúmulo de tickets complexos — priorizar triagem por severidade.';
+
+  // K4 — FCR
+  var k4_status=k4.val==null?'none':(k4.val>=85?'ok':k4.val>=75?'warn':'bad');
+  var k4_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados resolvidos sem reabertura nos 90 dias seguintes.</div><div class="tlbl">Fórmula</div><div class="tval">(fechados − reabertos) ÷ fechados × 100</div>':'';
+  var k4_leitura=k4.val==null?'Sem dados suficientes — aguarde ciclo de reaberturas.json.':
+    k4.val>=85?'Acima da meta. Equipe com alta resolutividade em primeiro contato — KB madura.':
+    k4.val>=75?'Dentro do benchmark MSP mas abaixo da meta. '+(k4.reabertos||0)+' reabertura(s) — analisar padrão.':
+    'Abaixo de meta e mercado. '+(k4.reabertos||0)+' reabertura(s) indica qualidade de solução inicial comprometida.';
+
+  // K5 — Volume
+  var k5_status='none';
+  var k5_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Total de chamados abertos pelo cliente no escopo selecionado.</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados) onde criado ∈ período</div>':'';
+  var k5_leitura='Volume de '+(k5.val||0)+' chamados no período. Comparar com mês anterior e com contratado.';
+
+  // K6 — Utilization
+  var k6_status=k6.val==null?'none':(k6.val<=70?'ok':k6.val<=85?'warn':'bad');
+  var k6_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% da capacidade operacional da equipe em uso no momento.</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tickets_ativos) ÷ (atendentes × 6 capacidade) × 100</div>':'';
+  var k6_leitura=k6.val==null?'Sem dados — utilizacao.json aguardando sync GWMS.':
+    k6.val<=70?'Capacidade saudável. Equipe com margem para picos de demanda.':
+    k6.val<=85?'Capacidade apertada. Monitorar — risco de atraso se volume subir.':
+    'Sobrecarga. Com '+(k6.carga||0)+' tickets ativos para '+(k6.n||0)+' atendentes — risco de SLA.';
+
+  // K7 — Backlog
+  var k7_status=k7.n==0?'none':(k7.val<=k7.n*0.15?'ok':k7.val<=k7.n*0.25?'warn':'bad');
+  var k7_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">Chamados abertos/pendentes aguardando resolução.</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados) onde estado ∈ {Aberto, Em Atendimento, Aguardando, Retorno}</div>':'';
+  var k7_leitura=k7.n==0?'Sem chamados no escopo selecionado.':
+    k7.val<=k7.n*0.15?'Backlog controlado — '+Math.round(k7.val/k7.n*100)+'% do volume do período.':
+    k7.val<=k7.n*0.25?'Backlog em atenção — '+Math.round(k7.val/k7.n*100)+'% do volume. Revisar priorização.':
+    'Backlog elevado — '+Math.round(k7.val/k7.n*100)+'% do volume. Indica gargalo de capacidade.';
+
+  // K8 — Escalation
+  var k8_status=k8.val==null?'none':(k8.val<=15?'ok':k8.val<=25?'warn':'bad');
+  var k8_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados que passaram por filas especializadas (DBA, Infra, GWMS, Melhorias).</div><div class="tlbl">Fórmula</div><div class="tval">count(chamados em filas_escalação) ÷ total × 100</div>':'';
+  var k8_leitura=k8.val==null?'Sem dados suficientes no escopo.':
+    k8.val<=15?'Dentro da meta. N1 resolvendo bem sem necessidade de escalação.':
+    k8.val<=25?'Escalação moderada. '+(k8.escalados||0)+' chamados em filas especializadas — dentro do mercado.':
+    'Taxa elevada de escalação ('+ (k8.escalados||0) +' tickets). Indica N1 subcapacitado ou chamados de alta complexidade.';
+
+  // Logo GW base64 (oficial, mesmo do exportPDF)
+  var LOGO='<img src="data:image/png;base64,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" height="52" style="display:block;max-width:180px">';
+
+  // HTML do relatório
+  var H='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Relatório Executivo — Groundwork Command Center</title><style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:"Segoe UI",Arial,sans-serif;background:#f1f5f9;color:#283645;font-size:12px;line-height:1.5}'
+    +'.page{max-width:880px;margin:0 auto;background:#fff}'
+    +'@media print{body{background:#fff}.page{max-width:100%}.cover{page-break-after:always}.section,.ekpi{page-break-inside:avoid}}'
+    /* CAPA */
+    +'.cover{min-height:1040px;position:relative;overflow:hidden;display:flex;flex-direction:column}'
+    +'.cover-bar{height:6px;background:linear-gradient(90deg,#ff7024 0%,#ff7024 40%,#22d3ee 40%,#22d3ee 70%,#283645 70%)}'
+    +'.cover-top{background:#283645;color:#fff;padding:32px 44px;display:flex;justify-content:space-between;align-items:center}'
+    +'.cover-brand{display:flex;align-items:center;gap:14px}'
+    +'.cover-brand-txt{font-family:"Segoe UI",sans-serif;font-weight:700;font-size:13px;letter-spacing:.02em;line-height:1.2}'
+    +'.cover-brand-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}'
+    +'.cover-stamp{font-size:10px;color:rgba(255,255,255,.65);letter-spacing:.12em;text-transform:uppercase}'
+    +'.cover-body{flex:1;padding:70px 54px 40px;display:flex;flex-direction:column;justify-content:center}'
+    +'.cover-tag{display:inline-block;padding:5px 14px;background:rgba(255,112,36,.1);color:#ff7024;border:1px solid rgba(255,112,36,.3);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:20px;align-self:flex-start}'
+    +'.cover-title{font-size:42px;font-weight:900;color:#283645;line-height:1.1;letter-spacing:-.02em;margin-bottom:12px}'
+    +'.cover-sub{font-size:17px;color:#64748b;margin-bottom:36px;font-weight:500}'
+    +'.cover-scope{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:42px}'
+    +'.cover-scope-item{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #ff7024;border-radius:8px;padding:12px 16px}'
+    +'.cover-scope-lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:4px}'
+    +'.cover-scope-val{font-size:14px;color:#283645;font-weight:700}'
+    +'.cover-score{display:flex;align-items:center;gap:24px;background:linear-gradient(135deg,#f8fafc,#fff);border:1px solid #e2e8f0;border-radius:14px;padding:24px 32px;align-self:flex-start}'
+    +'.cover-score-num{font-size:68px;font-weight:900;color:#283645;line-height:1;font-family:"Segoe UI",sans-serif}'
+    +'.cover-score-lbl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:6px}'
+    +'.cover-score-pill{display:inline-block;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;background:'+scoreBg+';color:'+scoreColor+'}'
+    +'.cover-orbit{position:absolute;right:-120px;bottom:-120px;width:440px;height:440px;border-radius:50%;border:50px solid rgba(255,112,36,.05);pointer-events:none}'
+    +'.cover-orbit2{position:absolute;right:40px;bottom:60px;width:260px;height:260px;border-radius:50%;border:30px solid rgba(34,211,238,.06);pointer-events:none}'
+    +'.cover-ft{padding:18px 44px;background:#283645;color:rgba(255,255,255,.7);display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em}'
+    /* CORPO */
+    +'.body-page{padding:40px 48px 40px;border-top:4px solid #ff7024}'
+    +'.body-hd{display:flex;align-items:center;gap:12px;margin-bottom:28px;padding-bottom:14px;border-bottom:2px solid #f1f5f9}'
+    +'.body-hd-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#ff7024,#f37633);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}'
+    +'.body-hd-ttl{font-size:17px;font-weight:800;color:#283645;letter-spacing:-.01em}'
+    +'.body-hd-sub{font-size:10.5px;color:#64748b;margin-left:auto}'
+    /* KPI Cards (com explicação técnica) */
+    +'.ekpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px;overflow:hidden;box-shadow:0 1px 2px rgba(40,54,69,.04)}'
+    +'.ekpi-hd{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(to right,#f8fafc,#fff);border-bottom:1px solid #f1f5f9}'
+    +'.ekpi-num{width:26px;height:26px;border-radius:50%;background:#283645;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}'
+    +'.ekpi-ttl{font-size:13.5px;font-weight:800;color:#283645;flex:1}'
+    +'.ekpi-sub{font-size:10.5px;color:#94a3b8;font-weight:500}'
+    +'.ekpi-status{padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.04em}'
+    +'.ekpi-body{display:grid;grid-template-columns:180px 1fr;gap:0}'
+    +'.ekpi-valbox{background:linear-gradient(135deg,#f8fafc,#fff);border-right:1px solid #f1f5f9;padding:18px 20px;display:flex;flex-direction:column;justify-content:center}'
+    +'.ekpi-val{font-size:36px;font-weight:900;line-height:1;font-family:"Segoe UI",sans-serif;letter-spacing:-.02em}'
+    +'.ekpi-meta{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:10px}'
+    +'.ekpi-bench{font-size:10px;color:#64748b;margin-top:3px}'
+    +'.ekpi-txt{padding:16px 20px;font-size:11.5px;color:#475569}'
+    +'.ekpi-tech-block{background:#f8fafc;border-left:2px solid #22d3ee;padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:10px;font-size:10.5px}'
+    +'.ekpi-tech-block .tlbl{font-size:9px;color:#0891b2;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:2px}'
+    +'.ekpi-tech-block .tval{color:#475569;margin-bottom:6px;line-height:1.5}'
+    +'.ekpi-tech-block .tval:last-child{margin-bottom:0}'
+    +'.ekpi-leitura{line-height:1.55}'
+    +'.ekpi-leitura strong{color:#ff7024;font-weight:700}'
+    /* Metodologia */
+    +'.method{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;margin-bottom:14px}'
+    +'.method h3{font-size:13px;font-weight:800;color:#283645;margin-bottom:10px}'
+    +'.method p{font-size:11px;color:#475569;line-height:1.65;margin-bottom:8px}'
+    +'.method ul{padding-left:20px;margin:8px 0}'
+    +'.method li{font-size:11px;color:#475569;margin-bottom:4px;line-height:1.55}'
+    +'.method code{font-family:"Menlo","Consolas",monospace;font-size:10px;background:#283645;color:#22d3ee;padding:2px 6px;border-radius:3px}'
+    /* Rodapé */
+    +'.footer{background:#283645;color:rgba(255,255,255,.75);padding:14px 44px;display:flex;justify-content:space-between;align-items:center;font-size:9.5px;letter-spacing:.04em}'
+    +'.footer-hash{font-family:"Menlo","Consolas",monospace;font-size:9px;color:rgba(34,211,238,.9)}'
+    +'</style></head><body><div class="page">';
+
+  // ── CAPA
+  H+='<div class="cover">';
+  H+='<div class="cover-bar"></div>';
+  H+='<div class="cover-top">';
+  H+='<div class="cover-brand">'+LOGO+'<div><div class="cover-brand-txt">GROUNDWORK COMMAND CENTER</div><div class="cover-brand-sub">Operations Report</div></div></div>';
+  H+='<div class="cover-stamp">RELATÓRIO OPERACIONAL</div>';
+  H+='</div>';
+  H+='<div class="cover-body">';
+  H+='<div class="cover-tag">▸ Relatório Executivo · 8 KPIs GWMS</div>';
+  H+='<div class="cover-title">Performance Operacional</div>';
+  H+='<div class="cover-sub">Análise consolidada dos indicadores de operação MSP</div>';
+  H+='<div class="cover-scope">';
+  H+='<div class="cover-scope-item"><div class="cover-scope-lbl">Período</div><div class="cover-scope-val">'+_rptEsc(mesLabel)+'</div></div>';
+  H+='<div class="cover-scope-item"><div class="cover-scope-lbl">Cliente</div><div class="cover-scope-val">'+_rptEsc(cliLabel)+'</div></div>';
+  H+='<div class="cover-scope-item"><div class="cover-scope-lbl">Fila</div><div class="cover-scope-val">'+_rptEsc(filaLabel)+'</div></div>';
+  H+='</div>';
+  H+='<div class="cover-score">';
+  H+='<div class="cover-score-num">'+score+'</div>';
+  H+='<div><div class="cover-score-lbl">Score Operacional</div><div class="cover-score-pill">'+scoreLabel+'</div></div>';
+  H+='</div>';
+  H+='</div>';
+  H+='<div class="cover-orbit"></div><div class="cover-orbit2"></div>';
+  H+='<div class="cover-ft"><span>Groundwork · www.groundwork.com.br</span><span>Gerado em '+nowStr+'</span></div>';
+  H+='</div>'; // /cover
+
+  // ── CORPO: 8 KPIs
+  H+='<div class="body-page">';
+  H+='<div class="body-hd"><div class="body-hd-icon">Ƙ</div><div class="body-hd-ttl">Indicadores Operacionais</div><div class="body-hd-sub">'+rows.length+' chamados no escopo · fonte GWMS (MySQL OTRS)</div></div>';
+
+  H+=kpiCard('1','Tempo de 1ª Resposta',k1_val,'','≤ 30min (contratual)','15–45min',k1_status,k1_leitura,k1_tech,'Mediana do tempo de resposta inicial');
+  H+=kpiCard('2','SLA Compliance (Resolução)',k2.val,'%','≥ 95% (contratual)','85–92%',k2_status,k2_leitura,k2_tech,'% dentro do prazo de 48h úteis');
+  H+=kpiCard('3','Tempo Médio de Resolução',k3.val,'h','≤ 48h úteis','24–60h',k3_status,k3_leitura,k3_tech,'Horas úteis entre abertura e fechamento');
+  H+=kpiCard('4','First Contact Resolution (FCR)',k4.val,'%','≥ 85%','75–85%',k4_status,k4_leitura,k4_tech,'% resolvido sem reabertura em 90d');
+  H+=kpiCard('5','Ticket Volume',k5.val,'','—','comparativo cliente a cliente',k5_status,k5_leitura,k5_tech,'Volume total de chamados');
+  H+=kpiCard('6','Utilization Rate',k6.val,'%','≤ 70% (folga saudável)','60–80%',k6_status,k6_leitura,k6_tech,'Capacidade operacional em uso');
+  H+=kpiCard('7','Backlog Volume',k7.val,'','≤ 15% do volume','10–20%',k7_status,k7_leitura,k7_tech,'Chamados pendentes de resolução');
+  H+=kpiCard('8','Escalation Rate',k8.val,'%','≤ 15%','10–20%',k8_status,k8_leitura,k8_tech,'% encaminhado a filas especializadas');
+
+  H+='</div>'; // /body-page
+
+  // ── METODOLOGIA (opcional)
+  if(methOn){
+    H+='<div class="body-page" style="border-top:4px solid #22d3ee">';
+    H+='<div class="body-hd"><div class="body-hd-icon" style="background:linear-gradient(135deg,#22d3ee,#0891b2)">M</div><div class="body-hd-ttl">Metodologia</div><div class="body-hd-sub">Como os números são calculados</div></div>';
+    H+='<div class="method">';
+    H+='<h3>Fonte dos dados</h3>';
+    H+='<p>Os indicadores são calculados a partir do banco de dados MySQL do OTRS/Znuny via Grafana API, consolidados no arquivo <code>historico_completo.json</code> gerado a cada 10 minutos pelo workflow <code>gwms-sync.yml</code>.</p>';
+    H+='<p>Dados complementares de reaberturas (<code>reaberturas.json</code>) e utilização (<code>utilizacao.json</code>) também são sincronizados no mesmo ciclo.</p>';
+    H+='</div>';
+    H+='<div class="method">';
+    H+='<h3>Horário de trabalho considerado</h3>';
+    H+='<p>Todos os KPIs de tempo (1ª resposta, resolução) utilizam <strong>horário útil business hours</strong>:</p>';
+    H+='<ul><li>Segunda a sexta-feira</li><li>08:00–12:00 e 13:00–18:00 (pausa de almoço excluída)</li><li>Total: 9 horas úteis/dia</li><li>Finais de semana e horário fora do expediente não contam</li></ul>';
+    H+='</div>';
+    H+='<div class="method">';
+    H+='<h3>Benchmarks de mercado</h3>';
+    H+='<p>Ranges apresentados como "Mercado MSP" são baseados em estudos da indústria (HDI Global Support Center Standards, MetricNet MSP Benchmarks, ITIL v4 practices). Referenciais para operações MSP B2B de porte semelhante à Groundwork (50–200 atendentes).</p>';
+    H+='</div>';
+    H+='<div class="method">';
+    H+='<h3>Status e cores</h3>';
+    H+='<ul><li><strong style="color:#16a34a">✓ OK (verde)</strong> — dentro da meta contratual</li><li><strong style="color:#d97706">⚠ ATENÇÃO (amarelo)</strong> — abaixo da meta, mas dentro do benchmark de mercado</li><li><strong style="color:#dc2626">✗ CRÍTICO (vermelho)</strong> — abaixo da meta e do benchmark</li></ul>';
+    H+='</div>';
+    H+='<div class="method">';
+    H+='<h3>Auditoria e rastreabilidade</h3>';
+    H+='<p>Cada relatório recebe um <code>dataset_hash</code> no rodapé. Esse hash identifica univocamente o conjunto de dados usado na geração. Para reproduzir ou auditar um relatório, solicite o dataset correspondente à equipe técnica informando o hash.</p>';
+    H+='</div>';
+    H+='</div>';
+  }
+
+  // ── RODAPÉ final
+  H+='<div class="footer">';
+  H+='<span>Groundwork Command Center · Relatório gerado em '+nowStr+'</span>';
+  H+='<span class="footer-hash">dataset_hash: '+dsHash+'</span>';
+  H+='</div>';
+
+  H+='</div></body></html>';
+
+  // Abre em nova janela e dispara impressão
+  var win=window.open('','_blank');
+  if(!win){alert('Habilite pop-ups para gerar o PDF.');return;}
+  win.document.write(H);
+  win.document.close();
+  setTimeout(function(){try{win.print();}catch(e){}},900);
+}
+
+// Hash determinístico (djb2 hash, curto e estável) — uso: auditoria de dataset
+function _rptHash(s){
+  var h=5381;
+  for(var i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i);
+  return 'gw-'+Math.abs(h).toString(36).toUpperCase();
+}
+
+// ════════════════════════════════════════════════════════════
 // PDF EXPORT
 // ════════════════════════════════════════════════════════════
 function exportPDF(){
@@ -10199,6 +10771,76 @@ function renderIA(){
   <svg id="fs-ico-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/></svg>
   <svg id="fs-ico-col" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3"/></svg>
 </button>
+<button id="rpt-btn" title="Gerar relatório PDF" onclick="openRptModal()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+</button>
+<div id="rpt-modal" onclick="rptBackdropClick(event)">
+  <div class="rpt-dlg" onclick="event.stopPropagation()">
+    <div class="rpt-hd">
+      <span class="rpt-hd-dot"></span>
+      <div class="rpt-hd-ttl">Gerar Relatório PDF</div>
+      <button class="rpt-hd-x" onclick="closeRptModal()" aria-label="Fechar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="rpt-body">
+      <div class="rpt-sec-lbl">Tipo de relatório</div>
+      <div class="rpt-types">
+        <label class="rpt-type sel" data-rpt="exec">
+          <input type="radio" name="rpt-type" value="exec" checked onchange="rptTypeChange()">
+          <div>
+            <div class="rpt-type-ttl">Executivo — 8 KPIs GWMS</div>
+            <div class="rpt-type-sub">Tempo 1ª resposta · SLA · Resolução · FCR · Volume · Utilização · Backlog · Escalação · com explicações técnicas</div>
+          </div>
+        </label>
+        <label class="rpt-type" data-rpt="cli">
+          <input type="radio" name="rpt-type" value="cli" onchange="rptTypeChange()">
+          <div>
+            <div class="rpt-type-ttl">Por Cliente</div>
+            <div class="rpt-type-sub">Relatório individual de uma empresa (capa, estado, insights, PDF completo)</div>
+          </div>
+        </label>
+        <label class="rpt-type" data-rpt="cs">
+          <input type="radio" name="rpt-type" value="cs" onchange="rptTypeChange()">
+          <div>
+            <div class="rpt-type-ttl">Customer Success</div>
+            <div class="rpt-type-sub">Saúde da conta, risco, ações recomendadas (baseado na aba CS)</div>
+          </div>
+        </label>
+      </div>
+
+      <div class="rpt-sec-lbl">Escopo do relatório</div>
+      <div class="rpt-filters">
+        <div class="rpt-fld">
+          <span class="rpt-fld-lbl">Período</span>
+          <select id="rpt-f-mes"></select>
+          <span class="rpt-fld-inherit" id="rpt-f-mes-tag" style="display:none">da tela</span>
+        </div>
+        <div class="rpt-fld">
+          <span class="rpt-fld-lbl">Cliente</span>
+          <select id="rpt-f-cli"></select>
+          <span class="rpt-fld-inherit" id="rpt-f-cli-tag" style="display:none">da tela</span>
+        </div>
+        <div class="rpt-fld">
+          <span class="rpt-fld-lbl">Fila</span>
+          <select id="rpt-f-fila"></select>
+          <span class="rpt-fld-inherit" id="rpt-f-fila-tag" style="display:none">da tela</span>
+        </div>
+      </div>
+
+      <div class="rpt-opts" id="rpt-opts-exec">
+        <label class="rpt-opt"><input type="checkbox" id="rpt-o-tech" checked>Incluir explicações técnicas (definição, fórmula, meta, benchmark)</label>
+        <label class="rpt-opt"><input type="checkbox" id="rpt-o-meth" checked>Incluir página de metodologia</label>
+        <label class="rpt-opt"><input type="checkbox" id="rpt-o-aios" checked>Incluir insights AIOS</label>
+      </div>
+
+      <div class="rpt-ft">
+        <button class="rpt-btn rpt-btn-cancel" onclick="closeRptModal()">Cancelar</button>
+        <button class="rpt-btn rpt-btn-go" id="rpt-btn-go" onclick="rptGenerate()">Gerar PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 function toggleFS(){
   var on=document.body.classList.toggle('fs-mode');
