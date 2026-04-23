@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776982993,
-  "generated_at_iso": "2026-04-23T22:23:13Z",
+  "generated_at": 1776986722,
+  "generated_at_iso": "2026-04-23T23:25:22Z",
   "count": 8,
   "filas": [
     "DATASUL",
@@ -32,7 +32,7 @@
       "prioridade": "5 very high",
       "atendente": "Tiago Silva",
       "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-23T11:06:27",
+      "modificado": "2026-04-23T20:01:25",
       "vezes_fechado": 2,
       "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
