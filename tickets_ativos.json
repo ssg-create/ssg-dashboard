@@ -1,6 +1,6 @@
 {
-  "generated_at": 1776963311,
-  "generated_at_iso": "2026-04-23T16:55:11Z",
+  "generated_at": 1776964095,
+  "generated_at_iso": "2026-04-23T17:08:15Z",
   "count": 185,
   "filas": [
     "DATASUL",
@@ -12,6 +12,18 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "ticket": "2026042226000104",
+      "cliente": "pedro.luiz@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "MELHORIA",
+      "prioridade": "3 normal",
+      "atendente": "Pedro Luiz",
+      "criado": "2026-04-22T08:55:10",
+      "modificado": "2026-04-23T13:55:48",
+      "idade_dias": 1,
+      "assunto": "Projeto - Topologia automática"
+    },
     {
       "ticket": "2026042326000013",
       "cliente": "monitoramento@groundwork.com.br",
@@ -489,7 +501,7 @@
       "atendente": "Robert Rodrigues dos Santos",
       "criado": "2026-01-19T13:59:01",
       "modificado": "2026-04-23T09:33:31",
-      "idade_dias": 93,
+      "idade_dias": 94,
       "assunto": "Erro Emissão NF AJ Matriz Prefeitura SP"
     },
     {
@@ -961,18 +973,6 @@
       "assunto": "Alteração Interface Usage Graphics "
     },
     {
-      "ticket": "2026042226000104",
-      "cliente": "pedro.luiz@groundwork.com.br",
-      "fila": "GWMS",
-      "estado": "MELHORIA",
-      "prioridade": "3 normal",
-      "atendente": "Pedro Luiz",
-      "criado": "2026-04-22T08:55:10",
-      "modificado": "2026-04-22T17:35:22",
-      "idade_dias": 1,
-      "assunto": "Projeto - Topologia automática"
-    },
-    {
       "ticket": "2026041426000361",
       "cliente": "NSX",
       "fila": "PROTHEUS",
@@ -1269,7 +1269,7 @@
       "atendente": "Joao Santos",
       "criado": "2026-04-14T14:00:11",
       "modificado": "2026-04-22T13:33:05",
-      "idade_dias": 8,
+      "idade_dias": 9,
       "assunto": "AUTOZONE - GWMS-Server - Disks Queue Length - 26041413581068"
     },
     {
@@ -1917,7 +1917,7 @@
       "atendente": "Marcio Guimaraes",
       "criado": "2026-04-16T14:00:19",
       "modificado": "2026-04-17T09:12:57",
-      "idade_dias": 6,
+      "idade_dias": 7,
       "assunto": "Planilha de controle de clientes GWMS"
     },
     {
@@ -2013,7 +2013,7 @@
       "atendente": "Marcelo David",
       "criado": "2026-04-13T14:03:55",
       "modificado": "2026-04-14T09:40:47",
-      "idade_dias": 9,
+      "idade_dias": 10,
       "assunto": "Erro ao matar usuários dos bancos"
     },
     {
