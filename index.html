@@ -883,6 +883,21 @@ input[type=file]{display:none}
 .rpt-fld select{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:6px 10px;font-size:11.5px;font-family:var(--mono);cursor:pointer}
 .rpt-fld select:focus{outline:none;border-color:#ff7024}
 .rpt-fld-inherit{font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(255,112,36,.15);color:#ff7024;font-weight:700;letter-spacing:.04em}
+/* Chips de fila — sempre visíveis */
+.rpt-fld-chips{display:block !important}
+.rpt-chips-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.rpt-chips-count{font-size:10px;color:#ff7024;font-weight:700;font-family:var(--mono)}
+.rpt-chips-actions{margin-left:auto;display:flex;gap:6px}
+.rpt-chip-act{background:transparent;border:1px solid var(--border2);color:var(--muted);font-size:10px;padding:3px 10px;border-radius:5px;cursor:pointer;font-weight:600;letter-spacing:.03em;transition:all .15s}
+.rpt-chip-act:hover{border-color:#ff7024;color:#ff7024}
+.rpt-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rpt-chip{background:var(--bg);border:1px solid var(--border2);color:var(--muted);padding:6px 12px;border-radius:18px;font-size:11px;font-family:var(--mono);font-weight:600;cursor:pointer;transition:all .15s;user-select:none;letter-spacing:.02em}
+.rpt-chip:hover{border-color:rgba(255,112,36,.5);color:var(--text)}
+.rpt-chip.on{background:#ff7024;border-color:#ff7024;color:#fff;box-shadow:0 2px 6px rgba(255,112,36,.3)}
+.rpt-chip.on:hover{background:#f37633}
+body:not(.dark) .rpt-chip{background:#fff;border-color:#cbd5e1;color:#64748b}
+body:not(.dark) .rpt-chip:hover{border-color:#ff7024;color:#ff7024}
+body:not(.dark) .rpt-chip.on{background:#ff7024;border-color:#ff7024;color:#fff}
 .rpt-multi{flex:1;position:relative}
 .rpt-multi-btn{width:100%;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:6px 10px;font-size:11.5px;font-family:var(--mono);cursor:pointer;text-align:left;gap:8px;transition:all .15s}
 .rpt-multi-btn:hover{border-color:rgba(255,112,36,.5)}
@@ -5912,76 +5927,50 @@ function _rptPopulateFilters(){
     var tag=document.getElementById('rpt-f-cli-tag');
     if(tag)tag.style.display=curCli?'inline-block':'none';
   }
-  // Fila — multi-select com checkboxes
-  var fDd=document.getElementById('rpt-f-fila-dd');
-  if(fDd){
+  // Fila — chips visíveis inline
+  var fChips=document.getElementById('rpt-f-fila-chips');
+  if(fChips){
     var filas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
     var curFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-    // Seleção inicial: se tela tem fila ativa → pré-seleciona só ela; senão → todas (equivale a "Todas")
+    // Seleção inicial: tela com fila ativa → só ela; senão → todas
     _rptFilasSelected=curFila?[curFila]:filas.slice();
-    var html='<div class="rpt-multi-ctrls">'
-      +'<button type="button" class="rpt-multi-ctrl" onclick="rptFilaAll(true)">Todas</button>'
-      +'<button type="button" class="rpt-multi-ctrl" onclick="rptFilaAll(false)">Nenhuma</button>'
-      +'</div>';
-    html+=filas.map(function(f){
-      var checked=_rptFilasSelected.indexOf(f)!==-1?'checked':'';
-      return '<label class="rpt-multi-opt"><input type="checkbox" value="'+_rptEsc(f)+'" '+checked+' onchange="rptFilaChange()">'+_rptEsc(f)+'</label>';
+    fChips.innerHTML=filas.map(function(f){
+      var on=_rptFilasSelected.indexOf(f)!==-1;
+      return '<div class="rpt-chip'+(on?' on':'')+'" data-fila="'+_rptEsc(f)+'" onclick="rptFilaToggle(this)">'+_rptEsc(f)+'</div>';
     }).join('');
-    fDd.innerHTML=html;
-    _rptFilaUpdateLabel(filas);
+    _rptFilaUpdateCount();
     var tag=document.getElementById('rpt-f-fila-tag');
     if(tag)tag.style.display=curFila?'inline-block':'none';
   }
 }
 // Estado do multi-select de fila
 var _rptFilasSelected=[];
-function rptToggleFilaDd(e){
-  if(e)e.stopPropagation();
-  var dd=document.getElementById('rpt-f-fila-dd');
-  var btn=document.getElementById('rpt-f-fila-btn');
-  if(!dd||!btn)return;
-  var isOn=dd.classList.toggle('on');
-  btn.classList.toggle('on',isOn);
-  if(isOn){
-    setTimeout(function(){document.addEventListener('click',_rptCloseFilaDd);},0);
-  }
-}
-function _rptCloseFilaDd(e){
-  var wrap=document.getElementById('rpt-f-fila-wrap');
-  if(wrap&&!wrap.contains(e.target)){
-    var dd=document.getElementById('rpt-f-fila-dd');
-    var btn=document.getElementById('rpt-f-fila-btn');
-    if(dd)dd.classList.remove('on');
-    if(btn)btn.classList.remove('on');
-    document.removeEventListener('click',_rptCloseFilaDd);
-  }
+function rptFilaToggle(el){
+  var f=el.getAttribute('data-fila');
+  var idx=_rptFilasSelected.indexOf(f);
+  if(idx===-1){_rptFilasSelected.push(f);el.classList.add('on');}
+  else{_rptFilasSelected.splice(idx,1);el.classList.remove('on');}
+  _rptFilaUpdateCount();
 }
 function rptFilaAll(select){
   var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
   _rptFilasSelected=select?all.slice():[];
-  var dd=document.getElementById('rpt-f-fila-dd');
-  if(dd){
-    dd.querySelectorAll('input[type="checkbox"]').forEach(function(cb){cb.checked=select;});
+  var container=document.getElementById('rpt-f-fila-chips');
+  if(container){
+    container.querySelectorAll('.rpt-chip').forEach(function(c){
+      c.classList.toggle('on',select);
+    });
   }
-  _rptFilaUpdateLabel(all);
+  _rptFilaUpdateCount();
 }
-function rptFilaChange(){
-  var dd=document.getElementById('rpt-f-fila-dd');
-  if(!dd)return;
-  var checked=[];
-  dd.querySelectorAll('input[type="checkbox"]:checked').forEach(function(cb){checked.push(cb.value);});
-  _rptFilasSelected=checked;
+function _rptFilaUpdateCount(){
+  var el=document.getElementById('rpt-f-fila-count');
+  if(!el)return;
   var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
-  _rptFilaUpdateLabel(all);
-}
-function _rptFilaUpdateLabel(allFilas){
-  var lbl=document.getElementById('rpt-f-fila-lbl');
-  if(!lbl)return;
   var n=_rptFilasSelected.length;
-  if(n===0)lbl.textContent='Nenhuma fila (vazio)';
-  else if(n===allFilas.length)lbl.textContent='Todas as filas ('+n+')';
-  else if(n<=2)lbl.textContent=_rptFilasSelected.join(', ');
-  else lbl.textContent=_rptFilasSelected.length+' filas selecionadas';
+  if(n===0)el.textContent='· nenhuma selecionada';
+  else if(n===all.length)el.textContent='· todas ('+n+')';
+  else el.textContent='· '+n+' de '+all.length;
 }
 function _rptEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 
@@ -10980,16 +10969,17 @@ function renderIA(){
           <select id="rpt-f-cli"></select>
           <span class="rpt-fld-inherit" id="rpt-f-cli-tag" style="display:none">da tela</span>
         </div>
-        <div class="rpt-fld">
-          <span class="rpt-fld-lbl">Fila</span>
-          <div class="rpt-multi" id="rpt-f-fila-wrap">
-            <button type="button" class="rpt-multi-btn" id="rpt-f-fila-btn" onclick="rptToggleFilaDd(event)">
-              <span id="rpt-f-fila-lbl">Todas as filas</span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="rpt-multi-dd" id="rpt-f-fila-dd"></div>
+        <div class="rpt-fld rpt-fld-chips">
+          <div class="rpt-chips-hd">
+            <span class="rpt-fld-lbl">Fila</span>
+            <span class="rpt-fld-inherit" id="rpt-f-fila-tag" style="display:none">da tela</span>
+            <span class="rpt-chips-count" id="rpt-f-fila-count"></span>
+            <div class="rpt-chips-actions">
+              <button type="button" class="rpt-chip-act" onclick="rptFilaAll(true)">Marcar todas</button>
+              <button type="button" class="rpt-chip-act" onclick="rptFilaAll(false)">Limpar</button>
+            </div>
           </div>
-          <span class="rpt-fld-inherit" id="rpt-f-fila-tag" style="display:none">da tela</span>
+          <div class="rpt-chips" id="rpt-f-fila-chips"></div>
         </div>
       </div>
 
