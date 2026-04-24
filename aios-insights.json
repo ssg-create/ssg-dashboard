@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-24T15:49:30.414758",
+  "generated_at": "2026-04-24T16:44:21.205807",
   "periodo": "2026-04",
   "version": "1.0",
   "resumo_gestao": {
@@ -102,11 +102,11 @@
     },
     {
       "cliente": "FADEL",
-      "narrativa": "Conta com <strong>volume acima da média</strong> — 303 chamados (14% do total). <strong>1 chamado(s) aberto(s) há mais de 30 dias</strong> — risco imediato de escalonamento. O módulo <strong>Infraestrutura e Cloud</strong> concentra 43% dos chamados desta conta — possível reincidência.",
+      "narrativa": "Conta com <strong>volume acima da média</strong> — 302 chamados (14% do total). <strong>1 chamado(s) aberto(s) há mais de 30 dias</strong> — risco imediato de escalonamento. O módulo <strong>Infraestrutura e Cloud</strong> concentra 43% dos chamados desta conta — possível reincidência.",
       "riscos": [
         {
           "titulo": "Volume acima da média do período",
-          "desc": "303 chamados (14% do total). Verificar se há problema sistêmico ou sazonalidade.",
+          "desc": "302 chamados (14% do total). Verificar se há problema sistêmico ou sazonalidade.",
           "nivel": "medium",
           "confianca": 78
         },
