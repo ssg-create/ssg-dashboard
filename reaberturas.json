@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777055495,
-  "generated_at_iso": "2026-04-24T18:31:35Z",
-  "count": 8,
+  "generated_at": 1777059481,
+  "generated_at_iso": "2026-04-24T19:38:01Z",
+  "count": 6,
   "filas": [
     "DATASUL",
     "DBA",
@@ -25,18 +25,6 @@
       "assunto": "Alteração de e-mail no disparo de relatório do BH  que ocorre todo dia 6 - Teletex"
     },
     {
-      "ticket": "2026041626000125",
-      "cliente": "SERVENG",
-      "fila": "DBA",
-      "estado_atual": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "criado": "2026-04-16T08:05:08",
-      "modificado": "2026-04-24T14:45:39",
-      "vezes_fechado": 2,
-      "assunto": "ENC: Indisponibilidade do Serviço de Workflow de Medição"
-    },
-    {
       "ticket": "2026012626000148",
       "cliente": "NSX",
       "fila": "SSG-MELHORIAS",
@@ -47,18 +35,6 @@
       "modificado": "2026-04-23T20:01:25",
       "vezes_fechado": 2,
       "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
-    },
-    {
-      "ticket": "2026040926000184",
-      "cliente": "FADEL",
-      "fila": "SSG",
-      "estado_atual": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-09T13:02:17",
-      "modificado": "2026-04-24T15:16:03",
-      "vezes_fechado": 1,
-      "assunto": "AJUSTE DICIONARIO DE DADOS - MIGRAÇÃO"
     },
     {
       "ticket": "2026041226000043",
