@@ -1,31 +1,12 @@
 {
-  "generated_at": 1777049060,
-  "generated_at_iso": "2026-04-24T16:44:20Z",
+  "generated_at": 1777052413,
+  "generated_at_iso": "2026-04-24T17:40:13Z",
   "counts": {
-    "crit": 2,
-    "warn": 4,
+    "crit": 1,
+    "warn": 5,
     "ok": 0
   },
   "insights": [
-    {
-      "id": "sobrecarga_Marcio_Guimaraes",
-      "severity": "crit",
-      "category": "capacidade",
-      "title": "Marcio Guimaraes com carga real de 9 tickets",
-      "summary": "Marcio Guimaraes tem 9 tickets ativos sob sua responsabilidade: 3 em atendimento + 6 abertos (além de 2 aguardando terceiros, que não consomem capacidade). Avaliar se há gargalo ou se é volume esperado para o atendente.",
-      "evidence": [
-        {
-          "atendente": "Marcio Guimaraes",
-          "carga_real": 9,
-          "em_atendimento": 3,
-          "abertos": 6,
-          "aguardando_terceiros": 2,
-          "ativos_total": 11
-        }
-      ],
-      "recommendation": "Revisar prioridades com o atendente. Se mantido o volume, considerar redistribuição — mas atribuição depende de skill/fila (não sugiro automaticamente para evitar erro de matching).",
-      "impact_estimate": "médio"
-    },
     {
       "id": "sobrecarga_Tiago_Silva",
       "severity": "warn",
@@ -40,6 +21,25 @@
           "abertos": 0,
           "aguardando_terceiros": 5,
           "ativos_total": 11
+        }
+      ],
+      "recommendation": "Revisar prioridades com o atendente. Se mantido o volume, considerar redistribuição — mas atribuição depende de skill/fila (não sugiro automaticamente para evitar erro de matching).",
+      "impact_estimate": "médio"
+    },
+    {
+      "id": "sobrecarga_Marcio_Guimaraes",
+      "severity": "warn",
+      "category": "capacidade",
+      "title": "Marcio Guimaraes com carga real de 7 tickets",
+      "summary": "Marcio Guimaraes tem 7 tickets ativos sob sua responsabilidade: 4 em atendimento + 3 abertos (além de 2 aguardando terceiros, que não consomem capacidade). Avaliar se há gargalo ou se é volume esperado para o atendente.",
+      "evidence": [
+        {
+          "atendente": "Marcio Guimaraes",
+          "carga_real": 7,
+          "em_atendimento": 4,
+          "abertos": 3,
+          "aguardando_terceiros": 2,
+          "ativos_total": 9
         }
       ],
       "recommendation": "Revisar prioridades com o atendente. Se mantido o volume, considerar redistribuição — mas atribuição depende de skill/fila (não sugiro automaticamente para evitar erro de matching).",
