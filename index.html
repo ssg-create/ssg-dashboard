@@ -883,6 +883,23 @@ input[type=file]{display:none}
 .rpt-fld select{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:6px 10px;font-size:11.5px;font-family:var(--mono);cursor:pointer}
 .rpt-fld select:focus{outline:none;border-color:#ff7024}
 .rpt-fld-inherit{font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(255,112,36,.15);color:#ff7024;font-weight:700;letter-spacing:.04em}
+.rpt-multi{flex:1;position:relative}
+.rpt-multi-btn{width:100%;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);padding:6px 10px;font-size:11.5px;font-family:var(--mono);cursor:pointer;text-align:left;gap:8px;transition:all .15s}
+.rpt-multi-btn:hover{border-color:rgba(255,112,36,.5)}
+.rpt-multi-btn.on{border-color:#ff7024}
+.rpt-multi-btn svg{flex-shrink:0;opacity:.5;transition:transform .15s}
+.rpt-multi-btn.on svg{transform:rotate(180deg);opacity:1;color:#ff7024}
+.rpt-multi-dd{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg);border:1px solid var(--border2);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:10;max-height:220px;overflow-y:auto;padding:6px}
+.rpt-multi-dd.on{display:block}
+.rpt-multi-ctrls{display:flex;gap:6px;padding:2px 4px 6px;border-bottom:1px solid var(--border2);margin-bottom:4px}
+.rpt-multi-ctrl{flex:1;background:transparent;border:1px solid var(--border2);color:var(--muted);font-size:10px;padding:4px;border-radius:4px;cursor:pointer;font-weight:600;letter-spacing:.03em}
+.rpt-multi-ctrl:hover{border-color:#ff7024;color:#ff7024}
+.rpt-multi-opt{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;font-size:11.5px;color:var(--sub);transition:background .1s}
+.rpt-multi-opt:hover{background:var(--bg3)}
+.rpt-multi-opt input{accent-color:#ff7024;cursor:pointer}
+.rpt-multi-opt.all{font-weight:700;color:var(--text);border-bottom:1px dashed var(--border2);margin-bottom:3px;padding-bottom:8px}
+body:not(.dark) .rpt-multi-btn{background:#fff;border-color:#cbd5e1;color:#1e293b}
+body:not(.dark) .rpt-multi-dd{background:#fff;border-color:#cbd5e1;box-shadow:0 8px 24px rgba(0,0,0,.15)}
 .rpt-opts{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;margin-bottom:16px}
 .rpt-opt{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);cursor:pointer}
 .rpt-opt input{accent-color:#ff7024;cursor:pointer}
@@ -5895,17 +5912,76 @@ function _rptPopulateFilters(){
     var tag=document.getElementById('rpt-f-cli-tag');
     if(tag)tag.style.display=curCli?'inline-block':'none';
   }
-  // Fila
-  var fSel=document.getElementById('rpt-f-fila');
-  if(fSel){
+  // Fila — multi-select com checkboxes
+  var fDd=document.getElementById('rpt-f-fila-dd');
+  if(fDd){
     var filas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
-    fSel.innerHTML='<option value="all">Todas as filas</option>'+
-      filas.map(function(f){return '<option value="'+_rptEsc(f)+'">'+_rptEsc(f)+'</option>';}).join('');
-    var curFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP)?activeFilaOP:'all';
-    fSel.value=curFila||'all';
+    var curFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
+    // Seleção inicial: se tela tem fila ativa → pré-seleciona só ela; senão → todas (equivale a "Todas")
+    _rptFilasSelected=curFila?[curFila]:filas.slice();
+    var html='<div class="rpt-multi-ctrls">'
+      +'<button type="button" class="rpt-multi-ctrl" onclick="rptFilaAll(true)">Todas</button>'
+      +'<button type="button" class="rpt-multi-ctrl" onclick="rptFilaAll(false)">Nenhuma</button>'
+      +'</div>';
+    html+=filas.map(function(f){
+      var checked=_rptFilasSelected.indexOf(f)!==-1?'checked':'';
+      return '<label class="rpt-multi-opt"><input type="checkbox" value="'+_rptEsc(f)+'" '+checked+' onchange="rptFilaChange()">'+_rptEsc(f)+'</label>';
+    }).join('');
+    fDd.innerHTML=html;
+    _rptFilaUpdateLabel(filas);
     var tag=document.getElementById('rpt-f-fila-tag');
-    if(tag)tag.style.display=(curFila&&curFila!=='all')?'inline-block':'none';
+    if(tag)tag.style.display=curFila?'inline-block':'none';
   }
+}
+// Estado do multi-select de fila
+var _rptFilasSelected=[];
+function rptToggleFilaDd(e){
+  if(e)e.stopPropagation();
+  var dd=document.getElementById('rpt-f-fila-dd');
+  var btn=document.getElementById('rpt-f-fila-btn');
+  if(!dd||!btn)return;
+  var isOn=dd.classList.toggle('on');
+  btn.classList.toggle('on',isOn);
+  if(isOn){
+    setTimeout(function(){document.addEventListener('click',_rptCloseFilaDd);},0);
+  }
+}
+function _rptCloseFilaDd(e){
+  var wrap=document.getElementById('rpt-f-fila-wrap');
+  if(wrap&&!wrap.contains(e.target)){
+    var dd=document.getElementById('rpt-f-fila-dd');
+    var btn=document.getElementById('rpt-f-fila-btn');
+    if(dd)dd.classList.remove('on');
+    if(btn)btn.classList.remove('on');
+    document.removeEventListener('click',_rptCloseFilaDd);
+  }
+}
+function rptFilaAll(select){
+  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+  _rptFilasSelected=select?all.slice():[];
+  var dd=document.getElementById('rpt-f-fila-dd');
+  if(dd){
+    dd.querySelectorAll('input[type="checkbox"]').forEach(function(cb){cb.checked=select;});
+  }
+  _rptFilaUpdateLabel(all);
+}
+function rptFilaChange(){
+  var dd=document.getElementById('rpt-f-fila-dd');
+  if(!dd)return;
+  var checked=[];
+  dd.querySelectorAll('input[type="checkbox"]:checked').forEach(function(cb){checked.push(cb.value);});
+  _rptFilasSelected=checked;
+  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+  _rptFilaUpdateLabel(all);
+}
+function _rptFilaUpdateLabel(allFilas){
+  var lbl=document.getElementById('rpt-f-fila-lbl');
+  if(!lbl)return;
+  var n=_rptFilasSelected.length;
+  if(n===0)lbl.textContent='Nenhuma fila (vazio)';
+  else if(n===allFilas.length)lbl.textContent='Todas as filas ('+n+')';
+  else if(n<=2)lbl.textContent=_rptFilasSelected.join(', ');
+  else lbl.textContent=_rptFilasSelected.length+' filas selecionadas';
 }
 function _rptEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 
@@ -5913,10 +5989,15 @@ function _rptEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){r
 function rptGenerate(){
   var sel=document.querySelector('input[name="rpt-type"]:checked');
   var type=sel?sel.value:'exec';
+  var allFilas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+  // Se todas as filas estão selecionadas (ou nenhuma mudou), equivale a "all"
+  var filasSel=_rptFilasSelected||[];
+  var isAllFilas=(allFilas.length>0&&filasSel.length===allFilas.length);
   var scope={
     mes: document.getElementById('rpt-f-mes').value||'all',
     cli: document.getElementById('rpt-f-cli').value||'',
-    fila: document.getElementById('rpt-f-fila').value||'all',
+    fila: isAllFilas?'all':(filasSel.length===1?filasSel[0]:'all'),
+    filas: isAllFilas?null:(filasSel.length?filasSel:null),
     tech: document.getElementById('rpt-o-tech').checked,
     meth: document.getElementById('rpt-o-meth').checked,
     aios: document.getElementById('rpt-o-aios').checked
@@ -5944,6 +6025,7 @@ function rptGenerate(){
 // ════════════════════════════════════════════════════════════
 
 // Filtra RAW_DATA de acordo com o escopo do relatório
+// scope.filas: array de filas (multi-select) ou 'all'
 function _rptFilterRaw(scope){
   if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length)return [];
   var ms=null,me=null;
@@ -5952,40 +6034,55 @@ function _rptFilterRaw(scope){
     ms=new Date(parseInt(p[0]),parseInt(p[1])-1,1);
     me=new Date(parseInt(p[0]),parseInt(p[1]),0,23,59,59);
   }
+  var filasSet=null;
+  if(scope.filas&&Array.isArray(scope.filas)&&scope.filas.length){
+    filasSet={};scope.filas.forEach(function(f){filasSet[f]=true;});
+  }else if(scope.fila&&scope.fila!=='all'){
+    filasSet={};filasSet[scope.fila]=true;
+  }
   return RAW_DATA.filter(function(d){
     if(!d||!d.criado)return false;
     if(ms&&me&&(d.criado<ms||d.criado>me))return false;
     if(scope.cli&&d.cli_id!==scope.cli)return false;
-    if(scope.fila&&scope.fila!=='all'&&d.fila!==scope.fila)return false;
+    if(filasSet&&!filasSet[d.fila])return false;
     return true;
   });
 }
 
 // KPI 1 — First Response Time (mediana, em minutos)
+// Campo correto: d.resp_min (não d.resp)
 function calcKPI_response(rows){
-  var vals=rows.map(function(d){return d.resp;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
+  var vals=rows.map(function(d){return d.resp_min;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
   if(!vals.length)return {val:null,n:0};
   vals.sort(function(a,b){return a-b;});
   var med=vals.length%2?vals[(vals.length-1)/2]:Math.round((vals[vals.length/2-1]+vals[vals.length/2])/2);
-  return {val:med,n:vals.length};
+  return {val:Math.round(med),n:vals.length};
 }
 
 // KPI 2 — SLA Compliance (% dentro de 48h úteis — meta padrão contratual)
+// Campo correto: d.sol_h_bh (business hours) com fallback pra d.sol_h (wall clock)
 function calcKPI_sla(rows){
   var SLA_H=48;
-  var solVals=rows.filter(function(d){return d.sol!=null&&!isNaN(d.sol);});
-  if(!solVals.length)return {val:null,n:0,violados:0};
-  var violados=solVals.filter(function(d){return d.sol>SLA_H;}).length;
-  var pct=Math.round((solVals.length-violados)/solVals.length*100);
-  return {val:pct,n:solVals.length,violados:violados};
+  var solRows=rows.filter(function(d){
+    var h=(d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;
+    return h!=null&&!isNaN(h);
+  });
+  if(!solRows.length)return {val:null,n:0,violados:0};
+  var violados=solRows.filter(function(d){
+    var h=(d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;
+    return h>SLA_H;
+  }).length;
+  var pct=Math.round((solRows.length-violados)/solRows.length*100);
+  return {val:pct,n:solRows.length,violados:violados};
 }
 
-// KPI 3 — Average Resolution Time (média em horas, tickets fechados)
+// KPI 3 — Average Resolution Time (média em horas úteis, tickets fechados)
+// Campo correto: d.sol_h_bh (business hours) com fallback pra d.sol_h
 function calcKPI_resolution(rows){
-  var solVals=rows.map(function(d){return d.sol;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
-  if(!solVals.length)return {val:null,n:0};
-  var avg=solVals.reduce(function(a,b){return a+b;},0)/solVals.length;
-  return {val:Math.round(avg*10)/10,n:solVals.length};
+  var vals=rows.map(function(d){return (d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
+  if(!vals.length)return {val:null,n:0};
+  var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+  return {val:Math.round(avg*10)/10,n:vals.length};
 }
 
 // KPI 4 — First Contact Resolution (% chamados sem reabertura)
@@ -5998,13 +6095,19 @@ function calcKPI_fcr(rows,scope){
   if(!fechados)return {val:null,n:0,reabertos:0};
   // Conta reabertos no escopo (REAB_DATA)
   var reab=(typeof REAB_DATA!=='undefined'&&REAB_DATA&&REAB_DATA.rows)?REAB_DATA.rows:[];
+  var filasSet=null;
+  if(scope.filas&&Array.isArray(scope.filas)&&scope.filas.length){
+    filasSet={};scope.filas.forEach(function(f){filasSet[f]=true;});
+  }else if(scope.fila&&scope.fila!=='all'){
+    filasSet={};filasSet[scope.fila]=true;
+  }
   var reabScope=reab.filter(function(r){
     if(scope.cli){
       var nm=(r.cliente||'').toLowerCase().replace(/[_\s]/g,'');
       var ac=(scope.cli||'').toLowerCase().replace(/[_\s]/g,'');
       if(nm!==ac)return false;
     }
-    if(scope.fila&&scope.fila!=='all'&&r.fila!==scope.fila)return false;
+    if(filasSet&&!filasSet[r.fila])return false;
     return true;
   });
   var reabertos=reabScope.length;
@@ -6067,10 +6170,18 @@ function exportExecutivePDF(scope){
   var mLbls={'all':'Todos os meses','2026-01':'Janeiro 2026','2026-02':'Fevereiro 2026','2026-03':'Março 2026','2026-04':'Abril 2026'};
   var mesLabel=mLbls[scope.mes]||scope.mes;
   var cliLabel=scope.cli?((typeof EMPRESAS==='object'&&EMPRESAS[scope.cli]&&EMPRESAS[scope.cli].nome)||scope.cli):'Todos';
-  var filaLabel=scope.fila&&scope.fila!=='all'?scope.fila:'Todas';
+  var filaLabel;
+  if(scope.filas&&Array.isArray(scope.filas)&&scope.filas.length){
+    filaLabel=scope.filas.length<=3?scope.filas.join(' · '):scope.filas.length+' filas';
+  }else if(scope.fila&&scope.fila!=='all'){
+    filaLabel=scope.fila;
+  }else{
+    filaLabel='Todas';
+  }
 
-  // Hash determinístico do dataset (período + cliente + fila + count + timestamp hora)
-  var hashInput=scope.mes+'|'+scope.cli+'|'+scope.fila+'|'+rows.length+'|'+now.toISOString().slice(0,13);
+  // Hash determinístico do dataset (período + cliente + filas + count + timestamp hora)
+  var filasKey=scope.filas?scope.filas.slice().sort().join(','):(scope.fila||'all');
+  var hashInput=scope.mes+'|'+scope.cli+'|'+filasKey+'|'+rows.length+'|'+now.toISOString().slice(0,13);
   var dsHash=_rptHash(hashInput);
 
   // Flags de disponibilidade de datasets auxiliares
@@ -10871,7 +10982,13 @@ function renderIA(){
         </div>
         <div class="rpt-fld">
           <span class="rpt-fld-lbl">Fila</span>
-          <select id="rpt-f-fila"></select>
+          <div class="rpt-multi" id="rpt-f-fila-wrap">
+            <button type="button" class="rpt-multi-btn" id="rpt-f-fila-btn" onclick="rptToggleFilaDd(event)">
+              <span id="rpt-f-fila-lbl">Todas as filas</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="rpt-multi-dd" id="rpt-f-fila-dd"></div>
+          </div>
           <span class="rpt-fld-inherit" id="rpt-f-fila-tag" style="display:none">da tela</span>
         </div>
       </div>
