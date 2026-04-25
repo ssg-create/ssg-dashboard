@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777157057,
-  "generated_at_iso": "2026-04-25T22:44:17Z",
-  "count": 2272,
+  "generated_at": 1777159486,
+  "generated_at_iso": "2026-04-25T23:24:46Z",
+  "count": 2273,
   "filas": [
     "DATASUL",
     "DBA",
@@ -12,6 +12,26 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "num": "2026042526000341",
+      "assunto": "GROUNDWORK - Alertas WARNING - 26042519475872",
+      "criado": "2026-04-25T19:50:21",
+      "modificado": "2026-04-25T20:16:18",
+      "fila": "GWMS",
+      "estado": "new",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "primeiro_nome": "Admin",
+      "ultimo_nome": "OTRS",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "",
+      "fechado": null,
+      "resp_min_raw": null,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": null
+    },
     {
       "num": "2026042526000331",
       "assunto": "Monitoramento",
