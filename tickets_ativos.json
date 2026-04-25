@@ -1,6 +1,6 @@
 {
-  "generated_at": 1777148450,
-  "generated_at_iso": "2026-04-25T20:20:50Z",
+  "generated_at": 1777151195,
+  "generated_at_iso": "2026-04-25T21:06:35Z",
   "count": 190,
   "filas": [
     "DATASUL",
@@ -1053,7 +1053,7 @@
       "atendente": "Marcio Guimaraes",
       "criado": "2026-04-23T18:00:06",
       "modificado": "2026-04-24T15:10:07",
-      "idade_dias": 1,
+      "idade_dias": 2,
       "assunto": "Inserir Servidor Monitoramento"
     },
     {
@@ -1137,7 +1137,7 @@
       "atendente": "George Eivazian",
       "criado": "2026-03-06T17:22:15",
       "modificado": "2026-04-24T14:19:06",
-      "idade_dias": 49,
+      "idade_dias": 50,
       "assunto": "AJUSTE DE LP BAIXA - 40 BETFAIR"
     },
     {
@@ -1941,7 +1941,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-04-20T17:35:23",
       "modificado": "2026-04-20T18:13:02",
-      "idade_dias": 4,
+      "idade_dias": 5,
       "assunto": "Alteração de senha AD"
     },
     {
@@ -2085,7 +2085,7 @@
       "atendente": "Diego Cardoso",
       "criado": "2026-02-20T17:54:10",
       "modificado": "2026-04-14T17:34:07",
-      "idade_dias": 63,
+      "idade_dias": 64,
       "assunto": "Atualização Moeda RON não está acontecendo"
     },
     {
