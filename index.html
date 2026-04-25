@@ -217,6 +217,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tb-theme-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:4px 6px;border-radius:6px;line-height:1;transition:color .2s,background .2s;flex-shrink:0}
 .tb-theme-btn:hover{color:var(--text);background:var(--bg3)}
 [data-theme="light"] .topbar{background:rgba(244,246,249,0.97)}
+/* Nebula glow — violet top-left + cyan bottom-right, fixed bg layer */
+[data-theme="dark-soft"] body{
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 0%, rgba(139,92,246,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(34,211,238,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(168,85,247,0.04) 0%, transparent 70%),
+    var(--bg);
+  background-attachment:fixed
+}
+[data-theme="dark-soft"] .topbar{background:rgba(13,16,36,0.92);backdrop-filter:saturate(1.2) blur(8px);-webkit-backdrop-filter:saturate(1.2) blur(8px);border-bottom-color:rgba(140,130,255,0.18)}
+[data-theme="dark-soft"] .card,[data-theme="dark-soft"] .kpi{box-shadow:0 0 0 1px rgba(140,130,255,0.06),0 4px 24px rgba(13,16,36,0.4)}
+[data-theme="dark-soft"] .tb-theme-btn{color:#a78bfa}
+[data-theme="dark-soft"] .tb-theme-btn:hover{color:#e8eafd;background:rgba(167,139,250,0.12)}
 
 /* ═══ LAYOUT ══════════════════════════════════════════════════ */
 .app{display:flex;padding-top:52px;min-height:100vh}
@@ -3062,19 +3075,19 @@ function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr
     '--border':'rgba(0,0,0,0.08)','--border2':'rgba(0,0,0,0.14)','--border3':'rgba(0,0,0,0.20)',
     '--text':'#111827','--muted':'#6b7280','--sub':'#4b5563'
   };
-  // Paleta dark-soft: cream-brown warm dark, claramente distinto do dark normal.
-  // Inspirado em Kindle Paperwhite / coffee-shop reading mode — bg ~+21pt mais
-  // claro que dark (#080b10), com undertone âmbar pra reduzir blue-light.
-  // Texto sepia (#dad4c4) reduz brilho mantendo contraste AAA contra o bg.
+  // Paleta dark-soft: "Nebula Command" — cosmic indigo profundo, bordas violet,
+  // texto ice-white com tint azul. Visual de command center moderno (era da IA),
+  // com radial gradients de glow violet+ciano aplicados em CSS scoped abaixo.
+  // Não é "soft" no sentido de baixa fadiga — é um dark com personalidade forte.
   var darkSoft={
-    '--bg':'#23201a','--bg2':'#2c2922','--bg3':'#35312a','--bg4':'#3e3a32',
-    '--border':'rgba(245,235,210,0.07)','--border2':'rgba(245,235,210,0.13)','--border3':'rgba(245,235,210,0.20)',
-    '--text':'#dad4c4','--muted':'#9c9786','--sub':'#b5af9c'
+    '--bg':'#0d1024','--bg2':'#161a36','--bg3':'#1f2547','--bg4':'#2a3158',
+    '--border':'rgba(140,130,255,0.10)','--border2':'rgba(140,130,255,0.18)','--border3':'rgba(140,130,255,0.28)',
+    '--text':'#e8eafd','--muted':'#7c83a8','--sub':'#a8aecf'
   };
   var THEMES=['dark','dark-soft','light'];
-  var ICONS={dark:'🌙','dark-soft':'🌗',light:'☀️'};
-  var LABELS={dark:'Modo escuro',
-              'dark-soft':'Modo suave · baixa fadiga',
+  var ICONS={dark:'🌙','dark-soft':'🌌',light:'☀️'};
+  var LABELS={dark:'Modo escuro · alto contraste',
+              'dark-soft':'Modo Nebula · command center',
               light:'Modo claro'};
 
   function clearAllOverrides(){
