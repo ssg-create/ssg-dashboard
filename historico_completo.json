@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777126248,
-  "generated_at_iso": "2026-04-25T14:10:48Z",
-  "count": 2248,
+  "generated_at": 1777129452,
+  "generated_at_iso": "2026-04-25T15:04:12Z",
+  "count": 2250,
   "filas": [
     "DATASUL",
     "DBA",
@@ -12,6 +12,46 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "num": "2026042526000108",
+      "assunto": "GROUNDWORK - Alertas WARNING - 26042510460692",
+      "criado": "2026-04-25T10:50:14",
+      "modificado": "2026-04-25T11:41:46",
+      "fila": "GWMS",
+      "estado": "new",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "primeiro_nome": "Admin",
+      "ultimo_nome": "OTRS",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "",
+      "fechado": null,
+      "resp_min_raw": null,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": null
+    },
+    {
+      "num": "2026042526000091",
+      "assunto": "DKT - GWMS-SERVER - Influxdb Check Writes - 26042510331665",
+      "criado": "2026-04-25T10:35:12",
+      "modificado": "2026-04-25T11:41:37",
+      "fila": "GWMS",
+      "estado": "new",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "primeiro_nome": "Admin",
+      "ultimo_nome": "OTRS",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "",
+      "fechado": null,
+      "resp_min_raw": null,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": null
+    },
     {
       "num": "2026042526000082",
       "assunto": "AUTOZONE - SRV-SQL-PRD - SQL:Jobs - 26042509513257",
