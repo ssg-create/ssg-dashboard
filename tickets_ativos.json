@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777087551,
-  "generated_at_iso": "2026-04-25T03:25:51Z",
-  "count": 175,
+  "generated_at": 1777094896,
+  "generated_at_iso": "2026-04-25T05:28:16Z",
+  "count": 177,
   "filas": [
     "DATASUL",
     "DBA",
@@ -12,6 +12,30 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "ticket": "2026042526000028",
+      "cliente": "monitoramento@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "NEW",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "criado": "2026-04-25T00:45:17",
+      "modificado": "2026-04-25T01:50:20",
+      "idade_dias": 0,
+      "assunto": "GROUNDWORK - GROUNDWORK_VM-GWMSTLX-WBS01 - API:ces_broker_x_gwms_cstg - Check Times - 26042500422264"
+    },
+    {
+      "ticket": "2026042526000019",
+      "cliente": "monitoramento@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "NEW",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "criado": "2026-04-25T00:25:15",
+      "modificado": "2026-04-25T00:29:19",
+      "idade_dias": 0,
+      "assunto": "PAM_PLASTICOS - GWMS-Server - Time - 26042500235041"
+    },
     {
       "ticket": "2026042426000441",
       "cliente": "monitoramento@groundwork.com.br",
@@ -717,7 +741,7 @@
       "atendente": "Tiago Silva",
       "criado": "2026-04-23T00:27:00",
       "modificado": "2026-04-24T10:37:52",
-      "idade_dias": 1,
+      "idade_dias": 2,
       "assunto": "ROBÔ DACTE DE COMPRA"
     },
     {
@@ -829,6 +853,18 @@
       "assunto": "Auxilio com otimização de fonte API REST DASH_API01"
     },
     {
+      "ticket": "2026041726000356",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-17T16:27:41",
+      "modificado": "2026-04-24T05:00:16",
+      "idade_dias": 7,
+      "assunto": "Contabilização offline"
+    },
+    {
       "ticket": "2026042226000239",
       "cliente": "bruno.fagundes@groundwork.com.br",
       "fila": "GWMS",
@@ -865,28 +901,16 @@
       "assunto": "Alteração Threshold Discos Servidor SRV-SQL-PRD - Cliente AUTOZONE"
     },
     {
-      "ticket": "2026041726000356",
+      "ticket": "2026041626000483",
       "cliente": "AUTOZONE",
       "fila": "SSG",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-17T16:27:41",
-      "modificado": "2026-04-24T05:00:16",
-      "idade_dias": 7,
-      "assunto": "Contabilização offline"
-    },
-    {
-      "ticket": "2026041726000098",
-      "cliente": "ALMEIDA JR",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
       "prioridade": "4 high",
-      "atendente": "Dyalef Abreu Santos",
-      "criado": "2026-04-17T09:37:23",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-16T18:07:06",
       "modificado": "2026-04-24T05:00:15",
-      "idade_dias": 7,
-      "assunto": "Ajuste boleto - Cessão de espaço"
+      "idade_dias": 8,
+      "assunto": "Refaz saldos - PD8 - USGAAP"
     },
     {
       "ticket": "2026041426000254",
@@ -899,6 +923,18 @@
       "modificado": "2026-04-24T05:00:15",
       "idade_dias": 10,
       "assunto": "AUTOZONE - GWMS-Server - Disks Queue Length - 26041413581068"
+    },
+    {
+      "ticket": "2026041726000098",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Dyalef Abreu Santos",
+      "criado": "2026-04-17T09:37:23",
+      "modificado": "2026-04-24T05:00:15",
+      "idade_dias": 7,
+      "assunto": "Ajuste boleto - Cessão de espaço"
     },
     {
       "ticket": "2026042226000131",
@@ -925,18 +961,6 @@
       "assunto": "Testar SQL Audit em ambiente de Homologação AUTOZONE"
     },
     {
-      "ticket": "2026041726000123",
-      "cliente": "danielle.faria@groundwork.com.br",
-      "fila": "INFRAESTUTURA",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Vinicius Vedove",
-      "criado": "2026-04-17T10:35:07",
-      "modificado": "2026-04-24T05:00:15",
-      "idade_dias": 7,
-      "assunto": "Compartilhamento documentos One Drive"
-    },
-    {
       "ticket": "2026040926000121",
       "cliente": "andrei.honorio@teletex.com",
       "fila": "GWMS",
@@ -947,18 +971,6 @@
       "modificado": "2026-04-24T05:00:15",
       "idade_dias": 15,
       "assunto": "UNIMED-CURITIBA | Solicitação de mudança para o cliente Unimed "
-    },
-    {
-      "ticket": "2026041726000301",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-17T15:50:27",
-      "modificado": "2026-04-24T05:00:15",
-      "idade_dias": 7,
-      "assunto": "INSERT/ SELECT - TIPO 9 - 17.04 - W1 PD09"
     },
     {
       "ticket": "2026042226000113",
@@ -997,16 +1009,28 @@
       "assunto": "BERNECK - Remoção do monitoramento."
     },
     {
-      "ticket": "2026041726000338",
-      "cliente": "FADEL",
+      "ticket": "2026041726000123",
+      "cliente": "danielle.faria@groundwork.com.br",
       "fila": "INFRAESTUTURA",
       "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
+      "prioridade": "3 normal",
       "atendente": "Vinicius Vedove",
-      "criado": "2026-04-17T16:21:22",
+      "criado": "2026-04-17T10:35:07",
       "modificado": "2026-04-24T05:00:15",
       "idade_dias": 7,
-      "assunto": "PROBLEMA AO ACESSAR"
+      "assunto": "Compartilhamento documentos One Drive"
+    },
+    {
+      "ticket": "2026041726000301",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-17T15:50:27",
+      "modificado": "2026-04-24T05:00:15",
+      "idade_dias": 7,
+      "assunto": "INSERT/ SELECT - TIPO 9 - 17.04 - W1 PD09"
     },
     {
       "ticket": "2026032626000073",
@@ -1019,18 +1043,6 @@
       "modificado": "2026-04-24T05:00:15",
       "idade_dias": 29,
       "assunto": "Cadastro bancario de fornecedor"
-    },
-    {
-      "ticket": "2026041626000483",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-16T18:07:06",
-      "modificado": "2026-04-24T05:00:15",
-      "idade_dias": 8,
-      "assunto": "Refaz saldos - PD8 - USGAAP"
     },
     {
       "ticket": "2026042026000215",
@@ -1055,6 +1067,18 @@
       "modificado": "2026-04-24T05:00:15",
       "idade_dias": 7,
       "assunto": "Verificação cases gerados via automação GW x SN"
+    },
+    {
+      "ticket": "2026041726000338",
+      "cliente": "FADEL",
+      "fila": "INFRAESTUTURA",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Vinicius Vedove",
+      "criado": "2026-04-17T16:21:22",
+      "modificado": "2026-04-24T05:00:15",
+      "idade_dias": 7,
+      "assunto": "PROBLEMA AO ACESSAR"
     },
     {
       "ticket": "2026041326000523",
