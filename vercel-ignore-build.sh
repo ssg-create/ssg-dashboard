@@ -22,10 +22,17 @@ echo "🔍 Vercel ignore-build check"
 echo "  branch: ${VERCEL_GIT_COMMIT_REF:-unknown}"
 echo "  commit: ${VERCEL_GIT_COMMIT_SHA:-unknown}"
 
-# Lista de arquivos alterados no commit atual vs anterior.
-# Fallback: se não tem HEAD^ (ex: primeiro commit), força deploy.
-if ! CHANGED=$(git diff --name-only HEAD^ HEAD 2>/dev/null); then
-  echo "⚠️  Sem histórico anterior — fazendo deploy por segurança"
+# Lista de arquivos alterados desde o ÚLTIMO commit DEPLOYADO (não desde HEAD^).
+# Motivo: workflow gwms-sync.yml empurra commits .json a cada 10min. Se compararmos
+# só HEAD vs HEAD^, commits de código ficam "enterrados" sob sync commits e nunca
+# disparam deploy. VERCEL_GIT_PREVIOUS_SHA aponta para o último commit que foi
+# realmente deployado — comparar contra ele garante que toda mudança de código
+# acumulada desde o último deploy seja detectada.
+BASE="${VERCEL_GIT_PREVIOUS_SHA:-HEAD^}"
+echo "  comparando contra: $BASE"
+
+if ! CHANGED=$(git diff --name-only "$BASE" HEAD 2>/dev/null); then
+  echo "⚠️  Sem histórico anterior ou SHA inválido — fazendo deploy por segurança"
   exit 1
 fi
 
