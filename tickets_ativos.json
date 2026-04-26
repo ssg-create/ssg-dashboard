@@ -1,6 +1,6 @@
 {
-  "generated_at": 1777233348,
-  "generated_at_iso": "2026-04-26T19:55:48Z",
+  "generated_at": 1777236617,
+  "generated_at_iso": "2026-04-26T20:50:17Z",
   "count": 230,
   "filas": [
     "DATASUL",
@@ -213,7 +213,7 @@
       "atendente": "Marcio Guimaraes",
       "criado": "2026-04-22T17:00:14",
       "modificado": "2026-04-26T05:00:14",
-      "idade_dias": 3,
+      "idade_dias": 4,
       "assunto": "Ticket para alteração do monitoramento ambiente de HOMOLOGAÇÃO da AUTOZONE"
     },
     {
@@ -1029,7 +1029,7 @@
       "atendente": "Admin OTRS",
       "criado": "2026-04-25T17:50:06",
       "modificado": "2026-04-25T18:08:20",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "GROUNDWORK - GROUNDWORK_ELK-Server - Load - 26042517463171"
     },
     {
@@ -1041,7 +1041,7 @@
       "atendente": "Admin OTRS",
       "criado": "2026-04-25T17:45:05",
       "modificado": "2026-04-25T18:08:16",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "GROUNDWORK - GROUNDWORK_ELK-Server - Load: Top 5 process - 26042517415923"
     },
     {
@@ -1713,7 +1713,7 @@
       "atendente": "Vilante Marques Alves",
       "criado": "2025-09-18T17:09:56",
       "modificado": "2026-04-24T14:20:22",
-      "idade_dias": 219,
+      "idade_dias": 220,
       "assunto": "Criação de títulos de impostos gerados pelo configurador de tributos"
     },
     {
@@ -1737,7 +1737,7 @@
       "atendente": "George Eivazian",
       "criado": "2026-03-06T17:22:15",
       "modificado": "2026-04-24T14:19:06",
-      "idade_dias": 50,
+      "idade_dias": 51,
       "assunto": "AJUSTE DE LP BAIXA - 40 BETFAIR"
     },
     {
@@ -2421,7 +2421,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-04-20T17:35:23",
       "modificado": "2026-04-20T18:13:02",
-      "idade_dias": 5,
+      "idade_dias": 6,
       "assunto": "Alteração de senha AD"
     },
     {
@@ -2541,7 +2541,7 @@
       "atendente": "Tiago Silva",
       "criado": "2026-02-12T17:18:11",
       "modificado": "2026-04-17T09:56:47",
-      "idade_dias": 72,
+      "idade_dias": 73,
       "assunto": "Fonte CFOP 2409"
     },
     {
