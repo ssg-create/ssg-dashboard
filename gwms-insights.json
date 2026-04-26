@@ -1,6 +1,6 @@
 {
-  "generated_at": 1777244936,
-  "generated_at_iso": "2026-04-26T23:08:56Z",
+  "generated_at": 1777247820,
+  "generated_at_iso": "2026-04-26T23:57:00Z",
   "counts": {
     "crit": 1,
     "warn": 4,
@@ -19,7 +19,7 @@
           "cliente": "AUTOZONE",
           "fila": "SSG",
           "atendente": "Carlos Fernandes",
-          "dias_silencio": 60.1,
+          "dias_silencio": 60.2,
           "estado": "OPEN"
         }
       ],
