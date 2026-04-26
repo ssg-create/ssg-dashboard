@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777213449,
-  "generated_at_iso": "2026-04-26T14:24:09Z",
-  "count": 2293,
+  "generated_at": 1777216276,
+  "generated_at_iso": "2026-04-26T15:11:16Z",
+  "count": 2292,
   "filas": [
     "DATASUL",
     "DBA",
@@ -2673,26 +2673,6 @@
       "resp_min_bh": 12
     },
     {
-      "num": "2026042326000013",
-      "assunto": "AUTOZONE - SRV-SQL-PRD - SQL:P12_AUTOZONE - User Expiration - 26042300134514",
-      "criado": "2026-04-23T00:15:09",
-      "modificado": "2026-04-26T05:00:14",
-      "fila": "DBA",
-      "estado": "aguardando cliente",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "primeiro_nome": "Eduardo",
-      "ultimo_nome": "Candido",
-      "cli_id": "monitoramento@groundwork.com.br",
-      "cli_user": "monitoramento@groundwork.com.br",
-      "servico": "Monitoramento & Observabilidade (GWMS)",
-      "fechado": null,
-      "resp_min_raw": 570,
-      "sol_min_raw": null,
-      "sol_min_bh": null,
-      "resp_min_bh": 105
-    },
-    {
       "num": "2026042326000022",
       "assunto": "ERRO NA COMPEMSAÇÃO CONTROLE DE CAMBIO/CONTAS A PAGAR",
       "criado": "2026-04-23T00:15:09",
@@ -2711,6 +2691,26 @@
       "sol_min_raw": null,
       "sol_min_bh": null,
       "resp_min_bh": 51
+    },
+    {
+      "num": "2026042326000013",
+      "assunto": "AUTOZONE - SRV-SQL-PRD - SQL:P12_AUTOZONE - User Expiration - 26042300134514",
+      "criado": "2026-04-23T00:15:09",
+      "modificado": "2026-04-26T05:00:14",
+      "fila": "DBA",
+      "estado": "aguardando cliente",
+      "prioridade": "3 normal",
+      "atendente": "Eduardo Candido",
+      "primeiro_nome": "Eduardo",
+      "ultimo_nome": "Candido",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "Monitoramento & Observabilidade (GWMS)",
+      "fechado": null,
+      "resp_min_raw": 570,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": 105
     },
     {
       "num": "2026042226000631",
@@ -45851,26 +45851,6 @@
       "sol_min_raw": 9722,
       "sol_min_bh": 2402,
       "resp_min_bh": 8
-    },
-    {
-      "num": "2025122626000165",
-      "assunto": "AUTOZONE - SRV-SQL-PRD - SQL:Blocked Sessions - 25122611352455",
-      "criado": "2025-12-26T11:45:04",
-      "modificado": "2025-12-31T17:45:15",
-      "fila": "DBA",
-      "estado": "closed successful",
-      "prioridade": "3 normal",
-      "atendente": "Bruno Montenegro",
-      "primeiro_nome": "Bruno",
-      "ultimo_nome": "Montenegro",
-      "cli_id": "monitoramento@groundwork.com.br",
-      "cli_user": "monitoramento@groundwork.com.br",
-      "servico": "Banco de Horas::Banco de Dados",
-      "fechado": "2025-12-31T17:45:15",
-      "resp_min_raw": 278,
-      "sol_min_raw": 7560,
-      "sol_min_bh": 1919,
-      "resp_min_bh": 217
     }
   ],
   "janela_meses": 4,
