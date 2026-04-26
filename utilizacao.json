@@ -1,6 +1,6 @@
 {
-  "generated_at": 1777230524,
-  "generated_at_iso": "2026-04-26T19:08:44Z",
+  "generated_at": 1777233347,
+  "generated_at_iso": "2026-04-26T19:55:47Z",
   "count": 31,
   "filas": [
     "DATASUL",
@@ -26,7 +26,7 @@
       "em_atendimento": 4,
       "aguardando": 5,
       "abertos": 1,
-      "em_atend_tempo_med_min": 9281.75
+      "em_atend_tempo_med_min": 9328.75
     },
     {
       "atendente": "Robert Rodrigues dos Santos",
@@ -42,7 +42,7 @@
       "em_atendimento": 6,
       "aguardando": 3,
       "abertos": 0,
-      "em_atend_tempo_med_min": 7644.5
+      "em_atend_tempo_med_min": 7691.5
     },
     {
       "atendente": "Jean Pierre Rocha",
@@ -50,7 +50,7 @@
       "em_atendimento": 1,
       "aguardando": 0,
       "abertos": 8,
-      "em_atend_tempo_med_min": 6174
+      "em_atend_tempo_med_min": 6221
     },
     {
       "atendente": "Thiago Trufelli",
@@ -58,7 +58,7 @@
       "em_atendimento": 2,
       "aguardando": 3,
       "abertos": 4,
-      "em_atend_tempo_med_min": 10411.5
+      "em_atend_tempo_med_min": 10458.5
     },
     {
       "atendente": "Guilherme Jonck",
@@ -66,7 +66,7 @@
       "em_atendimento": 1,
       "aguardando": 4,
       "abertos": 2,
-      "em_atend_tempo_med_min": 2763
+      "em_atend_tempo_med_min": 2810
     },
     {
       "atendente": "Marcelo David",
@@ -74,7 +74,7 @@
       "em_atendimento": 2,
       "aguardando": 3,
       "abertos": 2,
-      "em_atend_tempo_med_min": 21216.5
+      "em_atend_tempo_med_min": 21263.5
     },
     {
       "atendente": "Eduardo Candido",
@@ -82,7 +82,7 @@
       "em_atendimento": 1,
       "aguardando": 4,
       "abertos": 1,
-      "em_atend_tempo_med_min": 2872
+      "em_atend_tempo_med_min": 2919
     },
     {
       "atendente": "Marcio Guimaraes",
@@ -90,7 +90,7 @@
       "em_atendimento": 3,
       "aguardando": 2,
       "abertos": 0,
-      "em_atend_tempo_med_min": 3955
+      "em_atend_tempo_med_min": 4002
     },
     {
       "atendente": "Joao Santos",
@@ -114,7 +114,7 @@
       "em_atendimento": 1,
       "aguardando": 4,
       "abertos": 0,
-      "em_atend_tempo_med_min": 4630
+      "em_atend_tempo_med_min": 4677
     },
     {
       "atendente": "Cristiano Scaranci",
@@ -122,7 +122,7 @@
       "em_atendimento": 2,
       "aguardando": 2,
       "abertos": 1,
-      "em_atend_tempo_med_min": 6207
+      "em_atend_tempo_med_min": 6254
     },
     {
       "atendente": "Geyson Albano",
@@ -130,7 +130,7 @@
       "em_atendimento": 1,
       "aguardando": 3,
       "abertos": 0,
-      "em_atend_tempo_med_min": 2988
+      "em_atend_tempo_med_min": 3035
     },
     {
       "atendente": "Diego Cardoso",
@@ -138,7 +138,7 @@
       "em_atendimento": 1,
       "aguardando": 4,
       "abertos": 0,
-      "em_atend_tempo_med_min": 3185
+      "em_atend_tempo_med_min": 3232
     },
     {
       "atendente": "Pedro Luiz",
@@ -162,7 +162,7 @@
       "em_atendimento": 1,
       "aguardando": 3,
       "abertos": 0,
-      "em_atend_tempo_med_min": 2764
+      "em_atend_tempo_med_min": 2811
     },
     {
       "atendente": "George Eivazian",
@@ -178,7 +178,7 @@
       "em_atendimento": 1,
       "aguardando": 0,
       "abertos": 2,
-      "em_atend_tempo_med_min": 4392
+      "em_atend_tempo_med_min": 4439
     },
     {
       "atendente": "Vinicius Vedove",
@@ -186,7 +186,7 @@
       "em_atendimento": 1,
       "aguardando": 2,
       "abertos": 0,
-      "em_atend_tempo_med_min": 6007
+      "em_atend_tempo_med_min": 6054
     },
     {
       "atendente": "Wiglas Reis",
@@ -194,7 +194,7 @@
       "em_atendimento": 3,
       "aguardando": 0,
       "abertos": 0,
-      "em_atend_tempo_med_min": 12940.6667
+      "em_atend_tempo_med_min": 12988
     },
     {
       "atendente": "Carlos Fernandes",
@@ -226,7 +226,7 @@
       "em_atendimento": 1,
       "aguardando": 0,
       "abertos": 1,
-      "em_atend_tempo_med_min": 6048
+      "em_atend_tempo_med_min": 6095
     },
     {
       "atendente": "Vinicius Eroico",
@@ -250,7 +250,7 @@
       "em_atendimento": 1,
       "aguardando": 0,
       "abertos": 0,
-      "em_atend_tempo_med_min": 6035
+      "em_atend_tempo_med_min": 6082
     },
     {
       "atendente": "Gesiel Silva",
@@ -258,7 +258,7 @@
       "em_atendimento": 1,
       "aguardando": 0,
       "abertos": 0,
-      "em_atend_tempo_med_min": 6115
+      "em_atend_tempo_med_min": 6162
     }
   ]
 }
