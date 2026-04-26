@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777194655,
-  "generated_at_iso": "2026-04-26T09:10:55Z",
-  "count": 2294,
+  "generated_at": 1777198254,
+  "generated_at_iso": "2026-04-26T10:10:54Z",
+  "count": 2293,
   "filas": [
     "DATASUL",
     "DBA",
@@ -45871,26 +45871,6 @@
       "sol_min_raw": 10259,
       "sol_min_bh": 2878,
       "resp_min_bh": 12
-    },
-    {
-      "num": "2025122626000049",
-      "assunto": "Passar na query e processar baixas do dia 23/12",
-      "criado": "2025-12-26T07:04:57",
-      "modificado": "2026-01-14T15:45:06",
-      "fila": "SSG",
-      "estado": "closed successful",
-      "prioridade": "5 very high",
-      "atendente": "Debora Gomes",
-      "primeiro_nome": "Debora",
-      "ultimo_nome": "Gomes",
-      "cli_id": "AUTOZONE",
-      "cli_user": "regina.rodrigues@autozone.com",
-      "servico": "Serviço de Sustentação Groundwork::ERP Protheus::Financeiro",
-      "fechado": "2026-01-14T15:45:06",
-      "resp_min_raw": 50,
-      "sol_min_raw": 27880,
-      "sol_min_bh": 7425,
-      "resp_min_bh": 0
     }
   ],
   "janela_meses": 4,
