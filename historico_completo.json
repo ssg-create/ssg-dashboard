@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777183896,
-  "generated_at_iso": "2026-04-26T06:11:36Z",
-  "count": 2290,
+  "generated_at": 1777190189,
+  "generated_at_iso": "2026-04-26T07:56:29Z",
+  "count": 2292,
   "filas": [
     "DATASUL",
     "DBA",
@@ -12,6 +12,46 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "num": "2026042626000081",
+      "assunto": "#TOTVS-SERVERS - SP_SP-MON-CL02 - UX:JIRADC-NODE000005 - 26042602541255",
+      "criado": "2026-04-26T02:55:18",
+      "modificado": "2026-04-26T03:18:23",
+      "fila": "GWMS",
+      "estado": "new",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "primeiro_nome": "Admin",
+      "ultimo_nome": "OTRS",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "",
+      "fechado": null,
+      "resp_min_raw": null,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": null
+    },
+    {
+      "num": "2026042626000071",
+      "assunto": "GROUNDWORK - Alertas WARNING - 26042602502580",
+      "criado": "2026-04-26T02:55:17",
+      "modificado": "2026-04-26T03:18:28",
+      "fila": "GWMS",
+      "estado": "new",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "primeiro_nome": "Admin",
+      "ultimo_nome": "OTRS",
+      "cli_id": "monitoramento@groundwork.com.br",
+      "cli_user": "monitoramento@groundwork.com.br",
+      "servico": "",
+      "fechado": null,
+      "resp_min_raw": null,
+      "sol_min_raw": null,
+      "sol_min_bh": null,
+      "resp_min_bh": null
+    },
     {
       "num": "2026042626000062",
       "assunto": "GROUNDWORK - GROUNDWORK_ELK-Server - Load - 26042601524495",
