@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777204552,
-  "generated_at_iso": "2026-04-26T11:55:52Z",
-  "count": 6,
+  "generated_at": 1777209754,
+  "generated_at_iso": "2026-04-26T13:22:34Z",
+  "count": 5,
   "filas": [
     "DATASUL",
     "DBA",
@@ -23,18 +23,6 @@
       "modificado": "2026-04-22T11:20:58",
       "vezes_fechado": 3,
       "assunto": "Alteração de e-mail no disparo de relatório do BH  que ocorre todo dia 6 - Teletex"
-    },
-    {
-      "ticket": "2026012626000148",
-      "cliente": "NSX",
-      "fila": "SSG-MELHORIAS",
-      "estado_atual": "GMUD",
-      "prioridade": "5 very high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-23T20:01:25",
-      "vezes_fechado": 2,
-      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
     {
       "ticket": "2026041226000043",
