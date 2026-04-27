@@ -323,6 +323,7 @@ def q_utilizacao(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       CONCAT(u.first_name, ' ', u.last_name)                                         AS atendente,
+      u.login                                                                         AS login,
       COUNT(*)                                                                        AS ativos_total,
       SUM(CASE WHEN t.ticket_state_id = 14 THEN 1 ELSE 0 END)                         AS em_atendimento,
       SUM(CASE WHEN t.ticket_state_id IN (11, 12, 13, 15) THEN 1 ELSE 0 END)          AS aguardando,
