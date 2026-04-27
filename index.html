@@ -1194,6 +1194,8 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .at-hero-sub{font-size:13px;color:var(--at-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
 .at-hero-sub strong{color:var(--at-text);font-weight:600}
 .at-hero-meta{font-size:10px;color:var(--at-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
+.at-hero-otrs-link,.cl-hero-otrs-link,.al-hero-otrs-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:10px;font-family:var(--mono);color:var(--teal);text-decoration:none;opacity:.8;transition:opacity .15s}
+.at-hero-otrs-link:hover,.cl-hero-otrs-link:hover,.al-hero-otrs-link:hover{opacity:1}
 .at-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
 .at-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .at-ring svg circle{fill:none;stroke-width:2}
@@ -1788,6 +1790,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="al-hero-status" id="al-hero-status">—</div>
             <div class="al-hero-sub" id="al-hero-sub">avaliando panorama…</div>
             <div class="al-hero-meta" id="al-hero-meta">monitoramento contínuo</div>
+            <div id="al-hero-otrs"></div>
           </div>
           <div class="al-ring" id="al-ring">
             <svg viewBox="0 0 200 200">
@@ -1961,6 +1964,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="at-hero-status" id="at-hero-status">—</div>
             <div class="at-hero-sub" id="at-hero-sub">carregando equipe…</div>
             <div class="at-hero-meta" id="at-hero-meta">monitoramento via GWMS · sync 10min</div>
+            <div id="at-hero-otrs"></div>
           </div>
           <div class="at-ring" id="at-ring">
             <svg viewBox="0 0 200 200">
@@ -2006,6 +2010,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="cl-hero-status" id="cl-hero-status">—</div>
             <div class="cl-hero-sub" id="cl-hero-sub">agregando empresas…</div>
             <div class="cl-hero-meta" id="cl-hero-meta">distribuição por cliente e módulo ERP</div>
+            <div id="cl-hero-otrs"></div>
           </div>
           <div class="cl-ring" id="cl-ring">
             <svg viewBox="0 0 200 200">
@@ -3539,13 +3544,12 @@ function populateSlHero(op){
 
 function populateClHero(op){
   var g=function(id){return document.getElementById(id);};
-  var hero=g('cl-hero-status'), ringFg=g('cl-ring-fg'), ringNum=g('cl-ring-num'), sub=g('cl-hero-sub'), meta=g('cl-hero-meta');
+  var hero=g('cl-hero-status'), ringFg=g('cl-ring-fg'), ringNum=g('cl-ring-num'), sub=g('cl-hero-sub'), meta=g('cl-hero-meta'), otrsEl=g('cl-hero-otrs');
   if(!hero) return;
   var cli=op.cli||{};
   var clientesReais=Object.keys(cli).filter(function(k){return k&&k.indexOf('@')===-1;});
   var totalCli=clientesReais.length;
   var total=op.total||0;
-  // Top cliente
   var topK='', topN=0;
   clientesReais.forEach(function(k){if(cli[k]>topN){topN=cli[k];topK=k;}});
   var topPct=total>0?Math.round((topN/total)*100):0;
@@ -3560,6 +3564,15 @@ function populateClHero(op){
   if(ringFg){
     var pct=Math.min(1,totalCli/20);
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
+  }
+  // Link OTRS: abre busca pelo cliente ativo ou pelo top cliente
+  if(otrsEl){
+    var cliId=(typeof activeCliente!=='undefined'&&activeCliente)?activeCliente:topK;
+    var svg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    var base='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
+    var href=cliId?base+';CustomerIDRaw='+encodeURIComponent(cliId):base;
+    var label=cliId?'Ver chamados de '+cliId.split('@')[0]+' no OTRS':'Ver chamados abertos no OTRS';
+    otrsEl.innerHTML='<a href="'+href+'" target="_blank" rel="noopener" class="cl-hero-otrs-link">'+svg+label+'</a>';
   }
 }
 
@@ -3600,6 +3613,15 @@ function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
   if(ringFg){
     var pct=Math.min(1,totalCrit/50); // 50 = ring cheio
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
+  }
+  var otrsAlEl=g('al-hero-otrs');
+  if(otrsAlEl){
+    var alFila=(_alertState&&_alertState.filtroFila&&_alertState.filtroFila!=='all')?_alertState.filtroFila:'';
+    var alBase='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open;PriorityIDs[]=5';
+    var alHref=alFila?alBase+';Queues[]='+encodeURIComponent(alFila):alBase;
+    var alLabel=alFila?'Ver críticos da fila '+alFila+' no OTRS':'Ver todos muito alta no OTRS';
+    var alSvg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    otrsAlEl.innerHTML='<a href="'+alHref+'" target="_blank" rel="noopener" class="al-hero-otrs-link">'+alSvg+alLabel+'</a>';
   }
 }
 
@@ -4272,50 +4294,124 @@ function renderUtilizacao(data){
     var m=g('at-util-meta');if(m)m.textContent='sem dados';
     return;
   }
-  // Utilização é por atendente (não filtra por cliente — dataset não tem cliente)
-  // mas pode filtrar por fila se fosse necessário; por ora mostra agregado
   var rows=data.rows;
+  // Quando fila ativa: filtra atendentes pela fila usando tickets_ativos (tem campo fila)
+  var filaAtiva=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
+  var filaCountMap={};
+  if(filaAtiva && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    TICKETS_ATIVOS_DATA.rows.filter(function(r){return r.fila===filaAtiva;}).forEach(function(r){
+      if(r.atendente) filaCountMap[r.atendente]=(filaCountMap[r.atendente]||0)+1;
+    });
+    rows=rows.filter(function(r){return filaCountMap[r.atendente]!==undefined;});
+  }
   var over=rows.filter(function(r){return (r.em_atendimento||0)+(r.abertos||0)>=8;}).length;
-  var tot=rows.reduce(function(s,r){return s+(r.ativos_total||0);},0);
+  var tot=rows.reduce(function(s,r){return s+(filaAtiva&&filaCountMap[r.atendente]?filaCountMap[r.atendente]:(r.ativos_total||0));},0);
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
   setv('at-util-kpi-ppl',rows.length);
   setv('at-util-kpi-over',over);
   setv('at-util-kpi-tot',tot);
   var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
-  setv('at-util-meta',rows.length+' atendentes · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
+  var metaTxt=rows.length+' atendentes · atualizado há '+(tsMin<1?'agora':tsMin+' min');
+  if(filaAtiva) metaTxt+=' · filtro: fila '+filaAtiva;
+  setv('at-util-meta',metaTxt);
   var trs=rows.map(function(r){
-    var ativos=r.ativos_total||0;
-    var cargaReal=(r.em_atendimento||0)+(r.abertos||0);
+    var ativos=filaAtiva&&filaCountMap[r.atendente]?filaCountMap[r.atendente]:(r.ativos_total||0);
+    var cargaReal=filaAtiva?ativos:(r.em_atendimento||0)+(r.abertos||0);
     var col=cargaReal>=8?'var(--danger)':(cargaReal>=5?'var(--warn)':'var(--ok)');
-    var tempo=r.em_atend_tempo_med_min?_fmtDuration(Math.round(r.em_atend_tempo_med_min)):'—';
-    var tooltip='Total ativos: '+ativos+' (trabalhando: '+cargaReal+' · aguardando: '+(r.aguardando||0)+')';
+    var tempo=(!filaAtiva&&r.em_atend_tempo_med_min)?_fmtDuration(Math.round(r.em_atend_tempo_med_min)):'—';
+    var tooltip=filaAtiva
+      ?'Tickets na fila '+filaAtiva+': '+ativos+' (total global: '+(r.ativos_total||0)+')'
+      :'Total ativos: '+ativos+' (trabalhando: '+cargaReal+' · aguardando: '+(r.aguardando||0)+')';
     var nomeLabel=(r.atendente||'—').split(' ').slice(0,3).join(' ');
-    var nomeCell=r.login
-      ?('<a href="https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;OwnerSearch='+encodeURIComponent(r.login)+'&StateType=Open" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none" title="Abrir tickets ativos de '+nomeLabel+' no OTRS">'+nomeLabel+'</a>')
+    var otrsHref=r.login
+      ?'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;OwnerSearch='+encodeURIComponent(r.login)+'&StateType=Open'+(filaAtiva?';Queues[]='+encodeURIComponent(filaAtiva):'')
+      :'';
+    var nomeCell=otrsHref
+      ?('<a href="'+otrsHref+'" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none" title="Abrir tickets de '+nomeLabel+(filaAtiva?' na fila '+filaAtiva:'')+' no OTRS">'+nomeLabel+'</a>')
       :nomeLabel;
     return '<tr>'
       +'<td style="font-size:11px">'+nomeCell+'</td>'
       +'<td title="'+tooltip+'" style="color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px;text-align:center;cursor:default">'+cargaReal+'<span style="color:var(--muted);font-weight:400;font-size:9px"> /'+ativos+'</span></td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.em_atendimento||0)+'</td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.aguardando||0)+'</td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.abertos||0)+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.em_atendimento||0))+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.aguardando||0))+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.abertos||0))+'</td>'
       +'<td style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+tempo+'</td>'
       +'</tr>';
   }).join('');
   if(tbl) tbl.innerHTML='<thead><tr><th>Atendente</th><th title="Trabalhando/Total — cor baseada em tickets que exigem ação do atendente (em atend. + abertos)">Carga/Total</th><th>Em atend.</th><th>Aguard.</th><th>Aberto</th><th>Tempo médio em atend.</th></tr></thead><tbody>'+trs+'</tbody>';
   try{populateAtHero(data);}catch(e){console.warn('at hero:',e);}
 }
+function _atOtrsUrl(fila){
+  var base='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
+  return fila ? base+';Queues[]='+encodeURIComponent(fila) : base;
+}
+function _atOtrsLink(el,fila){
+  if(!el) return;
+  var label=fila?'Ver chamados da fila '+fila+' no OTRS':'Ver chamados abertos no OTRS';
+  var svg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+  el.innerHTML='<a href="'+_atOtrsUrl(fila)+'" target="_blank" rel="noopener" class="at-hero-otrs-link">'+svg+label+'</a>';
+}
 function populateAtHero(data){
   var g=function(id){return document.getElementById(id);};
-  var hero=g('at-hero-status'), ring=g('at-ring'), ringFg=g('at-ring-fg'), ringNum=g('at-ring-num'), sub=g('at-hero-sub'), meta=g('at-hero-meta');
+  var hero=g('at-hero-status'), ring=g('at-ring'), ringFg=g('at-ring-fg'), ringNum=g('at-ring-num'), sub=g('at-hero-sub'), meta=g('at-hero-meta'), otrsEl=g('at-hero-otrs');
   if(!hero) return;
   hero.classList.remove('at-s-warn','at-s-crit');
   if(ring) ring.classList.remove('at-s-warn','at-s-crit');
+
+  var fila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
+
+  // Modo filtrado por fila: computa a partir de tickets_ativos (tem campo fila)
+  if(fila && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    var filaRows=TICKETS_ATIVOS_DATA.rows.filter(function(r){
+      if(r.fila!==fila) return false;
+      if(typeof activeCliente!=='undefined'&&activeCliente&&r.cliente!==activeCliente) return false;
+      return true;
+    });
+    if(!filaRows.length){
+      hero.textContent='SEM DADOS';
+      if(sub) sub.textContent='Nenhum ticket ativo na fila '+fila;
+      if(ringNum) ringNum.textContent='0';
+      if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
+      if(meta) meta.textContent='filtro: fila '+fila+' · fonte tickets ativos';
+      _atOtrsLink(otrsEl, fila);
+      return;
+    }
+    var atMap={};
+    filaRows.forEach(function(r){ if(r.atendente) atMap[r.atendente]=(atMap[r.atendente]||0)+1; });
+    var atList=Object.keys(atMap).map(function(k){return {n:k,tot:atMap[k]};});
+    var total=atList.length;
+    var totalAtivos=filaRows.length;
+    var sobrecarga=atList.filter(function(a){return a.tot>=8;}).length;
+    var atencao=atList.filter(function(a){return a.tot>=5&&a.tot<8;}).length;
+    var folga=atList.filter(function(a){return a.tot<=2;}).length;
+    var cargaMedia=totalAtivos/total;
+    var status,cls;
+    if(sobrecarga>=3){status='SOBRECARGA';cls='at-s-crit';}
+    else if(sobrecarga>=1){status='ATENÇÃO';cls='at-s-warn';}
+    else{status=total+' ATIVOS';cls='';}
+    hero.textContent=status;
+    if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
+    if(sub){
+      sub.innerHTML='<strong>'+total+'</strong> atendentes · '
+        +'<strong>'+totalAtivos+'</strong> tickets na fila <strong>'+fila+'</strong> · '
+        +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
+        +'<strong>'+atencao+'</strong> em atenção · '
+        +'<strong>'+folga+'</strong> com folga';
+    }
+    if(meta) meta.textContent='fila: '+fila+' · carga média '+cargaMedia.toFixed(1)+' · fonte tickets ativos';
+    if(ringNum) ringNum.textContent=total;
+    if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
+    _atOtrsLink(otrsEl, fila);
+    return;
+  }
+
+  // Modo global: usa UTIL_DATA
   if(!data||!data.rows||!data.rows.length){
     hero.textContent='SEM DADOS';
     if(sub) sub.textContent='aguardando próximo sync do GWMS…';
     if(ringNum) ringNum.textContent='—';
     if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
+    _atOtrsLink(otrsEl, '');
     return;
   }
   var rows=data.rows;
@@ -4326,27 +4422,24 @@ function populateAtHero(data){
   var folga=rows.filter(function(r){return carga(r)<=2;}).length;
   var totalAtivos=rows.reduce(function(a,r){return a+(r.ativos_total||0);},0);
   var cargaMedia=rows.reduce(function(a,r){return a+carga(r);},0)/total;
-  var status, cls;
+  var status,cls;
   if(sobrecarga>=3){status='SOBRECARGA';cls='at-s-crit';}
   else if(sobrecarga>=1){status='ATENÇÃO';cls='at-s-warn';}
-  else {status=total+' ATIVOS';cls='';}
+  else{status=total+' ATIVOS';cls='';}
   hero.textContent=status;
   if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
   if(sub){
-    sub.innerHTML=
-      '<strong>'+total+'</strong> atendentes com carga · '
+    sub.innerHTML='<strong>'+total+'</strong> atendentes com carga · '
       +'<strong>'+totalAtivos+'</strong> tickets ativos · '
       +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
       +'<strong>'+atencao+'</strong> em atenção · '
       +'<strong>'+folga+'</strong> com folga';
   }
   var tsMin=Math.floor((Date.now()/1000-(data.generated_at||Date.now()/1000))/60);
-  if(meta)meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1);
-  if(ringNum)ringNum.textContent=total;
-  if(ringFg){
-    var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));
-    ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
-  }
+  if(meta) meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1);
+  if(ringNum) ringNum.textContent=total;
+  if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
+  _atOtrsLink(otrsEl, '');
 }
 function fetchUtilizacao(){
   fetch('utilizacao.json?v='+Date.now())
