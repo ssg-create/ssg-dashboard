@@ -1,6 +1,6 @@
 {
-  "generated_at": 1777262022,
-  "generated_at_iso": "2026-04-27T03:53:42Z",
+  "generated_at": 1777271615,
+  "generated_at_iso": "2026-04-27T06:33:35Z",
   "count": 178,
   "filas": [
     "DATASUL",
@@ -12,6 +12,30 @@
     "SSG-MELHORIAS"
   ],
   "rows": [
+    {
+      "ticket": "2026042726000015",
+      "cliente": "monitoramento@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "NEW",
+      "prioridade": "3 normal",
+      "atendente": "Admin OTRS",
+      "criado": "2026-04-27T02:20:14",
+      "modificado": "2026-04-27T02:27:42",
+      "idade_dias": 0,
+      "assunto": "GROUNDWORK - GROUNDWORK_APIS - API:UltraMSG API x WhatsApp GW - Alive by Android NOC - 26042702184368"
+    },
+    {
+      "ticket": "2026041426000361",
+      "cliente": "NSX",
+      "fila": "PROTHEUS",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Francisco Silva",
+      "criado": "2026-04-14T16:16:57",
+      "modificado": "2026-04-27T01:29:36",
+      "idade_dias": 12,
+      "assunto": "Update - GGR3"
+    },
     {
       "ticket": "2026042626000204",
       "cliente": "AUTOZONE",
@@ -169,18 +193,6 @@
       "assunto": "Unimed - Gerenciamento de dashboards"
     },
     {
-      "ticket": "2026041726000123",
-      "cliente": "danielle.faria@groundwork.com.br",
-      "fila": "INFRAESTUTURA",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Vinicius Vedove",
-      "criado": "2026-04-17T10:35:07",
-      "modificado": "2026-04-26T05:00:12",
-      "idade_dias": 9,
-      "assunto": "Compartilhamento documentos One Drive"
-    },
-    {
       "ticket": "2026042326000424",
       "cliente": "elaine.vicente@teletex.com",
       "fila": "GWMS",
@@ -203,6 +215,18 @@
       "modificado": "2026-04-26T05:00:12",
       "idade_dias": 4,
       "assunto": "NF'S BAIXADAS SEM POSIÇÃO APARENTE"
+    },
+    {
+      "ticket": "2026041526000181",
+      "cliente": "NSX",
+      "fila": "PROTHEUS",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Geyson Albano",
+      "criado": "2026-04-15T09:31:44",
+      "modificado": "2026-04-26T05:00:12",
+      "idade_dias": 11,
+      "assunto": "Rollback exclusão de NF"
     },
     {
       "ticket": "2026042226000471",
@@ -239,18 +263,6 @@
       "modificado": "2026-04-26T05:00:12",
       "idade_dias": 4,
       "assunto": "Alteração Interface Usage Graphics "
-    },
-    {
-      "ticket": "2026041726000338",
-      "cliente": "FADEL",
-      "fila": "INFRAESTUTURA",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Vinicius Vedove",
-      "criado": "2026-04-17T16:21:22",
-      "modificado": "2026-04-26T05:00:12",
-      "idade_dias": 9,
-      "assunto": "PROBLEMA AO ACESSAR"
     },
     {
       "ticket": "2026042426000084",
@@ -313,18 +325,6 @@
       "assunto": "RE: Agent GWMS"
     },
     {
-      "ticket": "2026041726000187",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Geyson Albano",
-      "criado": "2026-04-17T11:54:04",
-      "modificado": "2026-04-26T05:00:12",
-      "idade_dias": 9,
-      "assunto": "AVISO SEMANAL - WORKFLOW DE APROVACAO EMAIL"
-    },
-    {
       "ticket": "2026040726000384",
       "cliente": "ALMEIDA JR",
       "fila": "SSG",
@@ -335,18 +335,6 @@
       "modificado": "2026-04-26T05:00:12",
       "idade_dias": 19,
       "assunto": "Liberar Modo Financeiro"
-    },
-    {
-      "ticket": "2026041526000181",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Geyson Albano",
-      "criado": "2026-04-15T09:31:44",
-      "modificado": "2026-04-26T05:00:12",
-      "idade_dias": 11,
-      "assunto": "Rollback exclusão de NF"
     },
     {
       "ticket": "2026042026000215",
@@ -371,6 +359,18 @@
       "modificado": "2026-04-26T05:00:12",
       "idade_dias": 9,
       "assunto": "Re: 30.000 documentos em fila de processamento"
+    },
+    {
+      "ticket": "2026041726000123",
+      "cliente": "danielle.faria@groundwork.com.br",
+      "fila": "INFRAESTUTURA",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Vinicius Vedove",
+      "criado": "2026-04-17T10:35:07",
+      "modificado": "2026-04-26T05:00:12",
+      "idade_dias": 9,
+      "assunto": "Compartilhamento documentos One Drive"
     },
     {
       "ticket": "2026041226000043",
@@ -421,6 +421,18 @@
       "assunto": "Revisão TOTVS Network"
     },
     {
+      "ticket": "2026041726000338",
+      "cliente": "FADEL",
+      "fila": "INFRAESTUTURA",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Vinicius Vedove",
+      "criado": "2026-04-17T16:21:22",
+      "modificado": "2026-04-26T05:00:12",
+      "idade_dias": 9,
+      "assunto": "PROBLEMA AO ACESSAR"
+    },
+    {
       "ticket": "2026020226000164",
       "cliente": "AUTOZONE",
       "fila": "SSG",
@@ -469,6 +481,18 @@
       "assunto": "BERNECK - Remoção do monitoramento."
     },
     {
+      "ticket": "2026041726000187",
+      "cliente": "NSX",
+      "fila": "PROTHEUS",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Geyson Albano",
+      "criado": "2026-04-17T11:54:04",
+      "modificado": "2026-04-26T05:00:12",
+      "idade_dias": 9,
+      "assunto": "AVISO SEMANAL - WORKFLOW DE APROVACAO EMAIL"
+    },
+    {
       "ticket": "2026041626000214",
       "cliente": "ALMEIDA JR",
       "fila": "SSG",
@@ -503,6 +527,18 @@
       "modificado": "2026-04-26T05:00:11",
       "idade_dias": 270,
       "assunto": "Organizar cód Fontes"
+    },
+    {
+      "ticket": "2026040126000313",
+      "cliente": "NSX",
+      "fila": "PROTHEUS",
+      "estado": "AGUARDANDO CLIENTE",
+      "prioridade": "4 high",
+      "atendente": "Geyson Albano",
+      "criado": "2026-04-01T15:07:29",
+      "modificado": "2026-04-26T05:00:11",
+      "idade_dias": 25,
+      "assunto": "V2- workflow de aprovação para lançamento contábil manual."
     },
     {
       "ticket": "2026041426000254",
@@ -553,18 +589,6 @@
       "assunto": "LP - TES COMPLEMENTO DE ICMS + IPI"
     },
     {
-      "ticket": "2026040126000313",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "AGUARDANDO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Geyson Albano",
-      "criado": "2026-04-01T15:07:29",
-      "modificado": "2026-04-26T05:00:11",
-      "idade_dias": 25,
-      "assunto": "V2- workflow de aprovação para lançamento contábil manual."
-    },
-    {
       "ticket": "2026041426000085",
       "cliente": "ALMEIDA JR",
       "fila": "SSG",
@@ -609,7 +633,7 @@
       "atendente": "Admin OTRS",
       "criado": "2026-04-26T02:55:18",
       "modificado": "2026-04-26T03:18:23",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "#TOTVS-SERVERS - SP_SP-MON-CL02 - UX:JIRADC-NODE000005 - 26042602541255"
     },
     {
@@ -621,7 +645,7 @@
       "atendente": "Vinicius Eroico",
       "criado": "2026-04-26T01:20:05",
       "modificado": "2026-04-26T02:24:54",
-      "idade_dias": 0,
+      "idade_dias": 1,
       "assunto": "AUTOZONE - SRV-JUMP-PRD - Memory Ram - 26042601154978"
     },
     {
@@ -1487,30 +1511,6 @@
       "modificado": "2026-04-23T08:19:40",
       "idade_dias": 4,
       "assunto": "Ajuste no plugin de monitoramento gw_check_oracle.py, modo:autoextend_disabled"
-    },
-    {
-      "ticket": "2026041426000361",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Francisco Silva",
-      "criado": "2026-04-14T16:16:57",
-      "modificado": "2026-04-22T17:30:49",
-      "idade_dias": 12,
-      "assunto": "Update - GGR3"
-    },
-    {
-      "ticket": "2026042226000122",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Francisco Silva",
-      "criado": "2026-04-22T09:15:12",
-      "modificado": "2026-04-22T16:05:59",
-      "idade_dias": 4,
-      "assunto": "Fazer carga para criar titulos de Imposto no financeiro"
     },
     {
       "ticket": "2026040926000193",
