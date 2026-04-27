@@ -4366,31 +4366,26 @@ function populateAtHero(data){
 
   var fila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
 
-  // Modo filtrado por fila: computa a partir de tickets_ativos (tem campo fila)
-  if(fila && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
-    var filaRows=TICKETS_ATIVOS_DATA.rows.filter(function(r){
-      if(r.fila!==fila) return false;
-      if(typeof activeCliente!=='undefined'&&activeCliente&&r.cliente!==activeCliente) return false;
-      return true;
-    });
-    if(!filaRows.length){
+  // Modo filtrado por fila: usa getActiveOP().atend (mesma fonte da Capacidade da Equipe)
+  // Garante consistência: se a Capacidade abaixo mostra X atendentes, o hero também
+  if(fila && typeof getActiveOP==='function'){
+    var opAt=getActiveOP();
+    var atendArr=(opAt&&opAt.atend)?opAt.atend.filter(function(a){return (a.t||0)>0;}):[];
+    if(!atendArr.length){
       hero.textContent='SEM DADOS';
-      if(sub) sub.textContent='Nenhum ticket ativo na fila '+fila;
+      if(sub) sub.textContent='Nenhum atendente com tickets na fila '+fila;
       if(ringNum) ringNum.textContent='0';
       if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
-      if(meta) meta.textContent='filtro: fila '+fila+' · fonte tickets ativos';
+      if(meta) meta.textContent='filtro: fila '+fila;
       _atOtrsLink(otrsEl, fila);
       return;
     }
-    var atMap={};
-    filaRows.forEach(function(r){ if(r.atendente) atMap[r.atendente]=(atMap[r.atendente]||0)+1; });
-    var atList=Object.keys(atMap).map(function(k){return {n:k,tot:atMap[k]};});
-    var total=atList.length;
-    var totalAtivos=filaRows.length;
-    var sobrecarga=atList.filter(function(a){return a.tot>=8;}).length;
-    var atencao=atList.filter(function(a){return a.tot>=5&&a.tot<8;}).length;
-    var folga=atList.filter(function(a){return a.tot<=2;}).length;
-    var cargaMedia=totalAtivos/total;
+    var total=atendArr.length;
+    var totalAbertos=atendArr.reduce(function(s,a){return s+(a.ab||0);},0);
+    var sobrecarga=atendArr.filter(function(a){return (a.ab||0)>=8;}).length;
+    var atencao=atendArr.filter(function(a){return (a.ab||0)>=5&&(a.ab||0)<8;}).length;
+    var folga=atendArr.filter(function(a){return (a.ab||0)<=2;}).length;
+    var cargaMedia=total>0?totalAbertos/total:0;
     var status,cls;
     if(sobrecarga>=3){status='SOBRECARGA';cls='at-s-crit';}
     else if(sobrecarga>=1){status='ATENÇÃO';cls='at-s-warn';}
@@ -4399,12 +4394,12 @@ function populateAtHero(data){
     if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
     if(sub){
       sub.innerHTML='<strong>'+total+'</strong> atendentes · '
-        +'<strong>'+totalAtivos+'</strong> tickets na fila <strong>'+fila+'</strong> · '
+        +'<strong>'+totalAbertos+'</strong> tickets abertos na fila <strong>'+fila+'</strong> · '
         +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
         +'<strong>'+atencao+'</strong> em atenção · '
         +'<strong>'+folga+'</strong> com folga';
     }
-    if(meta) meta.textContent='fila: '+fila+' · carga média '+cargaMedia.toFixed(1)+' · fonte tickets ativos';
+    if(meta) meta.textContent='fila: '+fila+' · carga média '+cargaMedia.toFixed(1);
     if(ringNum) ringNum.textContent=total;
     if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
     _atOtrsLink(otrsEl, fila);
@@ -4442,10 +4437,7 @@ function populateAtHero(data){
       +'<strong>'+folga+'</strong> com folga';
   }
   var tsMin=Math.floor((Date.now()/1000-(data.generated_at||Date.now()/1000))/60);
-  // Diagnóstico: mostra estado da fila e dos dados ao vivo
-  var _diagFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP)?activeFilaOP:'?';
-  var _diagLive=(typeof TICKETS_ATIVOS_DATA!=='undefined'&&TICKETS_ATIVOS_DATA&&TICKETS_ATIVOS_DATA.rows)?(TICKETS_ATIVOS_DATA.rows.length+' tix'):'indisponível';
-  if(meta) meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1)+' · [debug: fila='+_diagFila+' · ao vivo: '+_diagLive+']';
+  if(meta) meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1);
   if(ringNum) ringNum.textContent=total;
   if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
   _atOtrsLink(otrsEl, '');
