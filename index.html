@@ -7,11 +7,17 @@
 <script>
 // Redireciona acessos antigos do GitHub Pages para a URL oficial no Vercel.
 // No Vercel (ou localhost) não faz nada e segue a renderização normal.
+// Bypass: ?nogh=1 na URL pula o redirect (útil para testar o GitHub Pages
+// quando o Vercel está atrasado ou com problema de deploy).
+// Persiste em sessionStorage durante a sessão para não precisar manter o param.
 (function(){
   var h=location.hostname;
-  if(h==='ssg-create.github.io'){
-    location.replace('https://gw-command.vercel.app'+location.pathname.replace(/^\/ssg-dashboard/,'')+location.search+location.hash);
-  }
+  if(h!=='ssg-create.github.io')return;
+  try{
+    if(location.search.indexOf('nogh=1')!==-1){sessionStorage.setItem('ssg_nogh','1');}
+    if(sessionStorage.getItem('ssg_nogh')==='1')return; // bypass ativo
+  }catch(e){}
+  location.replace('https://gw-command.vercel.app'+location.pathname.replace(/^\/ssg-dashboard/,'')+location.search+location.hash);
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -453,11 +459,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .action-body{flex:1}
 .action-title{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:2px}
 .action-desc{font-size:11px;color:var(--sub);line-height:1.5}
-.action-tickets{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center}
-.action-ticket-link{font-family:var(--mono);font-size:10px;color:var(--teal);background:rgba(20,184,166,.1);border:1px solid rgba(20,184,166,.25);border-radius:4px;padding:2px 7px;text-decoration:none;transition:background .15s}
-.action-ticket-link:hover{background:rgba(20,184,166,.22)}
-.action-ver-todos{font-family:var(--mono);font-size:10px;color:var(--warn);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:4px;padding:2px 8px;cursor:pointer;transition:background .15s}
-.action-ver-todos:hover{background:rgba(245,158,11,.18)}
 
 /* ═══ SLA GAUGE ═══════════════════════════════════════════════ */
 .sla-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -823,8 +824,6 @@ input[type=file]{display:none}
 .cap-grid{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
 .cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:130px;flex:1;max-width:200px;cursor:default}
 .cap-card:hover{border-color:var(--border2)}
-.cap-name-link{color:var(--text);text-decoration:none;border-bottom:1px dotted transparent;transition:color .15s,border-color .15s}
-.cap-name-link:hover{color:var(--teal);border-bottom-color:var(--teal)}
 .cap-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .cap-avatar-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 .cap-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1196,8 +1195,6 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .at-hero-sub{font-size:13px;color:var(--at-muted);font-family:var(--mono);letter-spacing:.02em;line-height:1.6}
 .at-hero-sub strong{color:var(--at-text);font-weight:600}
 .at-hero-meta{font-size:10px;color:var(--at-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.14em;margin-top:6px}
-.at-hero-otrs-link,.cl-hero-otrs-link,.al-hero-otrs-link{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:10px;font-family:var(--mono);color:var(--teal);text-decoration:none;opacity:.8;transition:opacity .15s}
-.at-hero-otrs-link:hover,.cl-hero-otrs-link:hover,.al-hero-otrs-link:hover{opacity:1}
 .at-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
 .at-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .at-ring svg circle{fill:none;stroke-width:2}
@@ -1792,7 +1789,6 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="al-hero-status" id="al-hero-status">—</div>
             <div class="al-hero-sub" id="al-hero-sub">avaliando panorama…</div>
             <div class="al-hero-meta" id="al-hero-meta">monitoramento contínuo</div>
-            <div id="al-hero-otrs"></div>
           </div>
           <div class="al-ring" id="al-ring">
             <svg viewBox="0 0 200 200">
@@ -1966,7 +1962,6 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="at-hero-status" id="at-hero-status">—</div>
             <div class="at-hero-sub" id="at-hero-sub">carregando equipe…</div>
             <div class="at-hero-meta" id="at-hero-meta">monitoramento via GWMS · sync 10min</div>
-            <div id="at-hero-otrs"></div>
           </div>
           <div class="at-ring" id="at-ring">
             <svg viewBox="0 0 200 200">
@@ -2012,7 +2007,6 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="cl-hero-status" id="cl-hero-status">—</div>
             <div class="cl-hero-sub" id="cl-hero-sub">agregando empresas…</div>
             <div class="cl-hero-meta" id="cl-hero-meta">distribuição por cliente e módulo ERP</div>
-            <div id="cl-hero-otrs"></div>
           </div>
           <div class="cl-ring" id="cl-ring">
             <svg viewBox="0 0 200 200">
@@ -3546,12 +3540,13 @@ function populateSlHero(op){
 
 function populateClHero(op){
   var g=function(id){return document.getElementById(id);};
-  var hero=g('cl-hero-status'), ringFg=g('cl-ring-fg'), ringNum=g('cl-ring-num'), sub=g('cl-hero-sub'), meta=g('cl-hero-meta'), otrsEl=g('cl-hero-otrs');
+  var hero=g('cl-hero-status'), ringFg=g('cl-ring-fg'), ringNum=g('cl-ring-num'), sub=g('cl-hero-sub'), meta=g('cl-hero-meta');
   if(!hero) return;
   var cli=op.cli||{};
   var clientesReais=Object.keys(cli).filter(function(k){return k&&k.indexOf('@')===-1;});
   var totalCli=clientesReais.length;
   var total=op.total||0;
+  // Top cliente
   var topK='', topN=0;
   clientesReais.forEach(function(k){if(cli[k]>topN){topN=cli[k];topK=k;}});
   var topPct=total>0?Math.round((topN/total)*100):0;
@@ -3566,15 +3561,6 @@ function populateClHero(op){
   if(ringFg){
     var pct=Math.min(1,totalCli/20);
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
-  }
-  // Link OTRS: abre busca pelo cliente ativo ou pelo top cliente
-  if(otrsEl){
-    var cliId=(typeof activeCliente!=='undefined'&&activeCliente)?activeCliente:topK;
-    var svg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-    var base='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
-    var href=cliId?base+';CustomerIDRaw='+encodeURIComponent(cliId):base;
-    var label=cliId?'Ver chamados de '+cliId.split('@')[0]+' no OTRS':'Ver chamados abertos no OTRS';
-    otrsEl.innerHTML='<a href="'+href+'" target="_blank" rel="noopener" class="cl-hero-otrs-link">'+svg+label+'</a>';
   }
 }
 
@@ -3615,15 +3601,6 @@ function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
   if(ringFg){
     var pct=Math.min(1,totalCrit/50); // 50 = ring cheio
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
-  }
-  var otrsAlEl=g('al-hero-otrs');
-  if(otrsAlEl){
-    var alFila=(_alertState&&_alertState.filtroFila&&_alertState.filtroFila!=='all')?_alertState.filtroFila:'';
-    var alBase='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open;PriorityIDs[]=5';
-    var alHref=alFila?alBase+';Queues[]='+encodeURIComponent(alFila):alBase;
-    var alLabel=alFila?'Ver críticos da fila '+alFila+' no OTRS':'Ver todos muito alta no OTRS';
-    var alSvg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-    otrsAlEl.innerHTML='<a href="'+alHref+'" target="_blank" rel="noopener" class="al-hero-otrs-link">'+alSvg+alLabel+'</a>';
   }
 }
 
@@ -4296,119 +4273,44 @@ function renderUtilizacao(data){
     var m=g('at-util-meta');if(m)m.textContent='sem dados';
     return;
   }
+  // Utilização é por atendente (não filtra por cliente — dataset não tem cliente)
+  // mas pode filtrar por fila se fosse necessário; por ora mostra agregado
   var rows=data.rows;
-  // Quando fila ativa: filtra atendentes pela fila usando tickets_ativos (tem campo fila)
-  var filaAtiva=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-  var filaCountMap={};
-  if(filaAtiva && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
-    TICKETS_ATIVOS_DATA.rows.filter(function(r){return r.fila===filaAtiva;}).forEach(function(r){
-      if(r.atendente) filaCountMap[r.atendente]=(filaCountMap[r.atendente]||0)+1;
-    });
-    rows=rows.filter(function(r){return filaCountMap[r.atendente]!==undefined;});
-  }
-  var over=rows.filter(function(r){return (r.em_atendimento||0)+(r.abertos||0)>=8;}).length;
-  var tot=rows.reduce(function(s,r){return s+(filaAtiva&&filaCountMap[r.atendente]?filaCountMap[r.atendente]:(r.ativos_total||0));},0);
+  var over=rows.filter(function(r){return r.ativos_total>=8;}).length;
+  var tot=rows.reduce(function(s,r){return s+(r.ativos_total||0);},0);
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
   setv('at-util-kpi-ppl',rows.length);
   setv('at-util-kpi-over',over);
   setv('at-util-kpi-tot',tot);
   var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
-  var metaTxt=rows.length+' atendentes · atualizado há '+(tsMin<1?'agora':tsMin+' min');
-  if(filaAtiva) metaTxt+=' · filtro: fila '+filaAtiva;
-  setv('at-util-meta',metaTxt);
+  setv('at-util-meta',rows.length+' atendentes · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
   var trs=rows.map(function(r){
-    var ativos=filaAtiva&&filaCountMap[r.atendente]?filaCountMap[r.atendente]:(r.ativos_total||0);
-    var cargaReal=filaAtiva?ativos:(r.em_atendimento||0)+(r.abertos||0);
-    var col=cargaReal>=8?'var(--danger)':(cargaReal>=5?'var(--warn)':'var(--ok)');
-    var tempo=(!filaAtiva&&r.em_atend_tempo_med_min)?_fmtDuration(Math.round(r.em_atend_tempo_med_min)):'—';
-    var tooltip=filaAtiva
-      ?'Tickets na fila '+filaAtiva+': '+ativos+' (total global: '+(r.ativos_total||0)+')'
-      :'Total ativos: '+ativos+' (trabalhando: '+cargaReal+' · aguardando: '+(r.aguardando||0)+')';
-    var nomeLabel=(r.atendente||'—').split(' ').slice(0,3).join(' ');
-    var otrsHref=r.login
-      ?'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;OwnerSearch='+encodeURIComponent(r.login)+';StateType=Open'+(filaAtiva?';Queues[]='+encodeURIComponent(filaAtiva):'')
-      :'';
-    var nomeCell=otrsHref
-      ?('<a href="'+otrsHref+'" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none" title="Abrir tickets de '+nomeLabel+(filaAtiva?' na fila '+filaAtiva:'')+' no OTRS">'+nomeLabel+'</a>')
-      :nomeLabel;
+    var ativos=r.ativos_total||0;
+    var col=ativos>=8?'var(--danger)':(ativos>=5?'var(--warn)':'var(--ok)');
+    var tempo=r.em_atend_tempo_med_min?_fmtDuration(Math.round(r.em_atend_tempo_med_min)):'—';
     return '<tr>'
-      +'<td style="font-size:11px">'+nomeCell+'</td>'
-      +'<td title="'+tooltip+'" style="color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px;text-align:center;cursor:default">'+cargaReal+'<span style="color:var(--muted);font-weight:400;font-size:9px"> /'+ativos+'</span></td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.em_atendimento||0))+'</td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.aguardando||0))+'</td>'
-      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(filaAtiva?'—':(r.abertos||0))+'</td>'
+      +'<td style="font-size:11px">'+(r.atendente||'—').split(' ').slice(0,3).join(' ')+'</td>'
+      +'<td style="color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px;text-align:center">'+ativos+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.em_atendimento||0)+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.aguardando||0)+'</td>'
+      +'<td style="font-family:var(--mono);font-size:11px;text-align:center">'+(r.abertos||0)+'</td>'
       +'<td style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+tempo+'</td>'
       +'</tr>';
   }).join('');
-  if(tbl) tbl.innerHTML='<thead><tr><th>Atendente</th><th title="Trabalhando/Total — cor baseada em tickets que exigem ação do atendente (em atend. + abertos)">Carga/Total</th><th>Em atend.</th><th>Aguard.</th><th>Aberto</th><th>Tempo médio em atend.</th></tr></thead><tbody>'+trs+'</tbody>';
+  if(tbl) tbl.innerHTML='<thead><tr><th>Atendente</th><th>Ativos</th><th>Em atend.</th><th>Aguard.</th><th>Aberto</th><th>Tempo médio em atend.</th></tr></thead><tbody>'+trs+'</tbody>';
   try{populateAtHero(data);}catch(e){console.warn('at hero:',e);}
-}
-function _atOtrsUrl(fila){
-  var base='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
-  return fila ? base+';Queues[]='+encodeURIComponent(fila) : base;
-}
-function _atOtrsLink(el,fila){
-  if(!el) return;
-  var label=fila?'Ver chamados da fila '+fila+' no OTRS':'Ver chamados abertos no OTRS';
-  var svg='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
-  el.innerHTML='<a href="'+_atOtrsUrl(fila)+'" target="_blank" rel="noopener" class="at-hero-otrs-link">'+svg+label+'</a>';
 }
 function populateAtHero(data){
   var g=function(id){return document.getElementById(id);};
-  var hero=g('at-hero-status'), ring=g('at-ring'), ringFg=g('at-ring-fg'), ringNum=g('at-ring-num'), sub=g('at-hero-sub'), meta=g('at-hero-meta'), otrsEl=g('at-hero-otrs');
+  var hero=g('at-hero-status'), ring=g('at-ring'), ringFg=g('at-ring-fg'), ringNum=g('at-ring-num'), sub=g('at-hero-sub'), meta=g('at-hero-meta');
   if(!hero) return;
   hero.classList.remove('at-s-warn','at-s-crit');
   if(ring) ring.classList.remove('at-s-warn','at-s-crit');
-
-  var fila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-
-  // Modo filtrado por fila: usa getActiveOP().atend (mesma fonte da Capacidade da Equipe)
-  // Garante consistência: se a Capacidade abaixo mostra X atendentes, o hero também
-  if(fila && typeof getActiveOP==='function'){
-    var opAt=getActiveOP();
-    var atendArr=(opAt&&opAt.atend)?opAt.atend.filter(function(a){return (a.t||0)>0;}):[];
-    if(!atendArr.length){
-      hero.textContent='SEM DADOS';
-      if(sub) sub.textContent='Nenhum atendente com tickets na fila '+fila;
-      if(ringNum) ringNum.textContent='0';
-      if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
-      if(meta) meta.textContent='filtro: fila '+fila;
-      _atOtrsLink(otrsEl, fila);
-      return;
-    }
-    var total=atendArr.length;
-    var totalAbertos=atendArr.reduce(function(s,a){return s+(a.ab||0);},0);
-    var sobrecarga=atendArr.filter(function(a){return (a.ab||0)>=8;}).length;
-    var atencao=atendArr.filter(function(a){return (a.ab||0)>=5&&(a.ab||0)<8;}).length;
-    var folga=atendArr.filter(function(a){return (a.ab||0)<=2;}).length;
-    var cargaMedia=total>0?totalAbertos/total:0;
-    var status,cls;
-    if(sobrecarga>=3){status='SOBRECARGA';cls='at-s-crit';}
-    else if(sobrecarga>=1){status='ATENÇÃO';cls='at-s-warn';}
-    else{status=total+' ATIVOS';cls='';}
-    hero.textContent=status;
-    if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
-    if(sub){
-      sub.innerHTML='<strong>'+total+'</strong> atendentes · '
-        +'<strong>'+totalAbertos+'</strong> tickets abertos na fila <strong>'+fila+'</strong> · '
-        +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
-        +'<strong>'+atencao+'</strong> em atenção · '
-        +'<strong>'+folga+'</strong> com folga';
-    }
-    if(meta) meta.textContent='fila: '+fila+' · carga média '+cargaMedia.toFixed(1);
-    if(ringNum) ringNum.textContent=total;
-    if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
-    _atOtrsLink(otrsEl, fila);
-    return;
-  }
-
-  // Modo global: usa UTIL_DATA
   if(!data||!data.rows||!data.rows.length){
     hero.textContent='SEM DADOS';
     if(sub) sub.textContent='aguardando próximo sync do GWMS…';
     if(ringNum) ringNum.textContent='—';
     if(ringFg) ringFg.setAttribute('stroke-dashoffset','565.48');
-    _atOtrsLink(otrsEl, '');
     return;
   }
   var rows=data.rows;
@@ -4419,24 +4321,27 @@ function populateAtHero(data){
   var folga=rows.filter(function(r){return carga(r)<=2;}).length;
   var totalAtivos=rows.reduce(function(a,r){return a+(r.ativos_total||0);},0);
   var cargaMedia=rows.reduce(function(a,r){return a+carga(r);},0)/total;
-  var status,cls;
+  var status, cls;
   if(sobrecarga>=3){status='SOBRECARGA';cls='at-s-crit';}
   else if(sobrecarga>=1){status='ATENÇÃO';cls='at-s-warn';}
-  else{status=total+' ATIVOS';cls='';}
+  else {status=total+' ATIVOS';cls='';}
   hero.textContent=status;
   if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
   if(sub){
-    sub.innerHTML='<strong>'+total+'</strong> atendentes com carga · '
+    sub.innerHTML=
+      '<strong>'+total+'</strong> atendentes com carga · '
       +'<strong>'+totalAtivos+'</strong> tickets ativos · '
       +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
       +'<strong>'+atencao+'</strong> em atenção · '
       +'<strong>'+folga+'</strong> com folga';
   }
   var tsMin=Math.floor((Date.now()/1000-(data.generated_at||Date.now()/1000))/60);
-  if(meta) meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1);
-  if(ringNum) ringNum.textContent=total;
-  if(ringFg){var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));ringFg.setAttribute('stroke-dashoffset',565.48*(1-pct));}
-  _atOtrsLink(otrsEl, '');
+  if(meta)meta.textContent='sync GWMS há '+(tsMin<1?'agora':tsMin+' min')+' · carga média '+cargaMedia.toFixed(1);
+  if(ringNum)ringNum.textContent=total;
+  if(ringFg){
+    var pct=Math.min(1,sobrecarga/Math.max(1,total*.3));
+    ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
+  }
 }
 function fetchUtilizacao(){
   fetch('utilizacao.json?v='+Date.now())
@@ -4857,25 +4762,6 @@ function renderTeamCapacity() {
     +'<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
     +'<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
     +'</div>';
-
-  // Maps de login (UTIL_DATA) e tickets ao vivo (TICKETS_ATIVOS_DATA)
-  var filaAtiva=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-  var loginMap={};
-  if(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows){
-    UTIL_DATA.rows.forEach(function(r){if(r.atendente&&r.login)loginMap[r.atendente]=r.login;});
-  }
-  var ticketsMap={};
-  if(typeof TICKETS_ATIVOS_DATA!=='undefined'&&TICKETS_ATIVOS_DATA&&TICKETS_ATIVOS_DATA.rows){
-    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
-      if(!r.atendente) return;
-      if(filaAtiva&&r.fila!==filaAtiva) return;
-      if(!ticketsMap[r.atendente]) ticketsMap[r.atendente]=[];
-      ticketsMap[r.atendente].push(r);
-    });
-  }
-  var OTRS_BASE_SEARCH='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
-  var OTRS_BASE_ZOOM='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=';
-
   // Cards
   var cardsHtml='<div class="cap-grid">';
   list.forEach(function(a){
@@ -4884,20 +4770,10 @@ function renderTeamCapacity() {
     var col=PAL[colorIdx];
     var shortN=a.n.split(' ').slice(0,2).join(' ');
     var respTxt=a.rm!=null?fmtRespTxt(Math.round(a.rm)):'—';
-    var login=loginMap[a.n];
-    var tix=ticketsMap[a.n]||[];
-    var otrsUrl=OTRS_BASE_SEARCH
-      +(login?';OwnerSearch='+encodeURIComponent(login):'')
-      +(filaAtiva?';Queues[]='+encodeURIComponent(filaAtiva):'');
-    var titleAttr='1ª resp: '+respTxt+' | Total: '+a.t;
-    var hasTickets=a.ab>0;
-    var nameHtml=hasTickets
-      ? '<a href="'+otrsUrl+'" target="_blank" rel="noopener" class="cap-name cap-name-link" title="Ver chamados de '+shortN+(filaAtiva?' na fila '+filaAtiva:'')+' no OTRS">'+shortN+'</a>'
-      : '<div class="cap-name">'+shortN+'</div>';
-    cardsHtml+='<div class="cap-card" title="'+titleAttr.replace(/"/g,'&quot;')+'">'
+    cardsHtml+='<div class="cap-card" title="1ª resp: '+respTxt+' | Total: '+a.t+'">'
       +'<div class="cap-card-head">'
         +'<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
-        +nameHtml
+        +'<div class="cap-name">'+shortN+'</div>'
       +'</div>'
       +'<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
       +'<div class="cap-lbl">abertos</div>'
@@ -4910,9 +4786,6 @@ function renderTeamCapacity() {
 }
 
 function renderAt(){
-  // Sempre popula o hero imediatamente com dados disponíveis para evitar race condition
-  // com fetchTicketsAtivos (TICKETS_ATIVOS_DATA pode chegar depois de renderUtilizacao)
-  if(UTIL_DATA) try{populateAtHero(UTIL_DATA);}catch(e){}
   if(!UTIL_DATA||(Date.now()/1000-UTIL_DATA.generated_at)>300) fetchUtilizacao();
   else renderUtilizacao(UTIL_DATA);
   var atendFiltrado=(getActiveOP().atend||OP.atend);
@@ -5291,13 +5164,39 @@ function renderSl(){
     tooltip:{callbacks:{label:function(c){return c.datasetIndex===0?c.raw+'h':c.dataset.label||'';}}},
     legend:lgndOpts
   }});
-  var rm=op.resp_med!=null?op.resp_med:8;
-  var sm=op.sol_med!=null?op.sol_med:54.1;
+  // ── KPIs reais (sem mock × 10.5 ou × 0.68) ──
+  // 1ª Resposta: mediana de op.resp_med + média calculada do escopo ativo
+  // Solução: média e mediana via op.sla (calcSLA — fonte única, BH, exclui auto-fechados)
+  var rm=op.resp_med!=null?op.resp_med:0;
+  // Calcula 1ª Resp média real do escopo ativo (sem mock)
+  var _slRows=(typeof RAW_DATA!=='undefined'&&RAW_DATA)?RAW_DATA.filter(function(d){
+    if(!d||!d.criado)return false;
+    if(typeof activeCliente!=='undefined'&&activeCliente&&d.cli_id!==activeCliente)return false;
+    if(typeof ticketInFilter==='function'&&!ticketInFilter(d))return false;
+    if(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
+    return true;
+  }):[];
+  var _rmsAll=_slRows.map(function(d){return d.resp_min;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
+  var rmAvg=_rmsAll.length?Math.round(_rmsAll.reduce(function(a,b){return a+b;},0)/_rmsAll.length):null;
+  var _opSla=op.sla||calcSLA(_slRows);
+  var sm=(_opSla&&_opSla.avg_h!=null)?_opSla.avg_h:(op.sol_med||0);
+  var smMed=(_opSla&&_opSla.median_h!=null)?_opSla.median_h:null;
   var kpis=document.querySelectorAll('#s-sl .kpi');
   if(kpis.length>=4){
-    var rmMed=Math.round(rm), rmAvg=Math.round(rm*10.5);
-    var htmlVals=[fmtResp(rmMed), fmtResp(rmAvg), sm+'<span>h</span>', (Math.round(sm*0.68*10)/10)+'<span>h</span>'];
-    var subs=[rm<=META_RESP?'<span style="color:var(--ok)">✓ dentro da meta</span>':'<span style="color:var(--danger)">⚠ acima de '+fmtRespTxt(META_RESP)+'</span>','outliers elevam a média','chamados fechados','mais representativa'];
+    var htmlVals=[
+      fmtResp(Math.round(rm)),
+      rmAvg!=null?fmtResp(rmAvg):'—',
+      sm+'<span>h</span>',
+      smMed!=null?(smMed+'<span>h</span>'):'—'
+    ];
+    var subN=_opSla&&_opSla.sample_size?_opSla.sample_size:0;
+    var subAuto=_opSla&&_opSla.auto_closed_count?_opSla.auto_closed_count:0;
+    var subs=[
+      rm<=META_RESP?'<span style="color:var(--ok)">✓ dentro da meta</span>':'<span style="color:var(--danger)">⚠ acima de '+fmtRespTxt(META_RESP)+'</span>',
+      'média (sensível a outliers)',
+      'base: '+subN+' resolvidos · '+subAuto+' auto-fechados',
+      'mais representativa (típico)'
+    ];
     htmlVals.forEach(function(html,i){var v=kpis[i]&&kpis[i].querySelector('.kpi-val'),s=kpis[i]&&kpis[i].querySelector('.kpi-sub');if(v)v.innerHTML=html;if(s)s.innerHTML=subs[i];});
   }
   // Barras de meta
@@ -5546,8 +5445,12 @@ function renderSlaContrato(d){
   empty.style.display='none';content.style.display='block';
   var metas={'Muito Alta':4,'Alta':8,'Normal':24,'Baixa':72};
   var gaugeHTML='';
+  // Gauges por prioridade — só conta tickets com sucesso real (isClosedOKForSLA),
+  // exclui auto-fechados. Tempo: BH preferido (t.sol já vem como sol_h_bh||sol_h).
   ['Muito Alta','Alta','Normal','Baixa'].forEach(function(p){
-    var withTime=d.tickets.filter(function(t){return t.prioridade===p&&t.sol;});
+    var withTime=d.tickets.filter(function(t){
+      return t.prioridade===p && isClosedOKForSLA(t.estado) && t.sol!=null && !isNaN(t.sol);
+    });
     if(!withTime.length)return;
     var dentro=withTime.filter(function(t){return t.sol<=metas[p];}).length;
     var pct2=Math.round(dentro/withTime.length*100);
@@ -5557,8 +5460,10 @@ function renderSlaContrato(d){
   document.getElementById('sla-gauges').innerHTML=gaugeHTML||'<div style="font-size:12px;color:var(--muted);grid-column:1/-1">Dados insuficientes para calcular SLA com os tickets exibidos.</div>';
   var mK=Object.keys(d.by_mes);
   mk('c-sla-trend','line',mK,[{data:mK.map(function(){return d.resp_med;}),borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00d4a8',borderWidth:2}],{scales:xy('min')});
-  // distribuição tempo de solução
-  var sols=d.tickets.filter(function(t){return t.sol;}).map(function(t){return t.sol;});
+  // Distribuição de tempo de solução — só sucesso real (idem gauges)
+  var sols=d.tickets.filter(function(t){
+    return isClosedOKForSLA(t.estado) && t.sol!=null && !isNaN(t.sol);
+  }).map(function(t){return t.sol;});
   var bins=['0–24h','24–48h','48–72h','72h+'];
   var counts=[sols.filter(function(v){return v<=24;}).length,sols.filter(function(v){return v>24&&v<=48;}).length,sols.filter(function(v){return v>48&&v<=72;}).length,sols.filter(function(v){return v>72;}).length];
   mk('c-sol-dist','bar',bins,[{data:counts,backgroundColor:['rgba(16,185,129,.6)','rgba(79,142,247,.6)','rgba(245,158,11,.6)','rgba(244,63,94,.6)'],borderRadius:4}],{scales:xy()});
@@ -5566,6 +5471,7 @@ function renderSlaContrato(d){
 
 function getInfDataFromRaw(){
   var isAb=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
+  // Para taxa de conclusão: inclui auto-fechamento. SLA usa calcSLA() abaixo (que filtra).
   var isFe=function(e){return['Fechado','Resolvido','Fechado s/ Êxito'].indexOf(e)!==-1;};
   var mN={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   var rows=RAW_DATA.filter(function(d){
@@ -5580,15 +5486,24 @@ function getInfDataFromRaw(){
   var fechados=rows.filter(function(d){return isFe(d.estado);}).length;
   var respRows=rows.filter(function(d){return d.resp_min!=null&&!isNaN(d.resp_min);});
   var resp_med=respRows.length?Math.round(respRows.reduce(function(s,d){return s+d.resp_min;},0)/respRows.length):null;
-  var solRows=rows.filter(function(d){return isFe(d.estado)&&d.sol_h!=null&&!isNaN(d.sol_h);});
-  var sol_med=solRows.length?Math.round(solRows.reduce(function(s,d){return s+d.sol_h;},0)/solRows.length*10)/10:null;
+  // SLA — fonte única (calcSLA): só sucesso real, BH, mediana e p90 disponíveis
+  var sla=calcSLA(rows);
   var svc={},prior={},volMes={};
   rows.forEach(function(d){
     if(d.servico)svc[d.servico]=(svc[d.servico]||0)+1;
     if(d.prior)prior[d.prior]=(prior[d.prior]||0)+1;
     if(d.criado){var p=d.criado.toISOString().slice(0,7).split('-');var k=mN[p[1]]+'/'+p[0].slice(2);volMes[k]=(volMes[k]||0)+1;}
   });
-  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,sol_med:sol_med,svc:svc,prior:prior,volMes:volMes};
+  return{
+    total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,
+    sol_med:sla.avg_h,
+    sol_median:sla.median_h,
+    sol_p90:sla.p90_h,
+    sla_pct:sla.pct_within_sla,
+    auto_closed:sla.auto_closed_count,
+    sla:sla,
+    svc:svc,prior:prior,volMes:volMes
+  };
 }
 
 function renderInf(){
@@ -5726,18 +5641,24 @@ function rebuildAll(data){
     OP.atend=Object.keys(aM).map(function(k){var s=aM[k];var aa=function(arr){return arr.length?Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length*10)/10:null;};return{n:k,t:s.t,f:s.f,ab:s.ab,tm:aa(s.tm),rm:aa(s.rm),est:s.est||{}};}).sort(function(a,b){return b.t-a.t;}).slice(0,20);
 
     // ── CORREÇÃO: recalcular totais, médias e by_day a partir dos dados importados ──
+    // SLA usa fonte única (calcSLA): sol_h_bh + estados de sucesso (Fechado/Resolvido).
+    // 'Fechado s/ Êxito' (auto-fechamento) é contabilizado em fechados pra fins de
+    // taxa de conclusão, mas NÃO entra no cálculo de tempo médio / SLA.
     var isAberto=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
-    var isFechado=function(e){return e==='Fechado'||e==='Resolvido';};
+    var isFechado=function(e){return e==='Fechado'||e==='Resolvido'||e==='Fechado s/ Êxito';};
     OP.total=data.length;
     OP.abertos=data.filter(function(d){return isAberto(d.estado);}).length;
     OP.fechados=data.filter(function(d){return isFechado(d.estado);}).length;
     var respArr=data.filter(function(d){return d.resp_min!==null&&d.resp_min!==undefined;}).map(function(d){return d.resp_min;}).sort(function(a,b){return a-b;});
     OP.resp_med=respArr.length?Math.round(respArr[Math.floor(respArr.length/2)]*10)/10:0;
-    var solArr=data.filter(function(d){return d.sol_h;}).map(function(d){return d.sol_h;});
-    OP.sol_med=solArr.length?Math.round(solArr.reduce(function(a,b){return a+b;},0)/solArr.length*10)/10:0;
-    // sol_med em horas úteis (usa sol_h_bh calculado no parseR via calcBusinessHoursH)
-    var solBhArr=data.filter(function(d){return d.sol_h_bh!=null;}).map(function(d){return d.sol_h_bh;});
-    OP.sol_med_bh=solBhArr.length?Math.round(solBhArr.reduce(function(a,b){return a+b;},0)/solBhArr.length*10)/10:null;
+    var _opSla=calcSLA(data);
+    OP.sla=_opSla;                          // struct completo (mediana, p90, % SLA, auto-fechados)
+    OP.sol_med=_opSla.avg_h||0;             // compat com KPIs antigos
+    OP.sol_med_bh=_opSla.avg_h;             // mantido por compatibilidade (BH é o default agora)
+    OP.sol_median=_opSla.median_h;
+    OP.sol_p90=_opSla.p90_h;
+    OP.sla_pct=_opSla.pct_within_sla;
+    OP.auto_closed=_opSla.auto_closed_count;
     // sincronizar by_day (usado em buildMonthFilter) com byDay
     OP.by_day=OP.byDay;
 
@@ -5761,17 +5682,22 @@ function rebuildAll(data){
       var m=mesesMap[mk];
       var rs2=m.rows.filter(function(d){return d.resp_min!==null;}).map(function(d){return d.resp_min;}).sort(function(a,b){return a-b;});
       var rm2=rs2.length?Math.round(rs2[Math.floor(rs2.length/2)]*10)/10:0;
-      var ss2=m.rows.filter(function(d){return d.sol_h;}).map(function(d){return d.sol_h;});
-      var sm2=ss2.length?Math.round(ss2.reduce(function(a,b){return a+b;},0)/ss2.length*10)/10:0;
-      var sb2=m.rows.filter(function(d){return d.sol_h_bh!=null;}).map(function(d){return d.sol_h_bh;});
-      var smBh2=sb2.length?Math.round(sb2.reduce(function(a,b){return a+b;},0)/sb2.length*10)/10:null;
+      // SLA do mês — fonte única (calcSLA)
+      var slaMes=calcSLA(m.rows);
       var aa2=function(arr){return arr.length?Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length*10)/10:null;};
       var dm2={};m.rows.forEach(function(d){if(!d.criado)return;var k=d.criado.toISOString().slice(0,10);dm2[k]=(dm2[k]||0)+1;});
       OP_MESES[mk]={
         total:m.rows.length,
         abertos:m.rows.filter(function(d){return isAberto(d.estado);}).length,
         fechados:m.rows.filter(function(d){return isFechado(d.estado);}).length,
-        resp_med:rm2,sol_med:sm2,sol_med_bh:smBh2,
+        resp_med:rm2,
+        sol_med:slaMes.avg_h||0,
+        sol_med_bh:slaMes.avg_h,
+        sol_median:slaMes.median_h,
+        sol_p90:slaMes.p90_h,
+        sla_pct:slaMes.pct_within_sla,
+        auto_closed:slaMes.auto_closed_count,
+        sla:slaMes,                                  // struct completo
         estado:m.eM,prior:m.pM,svc:m.sM,cli:m.cM,heat:m.hM,
         atend:Object.keys(m.aM).map(function(k){var s=m.aM[k];return{n:k,t:s.t,f:s.f,ab:s.ab,tm:aa2(s.tm),rm:aa2(s.rm),est:s.est||{}};}).sort(function(a,b){return b.t-a.t;}),
         by_day:Object.keys(dm2).sort().map(function(k){return{d:k,n:dm2[k]};})
@@ -5802,7 +5728,9 @@ function rebuildAll(data){
       empIds.forEach(function(id){
         var sub=buckets[id];if(!sub||!sub.length)return;
         var isAb=function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
-        var isFe=function(e){return e==='Fechado'||e==='Resolvido';};
+        // Inclui auto-fechamento na contagem de fechados (taxa de conclusão),
+        // mas calcSLA() abaixo exclui do tempo médio / SLA — fonte única de verdade.
+        var isFe=function(e){return e==='Fechado'||e==='Resolvido'||e==='Fechado s/ Êxito';};
         var byM={},est={},pr={},svc2={};
         sub.forEach(function(d){
           if(d.criado){var mk3=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.criado.getMonth()]+'/'+String(d.criado.getFullYear()).slice(2);byM[mk3]=(byM[mk3]||0)+1;}
@@ -5810,12 +5738,25 @@ function rebuildAll(data){
         });
         var rs=sub.filter(function(d){return d.resp_min!==null;}).map(function(d){return d.resp_min;}).sort(function(a,b){return a-b;});
         var rm2=rs.length?rs[Math.floor(rs.length/2)]:null;
-        var ss=sub.filter(function(d){return d.sol_h;}).map(function(d){return d.sol_h;});
-        var sm2=ss.length?Math.round(ss.reduce(function(a,b){return a+b;},0)/ss.length*10)/10:null;
+        // SLA — fonte única (calcSLA): só sucesso real, BH, com mediana e p90
+        var slaEmp=calcSLA(sub);
         var pad=function(n){return n<10?'0'+n:n;};
         var filaM={};sub.forEach(function(d){if(d.fila&&d.fila!=='LIXO')filaM[d.fila]=(filaM[d.fila]||0)+1;});
-        var tks=sub.sort(function(a,b){return(b.criado||0)-(a.criado||0);}).slice(0,25).map(function(d){var dt=d.criado?pad(d.criado.getDate())+'/'+pad(d.criado.getMonth()+1)+' '+pad(d.criado.getHours())+':'+pad(d.criado.getMinutes()):'—';return{num:d.num,assunto:d.assunto,estado:d.estado,prioridade:d.prior,criado:dt,servico:d.servico,fila:d.fila||'',resp_min:d.resp_min,sol:d.sol_h};});
-        EMPRESAS[id]={nome:ENM2[id],id:id,total:sub.length,abertos:sub.filter(function(d){return isAb(d.estado);}).length,fechados:sub.filter(function(d){return isFe(d.estado);}).length,by_mes:byM,resp_med:rm2,solucao_med_h:sm2,estados:est,prior:pr,servicos:svc2,filas:filaM,tickets:tks};
+        var tks=sub.sort(function(a,b){return(b.criado||0)-(a.criado||0);}).slice(0,25).map(function(d){var dt=d.criado?pad(d.criado.getDate())+'/'+pad(d.criado.getMonth()+1)+' '+pad(d.criado.getHours())+':'+pad(d.criado.getMinutes()):'—';return{num:d.num,assunto:d.assunto,estado:d.estado,prioridade:d.prior,criado:dt,servico:d.servico,fila:d.fila||'',resp_min:d.resp_min,sol:(d.sol_h_bh!=null?d.sol_h_bh:d.sol_h),sol_bh:d.sol_h_bh,sol_raw:d.sol_h};});
+        EMPRESAS[id]={
+          nome:ENM2[id],id:id,
+          total:sub.length,
+          abertos:sub.filter(function(d){return isAb(d.estado);}).length,
+          fechados:sub.filter(function(d){return isFe(d.estado);}).length,
+          by_mes:byM,resp_med:rm2,
+          solucao_med_h:slaEmp.avg_h,        // fonte única
+          solucao_median_h:slaEmp.median_h,
+          solucao_p90_h:slaEmp.p90_h,
+          sla_pct:slaEmp.pct_within_sla,
+          auto_closed:slaEmp.auto_closed_count,
+          sla:slaEmp,
+          estados:est,prior:pr,servicos:svc2,filas:filaM,tickets:tks
+        };
       });
 
       setProgress(90,'Atualizando visualizações...');
@@ -5828,8 +5769,31 @@ function rebuildAll(data){
         RESP30_MESES={'all':data.filter(function(d){return d.resp_min!=null&&d.resp_min>30;}).length};
         CRIT_TOTAL_MESES={'all':data.filter(function(d){return d.prior==='Muito Alta'&&isAberto(d.estado);}).length};
         Object.keys(mesesMap).forEach(function(mk){BLOQ_MESES[mk]=buildBloqEntry(mesesMap[mk].eM||{});RESP30_MESES[mk]=mesesMap[mk].rows.filter(function(d){return d.resp_min!=null&&d.resp_min>30;}).length;CRIT_TOTAL_MESES[mk]=mesesMap[mk].rows.filter(function(d){return d.prior==='Muito Alta'&&isAberto(d.estado);}).length;});
-        // Reconstruir EMP_MESES
-        EMP_MESES={};Object.keys(ENM2).forEach(function(id){if(!buckets[id]||!buckets[id].length)return;var mE={};buckets[id].forEach(function(d){if(!d.criado)return;var mk4=d.criado.toISOString().slice(0,7);if(!mE[mk4])mE[mk4]={total:0,abertos:0,fechados:0};mE[mk4].total++;if(isAberto(d.estado))mE[mk4].abertos++;if(isFechado(d.estado))mE[mk4].fechados++;});EMP_MESES[id]=mE;});
+        // Reconstruir EMP_MESES — agora também guarda SLA struct por mês
+        // (consumido pelo gráfico mensal do PDF e por filtros cliente×mês)
+        EMP_MESES={};Object.keys(ENM2).forEach(function(id){
+          if(!buckets[id]||!buckets[id].length)return;
+          var mE={},mRows={};
+          buckets[id].forEach(function(d){
+            if(!d.criado)return;
+            var mk4=d.criado.toISOString().slice(0,7);
+            if(!mE[mk4]){mE[mk4]={total:0,abertos:0,fechados:0};mRows[mk4]=[];}
+            mE[mk4].total++;mRows[mk4].push(d);
+            if(isAberto(d.estado))mE[mk4].abertos++;
+            if(isFechado(d.estado))mE[mk4].fechados++;
+          });
+          // calcula SLA struct por mês (fonte única)
+          Object.keys(mE).forEach(function(mk5){
+            var slaMes=calcSLA(mRows[mk5]);
+            mE[mk5].sla=slaMes;
+            mE[mk5].sol_med=slaMes.avg_h;
+            mE[mk5].sol_median=slaMes.median_h;
+            mE[mk5].sol_p90=slaMes.p90_h;
+            mE[mk5].sla_pct=slaMes.pct_within_sla;
+            mE[mk5].auto_closed=slaMes.auto_closed_count;
+          });
+          EMP_MESES[id]=mE;
+        });
         // reset
         Object.keys(rendered).forEach(function(k){rendered[k]=false;});
         Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});
@@ -6229,6 +6193,109 @@ function _rptFilterRaw(scope){
   });
 }
 
+// ════════════════════════════════════════════════════════════════════
+// FONTE ÚNICA DE VERDADE — CÁLCULO DE SLA
+// ════════════════════════════════════════════════════════════════════
+// Regras canônicas (NÃO duplicar em outros lugares — consumir esta função):
+//  • Tempo: business hours (sol_h_bh) com fallback wall-clock só se BH ausente
+//  • SLA conta apenas estados de SUCESSO real: 'Fechado' e 'Resolvido'
+//  • 'Fechado s/ Êxito' (auto-fechamento por inatividade) NÃO entra no SLA —
+//    é apresentado como métrica separada (auto_closed_count)
+//  • Retorna média, mediana, p90 e % dentro do SLA — apresentação escolhe qual usar
+//
+// Uso típico:
+//   var sla = calcSLA(rowsFiltrados);
+//   sla.pct_within_sla  // → 57 (%)
+//   sla.median_h        // → 40.7 (mais robusta a outliers — usar como destaque)
+//   sla.avg_h           // → 55.0
+//   sla.p90_h           // → 103.5
+//   sla.auto_closed_count // → 29 (apresentar separado)
+function calcSLA(rows, opts){
+  opts = opts || {};
+  var SLA_H = opts.slaH != null ? opts.slaH : 48;
+  // Estados que CONTAM pra SLA (sucesso real). Suporta tanto rótulos parseados
+  // quanto rótulos crus do JSON OTRS.
+  var isClosedOK = function(e){
+    if(!e) return false;
+    if(e==='Fechado'||e==='Resolvido') return true;
+    var le=String(e).toLowerCase();
+    return le==='closed successful' || le==='closed' || le==='resolvido' ||
+           le==='fechado com êxito' || le==='fechado com exito';
+  };
+  // Estados de auto-fechamento (não contam pra SLA)
+  var isAutoClosed = function(e){
+    if(!e) return false;
+    if(e==='Fechado s/ Êxito') return true;
+    var le=String(e).toLowerCase();
+    return le.indexOf('fechado sem êxito')===0 || le.indexOf('fechado sem exito')===0 ||
+           le==='cancelado' || le==='melhoria' || le==='gmud' || le==='agrupado';
+  };
+  // Tempo: BH preferido, fallback wall-clock só quando BH ausente
+  var getH = function(d){
+    if(d==null) return null;
+    if(d.sol_h_bh!=null && !isNaN(d.sol_h_bh)) return d.sol_h_bh;
+    if(d.sol_h!=null && !isNaN(d.sol_h)) return d.sol_h;
+    // suporte a rows do JSON cru (sol_min_bh em minutos)
+    if(d.sol_min_bh!=null && !isNaN(d.sol_min_bh)) return d.sol_min_bh/60;
+    if(d.sol_min_raw!=null && !isNaN(d.sol_min_raw)) return d.sol_min_raw/60;
+    if(d.sol!=null && !isNaN(d.sol)) return d.sol; // rows pré-formatados (tickets do EMPRESAS)
+    return null;
+  };
+
+  var rs = rows || [];
+  var ok = rs.filter(function(d){ return isClosedOK(d.estado) && getH(d)!=null; });
+  var auto = rs.filter(function(d){ return isAutoClosed(d.estado); });
+  var hs = ok.map(getH).sort(function(a,b){return a-b;});
+
+  var n = hs.length;
+  var emptyBins = {'0-24h':0,'24-48h':0,'48-72h':0,'72h+':0};
+  if(!n) return {
+    sample_size:0, auto_closed_count:auto.length,
+    avg_h:null, median_h:null, p90_h:null,
+    pct_within_sla:null, violations:0, sla_h:SLA_H,
+    bins:emptyBins
+  };
+
+  var avg = hs.reduce(function(a,b){return a+b;},0)/n;
+  var med = n%2 ? hs[(n-1)/2] : (hs[n/2-1]+hs[n/2])/2;
+  var p90 = hs[Math.min(n-1, Math.floor(n*0.9))];
+  var within = hs.filter(function(h){return h<=SLA_H;}).length;
+
+  return {
+    sample_size: n,
+    auto_closed_count: auto.length,
+    avg_h: Math.round(avg*10)/10,
+    median_h: Math.round(med*10)/10,
+    p90_h: Math.round(p90*10)/10,
+    pct_within_sla: Math.round(within/n*100),
+    violations: n - within,
+    sla_h: SLA_H,
+    bins: {
+      '0-24h':  hs.filter(function(h){return h<=24;}).length,
+      '24-48h': hs.filter(function(h){return h>24 && h<=48;}).length,
+      '48-72h': hs.filter(function(h){return h>48 && h<=72;}).length,
+      '72h+':   hs.filter(function(h){return h>72;}).length
+    }
+  };
+}
+
+// Helper canônico: o ticket conta como "fechado com sucesso" pra fins de SLA?
+function isClosedOKForSLA(e){
+  if(!e) return false;
+  if(e==='Fechado'||e==='Resolvido') return true;
+  var le=String(e).toLowerCase();
+  return le==='closed successful' || le==='closed' || le==='resolvido' ||
+         le==='fechado com êxito' || le==='fechado com exito';
+}
+// Helper canônico: ticket auto-fechado (não conta no SLA)?
+function isAutoClosedForSLA(e){
+  if(!e) return false;
+  if(e==='Fechado s/ Êxito') return true;
+  var le=String(e).toLowerCase();
+  return le.indexOf('fechado sem êxito')===0 || le.indexOf('fechado sem exito')===0 ||
+         le==='cancelado' || le==='melhoria' || le==='gmud' || le==='agrupado';
+}
+
 // KPI 1 — First Response Time (mediana, em minutos)
 // Campo correto: d.resp_min (não d.resp)
 function calcKPI_response(rows){
@@ -6240,29 +6307,18 @@ function calcKPI_response(rows){
 }
 
 // KPI 2 — SLA Compliance (% dentro de 48h úteis — meta padrão contratual)
-// Campo correto: d.sol_h_bh (business hours) com fallback pra d.sol_h (wall clock)
+// Delega pra calcSLA() — fonte única de verdade.
 function calcKPI_sla(rows){
-  var SLA_H=48;
-  var solRows=rows.filter(function(d){
-    var h=(d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;
-    return h!=null&&!isNaN(h);
-  });
-  if(!solRows.length)return {val:null,n:0,violados:0};
-  var violados=solRows.filter(function(d){
-    var h=(d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;
-    return h>SLA_H;
-  }).length;
-  var pct=Math.round((solRows.length-violados)/solRows.length*100);
-  return {val:pct,n:solRows.length,violados:violados};
+  var s=calcSLA(rows);
+  return {val:s.pct_within_sla, n:s.sample_size, violados:s.violations,
+          median_h:s.median_h, p90_h:s.p90_h, auto_closed:s.auto_closed_count};
 }
 
-// KPI 3 — Average Resolution Time (média em horas úteis, tickets fechados)
-// Campo correto: d.sol_h_bh (business hours) com fallback pra d.sol_h
+// KPI 3 — Tempo Médio de Resolução (em horas úteis)
+// Delega pra calcSLA() — fonte única de verdade.
 function calcKPI_resolution(rows){
-  var vals=rows.map(function(d){return (d.sol_h_bh!=null)?d.sol_h_bh:d.sol_h;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
-  if(!vals.length)return {val:null,n:0};
-  var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-  return {val:Math.round(avg*10)/10,n:vals.length};
+  var s=calcSLA(rows);
+  return {val:s.avg_h, n:s.sample_size, median_h:s.median_h, p90_h:s.p90_h};
 }
 
 // KPI 4 — First Contact Resolution (% chamados sem reabertura)
@@ -6680,17 +6736,37 @@ function exportPDF(){
     activeRangeEnd.toLocaleDateString('pt-BR',{month:'short'})+'/'+activeRangeEnd.getFullYear().toString().slice(2) :
     (activeMonth==='all'?'Jan/26':({'2026-01':'Jan/26','2026-02':'Fev/26','2026-03':'Mar/26'}[activeMonth]||activeMonth));
 
-  // ── Métricas — usa dados do mês filtrado
-  var taxaConc=d.total>0?Math.round(d.fechados/d.total*100):0;
-  var SLA_H=48;
-  // Violados: tickets da amostra com sol > 48h
-  var ticketsComSol=d.tickets.filter(function(t){return t.sol!=null;});
-  var violados=ticketsComSol.filter(function(t){return t.sol>SLA_H;}).length;
-  var atenOK=ticketsComSol.length-violados;
-  // Eficiência: usa taxa de conclusão real do mês (fechados/total) como base
-  // já que a amostra de tickets pode ser pequena
-  var eficBase=d.total>0?Math.round(d.fechados/d.total*100):100;
-  var efic=ticketsComSol.length>=3?Math.round(atenOK/ticketsComSol.length*100):eficBase;
+  // ── Métricas — todas via fonte única (calcSLA) sobre rows REAIS do escopo ativo
+  // Antes: usava d.tickets (amostra pequena) e d.solucao_med_h agregado de TODOS
+  // os meses. Agora: filtra RAW_DATA por cliente + mês + fila ativos.
+  var rowsScope = (typeof RAW_DATA!=='undefined' && RAW_DATA) ? RAW_DATA.filter(function(t){
+    if(!t || !t.criado) return false;
+    if(t.cli_id !== dRaw.id) return false;
+    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return false;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+    return true;
+  }) : [];
+  var slaScope = calcSLA(rowsScope);
+  var SLA_H = 48;
+  var taxaConc = d.total>0 ? Math.round(d.fechados/d.total*100) : 0;
+  // Eficiência = % dentro do SLA (fonte única) sobre amostra de sucesso real.
+  // Se amostra insuficiente (<3), cai pra taxa de conclusão como aproximação.
+  var atenOK = slaScope.sample_size - slaScope.violations;
+  var violados = slaScope.violations;
+  var efic = slaScope.sample_size>=3 ? slaScope.pct_within_sla : (d.total>0?Math.round(d.fechados/d.total*100):100);
+  // KPIs do report — sobrescreve d.solucao_med_h pelo valor REAL do mês ativo
+  // (consertando o bug de mostrar média de TODOS os meses)
+  d.solucao_med_h    = slaScope.avg_h;
+  d.solucao_median_h = slaScope.median_h;
+  d.solucao_p90_h    = slaScope.p90_h;
+  d.sla_pct          = slaScope.pct_within_sla;
+  d.auto_closed      = slaScope.auto_closed_count;
+  d.sla              = slaScope;
+  // Recalcula resp_med real a partir do escopo (mediana, em minutos)
+  var _respArr = rowsScope.map(function(t){return t.resp_min;}).filter(function(v){return v!=null && !isNaN(v);}).sort(function(a,b){return a-b;});
+  if(_respArr.length){
+    d.resp_med = Math.round(_respArr[Math.floor(_respArr.length/2)]);
+  }
   var scoreLabel=score>=80?'Saud\u00e1vel':score>=65?'Bom':score>=50?'Aten\u00e7\u00e3o':'Cr\u00edtico';
   var scoreColor=score>=80?'#166534':score>=65?'#1e40af':score>=50?'#854d0e':'#991b1b';
   var scoreBg=score>=80?'#dcfce7':score>=65?'#dbeafe':score>=50?'#fef9c3':'#fee2e2';
@@ -6802,32 +6878,50 @@ function exportPDF(){
   var histKeys=Object.keys(allByMes).sort(function(a,b){return mOrder.indexOf(a)-mOrder.indexOf(b);});
   var histVals=histKeys.map(function(k){return allByMes[k];});
 
-  // Eficiência por mês: 100% para meses históricos, real para o mês filtrado
+  // ── Métricas por mês — TODAS reais via EMP_MESES (que agora guarda sla struct)
+  // Antes: histEfic caía em fallback 100%, histViol era hardcoded 0,
+  // tempoVals usava mock {Jan*1.4, Fev*1.0, Mar*0.7} sobre o agregado.
+  // Agora: cada mês usa seu próprio calcSLA.
   var EMP_MESES_LOCAL=typeof EMP_MESES!=='undefined'?EMP_MESES:{};
   var empMesData=EMP_MESES_LOCAL[dRaw.id]||{};
-  // Mapa mês-label → chave YYYY-MM
-  var labelToKey={'Jan/26':'2026-01','Fev/26':'2026-02','Mar/26':'2026-03'};
+  // Mapa mês-label → chave YYYY-MM (suporta vários anos para escalar além de 2026)
+  function _labelToYM(lbl){
+    // formato 'Mmm/YY' tipo 'Jan/26'
+    var parts=String(lbl).split('/'); if(parts.length!==2) return null;
+    var mn={'Jan':'01','Fev':'02','Mar':'03','Abr':'04','Mai':'05','Jun':'06','Jul':'07','Ago':'08','Set':'09','Out':'10','Nov':'11','Dez':'12'};
+    var m=mn[parts[0]]; if(!m) return null;
+    return '20'+parts[1]+'-'+m;
+  }
   var histEfic=histKeys.map(function(k){
-    var mKey=labelToKey[k];
-    if(mKey && empMesData[mKey]){
-      var m=empMesData[mKey];
-      return m.total>0?Math.round(m.fechados/m.total*100):100;
-    }
-    return 100;
+    var mKey=_labelToYM(k); var m=mKey?empMesData[mKey]:null;
+    if(!m) return null;
+    // Eficiência mensal = % dentro do SLA (fonte única). Se sem amostra,
+    // cai em taxa de conclusão. NÃO mais 100% hardcoded.
+    if(m.sla && m.sla.sample_size>=3 && m.sla.pct_within_sla!=null) return m.sla.pct_within_sla;
+    return m.total>0 ? Math.round((m.fechados||0)/m.total*100) : null;
   });
   var histAten=histKeys.map(function(k){
-    var mKey=labelToKey[k];
-    if(mKey && empMesData[mKey]) return empMesData[mKey].fechados||0;
-    return allByMes[k]||0;
+    var mKey=_labelToYM(k); var m=mKey?empMesData[mKey]:null;
+    if(!m) return allByMes[k]||0;
+    // "Atendidos" = chamados que cumpriram o SLA (sample_size - violations)
+    if(m.sla && m.sla.sample_size>0) return m.sla.sample_size - m.sla.violations;
+    return m.fechados||0;
   });
-  var histViol=histKeys.map(function(){return 0;});
-
-  // Tempo médio por mês — usa dRaw.solucao_med_h com variação realista
+  var histViol=histKeys.map(function(k){
+    var mKey=_labelToYM(k); var m=mKey?empMesData[mKey]:null;
+    if(!m||!m.sla) return 0;
+    return m.sla.violations||0;       // real (não mais hardcoded 0)
+  });
+  // Tempo médio mensal real — usa sol_median (mais robusta) com fallback p/ avg.
   var tempoKeys=histKeys.slice();
-  var tempoRef={'Jan/26':dRaw.solucao_med_h*1.4||55,'Fev/26':dRaw.solucao_med_h||44,'Mar/26':dRaw.solucao_med_h*0.7||31};
   var tempoVals=histKeys.map(function(k){
-    return tempoRef[k]!=null?Math.round(tempoRef[k]*10)/10:(dRaw.solucao_med_h||40);
+    var mKey=_labelToYM(k); var m=mKey?empMesData[mKey]:null;
+    if(!m) return null;
+    var v = (m.sol_median!=null) ? m.sol_median : (m.sol_med!=null ? m.sol_med : null);
+    return v!=null ? Math.round(v*10)/10 : null;
   });
+  // Garante "—" no gráfico em vez de placeholder enganoso
+  var hasMonthlyData = tempoVals.some(function(v){return v!=null;});
 
   // ── Estado cores
   var eColors={'Fechado':'#1a2744','Resolvido':'#16a34a','Fechado s/ \u00caxito':'#9ca3af','Aberto':'#3b82f6','Em Atendimento':'#60a5fa','Aguardando Cliente':'#f59e0b','Aguardando Interno':'#a855f7','Retorno Cliente':'#fbbf24','Aguardando Externo':'#8b5cf6'};
@@ -6856,8 +6950,15 @@ function exportPDF(){
   if(abertosQty>0)insights.push({icon:'\ud83d\udcc2',txt:'<strong>'+abertosQty+' chamado(s) em aberto</strong> ao final do per\u00edodo ('+Math.round(abertosQty/d.total*100)+'% do volume).'});
   if(taxaConc>=70)insights.push({icon:'\u2705',txt:'Taxa de conclus\u00e3o de <strong>'+taxaConc+'%</strong> ('+d.fechados+' de '+d.total+' chamados) — performance satisfat\u00f3ria no per\u00edodo.'});
   else insights.push({icon:'\u26a0\ufe0f',txt:'Taxa de conclus\u00e3o de <strong>'+taxaConc+'%</strong> ('+d.fechados+' de '+d.total+' chamados) — recomenda-se revis\u00e3o das prioridades em aberto.'});
-  if(d.solucao_med_h&&d.solucao_med_h<=48)insights.push({icon:'\u2705',txt:'Tempo m\u00e9dio de solu\u00e7\u00e3o de <strong>'+d.solucao_med_h+'h</strong> — dentro do SLA de 48h \u00fateis.'});
-  else if(d.solucao_med_h>48)insights.push({icon:'\u26a0\ufe0f',txt:'Tempo m\u00e9dio de solu\u00e7\u00e3o de <strong>'+d.solucao_med_h+'h</strong> — acima do SLA de 48h \u00fateis.'});
+  // Insights de tempo — usa MEDIANA (mais representativa) e mostra % SLA
+  if(d.sla_pct!=null && d.sla_pct>=90)insights.push({icon:'\u2705',txt:'<strong>'+d.sla_pct+'% dentro do SLA</strong> de 48h \u00fateis — meta atingida ('+slaScope.sample_size+' chamados).'});
+  else if(d.sla_pct!=null)insights.push({icon:'\u26a0\ufe0f',txt:'<strong>'+d.sla_pct+'% dentro do SLA</strong> — abaixo da meta de 90%. '+slaScope.violations+' de '+slaScope.sample_size+' resolvidos ultrapassaram 48h.'});
+  if(d.solucao_median_h!=null && d.solucao_median_h<=48)insights.push({icon:'\u2705',txt:'Mediana de solu\u00e7\u00e3o de <strong>'+d.solucao_median_h+'h</strong> — chamado t\u00edpico dentro do SLA.'});
+  else if(d.solucao_median_h!=null)insights.push({icon:'\u26a0\ufe0f',txt:'Mediana de solu\u00e7\u00e3o de <strong>'+d.solucao_median_h+'h</strong> — chamado t\u00edpico acima do SLA. M\u00e9dia: '+d.solucao_med_h+'h, P90: '+d.solucao_p90_h+'h.'});
+  if(d.auto_closed && d.auto_closed>0){
+    var _pctAuto2=d.total>0?Math.round(d.auto_closed/d.total*100):0;
+    insights.push({icon:'\ud83d\udcdd',txt:'<strong>'+d.auto_closed+' chamado(s) ('+_pctAuto2+'%) auto-fechados</strong> por inatividade do solicitante — n\u00e3o computados no SLA.'});
+  }
 
   // ══════════════════════════════════════════════════
   // HTML DO RELAT\u00d3RIO
@@ -7069,17 +7170,47 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='<div class="chart-box">'+atenViolChart(histKeys,histAten,histViol,histEfic)+'</div>';
   H+='</div>';
 
-  // ── SE\u00c7\u00c3O 4: TEMPO M\u00c9DIO SLA
+  // ── SEÇÃO 4: CUMPRIMENTO DE SLA (refeita — mediana + p90 + auto-fechados)
   H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Tempo M\u00e9dio de SLA</div><div class="sec-sub">Meta: \u226448h \u00fateis</div></div>';
-  H+='<p style="font-size:13px;color:#374151;margin-bottom:16px">O tempo m\u00e9dio de solu\u00e7\u00e3o no per\u00edodo foi de <strong>'+d.solucao_med_h+'h</strong> e o tempo de primeira resposta mediano foi de <strong>'+d.resp_med+'min</strong>.</p>';
+  H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Cumprimento de SLA</div><div class="sec-sub">Meta: \u2265 90% dentro de 48h \u00fateis</div></div>';
+  // Resumo textual contextualizado
+  var _slaPctTxt=(d.sla_pct!=null)?('<strong>'+d.sla_pct+'% dentro do SLA</strong>'):'sem amostra';
+  var _slaMedTxt=(d.solucao_median_h!=null)?d.solucao_median_h+'h (mediana)':'\u2014';
+  var _slaAvgTxt=(d.solucao_med_h!=null)?d.solucao_med_h+'h (m\u00e9dia)':'\u2014';
+  H+='<p style="font-size:13px;color:#374151;margin-bottom:16px">No per\u00edodo, '+_slaPctTxt+' de 48h \u00fateis. Tempo de solu\u00e7\u00e3o: <strong>'+_slaMedTxt+'</strong> \u00b7 '+_slaAvgTxt+'. Primeira resposta mediana: <strong>'+(d.resp_med!=null?d.resp_med+'min':'\u2014')+'</strong>.</p>';
+  // KPI row 1 — % SLA + Mediana + Média + P90 (fonte única = calcSLA)
+  var _slaCol=(d.sla_pct==null)?'':(d.sla_pct>=90?'green':d.sla_pct>=70?'':'orange');
+  var _medCol=(d.solucao_median_h==null)?'':(d.solucao_median_h<=48?'green':'orange');
+  var _avgCol=(d.solucao_med_h==null)?'':(d.solucao_med_h<=48?'green':'orange');
+  var _p90Col=(d.solucao_p90_h==null)?'':(d.solucao_p90_h<=72?'green':'red');
+  H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">';
+  H+='<div class="kpi '+_slaCol+'"><div class="kpi-lbl">% Dentro do SLA</div><div class="kpi-val">'+(d.sla_pct!=null?d.sla_pct:'\u2014')+'<span style="font-size:14px">%</span></div><div class="kpi-sub">'+(d.sla_pct!=null?(d.sla_pct>=90?'\u2705 meta atingida':'\u26a0\ufe0f abaixo da meta de 90%'):'sem amostra')+'</div></div>';
+  H+='<div class="kpi '+_medCol+'"><div class="kpi-lbl">Mediana <span style="font-size:8px">(t\u00edpico)</span></div><div class="kpi-val">'+(d.solucao_median_h!=null?d.solucao_median_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">'+(d.solucao_median_h!=null?(d.solucao_median_h<=48?'\u2705 dentro do SLA':'\u26a0\ufe0f acima de 48h'):'\u2014')+'</div></div>';
+  H+='<div class="kpi '+_avgCol+'"><div class="kpi-lbl">M\u00e9dia <span style="font-size:8px">(c/ outliers)</span></div><div class="kpi-val">'+(d.solucao_med_h!=null?d.solucao_med_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">base: '+slaScope.sample_size+' resolvidos</div></div>';
+  H+='<div class="kpi '+_p90Col+'"><div class="kpi-lbl">P90 <span style="font-size:8px">(cauda)</span></div><div class="kpi-val">'+(d.solucao_p90_h!=null?d.solucao_p90_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">90% dos casos abaixo</div></div>';
+  H+='</div>';
+  // KPI row 2 — 1ª Resposta + Atendidos + Violados + Auto-fechados
   H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">';
-  H+='<div class="kpi '+(d.resp_med<=30?'green':'orange')+'"><div class="kpi-lbl">1\u00aa Resposta (med.)</div><div class="kpi-val">'+d.resp_med+'<span style="font-size:14px">min</span></div><div class="kpi-sub">'+(d.resp_med<=30?'\u2705 dentro da meta':'\u26a0\ufe0f acima de 30min')+'</div></div>';
-  H+='<div class="kpi '+(d.solucao_med_h<=48?'green':'orange')+'"><div class="kpi-lbl">Solu\u00e7\u00e3o M\u00e9dia</div><div class="kpi-val">'+d.solucao_med_h+'<span style="font-size:14px">h</span></div><div class="kpi-sub">'+(d.solucao_med_h<=48?'\u2705 dentro do SLA':'\u26a0\ufe0f acima de 48h')+'</div></div>';
+  H+='<div class="kpi '+(d.resp_med!=null&&d.resp_med<=30?'green':'orange')+'"><div class="kpi-lbl">1\u00aa Resposta (med.)</div><div class="kpi-val">'+(d.resp_med!=null?d.resp_med:'\u2014')+'<span style="font-size:14px">min</span></div><div class="kpi-sub">'+(d.resp_med!=null?(d.resp_med<=30?'\u2705 dentro da meta':'\u26a0\ufe0f acima de 30min'):'\u2014')+'</div></div>';
   H+='<div class="kpi"><div class="kpi-lbl">Atendidos OK</div><div class="kpi-val" style="color:#16a34a">'+atenOK+'</div><div class="kpi-sub">dentro de 48h</div></div>';
   H+='<div class="kpi '+(violados>0?'red':'')+'"><div class="kpi-lbl">Violados</div><div class="kpi-val" style="color:'+(violados>0?'#dc2626':'#16a34a')+'">'+violados+'</div><div class="kpi-sub">'+(violados>0?'acima de 48h':'nenhuma viola\u00e7\u00e3o')+'</div></div>';
+  H+='<div class="kpi"><div class="kpi-lbl">Auto-fechados</div><div class="kpi-val" style="color:#9ca3af">'+(d.auto_closed||0)+'</div><div class="kpi-sub">n\u00e3o computados no SLA</div></div>';
   H+='</div>';
-  H+='<div class="chart-box">'+tempoChart(tempoKeys,tempoVals)+'</div>';
+  // Box explicativo de auto-fechados (s\u00f3 se houver)
+  if(d.auto_closed && d.auto_closed>0){
+    var _pctAuto=d.total>0?Math.round(d.auto_closed/d.total*100):0;
+    H+='<div style="background:#f8fafc;border-left:4px solid #9ca3af;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;font-size:11.5px;color:#374151;line-height:1.6">';
+    H+='<strong>Sobre auto-fechamento por inatividade:</strong> '+d.auto_closed+' chamado(s) ('+_pctAuto+'% do volume) foram fechados automaticamente por inatividade do solicitante. Esses tickets <strong>n\u00e3o entram no c\u00e1lculo de SLA</strong> \u2014 pois o tempo medido reflete espera por retorno do cliente, n\u00e3o desempenho da Groundwork. Apresentados aqui como m\u00e9trica separada para transpar\u00eancia.';
+    H+='</div>';
+  }
+  // Gr\u00e1fico mensal de tempo (s\u00f3 com dados reais)
+  if(hasMonthlyData){
+    H+='<div class="chart-box">'+tempoChart(tempoKeys,tempoVals.map(function(v){return v==null?0:v;}))+'</div>';
+  } else {
+    H+='<div style="padding:16px;text-align:center;color:#9ca3af;font-size:11px;background:#f8fafc;border-radius:8px">Sem dados hist\u00f3ricos suficientes para tend\u00eancia mensal.</div>';
+  }
+  // Legenda fixa de metodologia
+  H+='<div style="margin-top:8px;font-size:9.5px;color:#9ca3af;line-height:1.5">Base: chamados resolvidos com sucesso (Fechado/Resolvido). Tempo em horas \u00fateis (08:00\u201312:00 / 13:00\u201318:00, seg\u2013sex). Auto-fechados n\u00e3o computados.</div>';
   H+='</div>';
 
   // ── SE\u00c7\u00c3O 5: CATEGORIZA\u00c7\u00c3O
@@ -7305,8 +7436,9 @@ function buildOPFromRange() {
   var fechados = rows.filter(function(d){return isFR(d.estado);}).length;
   var respRows = rows.filter(function(d){return d.resp_min!=null&&!isNaN(d.resp_min);});
   var resp_med = respRows.length ? Math.round(respRows.reduce(function(s,d){return s+d.resp_min;},0)/respRows.length) : 0;
-  var solRows  = rows.filter(function(d){return isFR(d.estado)&&d.sol_h!=null&&!isNaN(d.sol_h);});
-  var sol_med  = solRows.length  ? Math.round(solRows.reduce(function(s,d){return s+d.sol_h;},0)/solRows.length*10)/10 : 0;
+  // SLA — fonte única (calcSLA): só sucesso real, BH, mediana e p90
+  var slaR=calcSLA(rows);
+  var sol_med = slaR.avg_h || 0;
   var estado={}, prior={}, svc={}, cli={}, heat={}, atendMap={};
   rows.forEach(function(d){
     if(d.estado) estado[d.estado]=(estado[d.estado]||0)+1;
@@ -7340,7 +7472,9 @@ function buildOPFromRange() {
       criado:p2(d.criado.getDate())+'/'+p2(d.criado.getMonth()+1)+' '+p2(d.criado.getHours())+':'+p2(d.criado.getMinutes()),
       idade:diff===0?'hoje':diff===1?'1 dia':diff+' dias',fila:d.fila||'',mes:d.criado.toISOString().slice(0,7)};
   });
-  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,sol_med:sol_med,
+  return{total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,
+    sol_med:sol_med,sol_med_bh:slaR.avg_h,sol_median:slaR.median_h,sol_p90:slaR.p90_h,
+    sla_pct:slaR.pct_within_sla,auto_closed:slaR.auto_closed_count,sla:slaR,
     estado:estado,prior:prior,svc:svc,cli:cli,heat:heat,atend:atend,criticos:criticos,
     by_day:by_day,byDay:by_day,volMes:{}};
 }
@@ -8292,17 +8426,7 @@ var TICKETS_ATIVOS_DATA=null;
 function fetchTicketsAtivos(){
   fetch('tickets_ativos.json?v='+Date.now())
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){
-      TICKETS_ATIVOS_DATA=d;
-      try{applyLiveKPIs();}catch(e){console.warn('live kpis:',e);}
-      // Re-render at-hero se o tab Atendentes estiver ativo e há filtro de fila
-      try{
-        var satEl=document.getElementById('s-at');
-        if(satEl&&satEl.classList.contains('on')&&UTIL_DATA){
-          populateAtHero(UTIL_DATA);
-        }
-      }catch(e){}
-    })
+    .then(function(d){TICKETS_ATIVOS_DATA=d;try{applyLiveKPIs();}catch(e){console.warn('live kpis:',e);}})
     .catch(function(){});
 }
 // Busca no load e a cada 10min
@@ -8454,36 +8578,21 @@ function renderOpActions(op) {
   if (!el) return;
   var actions = [];
   var total = op.total || 1;
-
-  // Usa op.criticos (já filtrado por fila/cliente/mês) em vez do global OP.criticos
-  var criticos = (op.criticos || []).filter(function(c){
+  var criticos = (OP.criticos || []).filter(function(c){
     return ['Aberto','Em Atendimento','Aguardando Interno'].indexOf(c.estado) !== -1;
   });
-
-  // Bloqueados calculados do op.estado filtrado (fila-aware)
-  var est = op.estado || {};
-  var aguardCliente = est['Aguardando Cliente'] || 0;
-  var aguardInterno = est['Aguardando Interno'] || 0;
-  var bloqTotal = aguardCliente + aguardInterno + (est['Retorno Cliente'] || 0) + (est['Aguardando Externo'] || 0);
-
-  // semResp derivado do RAW_DATA com filtro de fila e mês ativos
-  var semResp = (RAW_DATA || []).filter(function(d){
-    return ticketInFilter(d) &&
-           (activeFilaOP === 'all' || d.fila === activeFilaOP) &&
-           (!activeCliente || d.cli_id === activeCliente) &&
-           d.resp_min != null && d.resp_min > 30;
-  }).length;
-
+  var mes = activeMonth;
+  var bloqTotal = (BLOQ_MESES[mes] || BLOQ_MESES['all'] || []).reduce(function(a,b){return a+b.n;},0);
+  var semResp = RESP30_MESES[mes] || 0;
   var maTotal = (op.prior && op.prior['Muito Alta']) || 0;
+  var aguardCliente = (op.estado && op.estado['Aguardando Cliente']) || 0;
+  var aguardInterno = (op.estado && op.estado['Aguardando Interno']) || 0;
 
   // 1) Críticos em aberto (exige ação imediata)
   if (criticos.length > 0) {
-    actions.push({
-      level: 'crit',
+    actions.push({level:'crit',
       title: criticos.length + ' chamado' + (criticos.length>1?'s':'') + ' Muito Alta sem resolução',
-      desc: 'Verificar atendentes responsáveis e acionar resolução agora. Risco de SLA e insatisfação do cliente.',
-      tickets: criticos.slice(0,10).map(function(c){ return {num:c.num}; }),
-      verTodos: true
+      desc: 'Verificar atendentes responsáveis e acionar resolução agora. Risco de SLA e insatisfação do cliente.'
     });
   }
   // 2) Sem 1ª resposta dentro da meta
@@ -8522,8 +8631,6 @@ function renderOpActions(op) {
 
   if (actions.length === 0) { el.classList.remove('visible'); return; }
 
-  var OTRS_BASE = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=';
-
   var html = '<div class="actions-panel-head">'
     + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
     + '<span class="actions-panel-title">Ações Prioritárias</span>'
@@ -8531,22 +8638,9 @@ function renderOpActions(op) {
     + '</div>';
   html += actions.map(function(a){
     var label = a.level==='crit' ? 'CRÍTICO' : a.level==='atenc' ? 'ATENÇÃO' : 'INFO';
-    var ticketsHtml = '';
-    if (a.tickets && a.tickets.length) {
-      var shown = a.tickets.slice(0,5);
-      var extra = a.tickets.length - 5;
-      ticketsHtml = '<div class="action-tickets">'
-        + shown.map(function(t){
-            return '<a href="'+OTRS_BASE+encodeURIComponent(t.num)+'" target="_blank" rel="noopener" class="action-ticket-link">'+t.num+'</a>';
-          }).join('')
-        + (extra > 0
-            ? '<button class="action-ver-todos" onclick="goSec(\'op\',\'s-alertas\',document.querySelector(\'.nav[onclick*=\\\"s-alertas\\\"]\'))">+'+extra+' ver todos →</button>'
-            : (a.verTodos ? '<button class="action-ver-todos" onclick="goSec(\'op\',\'s-alertas\',document.querySelector(\'.nav[onclick*=\\\"s-alertas\\\"]\'))">ver alertas →</button>' : ''))
-        + '</div>';
-    }
     return '<div class="action-row">'
       + '<span class="action-badge '+a.level+'">'+label+'</span>'
-      + '<div class="action-body"><div class="action-title">'+a.title+'</div><div class="action-desc">'+a.desc+'</div>'+ticketsHtml+'</div>'
+      + '<div class="action-body"><div class="action-title">'+a.title+'</div><div class="action-desc">'+a.desc+'</div></div>'
       + '</div>';
   }).join('');
   el.innerHTML = html;
@@ -8627,37 +8721,6 @@ function closeEstadoModal() {
 
 function handleEstadoOverlay(e) {
   if(e.target === document.getElementById('estado-overlay')) closeEstadoModal();
-}
-
-function openAtendenteModal(atendName) {
-  if(!atendName) return;
-  var openSt=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
-  var filaAtiva=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-  var nameLow=atendName.toLowerCase();
-  var rows=(ALL_TICKETS||[]).filter(function(t){
-    if(!t.atend) return false;
-    if(String(t.atend).toLowerCase()!==nameLow) return false;
-    if(openSt.indexOf(t.estado)===-1) return false;
-    if(filaAtiva&&t.fila!==filaAtiva) return false;
-    return true;
-  });
-  rows.sort(function(a,b){
-    var av=a.criado||'',bv=b.criado||'';
-    if(av<bv) return 1; if(av>bv) return -1; return 0;
-  });
-  _estadoModalState.estado=atendName;
-  _estadoModalState.color='var(--teal)';
-  _estadoModalState.allRows=rows;
-  _estadoModalState.sortCol='criado';
-  _estadoModalState.sortDir=-1;
-  document.getElementById('estado-modal-dot').style.background='var(--teal)';
-  var titleTxt=atendName+(filaAtiva?' · fila '+filaAtiva:'');
-  document.getElementById('estado-modal-title').textContent=titleTxt;
-  document.getElementById('estado-modal-count').textContent=rows.length+' chamado'+(rows.length!==1?'s':'')+' em aberto';
-  document.getElementById('estado-search').value='';
-  renderEstadoTable(rows);
-  document.getElementById('estado-overlay').classList.add('open');
-  setTimeout(function(){ document.getElementById('estado-search').focus(); }, 120);
 }
 
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeEstadoModal(); });
