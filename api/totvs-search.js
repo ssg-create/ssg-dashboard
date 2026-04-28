@@ -83,9 +83,11 @@ export default async function handler(req, res) {
   const fullQuery = product ? `${product} ${query}` : query;
   const auth      = Buffer.from(`${email}:${pass}`).toString('base64');
 
-  const url = new URL('https://totvscst.zendesk.com/api/v2/help_center/articles/search.json');
-  url.searchParams.set('query',    fullQuery.trim());
-  url.searchParams.set('locale',   'pt-br');
+  // Endpoint /api/v2/search.json com type=article retorna todos os artigos
+  // visíveis ao agente autenticado — incluindo artigos restritos/internos.
+  // O Help Center search público ignorava esses artigos mesmo com credencial de agente.
+  const url = new URL('https://totvscst.zendesk.com/api/v2/search.json');
+  url.searchParams.set('query',    `type:article ${fullQuery.trim()}`);
   url.searchParams.set('per_page', String(per_page));
   url.searchParams.set('page',     String(page));
 
@@ -102,8 +104,8 @@ export default async function handler(req, res) {
 
     const results = (data.results || []).map(a => ({
       id:         a.id,
-      title:      a.title,
-      snippet:    a.snippet || '',
+      title:      a.title || '(sem título)',
+      snippet:    a.snippet || (a.body ? a.body.replace(/<[^>]+>/g, ' ').substring(0, 300) : ''),
       url:        a.html_url,
       updated_at: a.updated_at,
       labels:     a.label_names || [],
