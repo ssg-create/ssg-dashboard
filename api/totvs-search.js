@@ -4,7 +4,7 @@
 import crypto from 'crypto';
 
 const SHEET_ID    = '1-S8RlcMWPk0b_NqNU5__RQlqg7TI63Wnm2HfpmqCM_8';
-const SHEET_RANGE = 'Buscas!A:E';
+const SHEET_RANGE = 'Página1!A:E';
 
 // ── Google Sheets logging ──────────────────────────────────────────────────
 
