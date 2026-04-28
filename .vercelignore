@@ -1,0 +1,12 @@
+# Não incluir JSONs no bundle de deploy.
+# Eles são proxiados de raw.githubusercontent.com via vercel.json rewrites.
+# Mantê-los no deploy faz Vercel servir a cópia estática (congelada no último build),
+# em vez de proxy fresh do GitHub.
+historico_completo.json
+tickets_ativos.json
+utilizacao.json
+gwms-insights.json
+aios-insights.json
+silenciosos.json
+triagem.json
+reaberturas.json
