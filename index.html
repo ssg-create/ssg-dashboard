@@ -2903,6 +2903,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <div class="tkd-head-meta">
         <span class="tkd-num" id="tkd-num">#—</span>
         <span class="tkd-sla-badge" id="tkd-sla-badge"></span>
+        <a id="tkd-otrs-link" href="#" target="_blank" rel="noopener" style="display:none;margin-left:10px;padding:3px 10px;border-radius:6px;font-size:10px;font-family:var(--mono);font-weight:700;letter-spacing:.06em;background:rgba(14,165,233,.15);color:#38bdf8;border:1px solid rgba(14,165,233,.35);text-decoration:none;vertical-align:middle">↗ OTRS</a>
       </div>
       <div class="tkd-assunto" id="tkd-assunto">—</div>
     </div>
@@ -8585,6 +8586,11 @@ function openTicketDetail(num){
     + cell('Idade',idade)
     + cell('1ª Resposta',respTxt)
     + '</div>';
+  var otrsLink = document.getElementById('tkd-otrs-link');
+  if(otrsLink && t.num){
+    otrsLink.href='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.num);
+    otrsLink.style.display='inline-block';
+  }
   document.getElementById('tkd-overlay').classList.add('open');
 }
 // Carrega tickets ativos do GWMS (estado ao vivo)
