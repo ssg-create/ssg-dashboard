@@ -231,6 +231,21 @@
   }
   .btn-view:hover { background: var(--accent); color: #fff; }
 
+  /* ── Source badges (CST / Central) ── */
+  .src-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+  .src-cst     { background: rgba(99,102,241,.15); color: #818cf8; border:1px solid rgba(99,102,241,.3); }
+  .src-central { background: rgba(34,197,94,.15);  color: #4ade80; border:1px solid rgba(34,197,94,.3); }
+
   /* ── Article expand ── */
   .btn-expand {
     background: transparent;
@@ -636,8 +651,13 @@ function renderResults(data) {
     var snippet = (r.snippet || '').replace(/<[^>]+>/g, '').substring(0, 220);
     var labels = (r.labels || []).slice(0, 3);
 
+    var src = r.source || 'cst';
+    var srcBadge = src === 'central'
+      ? '<span class="src-badge src-central" title="Central de Atendimento TOTVS">CENTRAL</span>'
+      : '<span class="src-badge src-cst" title="Central de Suporte TOTVS - CST">CST</span>';
+
     html += '<div class="card">';
-    html += '<a class="card-title" href="' + r.url + '" target="_blank" rel="noopener">' + escHtml(r.title) + ' ↗</a>';
+    html += '<a class="card-title" href="' + r.url + '" target="_blank" rel="noopener">' + srcBadge + ' ' + escHtml(r.title) + ' ↗</a>';
     if (snippet) html += '<div class="card-snippet">' + r.snippet.substring(0, 320) + '...</div>';
     html += '<div class="card-body"></div>';
     html += '<div class="card-footer">';
@@ -646,7 +666,7 @@ function renderResults(data) {
     html += '</div>';
     if (date) html += '<span class="card-date">Atualizado ' + date + '</span>';
     html += '<div style="display:flex;gap:8px;align-items:center">';
-    html += '<button class="btn-expand" onclick="expandCard(' + r.id + ', this)">Expandir ▼</button>';
+    html += '<button class="btn-expand" onclick="expandCard(' + r.id + ', this, \'' + src + '\')">Expandir ▼</button>';
     html += '<a class="btn-view" href="' + r.url + '" target="_blank" rel="noopener">Ver ↗</a>';
     html += '</div>';
     html += '</div></div>';
@@ -674,7 +694,7 @@ function escHtml(s) {
 }
 
 // ── Expandir artigo completo inline ──────────────────────────────────────
-function expandCard(id, btn) {
+function expandCard(id, btn, source) {
   var card = btn.closest('.card');
   var body = card.querySelector('.card-body');
 
@@ -689,7 +709,7 @@ function expandCard(id, btn) {
   btn.textContent = 'Carregando…';
   btn.disabled = true;
 
-  fetch('/api/article-body?id=' + id)
+  fetch('/api/article-body?id=' + id + '&source=' + (source || 'cst'))
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.error) throw new Error(d.error);

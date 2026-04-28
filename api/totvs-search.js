@@ -83,39 +83,68 @@ export default async function handler(req, res) {
   const fullQuery = product ? `${product} ${query}` : query;
   const auth      = Buffer.from(`${email}:${pass}`).toString('base64');
 
-  // Endpoint /api/v2/search.json com type=article retorna todos os artigos
-  // visíveis ao agente autenticado — incluindo artigos restritos/internos.
-  // O Help Center search público ignorava esses artigos mesmo com credencial de agente.
-  const url = new URL('https://totvscst.zendesk.com/api/v2/search.json');
-  url.searchParams.set('query',    `type:article ${fullQuery.trim()}`);
-  url.searchParams.set('per_page', String(per_page));
-  url.searchParams.set('page',     String(page));
+  // ── Duas fontes em paralelo: ────────────────────────────────────────────
+  // 1) totvscst.zendesk.com  → CST (autenticado, inclui artigos restritos)
+  // 2) centraldeatendimento.totvs.com → Central de Atendimento (público)
+  // ────────────────────────────────────────────────────────────────────────
 
-  try {
-    const upstream = await fetch(url.toString(), {
-      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-    });
+  const cstUrl = new URL('https://totvscst.zendesk.com/api/v2/search.json');
+  cstUrl.searchParams.set('query',    `type:article ${fullQuery.trim()}`);
+  cstUrl.searchParams.set('per_page', String(per_page));
+  cstUrl.searchParams.set('page',     String(page));
 
-    if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: `Zendesk retornou ${upstream.status}` });
-    }
+  const caUrl = new URL('https://centraldeatendimento.totvs.com/api/v2/help_center/articles/search.json');
+  caUrl.searchParams.set('query',    fullQuery.trim());
+  caUrl.searchParams.set('locale',   'pt-br');
+  caUrl.searchParams.set('per_page', String(per_page));
+  caUrl.searchParams.set('page',     String(page));
 
-    const data = await upstream.json();
-
-    const results = (data.results || []).map(a => ({
+  function mapResult(a, source) {
+    return {
       id:         a.id,
       title:      a.title || '(sem título)',
       snippet:    a.snippet || (a.body ? a.body.replace(/<[^>]+>/g, ' ').substring(0, 300) : ''),
       url:        a.html_url,
       updated_at: a.updated_at,
       labels:     a.label_names || [],
-    }));
+      source:     source,  // 'cst' ou 'central'
+    };
+  }
+
+  try {
+    // Buscar nas duas bases em paralelo. Se uma falhar, mantém a outra.
+    const [cstRes, caRes] = await Promise.allSettled([
+      fetch(cstUrl.toString(), {
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      }).then(r => r.ok ? r.json() : { results: [], count: 0 }),
+      fetch(caUrl.toString(), {
+        headers: { 'Content-Type': 'application/json' },
+      }).then(r => r.ok ? r.json() : { results: [], count: 0 }),
+    ]);
+
+    const cstData = cstRes.status === 'fulfilled' ? cstRes.value : { results: [], count: 0 };
+    const caData  = caRes.status  === 'fulfilled' ? caRes.value  : { results: [], count: 0 };
+
+    const cstResults = (cstData.results || []).map(a => mapResult(a, 'cst'));
+    const caResults  = (caData.results  || []).map(a => mapResult(a, 'central'));
+
+    // Intercalar resultados das duas fontes (1 de cada por vez)
+    const results = [];
+    const max = Math.max(cstResults.length, caResults.length);
+    for (let i = 0; i < max; i++) {
+      if (cstResults[i]) results.push(cstResults[i]);
+      if (caResults[i])  results.push(caResults[i]);
+    }
 
     const out = {
-      count:      data.count      || 0,
-      page:       data.page       || 1,
-      page_count: data.page_count || 1,
+      count:      (cstData.count || 0) + (caData.count || 0),
+      page:       page,
+      page_count: Math.max(cstData.page_count || 1, caData.page_count || 1),
       results,
+      sources: {
+        cst:     cstData.count || 0,
+        central: caData.count  || 0,
+      },
     };
 
     // Log no Google Sheets — fire-and-forget, não adiciona latência
