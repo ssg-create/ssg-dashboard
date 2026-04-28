@@ -1607,6 +1607,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </button>
     <div class="tb-time" id="tb-clock"></div>
     <button class="tb-settings-btn" onclick="openSettings()" title="Configurar metas e SLA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+    <div id="gw-user-pill" onclick="changeGWUser()" title="Clique para trocar nome" style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--muted);background:var(--surface2,#22263a);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin-left:2px;white-space:nowrap">👤 <span id="gw-user-name">—</span></div>
     <button class="tb-theme-btn" id="tb-theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
   </div>
 </div>
@@ -6831,6 +6832,7 @@ function _rptHash(s){
 function exportPDF(){
   var key=document.getElementById('sel-empresa').value;
   if(!key){alert('Selecione uma empresa primeiro.');return;}
+  gwLogActivity('exportou_pdf', key);
   // Usa dados filtrados pelo mês ativo — igual ao que aparece na tela
   var dRaw=EMPRESAS[key];
   var d=getFilteredEmpresa(dRaw); // respeita filtro de mês
@@ -7948,6 +7950,7 @@ function buildFilaBtns(containerId, activeFila, onClickFn) {
 }
 
 function setFilaOP(fila) {
+  gwLogActivity('filtrou_fila', fila||'all');
   activeFilaOP = fila;
   activeFilaCli = fila; // sincroniza
   buildFilaBtns('fila-btns-op', fila, setFilaOP);
@@ -8103,6 +8106,7 @@ function rebuildFilasForCliente(key) {
 }
 
 function setClienteGlobal(key) {
+  gwLogActivity('filtrou_cliente', key||'todos');
   activeCliente = key;
   // Sync Portal sel-empresa
   var selEmp = document.getElementById('sel-empresa');
@@ -10676,6 +10680,7 @@ function autoFetchJSON(){
       var hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
       if(dot)dot.style.background='var(--ok)';
       if(lbl)lbl.textContent='Sync JSON '+hm;
+      gwLogActivity('abriu','dashboard');
     })
     .catch(function(e){
       _autoFetching=false;
@@ -12171,6 +12176,40 @@ function renderAcoes() {
 
   el.innerHTML = H;
 }
+
+// ── GW Usage Tracking ────────────────────────────────────────────────────
+function gwLogActivity(evento, detalhe) {
+  try {
+    var atendente = localStorage.getItem('gw_user') || 'anônimo';
+    fetch('/api/log-activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ atendente: atendente, evento: evento, detalhe: String(detalhe||'') }),
+    }).catch(function(){});
+  } catch(e) {}
+}
+
+function initGWUser() {
+  var saved = localStorage.getItem('gw_user');
+  if (!saved) {
+    saved = (prompt('Qual é o seu nome? (identifica quem está usando o Command Center)') || '').trim();
+    if (saved) localStorage.setItem('gw_user', saved);
+  }
+  var el = document.getElementById('gw-user-name');
+  if (el) el.textContent = saved || 'anônimo';
+}
+
+function changeGWUser() {
+  var name = (prompt('Seu nome:') || '').trim();
+  if (name) {
+    localStorage.setItem('gw_user', name);
+    var el = document.getElementById('gw-user-name');
+    if (el) el.textContent = name;
+  }
+}
+
+// Inicializa identificação do usuário
+initGWUser();
 </script>
 </body>
 </html>
