@@ -2946,59 +2946,15 @@ var _bkAllRows=[];
 // ════════════════════════════════════════════════════════════
 // DATA
 // ════════════════════════════════════════════════════════════
+// OP esqueleto vazio — populado pelo autoFetchData (~600ms após load).
+// R6 fix: antes era um mock pré-populado (total:556, sol_med:54.1, etc) que
+// vazava por ~1s entre login e fetch. Agora começa zerado pra ficar óbvio
+// quando o pipeline está atrasado/offline.
 var OP = {
-  total:556,abertos:101,fechados:346,resp_med:8.0,sol_med:54.1,
-  by_day:[{d:"2026-01-02",n:7},{d:"2026-01-05",n:11},{d:"2026-01-06",n:13},{d:"2026-01-07",n:6},{d:"2026-01-08",n:7},{d:"2026-01-09",n:10},{d:"2026-01-12",n:30},{d:"2026-01-13",n:16},{d:"2026-01-14",n:16},{d:"2026-01-15",n:9},{d:"2026-01-16",n:17},{d:"2026-01-19",n:15},{d:"2026-01-20",n:8},{d:"2026-01-21",n:14},{d:"2026-01-22",n:13},{d:"2026-01-23",n:12},{d:"2026-01-26",n:20},{d:"2026-01-27",n:15},{d:"2026-01-28",n:7},{d:"2026-01-29",n:15},{d:"2026-01-30",n:9},{d:"2026-02-01",n:1},{d:"2026-02-02",n:9},{d:"2026-02-03",n:12},{d:"2026-02-04",n:11},{d:"2026-02-05",n:12},{d:"2026-02-06",n:17},{d:"2026-02-09",n:10},{d:"2026-02-10",n:9},{d:"2026-02-11",n:11},{d:"2026-02-12",n:11},{d:"2026-02-13",n:19},{d:"2026-02-16",n:7},{d:"2026-02-17",n:6},{d:"2026-02-18",n:13},{d:"2026-02-19",n:6},{d:"2026-02-20",n:7},{d:"2026-02-23",n:10},{d:"2026-02-24",n:6},{d:"2026-02-25",n:4},{d:"2026-02-26",n:12},{d:"2026-02-27",n:4},{d:"2026-03-02",n:8},{d:"2026-03-03",n:4},{d:"2026-03-04",n:7},{d:"2026-03-05",n:16},{d:"2026-03-06",n:9},{d:"2026-03-07",n:1},{d:"2026-03-09",n:10},{d:"2026-03-10",n:17},{d:"2026-03-11",n:7},{d:"2026-03-12",n:9},{d:"2026-03-13",n:1}],
-  byDay:[{d:"2026-01-02",n:7},{d:"2026-01-05",n:11},{d:"2026-01-06",n:13},{d:"2026-01-07",n:6},{d:"2026-01-08",n:7},{d:"2026-01-09",n:10},{d:"2026-01-12",n:30},{d:"2026-01-13",n:16},{d:"2026-01-14",n:16},{d:"2026-01-15",n:9},{d:"2026-01-16",n:17},{d:"2026-01-19",n:15},{d:"2026-01-20",n:8},{d:"2026-01-21",n:14},{d:"2026-01-22",n:13},{d:"2026-01-23",n:12},{d:"2026-01-26",n:20},{d:"2026-01-27",n:15},{d:"2026-01-28",n:7},{d:"2026-01-29",n:15},{d:"2026-01-30",n:9},{d:"2026-02-01",n:1},{d:"2026-02-02",n:9},{d:"2026-02-03",n:12},{d:"2026-02-04",n:11},{d:"2026-02-05",n:12},{d:"2026-02-06",n:17},{d:"2026-02-09",n:10},{d:"2026-02-10",n:9},{d:"2026-02-11",n:11},{d:"2026-02-12",n:11},{d:"2026-02-13",n:19},{d:"2026-02-16",n:7},{d:"2026-02-17",n:6},{d:"2026-02-18",n:13},{d:"2026-02-19",n:6},{d:"2026-02-20",n:7},{d:"2026-02-23",n:10},{d:"2026-02-24",n:6},{d:"2026-02-25",n:4},{d:"2026-02-26",n:12},{d:"2026-02-27",n:4},{d:"2026-03-02",n:8},{d:"2026-03-03",n:4},{d:"2026-03-04",n:7},{d:"2026-03-05",n:16},{d:"2026-03-06",n:9},{d:"2026-03-07",n:1},{d:"2026-03-09",n:10},{d:"2026-03-10",n:17},{d:"2026-03-11",n:7},{d:"2026-03-12",n:9},{d:"2026-03-13",n:1}],
-  estado:{"Fechado":323,"Fechado s/ Êxito":109,"Aguardando Cliente":54,"Resolvido":23,"Aguardando Interno":16,"Retorno Cliente":11,"Em Atendimento":10,"Aberto":8,"Aguardando Externo":2},
-  prior:{"Normal":208,"Muito Alta":200,"Alta":82,"Baixa":64,"Muito Baixa":2},
-  atend:[{n:"Dyalef Abreu Santos",t:221,f:197,ab:24,tm:47.2,rm:38.5},{n:"Robert R. dos Santos",t:103,f:82,ab:21,tm:34.5,rm:28.6},{n:"Debora Gomes",t:68,f:62,ab:6,tm:51.7,rm:34.1},{n:"Cristiano Scaranci",t:39,f:30,ab:9,tm:108.0,rm:23.4},{n:"Tiago Silva",t:34,f:21,ab:13,tm:74.4,rm:424.6},{n:"Diego Cardoso",t:34,f:22,ab:12,tm:62.7,rm:89.9},{n:"Marcos Silva",t:24,f:11,ab:13,tm:102.3,rm:532.5},{n:"Ricardo Pinheiro",t:16,f:16,ab:0,tm:46.5,rm:46.5}],
-  svc:{"ERP Protheus":169,"Sustentação GW":143,"Contabilidade":98,"Fiscal":54,"Financeiro":41,"Compras":7,"Ativo Fixo":5,"Fluig":4},
-  cli:{"Almeida Junior":142,"AutoZone":215,"Grupo Metalnox":106,"Finpec":25,"NSX":22},
-  heat:{"0_7":1,"0_8":3,"0_9":13,"0_10":20,"0_11":18,"0_12":6,"0_13":8,"0_14":21,"0_15":13,"0_16":8,"0_17":13,"0_18":5,"1_6":1,"1_7":2,"1_8":4,"1_9":16,"1_10":9,"1_11":11,"1_12":4,"1_13":7,"1_14":9,"1_15":16,"1_16":16,"1_17":7,"1_18":3,"2_7":3,"2_8":10,"2_9":12,"2_10":9,"2_11":12,"2_12":3,"2_13":9,"2_14":5,"2_15":8,"2_16":10,"2_17":9,"2_18":6,"3_5":1,"3_8":6,"3_9":13,"3_10":13,"3_11":10,"3_12":3,"3_13":9,"3_14":10,"3_15":16,"3_16":14,"3_17":8,"3_18":2,"3_19":5,"4_8":6,"4_9":11,"4_10":11,"4_11":14,"4_12":5,"4_13":6,"4_14":7,"4_15":10,"4_16":17,"4_17":17,"4_18":2,"4_19":3,"4_21":1,"4_22":1,"4_23":1,"5_16":1,"6_14":1},
-  volMes:{"2026-01":270,"2026-02":197,"2026-03":89},
-  criticos:[
-    {num:"2026031226000269",assunto:"DIRECIONAMENTO DE SOLICITAÇÕES DE COMPRA",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"12/03 14:32",idade:"hoje",mes:"2026-03"},
-    {num:"2026031226000171",assunto:"Novo chamado criado - 2026031226000171",atend:"robert.santos",estado:"Em Atendimento",criado:"12/03 11:09",idade:"hoje",mes:"2026-03"},
-    {num:"2026031226000152",assunto:"Re: Espelhamento USGAAP - PD07 - W4",atend:"robert.santos",estado:"Aguardando Cliente",criado:"12/03 10:54",idade:"hoje",mes:"2026-03"},
-    {num:"2026031126000476",assunto:"Novo chamado criado - 2026031126000476",atend:"robert.santos",estado:"Aguardando Cliente",criado:"11/03 18:31",idade:"1 dia",mes:"2026-03"},
-    {num:"2026031126000154",assunto:"Rodar a depreciação da Filial 0003",atend:"robert.santos",estado:"Retorno Cliente",criado:"11/03 09:32",idade:"1 dia",mes:"2026-03"},
-    {num:"2026031126000145",assunto:"Novo chamado criado - 2026031126000145",atend:"robert.santos",estado:"Aguardando Cliente",criado:"11/03 09:24",idade:"1 dia",mes:"2026-03"},
-    {num:"2026031126000092",assunto:"Consórcio NR 02.2026 - Título VSL-250583 -02 RAPHAELLA BOOZ",atend:"debora.gomes",estado:"Aguardando Cliente",criado:"11/03 08:56",idade:"1 dia",mes:"2026-03"},
-    {num:"2026031026000665",assunto:"Novo chamado criado - 2026031026000665",atend:"robert.santos",estado:"Aguardando Cliente",criado:"10/03 17:15",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000567",assunto:"Erro acordo Celulares e cia",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"10/03 15:51",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000361",assunto:"Erro Protheus",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"10/03 11:29",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000325",assunto:"CIVIL NK - MOVIMENTO BANCARIO",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"10/03 10:57",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000316",assunto:"CAMPO B1_CONV",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"10/03 10:24",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000254",assunto:"Erro - importacao CTES 895042 e 513734",atend:"diego.cardoso",estado:"Aguardando Cliente",criado:"10/03 09:22",idade:"2 dias",mes:"2026-03"},
-    {num:"2026031026000236",assunto:"Erro - Lançamento faturas de FRETE 329912 E 327079",atend:"cristiano.scaranci",estado:"Aguardando Interno",criado:"10/03 09:14",idade:"2 dias",mes:"2026-03"},
-    {num:"2026030926000462",assunto:"SALDO INICIAL DIFERENTE DO SALDO FINAL",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"09/03 18:47",idade:"3 dias",mes:"2026-03"},
-    {num:"2026030926000435",assunto:"Re: Select - Combo rules - 09.03.2026 - W4 - PD7",atend:"robert.santos",estado:"Aguardando Cliente",criado:"09/03 15:53",idade:"3 dias",mes:"2026-03"},
-    {num:"2026030926000337",assunto:"Novo chamado criado - 2026030926000337",atend:"robert.santos",estado:"Aguardando Cliente",criado:"09/03 12:22",idade:"3 dias",mes:"2026-03"},
-    {num:"2026030626000388",assunto:"ERRO GERAÇÃO DE ACORDO FINANCEIRO",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"06/03 18:11",idade:"6 dias",mes:"2026-03"},
-    {num:"2026030626000351",assunto:"RES: Re: Contabilização Offiline",atend:"robert.santos",estado:"Aguardando Cliente",criado:"06/03 17:16",idade:"6 dias",mes:"2026-03"},
-    {num:"2026030626000253",assunto:"Re: INSERT/ SELECT - TIPO 9",atend:"robert.santos",estado:"Aguardando Cliente",criado:"06/03 13:18",idade:"6 dias",mes:"2026-03"},
-    {num:"2026030626000208",assunto:"Erro nas alçadas de aprovação do pedido de compras",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"06/03 11:57",idade:"6 dias",mes:"2026-03"},
-    {num:"2026030526000237",assunto:"Endereço Pedido CNPJ10.257.908/0001-39",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"05/03 11:04",idade:"7 dias",mes:"2026-03"},
-    {num:"2026030426000328",assunto:"Novo chamado criado - 2026030426000328",atend:"robert.santos",estado:"Aguardando Cliente",criado:"04/03 15:31",idade:"8 dias",mes:"2026-03"},
-    {num:"2026022626000422",assunto:"Erro - importação de pedido com transportadora Open Cargo",atend:"tiago.silva",estado:"Aguardando Cliente",criado:"26/02 15:23",idade:"14 dias",mes:"2026-02"},
-    {num:"2026022526000273",assunto:"Cadastro produto x fornecedor",atend:"robert.santos",estado:"Aguardando Interno",criado:"25/02 14:15",idade:"15 dias",mes:"2026-02"},
-    {num:"2026022426000257",assunto:"RES: RES: Re: idCSRT e do hashCSRT - Sefaz Parana",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"24/02 15:08",idade:"16 dias",mes:"2026-02"},
-    {num:"2026022026000381",assunto:"Atualização Moeda RON não está acontecendo",atend:"diego.cardoso",estado:"Aguardando Externo",criado:"20/02 17:54",idade:"20 dias",mes:"2026-02"},
-    {num:"2026020526000168",assunto:"RES: RES: RES: Re: REINF",atend:"debora.gomes",estado:"Retorno Cliente",criado:"05/02 10:16",idade:"35 dias",mes:"2026-02"},
-    {num:"2026020226000164",assunto:"AZ | Inclusão das TESs no LP - Documento de Entrada",atend:"robert.santos",estado:"Aguardando Interno",criado:"02/02 10:00",idade:"38 dias",mes:"2026-02"},
-    {num:"2026012926000393",assunto:"Fazer carga para criar titulos de Imposto no financeiro",atend:"francisco.silva",estado:"Retorno Cliente",criado:"29/01 16:21",idade:"42 dias",mes:"2026-01"},
-    {num:"2026012626000148",assunto:"Identificação no campo ORIGEM - Lançamento manual",atend:"marcos.silva",estado:"Retorno Cliente",criado:"26/01 10:21",idade:"45 dias",mes:"2026-01"},
-    {num:"2026012326000304",assunto:"ATIVAR CLASSE DE VALOR E2_CLVL NO TITULO FINANCEIRO",atend:"weskley.silva",estado:"Retorno Cliente",criado:"23/01 14:57",idade:"48 dias",mes:"2026-01"},
-    {num:"2026012126000095",assunto:"Contabilização offline dos titulos gerados por planilha",atend:"marcos.silva",estado:"Aguardando Cliente",criado:"21/01 11:05",idade:"50 dias",mes:"2026-01"},
-    {num:"2026010826000262",assunto:"RES: RES: Re: Atualização tabela Imposto de Renda - 2026",atend:"dyalef.santos",estado:"Aguardando Cliente",criado:"08/01 16:09",idade:"63 dias",mes:"2026-01"}
-    ,{num:"2026030526000577",assunto:"Chamado resolvido - 2026030526000577",atend:"robert.santos",estado:"Aguardando Cliente",criado:"05/03 17:59",idade:"7 dias",mes:"2026-03"}
-    ,{num:"2026030526000559",assunto:"Novo chamado criado - 2026030526000559",atend:"robert.santos",estado:"Aguardando Cliente",criado:"05/03 17:41",idade:"7 dias",mes:"2026-03"}
-  
-    ,{num:"2026030626000217",assunto:"Re: Select - Combo rules - W3 - PD7 - 06.03.2026",atend:"robert.santos",estado:"Aguardando Cliente",criado:"06/03 12:06",idade:"6 dias",mes:"2026-03"}
-  ]
+  total:0, abertos:0, fechados:0, resp_med:0, sol_med:0,
+  by_day:[], byDay:[], estado:{}, prior:{}, svc:{}, cli:{}, heat:{},
+  atend:[], volMes:{}, criticos:[]
 };
-
 var EMPRESAS = {
   "ALMEIDA JR":{nome:"Almeida Junior",id:"ALMEIDA JR",total:142,abertos:15,fechados:72,by_mes:{"Jan/26":78,"Fev/26":44,"Mar/26":20},resp_med:8.0,solucao_med_h:55.3,estados:{"Fechado":67,"Fechado s/ Êxito":55,"Aguardando Cliente":12,"Resolvido":5,"Aberto":2,"Aguardando Interno":1},prior:{"Baixa":64,"Muito Alta":35,"Normal":24,"Alta":18,"Muito Baixa":1},servicos:{"ERP Protheus":134,"Sustentação GW":8},tickets:[
     {num:"2026031326000052",assunto:"Máscara para Mídia Digital Boleto",estado:"Aberto",prioridade:"Baixa",criado:"13/03 08:45",servico:"ERP Protheus",resp_min:14},
@@ -5873,9 +5829,9 @@ function rebuildAll(data){
 
       setProgress(90,'Atualizando visualizações...');
       setTimeout(function(){
-        // Salva dados brutos e reconstrói ALL_TICKETS
+        // Salva dados brutos e reconstrói ALL_TICKETS via função canônica (R7)
         RAW_DATA=data;
-        ALL_TICKETS=(function(){var map={};Object.keys(EMPRESAS).forEach(function(k){(EMPRESAS[k].tickets||[]).forEach(function(t){map[t.num]=Object.assign({},t,{cliente:EMPRESAS[k].nome});});});(OP.criticos||[]).forEach(function(c){if(map[c.num]){if(!map[c.num].atend)map[c.num].atend=c.atend;if(!map[c.num].idade)map[c.num].idade=c.idade;if(!map[c.num].mes)map[c.num].mes=c.mes;}else map[c.num]=Object.assign({},c);});return Object.keys(map).map(function(k){return map[k];});})();
+        ALL_TICKETS=_rebuildAllTickets();
         // Recalcular BLOQ_MESES, RESP30_MESES, CRIT_TOTAL_MESES dinamicamente
         BLOQ_MESES={'all':buildBloqEntry(OP.estado||{})};
         RESP30_MESES={'all':data.filter(function(d){return d.resp_min!=null&&d.resp_min>30;}).length};
@@ -8367,10 +8323,15 @@ function updateKPIs(op) {
   var bloqE=['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var bloq=bloqE.reduce(function(s,e){return s+(op.estado&&op.estado[e]||0);},0);
   if(!bloq)bloq=getActiveBloqList().reduce(function(a,b){return a+b.n;},0);
-  var rm=op.resp_med!=null?op.resp_med:8,sm=op.sol_med!=null?op.sol_med:54.1;
-  var vals=[total,ab,fe,maTotal,fmtResp(rm),sm+'<span>h</span>',bloq,14];
+  // R5 fix: antes hardcode rm=8 e sm=54.1 quando nulos. Agora exibe '—'.
+  var rm=op.resp_med!=null?op.resp_med:null;
+  var sm=op.sol_med!=null?op.sol_med:null;
+  var rmDisp = (rm!=null) ? fmtResp(rm) : '—';
+  var smDisp = (sm!=null) ? (sm+'<span>h</span>') : '—';
+  var vals=[total,ab,fe,maTotal,rmDisp,smDisp,bloq,14];
   var colors=['var(--text)','var(--warn)','var(--ok)','var(--danger)','var(--teal)','var(--purple)','var(--orange)','var(--blue)'];
-  var subs=[activeMonth==='all'?'jan–mar':'período selecionado',Math.round(ab/(total||1)*100)+'% do total',taxa+'% de conclusão',Math.round(maTotal/(total||1)*100)+'% do volume',rm<=META_RESP?'✓ dentro da meta':'acima de '+fmtRespTxt(META_RESP),'chamados fechados',Math.round(bloq/(total||1)*100)+'% aguardando','equipe ativa'];
+  var rmSub = (rm==null) ? 'sem amostra' : (rm<=META_RESP?'✓ dentro da meta':'acima de '+fmtRespTxt(META_RESP));
+  var subs=[activeMonth==='all'?'jan–mar':'período selecionado',pct(ab,total)+'% do total',taxa+'% de conclusão',pct(maTotal,total)+'% do volume',rmSub,'chamados fechados',pct(bloq,total)+'% aguardando','equipe ativa'];
   for(var i=0;i<8;i++){
     var vEl=document.getElementById('kpi-v-'+i);
     var sEl=document.getElementById('kpi-s-'+i);
@@ -8829,7 +8790,7 @@ function renderOpActions(op) {
   // 5) Concentração excessiva de Muito Alta
   if (maTotal / total > 0.35) {
     actions.push({level:'atenc',
-      title: Math.round(maTotal/total*100) + '% dos chamados com prioridade Muito Alta',
+      title: pct(maTotal, total) + '% dos chamados com prioridade Muito Alta',
       desc: 'Concentração acima do normal. Revisar critérios de priorização com os clientes para evitar inflação de urgências.'
     });
   }
@@ -8860,18 +8821,21 @@ function renderOpActions(op) {
 // Prioriza dados de empresa (mais ricos: prioridade, serviço, sol)
 // Enriquece com dados de críticos (atendente, idade) quando disponível
 var RAW_DATA=[];
-var ALL_TICKETS = (function(){
+// R7 fix: extraída função única _rebuildAllTickets — antes a mesma lógica
+// existia inline aqui (init) E em rebuildAll pós-import (linha 5834).
+// ALL_TICKETS é fallback do openEstadoModal quando RAW_DATA não está pronto.
+function _rebuildAllTickets(){
+  if(typeof EMPRESAS==='undefined' || !EMPRESAS) return [];
   var map = {}; // num → ticket enriquecido
-
   // 1) Índice de tickets por empresa
   Object.keys(EMPRESAS).forEach(function(k){
+    if(!EMPRESAS[k]) return;
     (EMPRESAS[k].tickets||[]).forEach(function(t){
       map[t.num] = Object.assign({},t,{cliente:EMPRESAS[k].nome});
     });
   });
-
   // 2) Criticos: enriquece existentes ou adiciona novos
-  (OP.criticos||[]).forEach(function(c){
+  ((typeof OP!=='undefined' && OP.criticos)||[]).forEach(function(c){
     if(map[c.num]){
       // Só adiciona campos que faltam (não sobrescreve prioridade/serviço da empresa)
       if(!map[c.num].atend)  map[c.num].atend  = c.atend;
@@ -8881,15 +8845,40 @@ var ALL_TICKETS = (function(){
       map[c.num] = Object.assign({},c);
     }
   });
-
   return Object.keys(map).map(function(k){ return map[k]; });
-})();
+}
+var ALL_TICKETS = _rebuildAllTickets();
 
 var _estadoModalState = {estado:'', color:'', allRows:[], sortCol:'criado', sortDir:-1};
 
 function openEstadoModal(estado, color) {
-  // Filtra por estado
-  var rows = ALL_TICKETS.filter(function(t){ return t.estado === estado; });
+  // R1 fix: antes filtrava ALL_TICKETS (amostra de 25 por cliente)
+  // o que cropava lista em escopos grandes ou meses passados.
+  // Agora usa RAW_DATA respeitando filtros globais (cli + mês + fila + range).
+  var rows = [];
+  if(typeof RAW_DATA!=='undefined' && RAW_DATA && RAW_DATA.length) {
+    var pad = function(n){return n<10?'0'+n:n;};
+    rows = RAW_DATA.filter(function(t){
+      if(!t || t.estado !== estado) return false;
+      if(typeof activeCliente!=='undefined' && activeCliente && t.cli_id !== activeCliente) return false;
+      if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila !== activeFilaOP) return false;
+      if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+      return true;
+    }).map(function(t){
+      // Formata pra shape esperado pela tabela do modal (criado: "DD/MM HH:MM")
+      var dt = (t.criado instanceof Date) ? (pad(t.criado.getDate())+'/'+pad(t.criado.getMonth()+1)+' '+pad(t.criado.getHours())+':'+pad(t.criado.getMinutes())) : (t.criado||'—');
+      var nm = (typeof EMPRESAS!=='undefined' && EMPRESAS[t.cli_id] && EMPRESAS[t.cli_id].nome) || t.cli_id || '—';
+      return {
+        num: t.num, assunto: t.assunto, estado: t.estado, prioridade: t.prior,
+        criado: dt, servico: t.servico, fila: t.fila || '',
+        resp_min: t.resp_min, sol: (t.sol_h_bh!=null?t.sol_h_bh:t.sol_h),
+        atend: t.atend || '—', cliente: nm, idade: '—'
+      };
+    });
+  } else {
+    // Fallback (sem RAW_DATA): comportamento antigo via ALL_TICKETS
+    rows = ALL_TICKETS.filter(function(t){ return t.estado === estado; });
+  }
 
   // Ordena por data de criação descendente por padrão
   rows.sort(function(a,b){
@@ -9268,7 +9257,7 @@ function renderCSHealth(d) {
   }
   // Metrics breakdown
   var total = d.total || 1;
-  var taxa = Math.round(d.fechados/total*100);
+  var taxa = pct(d.fechados, total);
   var slaScore = (d.resp_med||99)<=30 ? 100 : Math.round(30/(d.resp_med||99)*100);
   var solScore = (d.solucao_med_h||999)<=48 ? 100 : Math.round(48/(d.solucao_med_h||999)*100);
   var aguard = (d.estados && d.estados['Aguardando Cliente'])||0;
@@ -9329,7 +9318,7 @@ function renderCSRisks(d) {
   // Riscos
   var riscos = [];
   if (aguard > 0) riscos.push({icon:'🔔', title:'Chamados aguardando cliente', desc:aguard+' chamado(s) sem retorno do cliente. Risco de aging.', level:'warn'});
-  if (alta > total * 0.4) riscos.push({icon:'🔥', title:'Alto volume de prioridade Muito Alta', desc:alta+' chamados ('+Math.round(alta/total*100)+'%) com prioridade crítica.', level:'danger'});
+  if (alta > total * 0.4) riscos.push({icon:'🔥', title:'Alto volume de prioridade Muito Alta', desc:alta+' chamados ('+pct(alta, total)+'%) com prioridade crítica.', level:'danger'});
   if ((d.solucao_med_h||0) > 48) riscos.push({icon:'⏰', title:'SLA de solução em risco', desc:'Tempo médio de '+(d.solucao_med_h||'-')+'h — acima do SLA de 48h.', level:'danger'});
   if ((d.resp_med||0) > 30) riscos.push({icon:'⚡', title:'1ª resposta fora da meta', desc:'Mediana de '+(d.resp_med||'-')+'min — meta é 30min.', level:'warn'});
   if (score >= 70 && riscos.length === 0) riscos.push({icon:'✅', title:'Conta saudável', desc:'Nenhum risco crítico identificado no período.', level:'ok'});
@@ -9587,7 +9576,7 @@ function renderCSActions(d) {
   var actions = [];
   if (aguard > 0) actions.push({title:'Follow-up de pendências cliente', desc:'Contatar '+d.nome+' para retomada dos '+aguard+' chamado(s) em aguardo. Evitar aging e deterioração do score.'});
   if ((d.solucao_med_h||0) > 48) actions.push({title:'Revisão de SLA de solução', desc:'Tempo médio de solução ('+d.solucao_med_h+'h) acima do acordo. Revisar priorização interna.'});
-  if (alta > total * 0.3) actions.push({title:'Reunião de revisão de prioridades', desc:alta+' chamados com prioridade Muito Alta ('+Math.round(alta/total*100)+'%). Agendar call com o cliente para validar urgências.'});
+  if (alta > total * 0.3) actions.push({title:'Reunião de revisão de prioridades', desc:alta+' chamados com prioridade Muito Alta ('+pct(alta, total)+'%). Agendar call com o cliente para validar urgências.'});
   if (score < 70) actions.push({title:'QBR antecipado recomendado', desc:'Health Score em '+score+'pts ('+csScoreLabel(score).label+'). Agendar Business Review para mapear insatisfações.'});
   actions.push({title:'Enviar relatório mensal de performance', desc:'Exportar PDF desta visão e enviar ao contato do cliente como demonstração de transparência e compromisso.'});
   if (score >= 80) actions.push({title:'Identificar oportunidade de expansão', desc:'Conta saudável é candidata a upsell de módulos ERP ou expansão de usuários. Verificar pipeline.'});
@@ -9596,7 +9585,7 @@ function renderCSActions(d) {
   }).join('');
   document.getElementById('cs-actions-list').innerHTML = aHtml;
   // Executive summary
-  var taxa = Math.round(d.fechados/total*100);
+  var taxa = pct(d.fechados, total);
   var summary = '<strong>'+d.nome+'</strong> registrou <strong>'+total+' chamados</strong> no período (jan–mar 2026), com taxa de resolução de <strong>'+taxa+'%</strong> e mediana de 1ª resposta de <strong>'+d.resp_med+'min</strong>.<br><br>';
   summary += 'O Health Score atual é de <strong>'+score+' pts</strong> — classificado como <strong>'+csScoreLabel(score).label+'</strong>. ';
   if (aguard > 0) summary += 'Há <strong>'+aguard+' chamado(s)</strong> aguardando retorno do cliente. ';
@@ -9623,7 +9612,7 @@ function exportCSPDF() {
   // Gera riscos texto
   var riscosText = '';
   if (aguard>0) riscosText += '<tr><td style="padding:6px 10px;color:#e11d48;font-weight:600">Atenção</td><td style="padding:6px 10px">'+aguard+' chamado(s) aguardando retorno do cliente</td></tr>';
-  if (alta>total*0.4) riscosText += '<tr><td style="padding:6px 10px;color:#e11d48;font-weight:600">Crítico</td><td style="padding:6px 10px">'+alta+' chamados com prioridade Muito Alta ('+Math.round(alta/total*100)+'%)</td></tr>';
+  if (alta>total*0.4) riscosText += '<tr><td style="padding:6px 10px;color:#e11d48;font-weight:600">Crítico</td><td style="padding:6px 10px">'+alta+' chamados com prioridade Muito Alta ('+pct(alta, total)+'%)</td></tr>';
   if ((d.solucao_med_h||0)>48) riscosText += '<tr><td style="padding:6px 10px;color:#e11d48;font-weight:600">Crítico</td><td style="padding:6px 10px">Tempo médio de solução: '+d.solucao_med_h+'h (SLA: 48h)</td></tr>';
   if (!riscosText) riscosText = '<tr><td colspan="2" style="padding:6px 10px;color:#16a34a">Nenhum risco crítico identificado ✓</td></tr>';
   // Gera tickets abertos
@@ -11214,29 +11203,40 @@ function renderIARecurring(){
 
 function computeChurnRisk() {
   if(typeof EMPRESAS==='undefined'||!EMPRESAS) return [];
+  // R4 fix: antes usava d.tickets (amostra de 25 com criado em string).
+  // Quando filtro era mês passado, ticketInFilter falhava e cliente sumia.
+  // Agora filtra RAW_DATA por cliente + ticketInFilter (mês/range/fila ativos).
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
   var now=new Date();
-  var openSt=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
-  var isAbCR=function(e){return openSt.indexOf(e)!==-1;};
   var rows=[];
-  Object.keys(EMPRESAS).forEach(function(id){
+  // Agrupa tickets do RAW_DATA por cliente (respeitando filtros globais)
+  var byCli={};
+  RAW_DATA.forEach(function(t){
+    if(!t||!t.criado||!t.cli_id) return;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return;
+    if(!byCli[t.cli_id]) byCli[t.cli_id]=[];
+    byCli[t.cli_id].push(t);
+  });
+  Object.keys(byCli).forEach(function(id){
     var d=EMPRESAS[id];
-    if(!d||!d.total||d.total<3||!d.nome) return;
-    var tks=d.tickets||[];
-    var filtered=tks.filter(function(t){return ticketInFilter(t);});
-    if(!filtered.length) return;
+    if(!d||!d.nome||!id||id.indexOf('@')!==-1) return;
+    var filtered=byCli[id];
+    if(!filtered.length||filtered.length<3) return;  // base mínima de 3
     var total=filtered.length;
-    var abertos=filtered.filter(function(t){return isAbCR(t.estado);}).length;
+    var abertos=filtered.filter(function(t){return isOpenState(t.estado);}).length;
     // Aging of open tickets
-    var openTks=filtered.filter(function(t){return isAbCR(t.estado)&&t.criado;});
+    var openTks=filtered.filter(function(t){return isOpenState(t.estado)&&t.criado;});
     var avgAge=0;
     if(openTks.length){
       var sumAge=openTks.reduce(function(s,t){return s+(now-t.criado)/864e5;},0);
       avgAge=sumAge/openTks.length;
     }
-    // Response time score
-    var rm=d.resp_med||0;
+    // Response time mediano do escopo (mais robusto que média da empresa toda)
+    var resps=filtered.map(function(t){return t.resp_min;}).filter(function(v){return v!=null&&!isNaN(v);}).sort(function(a,b){return a-b;});
+    var rm=resps.length?resps[Math.floor(resps.length/2)]:0;
     // Recurrence patterns
-    var pats=buildRecurringDataForTickets(filtered,'all');
+    var pats=(typeof buildRecurringDataForTickets==='function')?buildRecurringDataForTickets(filtered,'all'):[];
     // Score components (0-100)
     var openScore=Math.min(abertos/total,1)*30;           // 0-30
     var ageScore=Math.min(avgAge/21,1)*30;                // 0-30
@@ -11625,17 +11625,27 @@ function buildNotifications() {
   }
 
   // ── Clientes em risco (score < 55) ───────────────────────
+  // R2 fix: antes lia EMPRESAS[k].abertos/total direto (agregado da empresa),
+  // mostrando "17 abertos de 322" mesmo com filtro Mar/26 ativo.
+  // Agora aplica getFilteredEmpresa pra refletir o escopo (mês/fila/range).
+  // Quando há cliente ativo, considera só ele; senão itera todos.
   if(typeof EMPRESAS !== 'undefined') {
-    Object.keys(EMPRESAS).forEach(function(k) {
-      if(!k || k.indexOf('@') !== -1 || !EMPRESAS[k].total) return;
-      var score = calcCSScore(EMPRESAS[k]);
+    var _cliKeys = (typeof activeCliente!=='undefined' && activeCliente && EMPRESAS[activeCliente])
+      ? [activeCliente]
+      : Object.keys(EMPRESAS).filter(function(k){return k && k.indexOf('@')===-1 && EMPRESAS[k].total;});
+    _cliKeys.forEach(function(k) {
+      var dRaw = EMPRESAS[k];
+      if(!dRaw) return;
+      var d = (typeof getFilteredEmpresa==='function') ? (getFilteredEmpresa(dRaw)||dRaw) : dRaw;
+      if(!d.total) return;
+      var score = calcCSScore(d);
       if(score < 55) {
         notifs.push({
           id: 'cli-risk-' + k,
           cat: 'cli',
           sev: 'danger',
-          title: 'Cliente crítico — ' + EMPRESAS[k].nome,
-          desc: 'Health score ' + score + ' · ' + EMPRESAS[k].abertos + ' abertos de ' + EMPRESAS[k].total + ' chamados',
+          title: 'Cliente crítico — ' + d.nome,
+          desc: 'Health score ' + score + ' · ' + d.abertos + ' abertos de ' + d.total + ' chamados',
           time: 'Score ' + score + '/100'
         });
       } else if(score < 65) {
@@ -11643,7 +11653,7 @@ function buildNotifications() {
           id: 'cli-warn-' + k,
           cat: 'cli',
           sev: 'warn',
-          title: 'Cliente em atenção — ' + EMPRESAS[k].nome,
+          title: 'Cliente em atenção — ' + d.nome,
           desc: 'Health score ' + score + ' · abaixo do limiar operacional (65)',
           time: 'Score ' + score + '/100'
         });
@@ -11652,8 +11662,12 @@ function buildNotifications() {
   }
 
   // ── Tickets críticos (abertos mais antigos) ───────────────
-  if(typeof OP !== 'undefined' && OP.criticos && OP.criticos.length) {
-    var top5 = OP.criticos.slice(0, 5);
+  // R2 fix: usa getActiveOP().criticos pra respeitar range mode + cliente ativo.
+  var _opCrit = (typeof getActiveOP==='function') ? getActiveOP() : null;
+  var _crits = (_opCrit && _opCrit.criticos && _opCrit.criticos.length) ? _opCrit.criticos
+              : ((typeof OP !== 'undefined' && OP.criticos) ? OP.criticos : []);
+  if(_crits.length) {
+    var top5 = _crits.slice(0, 5);
     top5.forEach(function(t) {
       notifs.push({
         id: 'crit-' + t.num,
