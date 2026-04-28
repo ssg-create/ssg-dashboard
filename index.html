@@ -4314,6 +4314,18 @@ function populateAtHero(data){
     return;
   }
   var rows=data.rows;
+  // Filtra por fila ativa: só atendentes com tickets nessa fila
+  if(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all'&&typeof TICKETS_ATIVOS_DATA!=='undefined'&&TICKETS_ATIVOS_DATA&&TICKETS_ATIVOS_DATA.rows){
+    var _filaAtend={};
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){if(r.fila===activeFilaOP&&r.atendente)_filaAtend[r.atendente]=true;});
+    rows=rows.filter(function(r){return _filaAtend[r.atendente];});
+  }
+  if(!rows.length){
+    hero.textContent='SEM DADOS';
+    if(sub) sub.textContent='nenhum atendente com carga nesta fila';
+    if(ringNum) ringNum.textContent='0';
+    return;
+  }
   var total=rows.length;
   var carga=function(r){return (r.em_atendimento||0)+(r.abertos||0);};
   var sobrecarga=rows.filter(function(r){return carga(r)>=8;}).length;
@@ -4784,8 +4796,9 @@ function renderTeamCapacity() {
   cardsHtml+='</div>';
   var _atOtrs='https://atendimento.groundwork.com.br/otrs/index.pl';
   var _atFilaQ=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?';Queues[]='+encodeURIComponent(activeFilaOP):'';
-  var _atLink='<a href="'+_atOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open'+_atFilaQ+'" target="_blank" rel="noopener" style="margin-left:auto;font-size:10px;color:var(--teal);font-family:var(--mono);text-decoration:none;opacity:.8">↗ ver no OTRS</a>';
-  el.innerHTML='<div class="card-title" style="display:flex;align-items:center">Capacidade da Equipe'+_atLink+'</div>'+sumHtml+cardsHtml;
+  var _atHref=_atOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open'+_atFilaQ;
+  var _atLink='<a href="'+_atHref+'" target="_blank" rel="noopener" style="margin-left:auto;font-size:10px;color:var(--teal);font-family:var(--mono);text-decoration:none;opacity:.8;cursor:pointer">↗ OTRS</a>';
+  el.innerHTML='<a href="'+_atHref+'" target="_blank" rel="noopener" class="card-title" style="display:flex;align-items:center;text-decoration:none;color:inherit;cursor:pointer">Capacidade da Equipe'+_atLink+'</a>'+sumHtml+cardsHtml;
 }
 
 function renderAt(){
