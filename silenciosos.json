@@ -1,7 +1,7 @@
 {
-  "generated_at": 1777294591,
-  "generated_at_iso": "2026-04-27T12:56:31Z",
-  "count": 91,
+  "generated_at": 1777402193,
+  "generated_at_iso": "2026-04-28T18:49:53Z",
+  "count": 65,
   "filas": [
     "DATASUL",
     "DBA",
@@ -21,44 +21,8 @@
       "atendente": "Carlos Fernandes",
       "criado": "2026-01-30T13:55:07",
       "modificado": "2026-02-25T16:38:55",
-      "silent_sec": 5246256,
+      "silent_sec": 5353858,
       "assunto": "ENC: AZ - Chamado 2025111226000344"
-    },
-    {
-      "ticket": "2026021226000207",
-      "cliente": "FADEL",
-      "fila": "PROTHEUS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "George Eivazian",
-      "criado": "2026-02-12T14:31:46",
-      "modificado": "2026-03-23T09:54:16",
-      "silent_sec": 3024135,
-      "assunto": "CRIAÇÃO DE LP's DE BAIXA E TRANSFERENCIA DE ATIVOS FIXO"
-    },
-    {
-      "ticket": "2026033026000449",
-      "cliente": "AUMOVIO",
-      "fila": "DATASUL",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Marcelo David",
-      "criado": "2026-03-30T16:24:29",
-      "modificado": "2026-04-01T13:28:38",
-      "silent_sec": 2233673,
-      "assunto": "Derrubar usuários no ToTvs"
-    },
-    {
-      "ticket": "2026031726000287",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "4 high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-03-17T12:12:20",
-      "modificado": "2026-04-09T18:13:14",
-      "silent_sec": 1525397,
-      "assunto": "CIAP - loja 150"
     },
     {
       "ticket": "2026040826000202",
@@ -69,7 +33,7 @@
       "atendente": "Enzo Fucitalo",
       "criado": "2026-04-08T11:40:17",
       "modificado": "2026-04-11T19:47:17",
-      "silent_sec": 1346954,
+      "silent_sec": 1454556,
       "assunto": "Ticket de teste"
     },
     {
@@ -81,7 +45,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-04-09T09:15:10",
       "modificado": "2026-04-13T10:23:20",
-      "silent_sec": 1207991,
+      "silent_sec": 1315593,
       "assunto": "Solicitação de Ajuste - WebService WEBA016 (Inclusão de PA)"
     },
     {
@@ -93,7 +57,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-04-08T12:24:13",
       "modificado": "2026-04-13T14:16:32",
-      "silent_sec": 1193999,
+      "silent_sec": 1301601,
       "assunto": "Verificar agendamentos de atualização dos gráficos"
     },
     {
@@ -105,7 +69,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-03-31T11:23:44",
       "modificado": "2026-04-13T14:22:01",
-      "silent_sec": 1193670,
+      "silent_sec": 1301272,
       "assunto": "Cópia de pedido - Não leva para integração os dados preenchidos na primeira etapa"
     },
     {
@@ -117,7 +81,7 @@
       "atendente": "Joao Santos",
       "criado": "2026-03-03T11:35:09",
       "modificado": "2026-04-13T18:12:57",
-      "silent_sec": 1179814,
+      "silent_sec": 1287416,
       "assunto": "Mapa Links"
     },
     {
@@ -129,7 +93,7 @@
       "atendente": "Vinicius Eroico",
       "criado": "2025-12-01T15:15:09",
       "modificado": "2026-04-14T09:01:33",
-      "silent_sec": 1126498,
+      "silent_sec": 1234100,
       "assunto": "Avaliar Monitor de Notas"
     },
     {
@@ -141,7 +105,7 @@
       "atendente": "Thiago Trufelli",
       "criado": "2026-03-27T12:20:10",
       "modificado": "2026-04-14T13:09:05",
-      "silent_sec": 1111646,
+      "silent_sec": 1219248,
       "assunto": "Ajuste Monitoria Grupo AD"
     },
     {
@@ -153,7 +117,7 @@
       "atendente": "Enzo Fucitalo",
       "criado": "2026-04-14T15:10:20",
       "modificado": "2026-04-14T15:12:29",
-      "silent_sec": 1104242,
+      "silent_sec": 1211844,
       "assunto": "Erro ao gerar DANFE no SIGAFAT"
     },
     {
@@ -165,7 +129,7 @@
       "atendente": "Pedro Luiz",
       "criado": "2026-04-10T18:35:22",
       "modificado": "2026-04-14T16:59:59",
-      "silent_sec": 1097792,
+      "silent_sec": 1205394,
       "assunto": "BUG reload/restart centreon"
     },
     {
@@ -177,20 +141,8 @@
       "atendente": "Wiglas Reis",
       "criado": "2026-04-14T16:35:28",
       "modificado": "2026-04-14T17:09:42",
-      "silent_sec": 1097209,
+      "silent_sec": 1204811,
       "assunto": "Segurança - Microsoft 365"
-    },
-    {
-      "ticket": "2026022026000381",
-      "cliente": "NSX",
-      "fila": "SSG",
-      "estado": "AGUARDANDO AGENTES EXTERNOS",
-      "prioridade": "3 normal",
-      "atendente": "Diego Cardoso",
-      "criado": "2026-02-20T17:54:10",
-      "modificado": "2026-04-14T17:34:07",
-      "silent_sec": 1095744,
-      "assunto": "Atualização Moeda RON não está acontecendo"
     },
     {
       "ticket": "2026041026000163",
@@ -201,7 +153,7 @@
       "atendente": "Adriano Luiz",
       "criado": "2026-04-10T11:45:07",
       "modificado": "2026-04-16T15:17:56",
-      "silent_sec": 931115,
+      "silent_sec": 1038717,
       "assunto": "Apresentar no relatório do banco de horas o valor real da utilização das horas e o valor aplicado o fator hora."
     },
     {
@@ -213,7 +165,7 @@
       "atendente": "Tiago Silva",
       "criado": "2026-02-12T17:18:11",
       "modificado": "2026-04-17T09:56:47",
-      "silent_sec": 863984,
+      "silent_sec": 971586,
       "assunto": "Fonte CFOP 2409"
     },
     {
@@ -225,56 +177,8 @@
       "atendente": "Marcelo David",
       "criado": "2026-04-01T20:02:59",
       "modificado": "2026-04-17T12:38:09",
-      "silent_sec": 854302,
+      "silent_sec": 961904,
       "assunto": "Configurar Compilador"
-    },
-    {
-      "ticket": "2026040126000251",
-      "cliente": "FADEL",
-      "fila": "PROTHEUS",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "George Eivazian",
-      "criado": "2026-04-01T12:19:14",
-      "modificado": "2026-04-17T14:50:42",
-      "silent_sec": 846349,
-      "assunto": "Implantação de um PE"
-    },
-    {
-      "ticket": "2026041726000267",
-      "cliente": "FADEL",
-      "fila": "INFRAESTUTURA",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "4 high",
-      "atendente": "Wiglas Reis",
-      "criado": "2026-04-17T15:19:06",
-      "modificado": "2026-04-17T17:18:07",
-      "silent_sec": 837504,
-      "assunto": "VPN  TOTVS X UBIQUITI"
-    },
-    {
-      "ticket": "2026042026000091",
-      "cliente": "DKT",
-      "fila": "PROTHEUS",
-      "estado": "OPEN",
-      "prioridade": "5 very high",
-      "atendente": "Jean Pierre Rocha",
-      "criado": "2026-04-20T09:28:03",
-      "modificado": "2026-04-20T09:32:37",
-      "silent_sec": 606234,
-      "assunto": "Página principal com erro de certificado: https://sfadkt.com/"
-    },
-    {
-      "ticket": "2026041726000365",
-      "cliente": "luciano.shiraishi@groundwork.com.br",
-      "fila": "GWMS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Thiago Trufelli",
-      "criado": "2026-04-17T16:35:14",
-      "modificado": "2026-04-20T11:13:57",
-      "silent_sec": 600154,
-      "assunto": "Erro \"PHP Warning\" no \"Deploy da stack GWMS\""
     },
     {
       "ticket": "2026020926000133",
@@ -285,7 +189,7 @@
       "atendente": "Eduardo Souza",
       "criado": "2026-02-09T09:39:02",
       "modificado": "2026-04-20T11:18:25",
-      "silent_sec": 599886,
+      "silent_sec": 707488,
       "assunto": "URGENTEEEE- Centro de custos x ativos e passivos"
     },
     {
@@ -297,7 +201,7 @@
       "atendente": "Wiglas Reis",
       "criado": "2026-04-14T16:31:58",
       "modificado": "2026-04-20T14:54:45",
-      "silent_sec": 586906,
+      "silent_sec": 694508,
       "assunto": "Atualização de Windows UPdate - Apenas maquinas virtuais"
     },
     {
@@ -309,7 +213,7 @@
       "atendente": "Weskley Silva",
       "criado": "2025-06-24T14:45:09",
       "modificado": "2026-04-20T16:24:29",
-      "silent_sec": 581522,
+      "silent_sec": 689124,
       "assunto": "Novo Processo Compras"
     },
     {
@@ -321,7 +225,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-04-20T17:35:23",
       "modificado": "2026-04-20T18:13:02",
-      "silent_sec": 575009,
+      "silent_sec": 682611,
       "assunto": "Alteração de senha AD"
     },
     {
@@ -333,7 +237,7 @@
       "atendente": "Diego Cardoso",
       "criado": "2026-04-06T11:54:20",
       "modificado": "2026-04-20T18:54:18",
-      "silent_sec": 572533,
+      "silent_sec": 680135,
       "assunto": "CBENEF"
     },
     {
@@ -345,7 +249,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-03-13T11:35:16",
       "modificado": "2026-04-21T11:58:34",
-      "silent_sec": 511077,
+      "silent_sec": 618679,
       "assunto": "Solicitação de Ponto de Entrada - Permissão Automática em Contratos (SIGAGCT)"
     },
     {
@@ -357,7 +261,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-04-06T10:25:14",
       "modificado": "2026-04-21T11:58:58",
-      "silent_sec": 511053,
+      "silent_sec": 618655,
       "assunto": "Retomada de Testes: Integração Contratos (Fluig x Protheus)"
     },
     {
@@ -369,7 +273,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-04-06T16:50:22",
       "modificado": "2026-04-21T11:59:28",
-      "silent_sec": 511023,
+      "silent_sec": 618625,
       "assunto": "Acesso de Visualização GCT - Banco de Conhecimento"
     },
     {
@@ -381,7 +285,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-02-24T10:35:15",
       "modificado": "2026-04-21T12:00:04",
-      "silent_sec": 510987,
+      "silent_sec": 618589,
       "assunto": "Apoio Implantação: Conciliação Bancária Automática (Bradesco) - Protheus"
     },
     {
@@ -393,7 +297,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-03-27T10:30:13",
       "modificado": "2026-04-21T12:01:27",
-      "silent_sec": 510904,
+      "silent_sec": 618506,
       "assunto": "Solicitação de API REST – Integração Protheus/ Inventário Físico"
     },
     {
@@ -405,7 +309,7 @@
       "atendente": "Cristiano Scaranci",
       "criado": "2025-10-20T09:11:43",
       "modificado": "2026-04-22T08:40:32",
-      "silent_sec": 436559,
+      "silent_sec": 544161,
       "assunto": "RPA - Para Arquivos de DDA"
     },
     {
@@ -417,20 +321,8 @@
       "atendente": "Cristiano Scaranci",
       "criado": "2026-04-22T08:41:58",
       "modificado": "2026-04-22T08:42:12",
-      "silent_sec": 436459,
+      "silent_sec": 544061,
       "assunto": "RES:"
-    },
-    {
-      "ticket": "2025121626000406",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Cristiano Scaranci",
-      "criado": "2025-12-16T16:15:09",
-      "modificado": "2026-04-22T08:47:29",
-      "silent_sec": 436142,
-      "assunto": "RES: RES: [EXTERNAL] Re: LIVRO FISCAL"
     },
     {
       "ticket": "2025121126000371",
@@ -441,7 +333,7 @@
       "atendente": "Tiago Silva",
       "criado": "2025-12-11T15:00:57",
       "modificado": "2026-04-22T09:10:59",
-      "silent_sec": 434732,
+      "silent_sec": 542334,
       "assunto": "PRE DANFE"
     },
     {
@@ -453,7 +345,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2026-04-20T08:31:48",
       "modificado": "2026-04-22T09:14:40",
-      "silent_sec": 434511,
+      "silent_sec": 542113,
       "assunto": "E-mails do portal não estão disparando"
     },
     {
@@ -465,7 +357,7 @@
       "atendente": "Marcio Guimaraes",
       "criado": "2026-03-25T16:20:08",
       "modificado": "2026-04-22T10:36:34",
-      "silent_sec": 429597,
+      "silent_sec": 537199,
       "assunto": "Ativar SNMPv3 equipamentos TOTVS"
     },
     {
@@ -477,7 +369,7 @@
       "atendente": "Carlos Fernandes",
       "criado": "2025-11-11T08:15:07",
       "modificado": "2026-04-22T11:11:43",
-      "silent_sec": 427488,
+      "silent_sec": 535090,
       "assunto": "Re: DEVOLUÇÕES"
     },
     {
@@ -489,7 +381,7 @@
       "atendente": "Adriano Luiz",
       "criado": "2026-04-22T10:40:04",
       "modificado": "2026-04-22T11:20:33",
-      "silent_sec": 426958,
+      "silent_sec": 534560,
       "assunto": "Revisão dashboards Admin OTRS"
     },
     {
@@ -501,20 +393,8 @@
       "atendente": "Sergio Luiz Glovatinski Jr",
       "criado": "2026-03-27T11:15:22",
       "modificado": "2026-04-22T11:33:16",
-      "silent_sec": 426195,
+      "silent_sec": 533797,
       "assunto": "Configuração GWMS - POC - VEDAMOTORS"
-    },
-    {
-      "ticket": "2026042226000248",
-      "cliente": "CNN",
-      "fila": "INFRAESTUTURA",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "3 normal",
-      "atendente": "Vinicius Vedove",
-      "criado": "2026-04-22T11:25:10",
-      "modificado": "2026-04-22T12:00:52",
-      "silent_sec": 424539,
-      "assunto": "Gestão de Armazenamento Sharepoint/OneDrive - CNN"
     },
     {
       "ticket": "2026030626000164",
@@ -525,7 +405,7 @@
       "atendente": "Eduardo Souza",
       "criado": "2026-03-06T11:21:07",
       "modificado": "2026-04-22T13:40:40",
-      "silent_sec": 418551,
+      "silent_sec": 526153,
       "assunto": "Suporte  - Ajuste de Ativos na empresa 40"
     },
     {
@@ -537,140 +417,8 @@
       "atendente": "Eduardo Souza",
       "criado": "2026-04-08T15:30:31",
       "modificado": "2026-04-22T14:05:21",
-      "silent_sec": 417070,
+      "silent_sec": 524672,
       "assunto": "Relatorio de Ativo Customizado"
-    },
-    {
-      "ticket": "2026032426000424",
-      "cliente": "NSX",
-      "fila": "PROTHEUS",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "George Eivazian",
-      "criado": "2026-03-24T15:47:51",
-      "modificado": "2026-04-22T14:11:47",
-      "silent_sec": 416684,
-      "assunto": "CONFIGURAR CNAB BANCO BTG - EMPRESA 40"
-    },
-    {
-      "ticket": "2026040926000193",
-      "cliente": "GroundWork",
-      "fila": "GWMS",
-      "estado": "OPEN",
-      "prioridade": "1 very low",
-      "atendente": "Joao Santos",
-      "criado": "2026-04-09T13:40:09",
-      "modificado": "2026-04-22T15:20:37",
-      "silent_sec": 412554,
-      "assunto": "RE: Proposta de POC - GWMS"
-    },
-    {
-      "ticket": "2026042226000622",
-      "cliente": "GDBR",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Diego Cardoso",
-      "criado": "2026-04-22T22:06:01",
-      "modificado": "2026-04-23T09:26:31",
-      "silent_sec": 347400,
-      "assunto": "LANÇAMENTO NCC NÃO ESTA AMARRANDO NF E NÃO ESTA GERANDO MOVIMENTO NO CONTÁBIL"
-    },
-    {
-      "ticket": "2026042326000022",
-      "cliente": "GDBR",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Diego Cardoso",
-      "criado": "2026-04-23T00:15:09",
-      "modificado": "2026-04-23T09:30:25",
-      "silent_sec": 347166,
-      "assunto": "ERRO NA COMPEMSAÇÃO CONTROLE DE CAMBIO/CONTAS A PAGAR"
-    },
-    {
-      "ticket": "2026012726000468",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "4 high",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-01-27T16:44:15",
-      "modificado": "2026-04-23T09:32:09",
-      "silent_sec": 347062,
-      "assunto": "Novos TES – Aquisição de Ativo Imobilizado (Base Teste)"
-    },
-    {
-      "ticket": "2026011426000241",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Cristiano Scaranci",
-      "criado": "2026-01-14T11:54:43",
-      "modificado": "2026-04-23T09:35:23",
-      "silent_sec": 346868,
-      "assunto": "SFT frete"
-    },
-    {
-      "ticket": "2026042326000237",
-      "cliente": "vilante.alves@groundwork.com.br",
-      "fila": "PROTHEUS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Vilante Marques Alves",
-      "criado": "2026-04-23T10:25:08",
-      "modificado": "2026-04-23T10:41:12",
-      "silent_sec": 342919,
-      "assunto": "Ajuda com pacote de correção da Rotina FISA170 - PAM"
-    },
-    {
-      "ticket": "2026042326000282",
-      "cliente": "PLASTIGLAS",
-      "fila": "DATASUL",
-      "estado": "OPEN",
-      "prioridade": "5 very high",
-      "atendente": "Marcelo David",
-      "criado": "2026-04-23T11:22:35",
-      "modificado": "2026-04-23T11:26:56",
-      "silent_sec": 340175,
-      "assunto": "Configurar Programa"
-    },
-    {
-      "ticket": "2026042326000219",
-      "cliente": "joalyson.oliveira@teletex.com",
-      "fila": "DBA",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "3 normal",
-      "atendente": "Enzo Fucitalo",
-      "criado": "2026-04-23T10:00:07",
-      "modificado": "2026-04-23T14:56:19",
-      "silent_sec": 327612,
-      "assunto": "Verificação de Banco de Dados | FLN - SFLNACLU-SQL02"
-    },
-    {
-      "ticket": "2026042326000273",
-      "cliente": "PECVAL",
-      "fila": "DATASUL",
-      "estado": "AGUARDANDO AGENTES EXTERNOS",
-      "prioridade": "3 normal",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-04-23T11:10:44",
-      "modificado": "2026-04-23T18:24:56",
-      "silent_sec": 315095,
-      "assunto": "RE1001 apresentando erro no Datasul"
-    },
-    {
-      "ticket": "2026012626000148",
-      "cliente": "NSX",
-      "fila": "SSG-MELHORIAS",
-      "estado": "GMUD",
-      "prioridade": "5 very high",
-      "atendente": "Tiago Silva",
-      "criado": "2026-01-26T10:21:55",
-      "modificado": "2026-04-23T20:01:25",
-      "silent_sec": 309306,
-      "assunto": "Identificação no campo ORIGEM dos usuaários que fizeram Lançamento manual"
     },
     {
       "ticket": "2026042026000126",
@@ -681,44 +429,8 @@
       "atendente": "Thiago Trufelli",
       "criado": "2026-04-20T11:15:10",
       "modificado": "2026-04-24T08:03:49",
-      "silent_sec": 265962,
+      "silent_sec": 373564,
       "assunto": "Melhorias no deploy do GWMS"
-    },
-    {
-      "ticket": "2026011926000394",
-      "cliente": "ALMEIDA JR",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-01-19T13:59:01",
-      "modificado": "2026-04-24T08:38:07",
-      "silent_sec": 263904,
-      "assunto": "Erro Emissão NF AJ Matriz Prefeitura SP"
-    },
-    {
-      "ticket": "2026042226000631",
-      "cliente": "GDBR",
-      "fila": "SSG",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-22T22:43:28",
-      "modificado": "2026-04-24T09:05:57",
-      "silent_sec": 262234,
-      "assunto": "CASAS DECIMAIS IMPOSTO DE PIS E COFINS - NOTAS FISCAIS SAIDAS."
-    },
-    {
-      "ticket": "2026042426000101",
-      "cliente": "monitoramento@groundwork.com.br",
-      "fila": "DBA",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "criado": "2026-04-24T09:15:21",
-      "modificado": "2026-04-24T09:18:50",
-      "silent_sec": 261461,
-      "assunto": "AUTOZONE - SRV-SQL-PRD - SQL:Jobs - 26042409115520"
     },
     {
       "ticket": "2026042326000041",
@@ -729,20 +441,8 @@
       "atendente": "Tiago Silva",
       "criado": "2026-04-23T00:27:00",
       "modificado": "2026-04-24T10:37:52",
-      "silent_sec": 256719,
+      "silent_sec": 364321,
       "assunto": "ROBÔ DACTE DE COMPRA"
-    },
-    {
-      "ticket": "2026042326000111",
-      "cliente": "PECVAL",
-      "fila": "DATASUL",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-04-23T07:39:58",
-      "modificado": "2026-04-24T10:45:12",
-      "silent_sec": 256279,
-      "assunto": "Arquivos XML e ASN's não estão sendo direcionados para pasta de envio"
     },
     {
       "ticket": "2025121826000297",
@@ -753,7 +453,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2025-12-18T13:02:21",
       "modificado": "2026-04-24T10:53:35",
-      "silent_sec": 255776,
+      "silent_sec": 363378,
       "assunto": "Cadastro de Cliente - Não está salvando o arquivo no servidor do ERP"
     },
     {
@@ -765,7 +465,7 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2025-12-18T12:58:25",
       "modificado": "2026-04-24T10:54:16",
-      "silent_sec": 255735,
+      "silent_sec": 363337,
       "assunto": "Inclusão de pedidos - Alteração no conceito de exibição do campo \"Desconto Faseamento\""
     },
     {
@@ -777,20 +477,8 @@
       "atendente": "Jean Pierre Rocha",
       "criado": "2025-12-18T10:56:21",
       "modificado": "2026-04-24T10:54:42",
-      "silent_sec": 255709,
+      "silent_sec": 363311,
       "assunto": "Filtro em Pedidos/Notas Fiscais/Títulos - não busca ao preencher código parcialmente"
-    },
-    {
-      "ticket": "2025121726000495",
-      "cliente": "DKT",
-      "fila": "PROTHEUS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Jean Pierre Rocha",
-      "criado": "2025-12-17T18:17:04",
-      "modificado": "2026-04-24T10:55:25",
-      "silent_sec": 255666,
-      "assunto": "Paginação das páginas de Pedidos, Clientes e Títulos, melhorar a paginação para carga mais rápida"
     },
     {
       "ticket": "2026040926000086",
@@ -801,7 +489,7 @@
       "atendente": "Weskley Silva",
       "criado": "2026-04-09T09:35:13",
       "modificado": "2026-04-24T10:56:39",
-      "silent_sec": 255592,
+      "silent_sec": 363194,
       "assunto": "Abertura de Projeto: API de Integração Contábil (Sistema de Arrecadação x Protheus CTB)"
     },
     {
@@ -813,20 +501,8 @@
       "atendente": "Diego Cardoso",
       "criado": "2026-04-14T14:29:18",
       "modificado": "2026-04-24T11:03:17",
-      "silent_sec": 255194,
+      "silent_sec": 362796,
       "assunto": "excluçao de mediçao loja 7653"
-    },
-    {
-      "ticket": "2026040726000311",
-      "cliente": "PLASTIGLAS",
-      "fila": "DATASUL",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Marcelo David",
-      "criado": "2026-04-07T11:52:52",
-      "modificado": "2026-04-24T11:05:16",
-      "silent_sec": 255075,
-      "assunto": "Actualizar la versón de Datasul"
     },
     {
       "ticket": "2026041326000443",
@@ -837,56 +513,8 @@
       "atendente": "Cristiano Scaranci",
       "criado": "2026-04-13T16:30:24",
       "modificado": "2026-04-24T11:23:54",
-      "silent_sec": 253957,
+      "silent_sec": 361559,
       "assunto": "RES: Requisição - Transportadora não aparece no romaneio"
-    },
-    {
-      "ticket": "2026042426000155",
-      "cliente": "guilherme.jonck@groundwork.com.br",
-      "fila": "GWMS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Guilherme Jonck",
-      "criado": "2026-04-24T11:10:16",
-      "modificado": "2026-04-24T11:25:06",
-      "silent_sec": 253885,
-      "assunto": "Ajuste nos plugins padrão da criticidade do output “Error getting data”"
-    },
-    {
-      "ticket": "2026041726000311",
-      "cliente": "AUTOZONE",
-      "fila": "SSG",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-17T15:55:10",
-      "modificado": "2026-04-24T12:24:38",
-      "silent_sec": 250313,
-      "assunto": "AutoZone - Correção de Tipo 9 - 17.04 - PD09 FY26"
-    },
-    {
-      "ticket": "2026041726000043",
-      "cliente": "AUMOVIO",
-      "fila": "DATASUL",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "4 high",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-04-17T08:10:31",
-      "modificado": "2026-04-24T13:39:53",
-      "silent_sec": 245798,
-      "assunto": "Falha no cancelamento de NF"
-    },
-    {
-      "ticket": "2026042226000104",
-      "cliente": "pedro.luiz@groundwork.com.br",
-      "fila": "GWMS",
-      "estado": "OPEN",
-      "prioridade": "3 normal",
-      "atendente": "Pedro Luiz",
-      "criado": "2026-04-22T08:55:10",
-      "modificado": "2026-04-24T13:55:02",
-      "silent_sec": 244889,
-      "assunto": "Projeto - Topologia automática"
     },
     {
       "ticket": "2026030626000361",
@@ -897,7 +525,7 @@
       "atendente": "George Eivazian",
       "criado": "2026-03-06T17:22:15",
       "modificado": "2026-04-24T14:19:06",
-      "silent_sec": 243445,
+      "silent_sec": 351047,
       "assunto": "AJUSTE DE LP BAIXA - 40 BETFAIR"
     },
     {
@@ -909,7 +537,7 @@
       "atendente": "Geyson Albano",
       "criado": "2026-03-26T14:45:52",
       "modificado": "2026-04-24T14:19:51",
-      "silent_sec": 243400,
+      "silent_sec": 351002,
       "assunto": "V3 NETLEX"
     },
     {
@@ -921,7 +549,7 @@
       "atendente": "Vilante Marques Alves",
       "criado": "2025-09-18T17:09:56",
       "modificado": "2026-04-24T14:20:22",
-      "silent_sec": 243369,
+      "silent_sec": 350971,
       "assunto": "Criação de títulos de impostos gerados pelo configurador de tributos"
     },
     {
@@ -933,7 +561,7 @@
       "atendente": "Geyson Albano",
       "criado": "2026-04-15T09:51:09",
       "modificado": "2026-04-24T14:21:52",
-      "silent_sec": 243279,
+      "silent_sec": 350881,
       "assunto": "V2 Customização PCC para trazer o anexo da NF no novo Titulo gerado"
     },
     {
@@ -945,7 +573,7 @@
       "atendente": "Pedro Luiz",
       "criado": "2026-04-15T18:11:21",
       "modificado": "2026-04-24T14:21:57",
-      "silent_sec": 243274,
+      "silent_sec": 350876,
       "assunto": "Descoberta de Topologia automática"
     },
     {
@@ -957,80 +585,8 @@
       "atendente": "Marcio Guimaraes",
       "criado": "2026-04-16T14:00:19",
       "modificado": "2026-04-24T14:57:09",
-      "silent_sec": 241162,
+      "silent_sec": 348764,
       "assunto": "Planilha de controle de clientes GWMS"
-    },
-    {
-      "ticket": "2026041426000371",
-      "cliente": "PECVAL",
-      "fila": "DATASUL",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "5 very high",
-      "atendente": "Guilherme Rosa",
-      "criado": "2026-04-14T16:19:19",
-      "modificado": "2026-04-24T16:10:15",
-      "silent_sec": 236776,
-      "assunto": "Relatório de Lucratividade."
-    },
-    {
-      "ticket": "2026042326000415",
-      "cliente": "TJBA",
-      "fila": "GWMS",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "5 very high",
-      "atendente": "Bruno Fagundes",
-      "criado": "2026-04-23T16:14:58",
-      "modificado": "2026-04-24T16:15:38",
-      "silent_sec": 236453,
-      "assunto": "Inclusão de serviços nos hosts ADP"
-    },
-    {
-      "ticket": "2026042426000119",
-      "cliente": "SERVENG",
-      "fila": "DBA",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "criado": "2026-04-24T09:35:22",
-      "modificado": "2026-04-24T16:15:53",
-      "silent_sec": 236438,
-      "assunto": "ENC: Configuração de WF - Ambiente RELEASE 2510 - PRJ"
-    },
-    {
-      "ticket": "2026041526000216",
-      "cliente": "joao.santos@groundwork.com.br",
-      "fila": "GWMS",
-      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
-      "prioridade": "3 normal",
-      "atendente": "Joao Santos",
-      "criado": "2026-04-15T10:00:23",
-      "modificado": "2026-04-24T16:37:37",
-      "silent_sec": 235134,
-      "assunto": "Apontamentos referente a calls internas."
-    },
-    {
-      "ticket": "2026042326000353",
-      "cliente": "SERVENG",
-      "fila": "DBA",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Eduardo Candido",
-      "criado": "2026-04-23T14:00:16",
-      "modificado": "2026-04-24T16:40:19",
-      "silent_sec": 234972,
-      "assunto": "ENC: Atualização QIVE - Aplicar nos 3 ambientes"
-    },
-    {
-      "ticket": "2026041726000061",
-      "cliente": "GroundWork",
-      "fila": "GWMS",
-      "estado": "OPEN",
-      "prioridade": "1 very low",
-      "atendente": "Luciano Katsumi Shiraishi",
-      "criado": "2026-04-17T08:45:09",
-      "modificado": "2026-04-24T16:48:15",
-      "silent_sec": 234496,
-      "assunto": "Implantação GWMS cliente Digna"
     },
     {
       "ticket": "2026042426000342",
@@ -1041,32 +597,8 @@
       "atendente": "Robert Rodrigues dos Santos",
       "criado": "2026-04-24T16:50:19",
       "modificado": "2026-04-24T16:55:19",
-      "silent_sec": 234072,
+      "silent_sec": 341674,
       "assunto": "SCP NS - ERRO EFD REINF"
-    },
-    {
-      "ticket": "2026041326000121",
-      "cliente": "joao.oliveira@almeidajunior.com.br",
-      "fila": "SSG",
-      "estado": "RETORNO CLIENTE",
-      "prioridade": "3 normal",
-      "atendente": "Robert Rodrigues dos Santos",
-      "criado": "2026-04-13T09:10:28",
-      "modificado": "2026-04-24T17:00:24",
-      "silent_sec": 233767,
-      "assunto": "RES: RES: RES: RES: RES: RES: RES: RES: Chamado 135947 - EFD Reinf - Informações DLs"
-    },
-    {
-      "ticket": "2026041726000114",
-      "cliente": "GroundWork",
-      "fila": "GWMS",
-      "estado": "EM ATENDIMENTO",
-      "prioridade": "1 very low",
-      "atendente": "Marcio Guimaraes",
-      "criado": "2026-04-17T10:35:05",
-      "modificado": "2026-04-24T17:06:32",
-      "silent_sec": 233399,
-      "assunto": "Apontamentos de horas Guima - Abril 2024"
     },
     {
       "ticket": "2026042226000168",
@@ -1077,7 +609,7 @@
       "atendente": "Guilherme Jonck",
       "criado": "2026-04-22T10:00:21",
       "modificado": "2026-04-24T18:04:36",
-      "silent_sec": 229915,
+      "silent_sec": 337517,
       "assunto": "Desenvolvimento do gw/v2"
     },
     {
@@ -1089,20 +621,176 @@
       "atendente": "Dyalef Abreu Santos",
       "criado": "2026-01-08T16:09:01",
       "modificado": "2026-04-24T18:04:41",
-      "silent_sec": 229910,
+      "silent_sec": 337512,
       "assunto": "Atualização tabela Imposto de Renda - 2026"
     },
     {
-      "ticket": "2026042226000159",
-      "cliente": "bucci.luana@totvs.com.br",
+      "ticket": "2026041626000198",
+      "cliente": "NSX",
+      "fila": "PROTHEUS",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Gesiel Silva",
+      "criado": "2026-04-16T09:20:09",
+      "modificado": "2026-04-27T09:20:17",
+      "silent_sec": 109776,
+      "assunto": "Parametrização financeira/contábil para aglutinação de títulos em fatura"
+    },
+    {
+      "ticket": "2026031126000172",
+      "cliente": "thiago.trufelli@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "EM ATENDIMENTO",
+      "prioridade": "3 normal",
+      "atendente": "Thiago Trufelli",
+      "criado": "2026-03-11T09:55:13",
+      "modificado": "2026-04-27T09:24:45",
+      "silent_sec": 109508,
+      "assunto": "Atualizar o Grafana dos clientes para o Grafana 10"
+    },
+    {
+      "ticket": "2026042326000246",
+      "cliente": "wildirson.pires@totvs.com.br",
       "fila": "GWMS",
       "estado": "OPEN",
       "prioridade": "1 very low",
+      "atendente": "Thiago Trufelli",
+      "criado": "2026-04-23T10:45:12",
+      "modificado": "2026-04-27T10:10:03",
+      "silent_sec": 106790,
+      "assunto": "Monitoramento X10"
+    },
+    {
+      "ticket": "2026042726000168",
+      "cliente": "monitoramento@groundwork.com.br",
+      "fila": "DBA",
+      "estado": "EM ATENDIMENTO",
+      "prioridade": "3 normal",
+      "atendente": "Eduardo Candido",
+      "criado": "2026-04-27T10:05:14",
+      "modificado": "2026-04-27T10:26:02",
+      "silent_sec": 105831,
+      "assunto": "AUTOZONE - SRV-MASTER-PRD - Memory Ram - 26042709595386"
+    },
+    {
+      "ticket": "2026011926000394",
+      "cliente": "ALMEIDA JR",
+      "fila": "SSG",
+      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-01-19T13:59:01",
+      "modificado": "2026-04-27T10:38:09",
+      "silent_sec": 105104,
+      "assunto": "Erro Emissão NF AJ Matriz Prefeitura SP"
+    },
+    {
+      "ticket": "2026041326000121",
+      "cliente": "joao.oliveira@almeidajunior.com.br",
+      "fila": "SSG",
+      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-13T09:10:28",
+      "modificado": "2026-04-27T10:42:38",
+      "silent_sec": 104835,
+      "assunto": "RES: RES: RES: RES: RES: RES: RES: RES: Chamado 135947 - EFD Reinf - Informações DLs"
+    },
+    {
+      "ticket": "2026041526000216",
+      "cliente": "joao.santos@groundwork.com.br",
+      "fila": "GWMS",
+      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
+      "prioridade": "3 normal",
+      "atendente": "Joao Santos",
+      "criado": "2026-04-15T10:00:23",
+      "modificado": "2026-04-27T11:17:39",
+      "silent_sec": 102734,
+      "assunto": "Apontamentos referente a calls internas."
+    },
+    {
+      "ticket": "2026040926000193",
+      "cliente": "GroundWork",
+      "fila": "GWMS",
+      "estado": "OPEN",
+      "prioridade": "1 very low",
+      "atendente": "Joao Santos",
+      "criado": "2026-04-09T13:40:09",
+      "modificado": "2026-04-27T11:27:20",
+      "silent_sec": 102153,
+      "assunto": "RE: Proposta de POC - GWMS"
+    },
+    {
+      "ticket": "2026042726000088",
+      "cliente": "cida@adelco.com.br",
+      "fila": "INFRAESTUTURA",
+      "estado": "EM ATENDIMENTO",
+      "prioridade": "3 normal",
+      "atendente": "Gilberto Sousa",
+      "criado": "2026-04-27T08:15:21",
+      "modificado": "2026-04-27T12:14:01",
+      "silent_sec": 99352,
+      "assunto": "Solicitação de Remoção de GPOs de Atalhos"
+    },
+    {
+      "ticket": "2026041426000371",
+      "cliente": "PECVAL",
+      "fila": "DATASUL",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "5 very high",
+      "atendente": "Guilherme Rosa",
+      "criado": "2026-04-14T16:19:19",
+      "modificado": "2026-04-27T13:20:21",
+      "silent_sec": 95372,
+      "assunto": "Relatório de Lucratividade."
+    },
+    {
+      "ticket": "2026042226000631",
+      "cliente": "GDBR",
+      "fila": "SSG",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-22T22:43:28",
+      "modificado": "2026-04-27T14:55:15",
+      "silent_sec": 89678,
+      "assunto": "CASAS DECIMAIS IMPOSTO DE PIS E COFINS - NOTAS FISCAIS SAIDAS."
+    },
+    {
+      "ticket": "2026012726000468",
+      "cliente": "AUTOZONE",
+      "fila": "SSG",
+      "estado": "AGUARDANDO ATENDENTE (INTERNO)",
+      "prioridade": "4 high",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-01-27T16:44:15",
+      "modificado": "2026-04-27T15:03:07",
+      "silent_sec": 89206,
+      "assunto": "Novos TES – Aquisição de Ativo Imobilizado (Base Teste)"
+    },
+    {
+      "ticket": "2026031826000329",
+      "cliente": "rodrigo.koji@totvs.com.br",
+      "fila": "GWMS",
+      "estado": "RETORNO CLIENTE",
+      "prioridade": "1 very low",
       "atendente": "Luciano Katsumi Shiraishi",
-      "criado": "2026-04-22T09:30:16",
-      "modificado": "2026-04-24T18:48:48",
-      "silent_sec": 227263,
-      "assunto": "Inclusão monitoramento das maquinas - Portal de cliente"
+      "criado": "2026-03-18T16:20:20",
+      "modificado": "2026-04-27T15:35:19",
+      "silent_sec": 87274,
+      "assunto": "#TOTVS-SERVERS - Adicionar servidores"
+    },
+    {
+      "ticket": "2026042726000346",
+      "cliente": "postmaster@autozone.com",
+      "fila": "SSG",
+      "estado": "OPEN",
+      "prioridade": "3 normal",
+      "atendente": "Robert Rodrigues dos Santos",
+      "criado": "2026-04-27T15:05:15",
+      "modificado": "2026-04-27T15:45:51",
+      "silent_sec": 86642,
+      "assunto": "Your message could not be delivered"
     }
   ],
   "silencio_min_sec": 86400
