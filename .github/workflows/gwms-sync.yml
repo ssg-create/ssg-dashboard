@@ -1,9 +1,11 @@
 name: GWMS Sync
 
 on:
-  # Cron foi movido para cron-job.org (GitHub Actions schedule atrasa 1-2h em horário de pico).
-  # Trigger externo: https://console.cron-job.org → POST /actions/workflows/gwms-sync.yml/dispatches
+  # Trigger primário: cron-job.org via workflow_dispatch (on-time, sem atraso).
+  # Backup: schedule do GitHub Actions (atrasa 1-2h em horário de pico, mas cobre se cron-job.org cair).
   workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
 
 jobs:
   sync:
