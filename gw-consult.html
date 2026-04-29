@@ -380,6 +380,54 @@
   .step h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
   .step p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
+  /* ── Sources box ── */
+  .sources-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  .sources-box h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 4px;
+  }
+  .sources-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .source-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .source-item .src-badge {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+  .source-item strong {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .source-item p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
   .example-box {
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -502,6 +550,34 @@
         <div class="step-num">4</div>
         <h3>Leia a solução</h3>
         <p>Clique em "Ver solução ↗" e aplique o passo a passo do artigo no chamado.</p>
+      </div>
+    </div>
+
+    <div class="sources-box">
+      <h3>Fontes de busca</h3>
+      <p class="sources-subtitle">O GWoogle busca simultaneamente em 3 bases de conhecimento TOTVS</p>
+      <div class="sources-list">
+        <div class="source-item">
+          <span class="src-badge src-cst">CST</span>
+          <div>
+            <strong>Base autenticada TOTVS</strong>
+            <p>Artigos internos do suporte CST, incluindo conteúdo restrito. Mais completa e específica.</p>
+          </div>
+        </div>
+        <div class="source-item">
+          <span class="src-badge src-central">CENTRAL</span>
+          <div>
+            <strong>Central de Atendimento TOTVS</strong>
+            <p>Base pública com guias e FAQs do portal de atendimento ao cliente.</p>
+          </div>
+        </div>
+        <div class="source-item">
+          <span class="src-badge src-tdn">TDN</span>
+          <div>
+            <strong>Documentação Técnica (Confluence)</strong>
+            <p>Documentação oficial de produtos, releases e especificações técnicas.</p>
+          </div>
+        </div>
       </div>
     </div>
 
