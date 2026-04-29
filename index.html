@@ -931,6 +931,8 @@ input[type=file]{display:none}
 .rpt-chip:hover{border-color:rgba(255,112,36,.5);color:var(--text)}
 .rpt-chip.on{background:#ff7024;border-color:#ff7024;color:#fff;box-shadow:0 2px 6px rgba(255,112,36,.3)}
 .rpt-chip.on:hover{background:#f37633}
+.rpt-chip.on-a{background:#22d3ee;border-color:#22d3ee;color:#fff;box-shadow:0 2px 6px rgba(34,211,238,.3)}
+.rpt-chip.on-a:hover{background:#0891b2}
 body:not(.dark) .rpt-chip{background:#fff;border-color:#cbd5e1;color:#64748b}
 body:not(.dark) .rpt-chip:hover{border-color:#ff7024;color:#ff7024}
 body:not(.dark) .rpt-chip.on{background:#ff7024;border-color:#ff7024;color:#fff}
@@ -1587,7 +1589,22 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </button>
   </div>
   <div class="tb-alerts" id="tb-alerts">
-    <!-- pills removidos: informação disponível no corpo do dashboard -->
+    <div class="tb-alert-pill tap-danger" id="alert-criticos">
+      <div class="tb-dot" style="background:var(--danger)"></div>
+      <span id="alert-criticos-txt">1 crítico aberto</span>
+    </div>
+    <div class="tb-alert-pill tap-warn" id="alert-bloqueados">
+      <div class="tb-dot" style="background:var(--warn)"></div>
+      <span id="alert-bloqueados-txt">119 bloqueados</span>
+    </div>
+    <div class="tb-alert-pill tap-ok" id="pill-resp-med">
+      <div class="tb-dot" id="pill-resp-dot" style="background:var(--ok)"></div>
+      <span id="pill-resp-txt">1ª resp: —</span>
+    </div>
+    <div class="tb-alert-pill tap-danger" id="pill-sla-vencendo" style="display:none" onclick="goSec('op','s-alertas',document.querySelector('.nav[onclick*=s-alertas]'))">
+      <div class="tb-dot" style="background:var(--danger)"></div>
+      <span id="pill-sla-txt">0 vencendo</span>
+    </div>
     <!-- K13: chip de filtros ativos — visível em todas as abas, clique reseta -->
     <div class="tb-filter-chip" id="tb-filter-chip" onclick="resetAllFilters()" title="Clique para limpar todos os filtros">
       <span class="tb-fc-icon">📍</span>
@@ -6120,14 +6137,26 @@ function rptTypeChange(){
 function _rptSyncOpts(){
   var sel=document.querySelector('input[name="rpt-type"]:checked');
   var type=sel?sel.value:'exec';
-  var opts=document.getElementById('rpt-opts-exec');
-  if(opts)opts.style.display=type==='exec'?'flex':'none';
+  var oExec=document.getElementById('rpt-opts-exec');
+  if(oExec)oExec.style.display=type==='exec'?'flex':'none';
+  var oComp=document.getElementById('rpt-opts-comp');
+  if(oComp)oComp.style.display=type==='comp'?'flex':'none';
+  // Esconder campo "Período" padrão quando comp (substituído pelos chips A/B)
+  var mFld=document.getElementById('rpt-f-mes');
+  if(mFld&&mFld.parentElement){
+    mFld.parentElement.style.display=type==='comp'?'none':'flex';
+  }
   var go=document.getElementById('rpt-btn-go');
   if(go){
     if(type==='cli'){
       var ec=document.getElementById('sel-empresa');
       go.disabled=!ec||!ec.value;
       go.textContent=go.disabled?'Selecione uma empresa':'Gerar PDF';
+    }else if(type==='comp'){
+      var pa=_rptPeriodAList||[];
+      var pb=_rptPeriodBList||[];
+      go.disabled=pa.length===0||pb.length===0;
+      go.textContent=go.disabled?'Selecione mês em A e B':'Gerar PDF';
     }else{
       go.disabled=false;go.textContent='Gerar PDF';
     }
@@ -6195,6 +6224,39 @@ function _rptPopulateFilters(){
     var tag=document.getElementById('rpt-f-fila-tag');
     if(tag)tag.style.display=curFila?'inline-block':'none';
   }
+  // Comparativo — chips de Período A e B (replica meses disponíveis)
+  var paChips=document.getElementById('rpt-pa-chips');
+  var pbChips=document.getElementById('rpt-pb-chips');
+  if(paChips&&pbChips){
+    var allMK=[];
+    if(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length){
+      var mset={};
+      RAW_DATA.forEach(function(d){
+        if(d&&d.criado){
+          var mk=d.criado.toISOString?d.criado.toISOString().slice(0,7):String(d.criado).slice(0,7);
+          mset[mk]=true;
+        }
+      });
+      allMK=Object.keys(mset).sort();
+    }
+    if(!allMK.length)allMK=['2026-01','2026-02','2026-03','2026-04'];
+    var nMK=allMK.length;
+    // Defaults: A = penúltimo mês, B = último mês (gestor pode mudar)
+    _rptPeriodAList = nMK>=2 ? [allMK[nMK-2]] : (nMK?[allMK[0]]:[]);
+    _rptPeriodBList = nMK>=1 ? [allMK[nMK-1]] : [];
+    var mNamesS={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+    function _rptChipP(k, which){
+      var p=k.split('-'); var lbl=(mNamesS[p[1]]||p[1])+'/'+p[0].slice(2);
+      var arr=which==='A'?_rptPeriodAList:_rptPeriodBList;
+      var clsOn=which==='A'?'on-a':'on';
+      var on=arr.indexOf(k)!==-1;
+      return '<div class="rpt-chip'+(on?' '+clsOn:'')+'" data-period="'+k+'" onclick="rptPeriodToggle(this,\''+which+'\')">'+lbl+'</div>';
+    }
+    paChips.innerHTML=allMK.map(function(k){return _rptChipP(k,'A');}).join('');
+    pbChips.innerHTML=allMK.map(function(k){return _rptChipP(k,'B');}).join('');
+    _rptPeriodUpdateCount('A');
+    _rptPeriodUpdateCount('B');
+  }
 }
 // Estado do multi-select de fila
 var _rptFilasSelected=[];
@@ -6225,6 +6287,47 @@ function _rptFilaUpdateCount(){
   else if(n===all.length)el.textContent='· todas ('+n+')';
   else el.textContent='· '+n+' de '+all.length;
 }
+// Estado do comparativo (multi-month por lado)
+var _rptPeriodAList=[];
+var _rptPeriodBList=[];
+function rptPeriodToggle(el, which){
+  var k=el.getAttribute('data-period');
+  var arr=which==='A'?_rptPeriodAList:_rptPeriodBList;
+  var clsOn=which==='A'?'on-a':'on';
+  var idx=arr.indexOf(k);
+  if(idx===-1){arr.push(k);el.classList.add(clsOn);}
+  else{arr.splice(idx,1);el.classList.remove(clsOn);}
+  _rptPeriodUpdateCount(which);
+  _rptSyncOpts(); // re-avalia botão Gerar (precisa A e B com >=1)
+}
+function rptPeriodAll(which, select){
+  var container=document.getElementById(which==='A'?'rpt-pa-chips':'rpt-pb-chips');
+  if(!container)return;
+  var clsOn=which==='A'?'on-a':'on';
+  var keys=[];
+  container.querySelectorAll('.rpt-chip').forEach(function(c){
+    c.classList.toggle(clsOn, !!select);
+    if(select)keys.push(c.getAttribute('data-period'));
+  });
+  if(which==='A')_rptPeriodAList=keys;
+  else _rptPeriodBList=keys;
+  _rptPeriodUpdateCount(which);
+  _rptSyncOpts();
+}
+function _rptPeriodUpdateCount(which){
+  var el=document.getElementById(which==='A'?'rpt-pa-count':'rpt-pb-count');
+  if(!el)return;
+  var arr=which==='A'?_rptPeriodAList:_rptPeriodBList;
+  var n=arr.length;
+  if(n===0){el.textContent='· nenhum mês';return;}
+  if(n===1){
+    var p=arr[0].split('-');
+    var mN={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+    el.textContent='· '+(mN[p[1]]||p[1])+'/'+p[0].slice(2);
+    return;
+  }
+  el.textContent='· '+n+' meses';
+}
 function _rptEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 
 // ── Gerar (roteia pro PDF certo) ──────────────────────────────
@@ -6235,11 +6338,25 @@ function rptGenerate(){
   // Se todas as filas estão selecionadas (ou nenhuma mudou), equivale a "all"
   var filasSel=_rptFilasSelected||[];
   var isAllFilas=(allFilas.length>0&&filasSel.length===allFilas.length);
-  var scope={
-    mes: document.getElementById('rpt-f-mes').value||'all',
+  var baseScope={
     cli: document.getElementById('rpt-f-cli').value||'',
     fila: isAllFilas?'all':(filasSel.length===1?filasSel[0]:'all'),
-    filas: isAllFilas?null:(filasSel.length?filasSel:null),
+    filas: isAllFilas?null:(filasSel.length?filasSel:null)
+  };
+  if(type==='comp'){
+    var pa=(_rptPeriodAList||[]).slice().sort();
+    var pb=(_rptPeriodBList||[]).slice().sort();
+    if(!pa.length||!pb.length){alert('Selecione pelo menos 1 mês em cada período.');return;}
+    var scopeC={periodA:pa, periodB:pb, cli:baseScope.cli, fila:baseScope.fila, filas:baseScope.filas};
+    closeRptModal();
+    setTimeout(function(){exportComparativePDF(scopeC);},160);
+    return;
+  }
+  var scope={
+    mes: document.getElementById('rpt-f-mes').value||'all',
+    cli: baseScope.cli,
+    fila: baseScope.fila,
+    filas: baseScope.filas,
     tech: document.getElementById('rpt-o-tech').checked,
     meth: document.getElementById('rpt-o-meth').checked,
     aios: document.getElementById('rpt-o-aios').checked
@@ -6824,6 +6941,370 @@ function _rptHash(s){
   var h=5381;
   for(var i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i);
   return 'gw-'+Math.abs(h).toString(36).toUpperCase();
+}
+
+// ════════════════════════════════════════════════════════════
+// EXPORTAR PDF COMPARATIVO — Período A vs Período B (multi-mês)
+// ════════════════════════════════════════════════════════════
+
+// Filtra RAW_DATA por uma lista de meses YYYY-MM + cli + filas (compartilhados entre A e B)
+function _rptFilterByPeriods(periodKeys, scope){
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length)return [];
+  var pset={}; (periodKeys||[]).forEach(function(k){pset[k]=true;});
+  var filasSet=null;
+  if(scope.filas&&Array.isArray(scope.filas)&&scope.filas.length){
+    filasSet={};scope.filas.forEach(function(f){filasSet[f]=true;});
+  }else if(scope.fila&&scope.fila!=='all'){
+    filasSet={};filasSet[scope.fila]=true;
+  }
+  return RAW_DATA.filter(function(d){
+    if(!d||!d.criado)return false;
+    var mk=d.criado.toISOString?d.criado.toISOString().slice(0,7):String(d.criado).slice(0,7);
+    if(!pset[mk])return false;
+    if(scope.cli&&d.cli_id!==scope.cli)return false;
+    if(filasSet&&!filasSet[d.fila])return false;
+    return true;
+  });
+}
+
+function exportComparativePDF(scope){
+  scope=scope||{};
+  if(!scope.periodA||!scope.periodA.length||!scope.periodB||!scope.periodB.length){
+    alert('Selecione meses para Período A e Período B.');return;
+  }
+  var rowsA=_rptFilterByPeriods(scope.periodA, scope);
+  var rowsB=_rptFilterByPeriods(scope.periodB, scope);
+  var now=new Date();
+  var nowStr=now.toLocaleDateString('pt-BR')+' '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  // Labels de período
+  var mNames={'01':'Janeiro','02':'Fevereiro','03':'Março','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+  var mShort={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  function _pLbl(arr){
+    var s=arr.slice().sort();
+    if(s.length===1){var p=s[0].split('-');return (mNames[p[1]]||p[1])+'/'+p[0];}
+    var fp=s[0].split('-'), lp=s[s.length-1].split('-');
+    return (mShort[fp[1]]||fp[1])+'/'+fp[0].slice(2)+' → '+(mShort[lp[1]]||lp[1])+'/'+lp[0].slice(2)+' ('+s.length+' meses)';
+  }
+  var labelA=_pLbl(scope.periodA), labelB=_pLbl(scope.periodB);
+  var cliLabel=scope.cli?((typeof EMPRESAS==='object'&&EMPRESAS[scope.cli]&&EMPRESAS[scope.cli].nome)||scope.cli):'Todos os clientes';
+  var filaLabel;
+  if(scope.filas&&scope.filas.length){
+    filaLabel=scope.filas.length<=3?scope.filas.join(' · '):scope.filas.length+' filas selecionadas';
+  }else if(scope.fila&&scope.fila!=='all'){filaLabel=scope.fila;}
+  else{filaLabel='Todas as filas';}
+
+  // KPIs por período
+  function _scopeFor(period){return {periodKeys:period, cli:scope.cli, filas:scope.filas, fila:scope.fila};}
+  var sA=_scopeFor(scope.periodA), sB=_scopeFor(scope.periodB);
+  var k1A=calcKPI_response(rowsA),     k1B=calcKPI_response(rowsB);
+  var k2A=calcKPI_sla(rowsA),          k2B=calcKPI_sla(rowsB);
+  var k3A=calcKPI_resolution(rowsA),   k3B=calcKPI_resolution(rowsB);
+  var k4A=calcKPI_fcr(rowsA,sA),       k4B=calcKPI_fcr(rowsB,sB);
+  var k5A=calcKPI_volume(rowsA),       k5B=calcKPI_volume(rowsB);
+  var k6 =calcKPI_utilization(scope);   // snapshot live — mesmo valor pra A e B
+  var k7A=calcKPI_backlog(rowsA),      k7B=calcKPI_backlog(rowsB);
+  var k8A=calcKPI_escalation(rowsA,sA),k8B=calcKPI_escalation(rowsB,sB);
+
+  // Status
+  function st_resp(v){return v==null?'none':(v<=30?'ok':v<=60?'warn':'bad');}
+  function st_sla(v){return v==null?'none':(v>=95?'ok':v>=85?'warn':'bad');}
+  function st_resol(v){return v==null?'none':(v<=48?'ok':v<=72?'warn':'bad');}
+  function st_fcr(v){return v==null?'none':(v>=85?'ok':v>=75?'warn':'bad');}
+  function st_util(v){return v==null?'none':(v<=70?'ok':v<=85?'warn':'bad');}
+  function st_bk(v,n){return n==0?'none':(v<=n*0.15?'ok':v<=n*0.25?'warn':'bad');}
+  function st_esc(v){return v==null?'none':(v<=15?'ok':v<=25?'warn':'bad');}
+  function stCol(s){return s==='ok'?'#16a34a':s==='warn'?'#d97706':s==='bad'?'#dc2626':'#94a3b8';}
+  function stBg(s){return s==='ok'?'#dcfce7':s==='warn'?'#fef3c7':s==='bad'?'#fee2e2':'#f3f4f6';}
+  function stLbl(s){return s==='ok'?'OK':s==='warn'?'ATENÇÃO':s==='bad'?'CRÍTICO':'—';}
+
+  // Format helpers
+  function fPct(v){return v==null?'—':v+'%';}
+  function fH(v){return v==null?'—':v+'h';}
+  function fNum(v){return v==null?'—':String(v);}
+  function fMin(v){return v==null?'—':fmtRespTxt(v);}
+
+  // Linha do comparativo. direction: 'lower' menor é melhor; 'higher' maior é melhor; 'neutral' info.
+  function dr(name, vA, vB, fmt, direction, unit, statusFn, def){
+    var dispA=fmt(vA), dispB=fmt(vB);
+    var stA=statusFn?statusFn(vA):'none';
+    var stB=statusFn?statusFn(vB):'none';
+    var deltaTxt='—', cls='neu', icon='—', dVal=null;
+    if(vA!=null&&vB!=null){
+      var d=vB-vA; dVal=d;
+      var dRound=Math.round(d*10)/10;
+      if(Math.abs(d)<0.05){deltaTxt='estável'; icon='='; cls='neu';}
+      else{
+        var sign=d>0?'+':'';
+        deltaTxt=sign+dRound+(unit||'');
+        if(direction==='neutral'){cls='neu';icon=d>0?'▲':'▼';}
+        else{
+          var improved=direction==='lower'?(d<0):(d>0);
+          cls=improved?'good':'bad';
+          icon=direction==='lower'?(d<0?'▼':'▲'):(d>0?'▲':'▼');
+        }
+      }
+    }
+    return {name:name,a:dispA,b:dispB,delta:deltaTxt,cls:cls,icon:icon,statusA:stA,statusB:stB,vA:vA,vB:vB,dVal:dVal,def:def||''};
+  }
+
+  var compRows=[
+    dr('1. Tempo de 1ª Resposta', k1A.val, k1B.val, fMin, 'lower', 'min', st_resp, 'Mediana do tempo até primeira resposta · meta ≤30min'),
+    dr('2. SLA Compliance (48h)', k2A.val, k2B.val, fPct, 'higher', 'pp', st_sla, '% chamados resolvidos dentro do SLA contratual'),
+    dr('3. Tempo Médio Resolução', k3A.val, k3B.val, fH, 'lower', 'h', st_resol, 'Horas úteis entre abertura e fechamento'),
+    dr('4. FCR (sem reabertura)', k4A.val, k4B.val, fPct, 'higher', 'pp', st_fcr, '% resolvido sem reabertura em 90d'),
+    dr('5. Ticket Volume', k5A.val, k5B.val, fNum, 'neutral', '', null, 'Volume total de chamados no período'),
+    {name:'6. Utilization Rate', a:fPct(k6.val), b:fPct(k6.val), delta:'snapshot live', cls:'neu', icon:'⌖', statusA:st_util(k6.val), statusB:st_util(k6.val), vA:k6.val, vB:k6.val, dVal:0, snapshot:true, def:'Capacidade operacional em uso (estado atual — não histórico)'},
+    dr('7. Backlog Volume', k7A.val, k7B.val, fNum, 'lower', '', function(v){return st_bk(v, v==k7A.val?k7A.n:k7B.n);}, 'Tickets pendentes de resolução'),
+    dr('8. Escalation Rate', k8A.val, k8B.val, fPct, 'lower', 'pp', st_esc, '% encaminhado a filas especializadas')
+  ];
+
+  // Score por período (mesma lógica do executive)
+  function _score(k1v,k2v,k3v,k4v,k6v,k8v){
+    var p=[];
+    if(k1v!=null)p.push(k1v<=30?100:k1v<=60?70:40);
+    if(k2v!=null)p.push(k2v);
+    if(k3v!=null)p.push(k3v<=48?100:k3v<=72?70:40);
+    if(k4v!=null)p.push(k4v);
+    if(k6v!=null)p.push(k6v<=70?100:k6v<=85?70:40);
+    if(k8v!=null)p.push(k8v<=15?100:k8v<=25?70:40);
+    return p.length?Math.round(p.reduce(function(a,b){return a+b;},0)/p.length):0;
+  }
+  var scoreA=_score(k1A.val,k2A.val,k3A.val,k4A.val,k6.val,k8A.val);
+  var scoreB=_score(k1B.val,k2B.val,k3B.val,k4B.val,k6.val,k8B.val);
+  var scoreD=scoreB-scoreA;
+  var scoreCls=scoreD>2?'good':scoreD<-2?'bad':'neu';
+
+  // Highlights — top melhorias e regressões
+  var actionable=compRows.filter(function(r){return !r.snapshot && r.cls!=='neu' && r.dVal!=null;});
+  var melhorias=actionable.filter(function(r){return r.cls==='good';}).sort(function(a,b){return Math.abs(b.dVal)-Math.abs(a.dVal);}).slice(0,3);
+  var regressoes=actionable.filter(function(r){return r.cls==='bad';}).sort(function(a,b){return Math.abs(b.dVal)-Math.abs(a.dVal);}).slice(0,3);
+
+  // Hash auditoria
+  var hashInput=scope.periodA.join(',')+'|'+scope.periodB.join(',')+'|'+(scope.cli||'')+'|'+(scope.filas?scope.filas.slice().sort().join(','):scope.fila||'all')+'|'+rowsA.length+'|'+rowsB.length+'|'+now.toISOString().slice(0,13);
+  var dsHash=_rptHash(hashInput);
+
+  // Logo (mesmo asset oficial GW usado no exportPDF/Executive)
+  var LOGO='<img src="data:image/png;base64,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" height="52" style="display:block;max-width:180px">';
+
+  // Score pill colors
+  function scoreCol(s){return s>=80?'#166534':s>=65?'#1e40af':s>=50?'#854d0e':'#991b1b';}
+  function scoreBg(s){return s>=80?'#dcfce7':s>=65?'#dbeafe':s>=50?'#fef9c3':'#fee2e2';}
+  function scoreLbl(s){return s>=80?'Saudável':s>=65?'Bom':s>=50?'Atenção':'Crítico';}
+
+  // ── HTML
+  var H='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Comparativo Mensal — Groundwork Command Center</title><style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:"Segoe UI",Arial,sans-serif;background:#f1f5f9;color:#283645;font-size:12px;line-height:1.5}'
+    +'.page{max-width:880px;margin:0 auto;background:#fff}'
+    +'@media print{body{background:#fff}.page{max-width:100%}.cover{page-break-after:always}.section,.cmp-tbl,.hl-block{page-break-inside:avoid}}'
+    /* CAPA */
+    +'.cover{min-height:1040px;position:relative;overflow:hidden;display:flex;flex-direction:column}'
+    +'.cover-bar{height:6px;background:linear-gradient(90deg,#22d3ee 0%,#22d3ee 35%,#ff7024 35%,#ff7024 70%,#283645 70%)}'
+    +'.cover-top{background:#283645;color:#fff;padding:32px 44px;display:flex;justify-content:space-between;align-items:center}'
+    +'.cover-brand{display:flex;align-items:center;gap:14px}'
+    +'.cover-brand-txt{font-family:"Segoe UI",sans-serif;font-weight:700;font-size:13px;letter-spacing:.02em;line-height:1.2}'
+    +'.cover-brand-sub{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}'
+    +'.cover-stamp{font-size:10px;color:rgba(255,255,255,.65);letter-spacing:.12em;text-transform:uppercase}'
+    +'.cover-body{flex:1;padding:60px 54px 30px;display:flex;flex-direction:column;justify-content:center}'
+    +'.cover-tag{display:inline-block;padding:5px 14px;background:rgba(34,211,238,.1);color:#0891b2;border:1px solid rgba(34,211,238,.4);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px;align-self:flex-start}'
+    +'.cover-title{font-size:38px;font-weight:900;color:#283645;line-height:1.1;letter-spacing:-.02em;margin-bottom:10px}'
+    +'.cover-sub{font-size:16px;color:#64748b;margin-bottom:30px;font-weight:500}'
+    +'.cover-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-bottom:28px}'
+    +'.cover-period{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:18px 22px;text-align:center}'
+    +'.cover-period.a{border-left:4px solid #22d3ee}'
+    +'.cover-period.b{border-left:4px solid #ff7024}'
+    +'.cover-period-lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin-bottom:6px}'
+    +'.cover-period-val{font-size:16px;color:#283645;font-weight:800;margin-bottom:8px}'
+    +'.cover-period-tickets{font-size:11px;color:#64748b}'
+    +'.cover-period.a .cover-period-lbl{color:#0891b2}'
+    +'.cover-period.b .cover-period-lbl{color:#ff7024}'
+    +'.cover-vs-arrow{font-size:24px;color:#94a3b8;font-weight:700}'
+    +'.cover-scope{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}'
+    +'.cover-scope-item{background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #ff7024;border-radius:8px;padding:10px 14px}'
+    +'.cover-scope-lbl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:3px}'
+    +'.cover-scope-val{font-size:13px;color:#283645;font-weight:700}'
+    +'.cover-score-box{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,#f8fafc,#fff);border:1px solid #e2e8f0;border-radius:14px;padding:18px 22px;align-self:flex-start}'
+    +'.cscore-side{text-align:center;min-width:84px}'
+    +'.cscore-num{font-size:36px;font-weight:900;color:#283645;line-height:1}'
+    +'.cscore-lbl{font-size:9px;color:#94a3b8;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-top:4px}'
+    +'.cscore-arrow{font-size:18px;color:#94a3b8;font-weight:700}'
+    +'.cscore-arrow.good{color:#16a34a}.cscore-arrow.bad{color:#dc2626}'
+    +'.cscore-delta{font-size:14px;font-weight:800;padding:4px 12px;border-radius:12px}'
+    +'.cscore-delta.good{background:#dcfce7;color:#166534}.cscore-delta.bad{background:#fee2e2;color:#991b1b}.cscore-delta.neu{background:#f3f4f6;color:#475569}'
+    +'.cover-orbit{position:absolute;right:-120px;bottom:-120px;width:440px;height:440px;border-radius:50%;border:50px solid rgba(34,211,238,.05);pointer-events:none}'
+    +'.cover-orbit2{position:absolute;right:60px;bottom:80px;width:240px;height:240px;border-radius:50%;border:30px solid rgba(255,112,36,.06);pointer-events:none}'
+    +'.cover-ft{padding:18px 44px;background:#283645;color:rgba(255,255,255,.7);display:flex;justify-content:space-between;font-size:10px;letter-spacing:.05em}'
+    /* CORPO */
+    +'.body-page{padding:38px 48px;border-top:4px solid #ff7024}'
+    +'.body-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid #f1f5f9}'
+    +'.body-hd-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#22d3ee,#0891b2);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:14px}'
+    +'.body-hd-ttl{font-size:17px;font-weight:800;color:#283645;letter-spacing:-.01em}'
+    +'.body-hd-sub{font-size:10.5px;color:#64748b;margin-left:auto}'
+    /* TABELA COMPARATIVA */
+    +'.cmp-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px;margin-bottom:22px;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden}'
+    +'.cmp-tbl th{background:#283645;color:#fff;padding:10px 12px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}'
+    +'.cmp-tbl th.a{background:#0891b2}.cmp-tbl th.b{background:#ff7024}.cmp-tbl th.d{background:#475569;text-align:center}'
+    +'.cmp-tbl td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}'
+    +'.cmp-tbl tr:last-child td{border-bottom:none}'
+    +'.cmp-tbl tr:nth-child(even) td{background:#f8fafc}'
+    +'.cmp-name{font-weight:700;color:#283645}'
+    +'.cmp-def{font-size:9.5px;color:#94a3b8;font-weight:500;margin-top:2px;letter-spacing:.01em}'
+    +'.cmp-val{font-family:"Segoe UI",sans-serif;font-weight:800;font-size:14px;color:#283645}'
+    +'.cmp-status{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.04em;margin-left:6px;vertical-align:middle}'
+    +'.cmp-delta{text-align:center;font-family:"Segoe UI",sans-serif;font-weight:800;font-size:13px}'
+    +'.cmp-delta.good{color:#16a34a}.cmp-delta.bad{color:#dc2626}.cmp-delta.neu{color:#475569}'
+    +'.cmp-icon{display:inline-block;font-size:14px;margin-right:4px;line-height:1}'
+    +'.cmp-bar-cell{padding:4px 12px !important;background:#fff !important}'
+    +'.cmp-bars{display:flex;align-items:center;gap:6px;height:18px;width:200px}'
+    +'.cmp-bar{height:14px;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-size:9px;font-weight:700;color:#fff;min-width:24px}'
+    +'.cmp-bar.a{background:#22d3ee}.cmp-bar.b{background:#ff7024}'
+    /* HIGHLIGHTS */
+    +'.hl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}'
+    +'.hl-block{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 18px}'
+    +'.hl-block.good{border-left:4px solid #16a34a}'
+    +'.hl-block.bad{border-left:4px solid #dc2626}'
+    +'.hl-ttl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}'
+    +'.hl-ttl.good{color:#16a34a}.hl-ttl.bad{color:#dc2626}'
+    +'.hl-list{list-style:none;padding:0}'
+    +'.hl-item{padding:7px 0;border-bottom:1px dashed #f1f5f9;font-size:11px;display:flex;justify-content:space-between;gap:8px;align-items:center}'
+    +'.hl-item:last-child{border-bottom:none}'
+    +'.hl-item-name{color:#283645;font-weight:600}'
+    +'.hl-item-delta{font-family:"Segoe UI",sans-serif;font-weight:800}'
+    +'.hl-empty{font-size:11px;color:#94a3b8;font-style:italic;padding:8px 0}'
+    /* RODAPÉ */
+    +'.footer{background:#283645;color:rgba(255,255,255,.75);padding:14px 44px;display:flex;justify-content:space-between;align-items:center;font-size:9.5px;letter-spacing:.04em}'
+    +'.footer-hash{font-family:"Menlo","Consolas",monospace;font-size:9px;color:rgba(34,211,238,.9)}'
+    +'.note{margin-top:14px;padding:10px 14px;background:#fef3c7;border:1px solid #f59e0b;border-left:4px solid #f59e0b;border-radius:8px;font-size:10.5px;color:#78350f;line-height:1.5}'
+    +'</style></head><body><div class="page">';
+
+  // ── CAPA
+  H+='<div class="cover">';
+  H+='<div class="cover-bar"></div>';
+  H+='<div class="cover-top">';
+  H+='<div class="cover-brand">'+LOGO+'<div><div class="cover-brand-txt">GROUNDWORK COMMAND CENTER</div><div class="cover-brand-sub">Comparative Report</div></div></div>';
+  H+='<div class="cover-stamp">RELATÓRIO COMPARATIVO</div>';
+  H+='</div>';
+  H+='<div class="cover-body">';
+  H+='<div class="cover-tag">▸ Comparativo Mensal · 8 KPIs lado a lado</div>';
+  H+='<div class="cover-title">Performance · A vs B</div>';
+  H+='<div class="cover-sub">Análise comparativa de indicadores entre dois períodos</div>';
+  // VS — dois cards de período
+  H+='<div class="cover-vs">';
+  H+='<div class="cover-period a"><div class="cover-period-lbl">Período A</div><div class="cover-period-val">'+_rptEsc(labelA)+'</div><div class="cover-period-tickets">'+rowsA.length+' chamados</div></div>';
+  H+='<div class="cover-vs-arrow">vs</div>';
+  H+='<div class="cover-period b"><div class="cover-period-lbl">Período B</div><div class="cover-period-val">'+_rptEsc(labelB)+'</div><div class="cover-period-tickets">'+rowsB.length+' chamados</div></div>';
+  H+='</div>';
+  // Escopo cliente/fila
+  H+='<div class="cover-scope">';
+  H+='<div class="cover-scope-item"><div class="cover-scope-lbl">Cliente</div><div class="cover-scope-val">'+_rptEsc(cliLabel)+'</div></div>';
+  H+='<div class="cover-scope-item"><div class="cover-scope-lbl">Filas</div><div class="cover-scope-val">'+_rptEsc(filaLabel)+'</div></div>';
+  H+='</div>';
+  // Score
+  H+='<div class="cover-score-box">';
+  H+='<div class="cscore-side"><div class="cscore-num" style="color:'+scoreCol(scoreA)+'">'+scoreA+'</div><div class="cscore-lbl">Score A</div></div>';
+  H+='<div class="cscore-arrow '+scoreCls+'">'+(scoreD>0?'▲':scoreD<0?'▼':'=')+'</div>';
+  H+='<div class="cscore-side"><div class="cscore-num" style="color:'+scoreCol(scoreB)+'">'+scoreB+'</div><div class="cscore-lbl">Score B</div></div>';
+  var scoreSign=scoreD>0?'+':'';
+  H+='<div class="cscore-delta '+scoreCls+'">'+scoreSign+scoreD+' pts</div>';
+  H+='</div>';
+  H+='</div>';
+  H+='<div class="cover-orbit"></div><div class="cover-orbit2"></div>';
+  H+='<div class="cover-ft"><span>Groundwork · www.groundwork.com.br</span><span>Gerado em '+nowStr+'</span></div>';
+  H+='</div>'; // /cover
+
+  // ── CORPO: tabela comparativa
+  H+='<div class="body-page">';
+  H+='<div class="body-hd"><div class="body-hd-icon">⇄</div><div class="body-hd-ttl">Comparativo de Indicadores</div><div class="body-hd-sub">'+rowsA.length+' (A) · '+rowsB.length+' (B) chamados · fonte GWMS (MySQL OTRS)</div></div>';
+  H+='<table class="cmp-tbl">';
+  H+='<thead><tr><th style="width:30%">KPI</th><th class="a">'+_rptEsc(labelA)+'</th><th class="b">'+_rptEsc(labelB)+'</th><th class="d" style="width:18%">Δ B vs A</th></tr></thead>';
+  H+='<tbody>';
+  compRows.forEach(function(r){
+    var stClsA=stCol(r.statusA), stBgA=stBg(r.statusA), stLA=stLbl(r.statusA);
+    var stClsB=stCol(r.statusB), stBgB=stBg(r.statusB), stLB=stLbl(r.statusB);
+    var stPillA=r.statusA!=='none'?'<span class="cmp-status" style="background:'+stBgA+';color:'+stClsA+'">'+stLA+'</span>':'';
+    var stPillB=r.statusB!=='none'?'<span class="cmp-status" style="background:'+stBgB+';color:'+stClsB+'">'+stLB+'</span>':'';
+    H+='<tr>';
+    H+='<td><div class="cmp-name">'+_rptEsc(r.name)+'</div><div class="cmp-def">'+_rptEsc(r.def)+'</div></td>';
+    H+='<td><span class="cmp-val">'+r.a+'</span>'+stPillA+'</td>';
+    H+='<td><span class="cmp-val">'+r.b+'</span>'+stPillB+'</td>';
+    H+='<td class="cmp-delta '+r.cls+'"><span class="cmp-icon">'+r.icon+'</span>'+_rptEsc(r.delta)+'</td>';
+    H+='</tr>';
+  });
+  H+='</tbody></table>';
+
+  // Barras visuais — só pra KPIs com dados numéricos comparáveis em A e B (excluindo snapshot e neutros sem dado)
+  H+='<div class="body-hd" style="margin-top:20px"><div class="body-hd-icon" style="background:linear-gradient(135deg,#ff7024,#f37633)">▦</div><div class="body-hd-ttl">Visão lado a lado (barras proporcionais)</div></div>';
+  H+='<table class="cmp-tbl">';
+  H+='<thead><tr><th style="width:28%">KPI</th><th colspan="2">Comparativo visual</th></tr></thead>';
+  H+='<tbody>';
+  compRows.forEach(function(r){
+    if(r.snapshot)return;
+    if(r.vA==null&&r.vB==null)return;
+    var maxV=Math.max(r.vA||0, r.vB||0, 0.01);
+    var pctA=r.vA!=null?Math.round((r.vA/maxV)*100):0;
+    var pctB=r.vB!=null?Math.round((r.vB/maxV)*100):0;
+    H+='<tr>';
+    H+='<td><div class="cmp-name">'+_rptEsc(r.name)+'</div></td>';
+    H+='<td colspan="2" class="cmp-bar-cell">';
+    H+='<div style="display:flex;flex-direction:column;gap:4px">';
+    H+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;color:#0891b2;font-weight:800;width:14px">A</span><div class="cmp-bar a" style="width:'+Math.max(8,pctA*2.6)+'px">'+r.a+'</div></div>';
+    H+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;color:#ff7024;font-weight:800;width:14px">B</span><div class="cmp-bar b" style="width:'+Math.max(8,pctB*2.6)+'px">'+r.b+'</div></div>';
+    H+='</div>';
+    H+='</td>';
+    H+='</tr>';
+  });
+  H+='</tbody></table>';
+
+  H+='</div>'; // /body-page
+
+  // ── DESTAQUES (melhorias / regressões)
+  H+='<div class="body-page" style="border-top:4px solid #22d3ee">';
+  H+='<div class="body-hd"><div class="body-hd-icon">★</div><div class="body-hd-ttl">Destaques do Comparativo</div><div class="body-hd-sub">Maiores movimentos entre os períodos</div></div>';
+  H+='<div class="hl-grid">';
+  // Melhorias
+  H+='<div class="hl-block good"><div class="hl-ttl good">▼ MELHORIAS</div>';
+  if(melhorias.length){
+    H+='<ul class="hl-list">';
+    melhorias.forEach(function(r){
+      H+='<li class="hl-item"><span class="hl-item-name">'+_rptEsc(r.name)+'</span><span class="hl-item-delta" style="color:#16a34a">'+_rptEsc(r.delta)+'</span></li>';
+    });
+    H+='</ul>';
+  }else{
+    H+='<div class="hl-empty">Nenhuma melhoria significativa entre os períodos.</div>';
+  }
+  H+='</div>';
+  // Regressões
+  H+='<div class="hl-block bad"><div class="hl-ttl bad">▲ REGRESSÕES</div>';
+  if(regressoes.length){
+    H+='<ul class="hl-list">';
+    regressoes.forEach(function(r){
+      H+='<li class="hl-item"><span class="hl-item-name">'+_rptEsc(r.name)+'</span><span class="hl-item-delta" style="color:#dc2626">'+_rptEsc(r.delta)+'</span></li>';
+    });
+    H+='</ul>';
+  }else{
+    H+='<div class="hl-empty">Nenhuma regressão significativa entre os períodos.</div>';
+  }
+  H+='</div>';
+  H+='</div>';
+  // Nota explicativa sobre KPI 6
+  H+='<div class="note"><strong>Nota sobre KPI 6 (Utilization):</strong> capacidade operacional é medida em tempo real (snapshot live), portanto o valor é o mesmo nos dois períodos. Para comparativo histórico de carga, use KPI 5 (Volume) e KPI 7 (Backlog).</div>';
+
+  H+='</div>'; // /body-page
+
+  // ── RODAPÉ
+  H+='<div class="footer">';
+  H+='<span>Groundwork Command Center · Comparativo gerado em '+nowStr+'</span>';
+  H+='<span class="footer-hash">dataset_hash: '+dsHash+'</span>';
+  H+='</div>';
+
+  H+='</div></body></html>';
+
+  var win=window.open('','_blank');
+  if(!win){alert('Habilite pop-ups para gerar o PDF.');return;}
+  win.document.write(H);
+  win.document.close();
+  setTimeout(function(){try{win.print();}catch(e){}},900);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -11611,6 +12092,13 @@ function renderIA(){
             <div class="rpt-type-sub">Saúde da conta, risco, ações recomendadas (baseado na aba CS)</div>
           </div>
         </label>
+        <label class="rpt-type" data-rpt="comp">
+          <input type="radio" name="rpt-type" value="comp" onchange="rptTypeChange()">
+          <div>
+            <div class="rpt-type-ttl">Comparativo Mensal</div>
+            <div class="rpt-type-sub">Compara 2 períodos lado a lado · 8 KPIs com Δ e tendência · suporta trimestre vs trimestre</div>
+          </div>
+        </label>
       </div>
 
       <div class="rpt-sec-lbl">Escopo do relatório</div>
@@ -11643,6 +12131,34 @@ function renderIA(){
         <label class="rpt-opt"><input type="checkbox" id="rpt-o-tech" checked>Incluir explicações técnicas (definição, fórmula, meta, benchmark)</label>
         <label class="rpt-opt"><input type="checkbox" id="rpt-o-meth" checked>Incluir página de metodologia</label>
         <label class="rpt-opt"><input type="checkbox" id="rpt-o-aios" checked>Incluir insights AIOS</label>
+      </div>
+
+      <div class="rpt-opts" id="rpt-opts-comp" style="display:none;flex-direction:column;gap:14px">
+        <div>
+          <div class="rpt-chips-hd" style="margin-bottom:6px">
+            <span class="rpt-fld-lbl" style="color:#22d3ee;font-weight:700;width:auto">Período A</span>
+            <span class="rpt-chips-count" id="rpt-pa-count" style="color:#22d3ee"></span>
+            <div class="rpt-chips-actions">
+              <button type="button" class="rpt-chip-act" onclick="rptPeriodAll('A',true)">Marcar todos</button>
+              <button type="button" class="rpt-chip-act" onclick="rptPeriodAll('A',false)">Limpar</button>
+            </div>
+          </div>
+          <div class="rpt-chips" id="rpt-pa-chips"></div>
+        </div>
+        <div>
+          <div class="rpt-chips-hd" style="margin-bottom:6px">
+            <span class="rpt-fld-lbl" style="color:#ff7024;font-weight:700;width:auto">Período B</span>
+            <span class="rpt-chips-count" id="rpt-pb-count" style="color:#ff7024"></span>
+            <div class="rpt-chips-actions">
+              <button type="button" class="rpt-chip-act" onclick="rptPeriodAll('B',true)">Marcar todos</button>
+              <button type="button" class="rpt-chip-act" onclick="rptPeriodAll('B',false)">Limpar</button>
+            </div>
+          </div>
+          <div class="rpt-chips" id="rpt-pb-chips"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:6px;border-left:2px solid #22d3ee">
+          Selecione 1 ou mais meses em cada lado. Para comparar trimestres, marque os 3 meses correspondentes em A e em B. O filtro de Cliente e Filas é compartilhado entre os dois períodos.
+        </div>
       </div>
 
       <div class="rpt-ft">
