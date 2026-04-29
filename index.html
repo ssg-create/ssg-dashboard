@@ -9263,12 +9263,32 @@ function renderOpActions(op) {
   if (!el) return;
   var actions = [];
   var total = op.total || 1;
-  var criticos = (OP.criticos || []).filter(function(c){
+  // Fix: usa op.criticos (filtrado por fila/cliente/range) em vez de OP.criticos
+  // (global) — antes vazavam tickets de outras filas quando havia filtro ativo.
+  var critSrc = (op && op.criticos && op.criticos.length) ? op.criticos : (OP.criticos || []);
+  var criticos = critSrc.filter(function(c){
     return ['Aberto','Em Atendimento','Aguardando Interno'].indexOf(c.estado) !== -1;
   });
   var mes = activeMonth;
   var bloqTotal = getActiveBloqList().reduce(function(a,b){return a+b.n;},0);
-  var semResp = RESP30_MESES[mes] || 0;
+  // Fix: RESP30_MESES é indexado só por mês (sem dimensão de fila/cliente/range).
+  // Quando há filtro ativo, recalcula do RAW_DATA respeitando o escopo — antes
+  // mostrava count global de "sem 1ª resposta" mesmo com fila DBA filtrada.
+  var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
+  var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+  var _hasRange=(typeof activeRangeStart!=='undefined'&&activeRangeStart&&activeRangeEnd);
+  var semResp;
+  if((_hasCli||_hasFila||_hasRange)&&typeof RAW_DATA!=='undefined'&&RAW_DATA){
+    semResp=RAW_DATA.filter(function(t){
+      if(!t||t.resp_min==null||t.resp_min<=30)return false;
+      if(_hasCli&&t.cli_id!==activeCliente)return false;
+      if(_hasFila&&t.fila!==activeFilaOP)return false;
+      if(typeof ticketInFilter==='function'&&!ticketInFilter(t))return false;
+      return true;
+    }).length;
+  }else{
+    semResp=RESP30_MESES[mes]||0;
+  }
   var maTotal = (op.prior && op.prior['Muito Alta']) || 0;
   var aguardCliente = (op.estado && op.estado['Aguardando Cliente']) || 0;
   var aguardInterno = (op.estado && op.estado['Aguardando Interno']) || 0;
