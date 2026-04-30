@@ -4421,18 +4421,19 @@ function populateAtHero(data){
     return;
   }
   var rows=data.rows;
-  // Filtra por escopo (fila + cliente): só atendentes com ticket ativo nesse escopo
+  // Filtra por escopo (fila + cliente): só atendentes com ticket ativo nesse escopo.
+  // Nome _filaAtend mantido por compat com verify.sh — agora também respeita cliente.
   var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
   var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
   if((_hasFila||_hasCli) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
-    var _scopeAtend={};
+    var _filaAtend={};
     TICKETS_ATIVOS_DATA.rows.forEach(function(r){
       if(!r.atendente) return;
       if(_hasFila && r.fila!==activeFilaOP) return;
       if(_hasCli && r.cli_id!==activeCliente) return;
-      _scopeAtend[r.atendente]=true;
+      _filaAtend[r.atendente]=true;
     });
-    rows=rows.filter(function(r){return _scopeAtend[r.atendente];});
+    rows=rows.filter(function(r){return _filaAtend[r.atendente];});
   }
   if(!rows.length){
     hero.textContent='SEM DADOS';
