@@ -1021,6 +1021,48 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .adv-card-acao{font-size:11px;color:var(--teal);font-family:var(--mono);border-top:1px dashed var(--border);padding-top:8px;margin-top:4px}
 .adv-card-acao::before{content:"→ ";color:var(--muted)}
 .adv-empty{font-size:12px;color:var(--muted);font-style:italic;padding:16px;text-align:center;border:1px dashed var(--border);border-radius:8px}
+/* ── PLANO DE AÇÃO MODAL ── */
+.ia-plan-btn{background:linear-gradient(135deg,#22d3ee 0%,#a855f7 100%);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.02em;box-shadow:0 4px 14px rgba(168,85,247,.3);transition:transform .15s,box-shadow .15s}
+.ia-plan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(168,85,247,.45)}
+.ia-plan-overlay{position:fixed;inset:0;background:rgba(8,12,20,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9990;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto}
+.ia-plan-modal{background:var(--bg);border:1px solid var(--border);border-radius:14px;max-width:920px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;max-height:calc(100vh - 64px)}
+.ia-plan-header{padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.ia-plan-eye{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--teal);text-transform:uppercase;margin-bottom:4px}
+.ia-plan-modal h2{font-size:22px;font-weight:700;margin:0;color:var(--text);line-height:1.3}
+.ia-plan-scope{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
+.ia-plan-close{background:transparent;border:1px solid var(--border);color:var(--sub);width:32px;height:32px;border-radius:6px;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0}
+.ia-plan-close:hover{background:var(--bg2);color:var(--text)}
+.ia-plan-content{padding:18px 26px;overflow-y:auto;flex:1}
+.ia-plan-footer{padding:14px 26px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--bg2)}
+.ia-plan-btn-sec{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer}
+.ia-plan-btn-sec:hover{background:var(--bg4)}
+.plan-area{background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.plan-area-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,var(--bg3) 0%,var(--bg2) 100%)}
+.plan-area-sev{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 8px;border-radius:4px;flex-shrink:0}
+.plan-area-sev-crit{background:rgba(244,63,94,.15);color:#f43f5e}
+.plan-area-sev-warn{background:rgba(245,158,11,.15);color:#f59e0b}
+.plan-area-sev-info{background:rgba(79,142,247,.15);color:#4f8ef7}
+.plan-area-sev-ok{background:rgba(16,185,129,.15);color:#10b981}
+.plan-area-title{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.plan-area-body{padding:14px 18px}
+.plan-block{margin-bottom:14px}
+.plan-block:last-child{margin-bottom:0}
+.plan-block-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.plan-block-txt{font-size:13px;color:var(--sub);line-height:1.6}
+.plan-block-txt strong{color:var(--text)}
+.plan-actions{display:flex;flex-direction:column;gap:8px}
+.plan-action{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
+.plan-action-tags{display:flex;flex-direction:column;gap:4px;flex-shrink:0;min-width:78px}
+.plan-action-tag{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:3px;text-align:center}
+.plan-tag-low{background:rgba(16,185,129,.12);color:#10b981}
+.plan-tag-mid{background:rgba(245,158,11,.12);color:#f59e0b}
+.plan-tag-high{background:rgba(244,63,94,.12);color:#f43f5e}
+.plan-action-txt{font-size:12px;color:var(--sub);line-height:1.55;flex:1}
+.plan-action-txt strong{color:var(--text)}
+.plan-metric{margin-top:10px;padding:10px 12px;background:rgba(0,212,168,.06);border:1px dashed rgba(0,212,168,.3);border-radius:8px;font-size:12px;color:var(--sub)}
+.plan-metric strong{color:var(--teal)}
+.plan-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+@media print{.ia-plan-overlay{position:static;background:#fff;backdrop-filter:none;padding:0;display:block}.ia-plan-modal{box-shadow:none;border:none;max-height:none}.ia-plan-close,.ia-plan-footer{display:none}.plan-area{break-inside:avoid;page-break-inside:avoid}}
 /* ── STATS STRIP ─────────────────────────────────────────── */
 .ial-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
 .ial-stat{background:rgba(20,29,40,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--ial-border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .3s}
@@ -2781,9 +2823,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
 <!-- ══════ IA VIEW ══════ -->
 <div id="view-ia" class="view">
-  <div class="ai-view-header">
-    <h1>✦ Análise de IA</h1>
-    <p id="ia-subtitle">Análise gerada automaticamente a partir dos dados carregados</p>
+  <div class="ai-view-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1>✦ Análise de IA</h1>
+      <p id="ia-subtitle">Análise gerada automaticamente a partir dos dados carregados</p>
+    </div>
+    <button onclick="openActionPlan()" class="ia-plan-btn">📋 Plano de Ação</button>
   </div>
   <div class="page-body">
 
@@ -2888,6 +2933,25 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
   </div>
 </div><!-- /view-ia -->
+
+<!-- MODAL PLANO DE AÇÃO -->
+<div id="ia-plan-overlay" class="ia-plan-overlay" style="display:none">
+  <div class="ia-plan-modal" role="dialog" aria-labelledby="ia-plan-title">
+    <div class="ia-plan-header">
+      <div>
+        <div class="ia-plan-eye">PLANO DE AÇÃO OPERACIONAL</div>
+        <h2 id="ia-plan-title">O que fazer agora pra melhorar</h2>
+        <div id="ia-plan-scope" class="ia-plan-scope">—</div>
+      </div>
+      <button class="ia-plan-close" onclick="closeActionPlan()" aria-label="Fechar">×</button>
+    </div>
+    <div id="ia-plan-content" class="ia-plan-content"></div>
+    <div class="ia-plan-footer">
+      <button class="ia-plan-btn-sec" onclick="window.print()">🖨 Imprimir / PDF</button>
+      <button class="ia-plan-btn-sec" onclick="closeActionPlan()">Fechar</button>
+    </div>
+  </div>
+</div>
 
 </main>
 </div>
@@ -11675,6 +11739,269 @@ function renderAdvancedDetections(){
   html+='</div>';
   el.innerHTML=html;
 }
+
+// ════════════════════════════════════════════════════════════
+// PLANO DE AÇÃO — modal com 5 áreas: situação + diagnóstico + ações
+// Cada área = função pura. Cada ação = {esforco, impacto, desc}.
+// ════════════════════════════════════════════════════════════
+
+// ÁREA 1 — Paradoxo de distribuição (sobrecarga + folga simultâneas)
+function _planArea_distribuicao(ctx){
+  if(!ctx.UTIL || !ctx.UTIL.rows || ctx.UTIL.rows.length<5) return null;
+  var sob=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))>=8;});
+  var aten=ctx.UTIL.rows.filter(function(r){var c=(r.em_atendimento||0)+(r.abertos||0);return c>=5 && c<8;});
+  var fol=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))<=2;});
+  if(sob.length===0 && aten.length===0) return null;
+  if(fol.length<5) return null;
+  var totalAt=ctx.UTIL.rows.length;
+  var pctFolga=Math.round(fol.length/totalAt*100);
+  var nomesSob=sob.concat(aten).slice(0,4).map(function(r){return (r.atendente||'?').split(' ')[0]+' ('+((r.em_atendimento||0)+(r.abertos||0))+')';}).join(', ');
+  return {
+    sev: sob.length>=2?'crit':'warn',
+    titulo: 'Paradoxo de distribuição: '+sob.length+' sobrecarregado'+(sob.length===1?'':'s')+' enquanto '+pctFolga+'% da equipe está ociosa',
+    situacao: '<strong>'+sob.length+' atendente'+(sob.length===1?'':'s')+'</strong> em sobrecarga (≥8 ativos) e <strong>'+aten.length+'</strong> em atenção (5-7 ativos), enquanto <strong>'+fol.length+' de '+totalAt+'</strong> ('+pctFolga+'%) estão com ≤2 tickets ativos. Pressionados: '+nomesSob+'.',
+    diagnostico: 'O trabalho não está sendo distribuído. Mais volume entrou, mas concentrou em poucos. Os outros estão disponíveis e não estão recebendo.',
+    acoes: [
+      {esforco:'baixo', impacto:'alto', desc:'<strong>Configurar regra automática no OTRS:</strong> ticket novo vai pro atendente com menos carga ativa naquela fila.'},
+      {esforco:'medio', impacto:'alto', desc:'<strong>Reunião 30min com os sobrecarregados:</strong> entender se eles puxam tickets (autoatribuição) ou se o sistema atribui a eles.'},
+      {esforco:'baixo', impacto:'medio', desc:'<strong>Avisar os ociosos</strong> que volume subiu — pedir pra puxar tickets ativamente.'}
+    ],
+    metrica: 'Atendentes com carga ≤2 caírem de '+fol.length+' → ≤'+Math.max(3,Math.floor(fol.length/2))+' em 2 semanas'
+  };
+}
+
+// ÁREA 2 — Auto-fechamento alto em alguma fila
+function _planArea_autoFechamento(ctx){
+  var perFila={};
+  ctx.raw.forEach(function(t){
+    if(!t.fila) return;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!perFila[t.fila]) perFila[t.fila]={total:0,auto:0};
+    perFila[t.fila].total++;
+    if(t.estado==='Fechado s/ Êxito') perFila[t.fila].auto++;
+  });
+  var ruins=Object.keys(perFila).filter(function(f){return perFila[f].total>=50;}).map(function(f){
+    return {fila:f, total:perFila[f].total, auto:perFila[f].auto, pct:perFila[f].auto/perFila[f].total*100};
+  }).filter(function(r){return r.pct>=20;});
+  if(!ruins.length) return null;
+  ruins.sort(function(a,b){return b.pct-a.pct;});
+  var top=ruins[0];
+  return {
+    sev: top.pct>=30?'crit':'warn',
+    titulo: 'Fila '+top.fila+' fecha '+Math.round(top.pct)+'% dos tickets sem êxito',
+    situacao: 'Fila <strong>'+top.fila+'</strong> tem <strong>'+top.auto+' auto-fechamentos</strong> em <strong>'+top.total+' tickets</strong> ('+Math.round(top.pct)+'%). As outras filas ficam entre 6% e 14%. Auto-fechamento = ticket que ninguém respondeu por X dias e o sistema fechou sozinho.',
+    diagnostico: 'Quase 1 em cada '+(top.pct>=30?'3':'5')+' tickets dessa fila é abandonado. Pode ser: (a) tickets abertos por engano, (b) processo de "Aguardando Cliente" muito longo sem follow-up, (c) baixa prioridade real. Mas '+Math.round(top.pct)+'% é fora da curva.',
+    acoes: [
+      {esforco:'baixo', impacto:'medio', desc:'<strong>Pegar amostra de 20 tickets '+top.fila+' auto-fechados</strong> e ler o histórico — entender o padrão real.'},
+      {esforco:'medio', impacto:'alto', desc:'<strong>Implementar follow-up automático:</strong> se ticket fica em "Aguardando Cliente" >5 dias, sistema manda lembrete pro cliente antes de auto-fechar.'},
+      {esforco:'medio', impacto:'medio', desc:'<strong>Reclassificar tickets de FAQ comum:</strong> muitos podem virar artigos de base de conhecimento e nem precisar abrir ticket.'}
+    ],
+    metrica: 'Auto-fechamento '+top.fila+' cair de '+Math.round(top.pct)+'% → ≤15% em 60 dias'
+  };
+}
+
+// ÁREA 3 — Concentração de fila
+function _planArea_concentracaoFila(ctx){
+  if(ctx.activeFilaOP!=='all') return null;
+  var perFila={};
+  var total=0;
+  ctx.raw.forEach(function(t){
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    total++;
+    if(!t.fila) return;
+    perFila[t.fila]=(perFila[t.fila]||0)+1;
+  });
+  if(total<200) return null;
+  var sorted=Object.keys(perFila).map(function(f){return {f:f,n:perFila[f],pct:perFila[f]/total*100};}).sort(function(a,b){return b.n-a.n;});
+  if(!sorted.length) return null;
+  var top=sorted[0];
+  if(top.pct<35) return null;
+  // Top cliente nessa fila
+  var cliFila={};
+  ctx.raw.forEach(function(t){
+    if(t.fila!==top.f || !t.cli_id) return;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    cliFila[t.cli_id]=(cliFila[t.cli_id]||0)+1;
+  });
+  var topCli=Object.keys(cliFila).map(function(c){return {c:c,n:cliFila[c]};}).sort(function(a,b){return b.n-a.n;})[0];
+  var topCliInfo=topCli?(' O maior cliente nessa fila é '+topCli.c+' com '+topCli.n+' tickets.'):'';
+  return {
+    sev: top.pct>=50?'warn':'info',
+    titulo: 'Fila '+top.f+' representa '+Math.round(top.pct)+'% do volume ('+top.n+' de '+total+')',
+    situacao: 'A fila <strong>'+top.f+'</strong> sozinha gerou <strong>'+top.n+' tickets</strong> ('+Math.round(top.pct)+'% do total no escopo).'+topCliInfo,
+    diagnostico: 'Concentração alta em uma única fila significa que: (a) você tem dependência operacional dessa área — qualquer falha vira crise, ou (b) há um gerador anormal de tickets nessa fila (monitoramento gerando ruído, cliente em onboarding pesado, processo manual repetitivo). Sem investigar, você não sabe.',
+    acoes: [
+      {esforco:'baixo', impacto:'medio', desc:'<strong>Investigar a origem dos tickets em '+top.f+':</strong> são clientes externos ou monitoramento interno? Quantos viraram problema real?'},
+      {esforco:'medio', impacto:'alto', desc:'<strong>Se >50% for ruído/falso-positivo:</strong> ajustar thresholds da fonte (impacto: alivia '+top.f+' imediatamente).'},
+      {esforco:'baixo', impacto:'medio', desc:'<strong>Considerar criar fila separada</strong> pra tickets internos não inflarem '+top.f+' — separa o que é cliente externo do que é interno.'}
+    ],
+    metrica: '% de tickets '+top.f+' oriundos de fontes não-cliente cair de X → ≤30%'
+  };
+}
+
+// ÁREA 4 — Atendente em performance bottom
+function _planArea_atendenteBottom(ctx){
+  var atend=ctx.op.atend||[];
+  var ranked=atend.filter(function(a){return a.t>=30;}).map(function(a){
+    return {n:a.n,t:a.t,f:a.f||0,taxa:a.t>0?(a.f||0)/a.t*100:0};
+  });
+  if(ranked.length<3) return null;
+  ranked.sort(function(a,b){return a.taxa-b.taxa;});
+  var bottom=ranked[0];
+  if(bottom.taxa>=60) return null;
+  // top de referência
+  var top=ranked[ranked.length-1];
+  return {
+    sev:'warn',
+    titulo: bottom.n.split(' ')[0]+': '+bottom.t+' tickets, '+Math.round(bottom.taxa)+'% de fechamento',
+    situacao: '<strong>'+bottom.n+'</strong> lidou com <strong>'+bottom.t+' tickets</strong> historicamente, mas fechou só <strong>'+Math.round(bottom.taxa)+'% deles</strong>. Comparativo: <strong>'+top.n.split(' ')[0]+' fecha '+Math.round(top.taxa)+'%</strong>.',
+    diagnostico: 'Ou ele está pegando os tickets mais difíceis (e fica preso neles), ou tem dificuldade de finalizar. '+Math.round(bottom.taxa)+'% vs média alta é diferença grande demais pra ser só "tickets difíceis".',
+    acoes: [
+      {esforco:'baixo', impacto:'medio', desc:'<strong>1:1 de 30min com '+bottom.n.split(' ')[0]+':</strong> olhar 5 tickets dele que ficaram abertos por mais tempo. Entender o padrão.'},
+      {esforco:'medio', impacto:'alto', desc:'<strong>Buddy com '+top.n.split(' ')[0]+'</strong> por 2 semanas: ele acompanha como o '+top.n.split(' ')[0]+' fecha. Treinamento prático.'},
+      {esforco:'medio', impacto:'medio', desc:'<strong>Se padrão for "fica preso em complexos":</strong> redistribuir os complexos pros melhores fechadores e dar a ele volume médio.'}
+    ],
+    metrica: 'Taxa de fechamento de '+bottom.n.split(' ')[0]+' subir de '+Math.round(bottom.taxa)+'% → ≥75% em 90 dias'
+  };
+}
+
+// ÁREA 5 — Clientes em escalada
+function _planArea_clientesEscalada(ctx){
+  if(ctx.activeCliente) return null;
+  if(typeof OP_MESES==='undefined') return null;
+  var meses=Object.keys(OP_MESES).filter(function(k){return k!=='all' && /^\d{4}-\d{2}$/.test(k);}).sort();
+  if(meses.length<2) return null;
+  var atual=meses[meses.length-1], prev=meses[meses.length-2];
+  var cliA=OP_MESES[atual]&&OP_MESES[atual].cli||{}, cliP=OP_MESES[prev]&&OP_MESES[prev].cli||{};
+  var alertas=[];
+  Object.keys(cliA).forEach(function(c){
+    var a=cliA[c], p=cliP[c]||0;
+    if(a>=10 && a/Math.max(p,1)>=1.5) alertas.push({c:c,a:a,p:p,pct:Math.round(p>0?(a/p-1)*100:100), novo:p===0});
+  });
+  if(!alertas.length) return null;
+  alertas.sort(function(x,y){return y.a-x.a;});
+  var top3=alertas.slice(0,3);
+  var lista=top3.map(function(t){return '<strong>'+t.c+'</strong>: '+t.p+'→'+t.a+' '+(t.novo?'(cliente novo ou ramp-up)':'(+'+t.pct+'%)');}).join(' · ');
+  return {
+    sev:'info',
+    titulo: top3.length+' cliente'+(top3.length===1?'':'s')+' em crescimento — investigar se é ramp-up ou problema',
+    situacao: 'Clientes que cresceram em volume entre '+prev+' e '+atual+': '+lista+'.',
+    diagnostico: 'Quando um cliente passa de 0 a 35 ou cresce 50%, OU é onboarding pesado (esperado, vai estabilizar) OU é problema sistêmico que precisa de atenção. Você precisa saber qual.',
+    acoes: top3.map(function(t,i){
+      var cliShort=t.c.split('@')[0];
+      return {
+        esforco:'baixo', impacto:i===0?'alto':'medio',
+        desc:'<strong>'+cliShort+'</strong>: agendar call CS de 30min essa semana — entender se '+t.a+' tickets é normal pro porte do contrato ou se há problema de implantação.'
+      };
+    }),
+    metrica: 'Clientes em escalada estabilizam vs continuam crescendo no próximo mês'
+  };
+}
+
+function generateActionPlan(){
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
+  var op=(typeof getActiveOP==='function')?getActiveOP():(typeof OP!=='undefined'?OP:{});
+  var ctx={
+    op:op, raw:RAW_DATA,
+    UTIL:(typeof UTIL_DATA!=='undefined')?UTIL_DATA:null,
+    LIVE:(typeof TICKETS_ATIVOS_DATA!=='undefined')?TICKETS_ATIVOS_DATA:null,
+    activeMonth:(typeof activeMonth!=='undefined')?activeMonth:'all',
+    activeFilaOP:(typeof activeFilaOP!=='undefined')?activeFilaOP:'all',
+    activeCliente:(typeof activeCliente!=='undefined')?activeCliente:''
+  };
+  var areas=[_planArea_distribuicao,_planArea_autoFechamento,_planArea_concentracaoFila,_planArea_atendenteBottom,_planArea_clientesEscalada];
+  var out=[];
+  areas.forEach(function(a){try{var r=a(ctx);if(r)out.push(r);}catch(e){console.warn('planArea failed:',a.name||'?',e);}});
+  return out;
+}
+
+function _planTagCls(level){return level==='alto'?'plan-tag-high':(level==='medio'?'plan-tag-mid':'plan-tag-low');}
+function _planTagLbl(level){return level==='alto'?'ALTO':(level==='medio'?'MÉDIO':'BAIXO');}
+function _planSevTag(s){return s==='crit'?'CRÍTICO':(s==='warn'?'ATENÇÃO':(s==='ok'?'OK':'INFO'));}
+
+function renderActionPlan(){
+  var content=document.getElementById('ia-plan-content');
+  var scope=document.getElementById('ia-plan-scope');
+  if(!content) return;
+  // Scope label
+  var parts=[];
+  var mo=(typeof activeMonth!=='undefined')?activeMonth:'all';
+  var fi=(typeof activeFilaOP!=='undefined')?activeFilaOP:'all';
+  var cli=(typeof activeCliente!=='undefined')?activeCliente:'';
+  if(mo==='all') parts.push('Todos os meses'); else parts.push('Mês: '+mo);
+  if(fi!=='all') parts.push('Fila: '+fi);
+  if(cli) parts.push('Cliente: '+cli);
+  if(scope) scope.textContent='Escopo: '+parts.join(' · ');
+  var areas=[];
+  try{areas=generateActionPlan();}catch(e){console.warn('genPlan:',e);}
+  if(!areas.length){
+    content.innerHTML='<div class="plan-empty">🟢 Sem alertas no escopo atual.<br><br>Tudo dentro dos parâmetros. Tente ampliar o escopo (limpar filtros) ou aguardar próximo sync.</div>';
+    return;
+  }
+  var html='';
+  // Top 3 prioritárias
+  var topActs=[];
+  areas.forEach(function(a){
+    a.acoes.forEach(function(act){
+      var score=(act.impacto==='alto'?3:act.impacto==='medio'?2:1)*(act.esforco==='baixo'?3:act.esforco==='medio'?2:1);
+      topActs.push({score:score, area:a.titulo.split(':')[0], desc:act.desc, esf:act.esforco, imp:act.impacto});
+    });
+  });
+  topActs.sort(function(a,b){return b.score-a.score;});
+  var top3=topActs.slice(0,3);
+  html+='<div class="plan-area" style="border-color:rgba(34,211,238,.4);background:linear-gradient(135deg,rgba(34,211,238,.05) 0%,rgba(168,85,247,.05) 100%)">';
+  html+='<div class="plan-area-hdr"><span class="plan-area-sev plan-area-sev-info">⚡ TOP 3</span><span class="plan-area-title">Faça essas 3 coisas essa semana</span></div>';
+  html+='<div class="plan-area-body"><div class="plan-actions">';
+  top3.forEach(function(a,i){
+    html+='<div class="plan-action">'
+      +'<div class="plan-action-tags">'
+      +'<span class="plan-action-tag '+_planTagCls(a.esf)+'">ESF '+_planTagLbl(a.esf)+'</span>'
+      +'<span class="plan-action-tag '+_planTagCls(a.imp)+'">IMP '+_planTagLbl(a.imp)+'</span>'
+      +'</div>'
+      +'<div class="plan-action-txt">'+(i+1)+'. '+a.desc+'<br><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">→ Área: '+a.area+'</span></div>'
+      +'</div>';
+  });
+  html+='</div></div></div>';
+  // Cada área detalhada
+  areas.forEach(function(a){
+    html+='<div class="plan-area">';
+    html+='<div class="plan-area-hdr"><span class="plan-area-sev plan-area-sev-'+a.sev+'">'+_planSevTag(a.sev)+'</span><span class="plan-area-title">'+a.titulo+'</span></div>';
+    html+='<div class="plan-area-body">';
+    html+='<div class="plan-block"><div class="plan-block-lbl">📊 O que está acontecendo</div><div class="plan-block-txt">'+a.situacao+'</div></div>';
+    html+='<div class="plan-block"><div class="plan-block-lbl">🔍 Diagnóstico</div><div class="plan-block-txt">'+a.diagnostico+'</div></div>';
+    html+='<div class="plan-block"><div class="plan-block-lbl">⚡ Ações</div><div class="plan-actions">';
+    a.acoes.forEach(function(act){
+      html+='<div class="plan-action">'
+        +'<div class="plan-action-tags">'
+        +'<span class="plan-action-tag '+_planTagCls(act.esforco)+'">ESF '+_planTagLbl(act.esforco)+'</span>'
+        +'<span class="plan-action-tag '+_planTagCls(act.impacto)+'">IMP '+_planTagLbl(act.impacto)+'</span>'
+        +'</div>'
+        +'<div class="plan-action-txt">'+act.desc+'</div>'
+        +'</div>';
+    });
+    html+='</div></div>';
+    if(a.metrica) html+='<div class="plan-metric">📈 <strong>Métrica de acompanhamento:</strong> '+a.metrica+'</div>';
+    html+='</div></div>';
+  });
+  content.innerHTML=html;
+}
+
+function openActionPlan(){
+  renderActionPlan();
+  var el=document.getElementById('ia-plan-overlay');
+  if(el){el.style.display='flex';document.body.style.overflow='hidden';}
+}
+function closeActionPlan(){
+  var el=document.getElementById('ia-plan-overlay');
+  if(el){el.style.display='none';document.body.style.overflow='';}
+}
+// Fecha com ESC
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var el=document.getElementById('ia-plan-overlay');if(el && el.style.display==='flex')closeActionPlan();}});
+// Fecha clicando fora
+document.addEventListener('click',function(e){
+  var el=document.getElementById('ia-plan-overlay');
+  if(el && e.target===el)closeActionPlan();
+});
 
 // ════════════════════════════════════════════════════════════
 // AI LAYER — análise gerada em tempo real a partir dos dados
