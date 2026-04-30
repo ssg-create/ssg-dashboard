@@ -11400,6 +11400,15 @@ setInterval(autoFetchData, 10 * 60 * 1000);
 // Total isolamento: se algo aqui quebrar, o resto da aba IA não é afetado.
 // ════════════════════════════════════════════════════════════
 
+// Helper canônico de escopo: cli + fila + ticketInFilter (mês/range).
+// ticketInFilter sozinho só checa mês — esse helper completa o escopo.
+function _advInScope(t, ctx){
+  if(!t) return false;
+  if(ctx.activeCliente && t.cli_id !== ctx.activeCliente) return false;
+  if(ctx.activeFilaOP !== 'all' && t.fila !== ctx.activeFilaOP) return false;
+  if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+  return true;
+}
 function _advFmtMin(m){if(m==null||isNaN(m))return '—';if(m<60)return Math.round(m)+'min';var h=Math.floor(m/60),r=Math.round(m%60);return r>0?h+'h '+r+'min':h+'h';}
 function _advMedian(arr){if(!arr.length)return null;var s=arr.slice().sort(function(a,b){return a-b;});var m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
 function _advClassByLevel(n){return n==='crit'?'adv-card-crit':(n==='warn'?'adv-card-warn':(n==='ok'?'adv-card-ok':'adv-card-info'));}
@@ -11411,7 +11420,7 @@ function _advRule_filaPiorSLA(ctx){
   var perFila={};
   ctx.raw.forEach(function(t){
     if(!t.fila || t.resp_min==null) return;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!_advInScope(t, ctx)) return;
     if(!perFila[t.fila]) perFila[t.fila]=[];
     perFila[t.fila].push(t.resp_min);
   });
@@ -11481,15 +11490,25 @@ function _advRule_atendentesLentos(ctx){
   return {nivel:top3[0].rm>180?'crit':'warn',titulo:'Atendentes com 1ª resposta mais lenta',desc:top3.map(function(a){return (a.n||'?').split(' ')[0]+' '+_advFmtMin(a.rm)+' ('+a.t+')';}).join(' · '),acao:'Acompanhar carga e treinamento'};
 }
 
+// helper: restringe rows de UTIL aos atendentes com ticket ativo do escopo (fila/cliente)
+function _advFilterUtilByScope(ctx, rows){
+  var hasFila=ctx.activeFilaOP!=='all', hasCli=!!ctx.activeCliente;
+  if(!hasFila && !hasCli) return rows;
+  if(!ctx.LIVE || !ctx.LIVE.rows) return hasCli ? [] : rows;
+  var ats={};
+  ctx.LIVE.rows.forEach(function(t){
+    if(!t.atendente) return;
+    if(hasFila && t.fila!==ctx.activeFilaOP) return;
+    if(hasCli && t.cli_id!==ctx.activeCliente) return;
+    ats[t.atendente]=true;
+  });
+  return rows.filter(function(r){return ats[r.atendente];});
+}
+
 // 6. Atendente em sobrecarga
 function _advRule_atendenteSobrecarga(ctx){
   if(!ctx.UTIL || !ctx.UTIL.rows) return null;
-  var rows=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))>=8;});
-  if(ctx.activeFilaOP!=='all' && ctx.LIVE && ctx.LIVE.rows){
-    var atFila={};
-    ctx.LIVE.rows.forEach(function(t){if(t.fila===ctx.activeFilaOP && t.atendente) atFila[t.atendente]=true;});
-    rows=rows.filter(function(r){return atFila[r.atendente];});
-  }
+  var rows=_advFilterUtilByScope(ctx, ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))>=8;}));
   if(!rows.length) return null;
   rows.sort(function(a,b){return ((b.em_atendimento||0)+(b.abertos||0))-((a.em_atendimento||0)+(a.abertos||0));});
   var nomes=rows.slice(0,3).map(function(r){return (r.atendente||'?').split(' ')[0]+' ('+((r.em_atendimento||0)+(r.abertos||0))+')';});
@@ -11499,12 +11518,7 @@ function _advRule_atendenteSobrecarga(ctx){
 // 7. Atendente em folga
 function _advRule_atendenteFolga(ctx){
   if(!ctx.UTIL || !ctx.UTIL.rows) return null;
-  var rows=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))<=2;});
-  if(ctx.activeFilaOP!=='all' && ctx.LIVE && ctx.LIVE.rows){
-    var atFila={};
-    ctx.LIVE.rows.forEach(function(t){if(t.fila===ctx.activeFilaOP && t.atendente) atFila[t.atendente]=true;});
-    rows=rows.filter(function(r){return atFila[r.atendente];});
-  }
+  var rows=_advFilterUtilByScope(ctx, ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))<=2;}));
   if(rows.length<3) return null;
   return {nivel:'info',titulo:rows.length+' atendentes com baixa carga (≤2 ativos)',desc:'Possível capacidade ociosa — verificar disponibilidade real.',acao:'Considerar remanejar pra fila sobrecarregada'};
 }
@@ -11512,7 +11526,9 @@ function _advRule_atendenteFolga(ctx){
 // 8. Distribuição desigual
 function _advRule_distribuicaoDesigual(ctx){
   if(!ctx.UTIL || !ctx.UTIL.rows || ctx.UTIL.rows.length<5) return null;
-  var cargas=ctx.UTIL.rows.map(function(r){return (r.em_atendimento||0)+(r.abertos||0);});
+  var rows=_advFilterUtilByScope(ctx, ctx.UTIL.rows);
+  if(rows.length<5) return null;
+  var cargas=rows.map(function(r){return (r.em_atendimento||0)+(r.abertos||0);});
   var avg=cargas.reduce(function(s,n){return s+n;},0)/cargas.length;
   if(avg<2) return null;
   var sd=Math.sqrt(cargas.reduce(function(s,n){return s+Math.pow(n-avg,2);},0)/cargas.length);
@@ -11588,7 +11604,7 @@ function _advRule_clienteSlaRuim(ctx){
   var perCli={};
   ctx.raw.forEach(function(t){
     if(!t.cli_id || t.sol_h_bh==null) return;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!_advInScope(t, ctx)) return;
     if(!perCli[t.cli_id]) perCli[t.cli_id]=[];
     perCli[t.cli_id].push(t.sol_h_bh);
   });
@@ -11606,7 +11622,7 @@ function _advRule_bloqueadosAntigos(ctx){
   var bloq=ctx.raw.filter(function(t){
     if(t.estado!=='Aguardando Cliente') return false;
     if(!t.modificado) return false;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+    if(!_advInScope(t, ctx)) return false;
     return ((hoje-new Date(t.modificado).getTime())/86400000)>7;
   });
   if(!bloq.length) return null;
@@ -11619,7 +11635,7 @@ function _advRule_criticosAntigos(ctx){
   var crit=ctx.raw.filter(function(t){
     if(t.prior!=='Muito Alta') return false;
     if(!t.criado) return false;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+    if(!_advInScope(t, ctx)) return false;
     var aberto=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Aguardando Externo','Retorno Cliente'].indexOf(t.estado)!==-1;
     if(!aberto) return false;
     return ((hoje-new Date(t.criado).getTime())/86400000)>3;
@@ -11633,6 +11649,7 @@ function _advRule_filaAgingCrescente(ctx){return null;}
 
 // 17. Fila com volume crescente
 function _advRule_filaVolumeCrescente(ctx){
+  if(ctx.activeCliente) return null; // não faz sentido com cliente filtrado (compara filas globais)
   if(typeof OP_FILAS==='undefined' || typeof OP_MESES==='undefined') return null;
   var meses=Object.keys(OP_MESES).filter(function(k){return k!=='all' && /^\d{4}-\d{2}$/.test(k);}).sort();
   if(meses.length<2) return null;
@@ -11652,6 +11669,7 @@ function _advRule_filaVolumeCrescente(ctx){
 
 // 18. Fila com volume decrescente
 function _advRule_filaVolumeDecrescente(ctx){
+  if(ctx.activeCliente) return null; // não faz sentido com cliente filtrado (compara filas globais)
   if(typeof OP_FILAS==='undefined' || typeof OP_MESES==='undefined') return null;
   var meses=Object.keys(OP_MESES).filter(function(k){return k!=='all' && /^\d{4}-\d{2}$/.test(k);}).sort();
   if(meses.length<2) return null;
@@ -11673,7 +11691,7 @@ function _advRule_filaVolumeDecrescente(ctx){
 function _advRule_aguardandoCliente(ctx){
   var rows=ctx.raw.filter(function(t){
     if(t.estado!=='Aguardando Cliente') return false;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+    if(!_advInScope(t, ctx)) return false;
     return true;
   });
   if(rows.length<5) return null;
@@ -11748,12 +11766,15 @@ function renderAdvancedDetections(){
 // ÁREA 1 — Paradoxo de distribuição (sobrecarga + folga simultâneas)
 function _planArea_distribuicao(ctx){
   if(!ctx.UTIL || !ctx.UTIL.rows || ctx.UTIL.rows.length<5) return null;
-  var sob=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))>=8;});
-  var aten=ctx.UTIL.rows.filter(function(r){var c=(r.em_atendimento||0)+(r.abertos||0);return c>=5 && c<8;});
-  var fol=ctx.UTIL.rows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))<=2;});
+  // Restringe pelo escopo de cliente/fila (atendentes que atendem ticket ativo do escopo)
+  var scopedRows=(typeof _advFilterUtilByScope==='function')?_advFilterUtilByScope(ctx, ctx.UTIL.rows):ctx.UTIL.rows;
+  if(scopedRows.length<5) return null;
+  var sob=scopedRows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))>=8;});
+  var aten=scopedRows.filter(function(r){var c=(r.em_atendimento||0)+(r.abertos||0);return c>=5 && c<8;});
+  var fol=scopedRows.filter(function(r){return ((r.em_atendimento||0)+(r.abertos||0))<=2;});
   if(sob.length===0 && aten.length===0) return null;
   if(fol.length<5) return null;
-  var totalAt=ctx.UTIL.rows.length;
+  var totalAt=scopedRows.length;
   var pctFolga=Math.round(fol.length/totalAt*100);
   var nomesSob=sob.concat(aten).slice(0,4).map(function(r){return (r.atendente||'?').split(' ')[0]+' ('+((r.em_atendimento||0)+(r.abertos||0))+')';}).join(', ');
   return {
@@ -11775,7 +11796,7 @@ function _planArea_autoFechamento(ctx){
   var perFila={};
   ctx.raw.forEach(function(t){
     if(!t.fila) return;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!_advInScope(t, ctx)) return;
     if(!perFila[t.fila]) perFila[t.fila]={total:0,auto:0};
     perFila[t.fila].total++;
     if(t.estado==='Fechado s/ Êxito') perFila[t.fila].auto++;
@@ -11803,10 +11824,11 @@ function _planArea_autoFechamento(ctx){
 // ÁREA 3 — Concentração de fila
 function _planArea_concentracaoFila(ctx){
   if(ctx.activeFilaOP!=='all') return null;
+  if(ctx.activeCliente) return null; // com cliente filtrado, comparar filas globais não faz sentido
   var perFila={};
   var total=0;
   ctx.raw.forEach(function(t){
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!_advInScope(t, ctx)) return;
     total++;
     if(!t.fila) return;
     perFila[t.fila]=(perFila[t.fila]||0)+1;
@@ -11820,7 +11842,7 @@ function _planArea_concentracaoFila(ctx){
   var cliFila={};
   ctx.raw.forEach(function(t){
     if(t.fila!==top.f || !t.cli_id) return;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(!_advInScope(t, ctx)) return;
     cliFila[t.cli_id]=(cliFila[t.cli_id]||0)+1;
   });
   var topCli=Object.keys(cliFila).map(function(c){return {c:c,n:cliFila[c]};}).sort(function(a,b){return b.n-a.n;})[0];
