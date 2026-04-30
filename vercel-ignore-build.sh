@@ -22,6 +22,16 @@ echo "🔍 Vercel ignore-build check"
 echo "  branch: ${VERCEL_GIT_COMMIT_REF:-unknown}"
 echo "  commit: ${VERCEL_GIT_COMMIT_SHA:-unknown}"
 
+# Guard 1: branch `data` NUNCA deve buildar — defense-in-depth.
+# Em 2026-04-29 detectamos que `git.deploymentEnabled.data:false` no vercel.json
+# está sendo ignorado pelo Vercel: 37 deploys Preview da branch data
+# foram gerados num único dia, esgotando slots e bloqueando deploys de
+# main subsequentes. Esta guarda externa garante o comportamento.
+if [ "${VERCEL_GIT_COMMIT_REF:-}" = "data" ]; then
+  echo "🛑 Branch=data — NUNCA deploy (sync GWMS opera nessa branch)"
+  exit 0
+fi
+
 # Lista de arquivos alterados desde o ÚLTIMO commit DEPLOYADO (não desde HEAD^).
 # Motivo: workflow gwms-sync.yml empurra commits .json a cada 10min. Se compararmos
 # só HEAD vs HEAD^, commits de código ficam "enterrados" sob sync commits e nunca

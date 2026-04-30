@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "ignoreCommand": "git log -1 --pretty=%s | grep -qE '^chore: sync' && exit 0 || exit 1",
+  "ignoreCommand": "bash vercel-ignore-build.sh",
   "git": {
     "deploymentEnabled": {
       "data": false
