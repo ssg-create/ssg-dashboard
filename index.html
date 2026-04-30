@@ -3316,10 +3316,10 @@ function populateOvHero(op){
   if(ring){ring.classList.remove('ov-s-ok','ov-s-warn');if(cls)ring.classList.add(cls);}
   if(sub){
     sub.innerHTML=
-      '<strong>'+total.toLocaleString('pt-BR')+'</strong> chamados no período · '
-      +'<strong>'+abertos+'</strong> em aberto ('+(total>0?Math.round(pctAberto*100):0)+'%) · '
+      '<strong>'+total.toLocaleString('pt-BR')+'</strong> criados no período · '
+      +'<strong>'+abertos+'</strong> em aberto agora ('+(total>0?Math.round(pctAberto*100):0)+'% do criado) · '
       +'<strong>'+bloq+'</strong> bloqueados · '
-      +'<strong>'+muitoAlta+'</strong> prioridade muito alta em aberto'
+      +'<strong>'+muitoAlta+'</strong> em prioridade muito alta'
       +(crit?' · <strong style="color:var(--gw)">'+crit+' crítico'+(crit===1?'':'s')+' IA</strong>':'')
       +liveTag;
   }
@@ -3453,12 +3453,13 @@ function populateBkHero(op){
     if(dias>=2&&(d.resp_min==null||d.resp_min>30))semResp++;
   });
   var agingMed=abertos>0?Math.round(somaDias/abertos):0;
-  hero.textContent=abertos+' EM ABERTO';
+  hero.textContent=abertos+' EM ABERTO AGORA';
   if(sub){
     sub.innerHTML=
       '<strong>'+muitoAlta+'</strong> muito alta · '
-      +'<strong>'+agingMed+'</strong> dias aging médio · '
-      +'<strong>'+semResp+'</strong> sem resposta &gt;2 dias';
+      +'<strong>'+agingMed+'</strong> dias aging médio (tempo desde abertura) · '
+      +'<strong>'+semResp+'</strong> sem resposta &gt;2 dias'
+      +' <span style="color:var(--muted);font-size:11px">· snapshot live, não filtra por mês</span>';
   }
   if(ringNum)ringNum.textContent=agingMed;
   if(ringFg){
@@ -3509,7 +3510,7 @@ function populateSlHero(op){
   // K11: rotular explicitamente como 1ª resposta — antes ficava ambíguo
   // com o "% Dentro do SLA" de Solução (que é cálculo diferente, calcSLA).
   // textContent não interpreta entidades, então usamos < literal.
-  var statusLbl = pctMeta+'% · 1ª RESP <30min';
+  var statusLbl = pctMeta+'% DOS ATENDENTES · 1ª RESP <30min';
   var status, cls;
   if(pctMeta>=80){status=statusLbl;cls='';}
   else if(pctMeta>=60){status=statusLbl;cls='sl-s-warn';}
@@ -3548,8 +3549,11 @@ function populateClHero(op){
     ?_clOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open;CustomerID='+encodeURIComponent(_clKey)
     :_clOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
   if(sub){
+    var _abr=op.abertos||0, _fec=op.fechados||0;
     sub.innerHTML=
-      '<strong>'+total.toLocaleString('pt-BR')+'</strong> chamados no período · '
+      '<strong>'+total.toLocaleString('pt-BR')+'</strong> criados · '
+      +'<span style="color:var(--warn)"><strong>'+_abr+'</strong> abertos</span> · '
+      +'<span style="color:var(--ok)"><strong>'+_fec+'</strong> fechados</span> · '
       +'top: <strong>'+(topK||'—')+'</strong> com <strong>'+topN+'</strong> ('+topPct+'% do volume)'
       +' · <a href="'+_clOtrsUrl+'" target="_blank" rel="noopener" style="color:var(--teal);font-size:11px;text-decoration:none;font-family:var(--mono)">↗ OTRS</a>';
   }
@@ -4387,6 +4391,7 @@ function _refreshAllHeroes(){
   var op=(typeof getActiveOP==='function')?getActiveOP():(typeof OP!=='undefined'?OP:null);
   try{if(typeof populateClHero==='function'&&op)populateClHero(op);}catch(e){console.warn('refreshHeroes cl:',e);}
   try{if(typeof populateBkHero==='function'&&op)populateBkHero(op);}catch(e){console.warn('refreshHeroes bk:',e);}
+  try{if(typeof populateFvHero==='function')populateFvHero();}catch(e){console.warn('refreshHeroes fv:',e);}
   try{
     if(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows){
       if(typeof populateAtHero==='function')populateAtHero(UTIL_DATA);
