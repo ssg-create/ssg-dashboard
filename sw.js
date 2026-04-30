@@ -1,9 +1,11 @@
 // SSG Operations Center — Service Worker
 // ⚠️ Incrementar CACHE_VERSION a cada deploy para forçar atualização nos clientes
-const CACHE_VERSION = '20260429-4';
+const CACHE_VERSION = '20260429-5';
 const CACHE = 'ssg-' + CACHE_VERSION;
+
+// Apenas assets imutáveis vão pro precache (libs, ícones).
+// HTML/JSON ficam fora — sempre buscam da rede pra evitar versões presas.
 const PRECACHE = [
-  './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -27,13 +29,32 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
+// Mensagem do client pode forçar skipWaiting (útil pra atualização instantânea)
+self.addEventListener('message', function(e){
+  if(e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('fetch', function(e) {
-  // Dados remotos (GitHub Pages / OTRS): sempre rede, cache como fallback
-  if(e.request.url.includes('github.io') || e.request.url.includes('xlsx') || e.request.url.includes('.json')){
+  var url = e.request.url;
+
+  // 1) HTML e JSON dinâmicos: NETWORK-FIRST
+  //    (index.html, sw.js, qualquer .json — sempre busca rede primeiro;
+  //    cache só serve como fallback se rede falhar)
+  var isHtmlOrJson = url.endsWith('/') ||
+                     url.endsWith('.html') ||
+                     url.endsWith('.json') ||
+                     url.endsWith('/sw.js') ||
+                     e.request.mode === 'navigate' ||
+                     (e.request.headers.get('accept') || '').indexOf('text/html') !== -1;
+
+  if(isHtmlOrJson){
     e.respondWith(
       fetch(e.request).then(function(r){
-        var rc = r.clone();
-        caches.open(CACHE).then(function(c){ c.put(e.request, rc); });
+        // Atualiza cache em background (apenas se response OK)
+        if(r && r.ok){
+          var rc = r.clone();
+          caches.open(CACHE).then(function(c){ c.put(e.request, rc); });
+        }
         return r;
       }).catch(function(){
         return caches.match(e.request);
@@ -41,12 +62,16 @@ self.addEventListener('fetch', function(e) {
     );
     return;
   }
-  // Assets locais: cache primeiro
+
+  // 2) Assets imutáveis (libs, ícones, fontes): CACHE-FIRST
+  //    (chart.min.js, xlsx.full.min.js, ícones — versionados no PRECACHE)
   e.respondWith(
     caches.match(e.request).then(function(r){
       return r || fetch(e.request).then(function(nr){
-        var rc2 = nr.clone();
-        caches.open(CACHE).then(function(c){ c.put(e.request, rc2); });
+        if(nr && nr.ok){
+          var rc2 = nr.clone();
+          caches.open(CACHE).then(function(c){ c.put(e.request, rc2); });
+        }
         return nr;
       });
     })
