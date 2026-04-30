@@ -46,7 +46,7 @@ jobs:
         env:
           GWMS_USER:    ${{ secrets.GWMS_USER }}
           GWMS_PASS:    ${{ secrets.GWMS_PASS }}
-          DEPLOY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_TOKEN: ${{ secrets.GH_PAT_CROSS_REPO }}
           GH_REPO:      ${{ secrets.GH_REPO }}
           GH_BRANCH:    main   # repo dedicado ssg-dashboard-data — Vercel não observa esse repo
         run: python scripts/gwms_sync.py
