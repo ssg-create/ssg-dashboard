@@ -1589,22 +1589,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </button>
   </div>
   <div class="tb-alerts" id="tb-alerts">
-    <div class="tb-alert-pill tap-danger" id="alert-criticos">
-      <div class="tb-dot" style="background:var(--danger)"></div>
-      <span id="alert-criticos-txt">1 crítico aberto</span>
-    </div>
-    <div class="tb-alert-pill tap-warn" id="alert-bloqueados">
-      <div class="tb-dot" style="background:var(--warn)"></div>
-      <span id="alert-bloqueados-txt">119 bloqueados</span>
-    </div>
-    <div class="tb-alert-pill tap-ok" id="pill-resp-med">
-      <div class="tb-dot" id="pill-resp-dot" style="background:var(--ok)"></div>
-      <span id="pill-resp-txt">1ª resp: —</span>
-    </div>
-    <div class="tb-alert-pill tap-danger" id="pill-sla-vencendo" style="display:none" onclick="goSec('op','s-alertas',document.querySelector('.nav[onclick*=s-alertas]'))">
-      <div class="tb-dot" style="background:var(--danger)"></div>
-      <span id="pill-sla-txt">0 vencendo</span>
-    </div>
+    <!-- pills removidos: informação disponível no corpo do dashboard -->
     <!-- K13: chip de filtros ativos — visível em todas as abas, clique reseta -->
     <div class="tb-filter-chip" id="tb-filter-chip" onclick="resetAllFilters()" title="Clique para limpar todos os filtros">
       <span class="tb-fc-icon">📍</span>
