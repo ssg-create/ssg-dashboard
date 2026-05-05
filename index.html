@@ -3372,8 +3372,10 @@ function populateOvHero(op){
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
   var total=op.total||0;
   var fechados=op.fechados||0;
-  // Abertos/bloqueados/muito alta vêm do GWMS se disponível (estado atual real).
-  var live=liveStats(), liveTag='';
+  // Abertos/bloqueados/muito alta: AO VIVO só quando filtro cobre o presente.
+  // Mês passado/range histórico → usa op.* do XLSX (foto do período).
+  var showLive=_shouldShowLive();
+  var live=showLive?liveStats():null, liveTag='';
   var abertos, bloq, muitoAlta;
   if(live){
     abertos=live.abertos;
@@ -3385,6 +3387,9 @@ function populateOvHero(op){
     var estado=op.estado||{};
     bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
     muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+    if(!showLive){
+      liveTag=' <span style="font-family:var(--mono);font-size:9px;color:#a78bfa;letter-spacing:.08em">📅 '+_histLabel()+'</span>';
+    }
   }
   // Críticos do insights IA
   var crit=0;
@@ -3399,9 +3404,10 @@ function populateOvHero(op){
   if(hero){hero.classList.remove('ov-s-ok','ov-s-warn');hero.textContent=status;if(cls)hero.classList.add(cls);}
   if(ring){ring.classList.remove('ov-s-ok','ov-s-warn');if(cls)ring.classList.add(cls);}
   if(sub){
+    var lblAbertos=showLive?'em aberto agora':'em aberto no período';
     sub.innerHTML=
       '<strong>'+total.toLocaleString('pt-BR')+'</strong> criados no período · '
-      +'<strong>'+abertos+'</strong> em aberto agora ('+(total>0?Math.round(pctAberto*100):0)+'% do criado) · '
+      +'<strong>'+abertos+'</strong> '+lblAbertos+' ('+(total>0?Math.round(pctAberto*100):0)+'% do criado) · '
       +'<strong>'+bloq+'</strong> bloqueados · '
       +'<strong>'+muitoAlta+'</strong> em prioridade muito alta'
       +(crit?' · <strong style="color:var(--gw)">'+crit+' crítico'+(crit===1?'':'s')+' IA</strong>':'')
@@ -3423,9 +3429,10 @@ function populateChHero(op){
   if(!hero) return;
   hero.classList.remove('ch-s-warn','ch-s-ok');
   if(ring) ring.classList.remove('ch-s-warn','ch-s-ok');
-  // Total e fechados continuam do XLSX (histórico). Abertos/bloqueados/MA vêm do GWMS se disponível.
+  // Total e fechados continuam do XLSX (histórico). Abertos/bloqueados/MA: AO VIVO só no presente.
   var total=op.total||0, fechados=op.fechados||0;
-  var live=liveStats(), liveTag='';
+  var showLive=_shouldShowLive();
+  var live=showLive?liveStats():null, liveTag='';
   var abertos, bloq, muitoAlta;
   if(live){
     abertos=live.abertos;
@@ -3437,6 +3444,9 @@ function populateChHero(op){
     var estado=op.estado||{};
     bloq=(estado['Aguardando Cliente']||0)+(estado['Aguardando Interno']||0)+(estado['Aguardando Externo']||0)+(estado['Retorno Cliente']||0);
     muitoAlta=(op.prior&&op.prior['Muito Alta'])||0;
+    if(!showLive){
+      liveTag=' <span style="font-family:var(--mono);font-size:9px;color:#a78bfa;letter-spacing:.08em">📅 '+_histLabel()+'</span>';
+    }
   }
   var taxa=total>0?Math.round((fechados/total)*100):0;
   var pctAberto=total>0?abertos/total:0;
@@ -3447,11 +3457,12 @@ function populateChHero(op){
   hero.textContent=status;
   if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
   if(sub){
+    var lblAb=showLive?'em aberto':'em aberto no período';
     sub.innerHTML=
-      '<strong>'+abertos+'</strong> em aberto · '
+      '<strong>'+abertos+'</strong> '+lblAb+' · '
       +'<strong>'+fechados+'</strong> fechados · '
       +'<strong>'+taxa+'%</strong> taxa de conclusão · '
-      +'<strong>'+muitoAlta+'</strong> prioridade muito alta em aberto · '
+      +'<strong>'+muitoAlta+'</strong> prioridade muito alta'+(showLive?' em aberto':'')+' · '
       +'<strong>'+bloq+'</strong> bloqueados'
       +liveTag;
   }
@@ -5697,7 +5708,7 @@ function renderInf(){
 // IMPORT
 // ════════════════════════════════════════════════════════════
 var COL_IMP={num:['número do chamado','número','chamado','ticket'],criado:['criado','data de abertura','abertura','created'],fechado:['fechado','data de fechamento','fechamento','closed'],estado:['estado','status','situação'],prior:['prioridade','priority'],atend:['atendente','assignee'],pnome:['primeironome','primeiro nome'],unome:['úlnome','últimonome','último nome'],cli_id:['id do cliente','customer id'],cli_nome:['nome do cliente','customer name','c_cliente','c cliente'],assunto:['assunto','subject'],servico:['serviço','service'],resp_min:['primeira resposta em minutos','first response in minutes'],sol_min:['tempo de solução em minutos','resolution time in minutes'],fila:['fila','queue']};
-var EM2={'fechado com êxito':'Fechado','fechado sem êxito (auto)':'Fechado s/ Êxito','fechado sem êxito':'Fechado s/ Êxito','aguardando cliente':'Aguardando Cliente','resolvido':'Resolvido','aguardando atendente (interno)':'Aguardando Interno','retorno cliente':'Retorno Cliente','em atendimento':'Em Atendimento','aberto':'Aberto','aguardando agentes externos':'Aguardando Externo','cancelado':'Fechado s/ Êxito','melhoria':'Fechado s/ Êxito','gmud':'Fechado s/ Êxito','agrupado':'Fechado s/ Êxito','novo':'Aberto'};
+var EM2={'fechado com êxito':'Fechado','fechado sem êxito (auto)':'Fechado s/ Êxito','fechado sem êxito':'Fechado s/ Êxito','aguardando cliente':'Aguardando Cliente','resolvido':'Resolvido','aguardando atendente (interno)':'Aguardando Interno','retorno cliente':'Retorno Cliente','em atendimento':'Em Atendimento','aberto':'Aberto','aguardando agentes externos':'Aguardando Externo','cancelado':'Fechado s/ Êxito','melhoria':'Em Atendimento','gmud':'Em Atendimento','agrupado':'Fechado s/ Êxito','novo':'Aberto'};
 var PM2={'1 very low':'Muito Baixa','2 low':'Baixa','3 normal':'Normal','4 high':'Alta','5 very high':'Muito Alta'};
 var ENM2={'ALMEIDA JR':'Almeida Junior','AUTOZONE':'AutoZone','GRUPO_METALNOX':'Grupo Metalnox','FINPEC':'Finpec','NSX':'NSX'};
 var INTERNAL_DOMAINS=['groundwork.com.br','groundwork.com','ssg.com.br'];
@@ -7875,6 +7886,51 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='<br><p class="intro-text"><strong>Meta de efici\u00eancia:</strong> m\u00ednimo de 90% dos atendimentos dentro do prazo de 48h \u00fateis. &nbsp;|&nbsp; <strong>Meta de 1\u00aa resposta:</strong> at\u00e9 30 minutos.</p>';
   H+='</div>';
 
+  // ── BLOCO: INDICADORES DO PERIODO (KPIs visuais — espelha o dashboard)
+  // Antes: PDF mostrava só 4 KPIs de SLA. Agora: 8 KPIs alinhados com o dashboard.
+  var _ema=d.abertos||0;
+  var _ema_pct=d.total>0?Math.round(_ema/d.total*100):0;
+  // d.prior é agregado da empresa toda (não respeita filtro de mês/fila),
+  // por isso calculo Muito Alta + Atendentes diretamente do RAW_DATA escopado.
+  var _ma=0, _atSet={};
+  (typeof RAW_DATA!=='undefined' && RAW_DATA?RAW_DATA:[]).forEach(function(t){
+    if(!t) return;
+    if(t.cli_id!==dRaw.id) return;
+    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    if(t.prior==='Muito Alta') _ma++;
+    if(t.atend && t.atend!=='—') _atSet[t.atend]=true;
+  });
+  var _ma_pct=d.total>0?Math.round(_ma/d.total*100):0;
+  var _bl_e=d.estados||{};
+  var _bl=(_bl_e['Aguardando Cliente']||0)+(_bl_e['Aguardando Interno']||0)+(_bl_e['Aguardando Externo']||0)+(_bl_e['Retorno Cliente']||0);
+  var _bl_pct=d.total>0?Math.round(_bl/d.total*100):0;
+  var _at=Object.keys(_atSet).length;
+  H+='<div class="section" style="page-break-inside:avoid">';
+  H+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#E8622A;margin-bottom:10px">Indicadores do período</div>';
+  H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">';
+  H+='<div class="kpi"><div class="kpi-lbl">Em aberto</div><div class="kpi-val" style="color:#d97706">'+_ema+'</div><div class="kpi-sub">'+_ema_pct+'% do período</div></div>';
+  H+='<div class="kpi '+(_ma>0?'red':'')+'"><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:'+(_ma>0?'#dc2626':'#16a34a')+'">'+_ma+'</div><div class="kpi-sub">'+_ma_pct+'% do volume</div></div>';
+  H+='<div class="kpi orange"><div class="kpi-lbl">Bloqueados</div><div class="kpi-val" style="color:#E8622A">'+_bl+'</div><div class="kpi-sub">'+_bl_pct+'% aguardando</div></div>';
+  H+='<div class="kpi"><div class="kpi-lbl">Atendentes</div><div class="kpi-val" style="color:#1a2744">'+_at+'</div><div class="kpi-sub">atuaram no período</div></div>';
+  H+='</div>';
+  if(_bl>0){
+    var _bl_c=_bl_e['Aguardando Cliente']||0;
+    var _bl_i=_bl_e['Aguardando Interno']||0;
+    var _bl_x=_bl_e['Aguardando Externo']||0;
+    var _bl_r=_bl_e['Retorno Cliente']||0;
+    H+='<div style="font-size:10.5px;color:#374151;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;margin-top:8px">';
+    H+='<strong style="color:#E8622A">Detalhamento dos bloqueios:</strong> ';
+    var _parts=[];
+    if(_bl_c>0)_parts.push('<strong>'+_bl_c+'</strong> aguardando cliente');
+    if(_bl_i>0)_parts.push('<strong>'+_bl_i+'</strong> aguardando interno');
+    if(_bl_r>0)_parts.push('<strong>'+_bl_r+'</strong> retorno cliente');
+    if(_bl_x>0)_parts.push('<strong>'+_bl_x+'</strong> aguardando agente externo');
+    H+=_parts.join(' &middot; ');
+    H+='</div>';
+  }
+  H+='</div>';
+
   // ── SE\u00c7\u00c3O 2: TICKETS ABERTOS
   H+='<div class="section">';
   H+='<div class="sec-header"><div class="sec-num">2</div><div class="sec-title">Tickets Abertos</div><div class="sec-sub">Hist\u00f3rico do per\u00edodo</div></div>';
@@ -9284,6 +9340,28 @@ function liveFilteredTickets(){
     return true;
   });
 }
+// Decide se KPIs/heros devem mostrar estado AO VIVO ou HISTÓRICO do XLSX.
+// AO VIVO faz sentido só quando o filtro cobre o presente (Todos ou mês corrente).
+// Mês passado / range custom → histórico (foto do período), evita misturar semântica.
+function _shouldShowLive(){
+  if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd) return false;
+  if(typeof activeMonth==='undefined' || activeMonth==='all') return true;
+  var now=new Date();
+  var mesCorrente=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  return activeMonth===mesCorrente;
+}
+// Label do tag mostrado ao lado dos KPIs/heros quando em modo histórico.
+// Ex: '📅 Mar/26' / '📅 Abr/26'. Em modo live retorna ''.
+function _histLabel(){
+  if(_shouldShowLive()) return '';
+  if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
+    var fmt=function(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});};
+    return fmt(activeRangeStart)+'–'+fmt(activeRangeEnd);
+  }
+  var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  var p=String(activeMonth).split('-');
+  return (mNames[p[1]]||p[1])+'/'+p[0].slice(2);
+}
 // Fonte única de verdade para "estado atual" — consumida pelos heros e KPIs.
 // Retorna null se dados GWMS ainda não carregaram (aí chamador usa XLSX como fallback).
 function liveStats(){
@@ -9301,35 +9379,55 @@ function liveStats(){
   };
 }
 function applyLiveKPIs(){
-  var s=liveStats();
-  if(!s) return;
-  var total=s.abertos, muitoAlta=s.muitoAlta, bloqueados=s.bloqueados;
   var setText=function(id,val){var e=document.getElementById(id);if(e)e.textContent=val;};
-  var addLiveBadge=function(subId){
-    var e=document.getElementById(subId);
-    if(!e) return;
-    // Remove badge antigo e adiciona fresh — idempotente
-    var old=e.querySelector('.live-badge');
-    if(old) old.remove();
-    var b=document.createElement('span');
-    b.className='live-badge';
-    b.style.cssText='display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.08em;background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.35);vertical-align:middle';
-    b.textContent='● AO VIVO';
+  var clearBadge=function(subId){
+    var e=document.getElementById(subId); if(!e) return;
+    var old=e.querySelector('.live-badge'); if(old) old.remove();
+  };
+  var addBadge=function(subId,kind){
+    var e=document.getElementById(subId); if(!e) return;
+    var old=e.querySelector('.live-badge'); if(old) old.remove();
+    var b=document.createElement('span'); b.className='live-badge';
+    if(kind==='hist'){
+      b.style.cssText='display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.08em;background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.35);vertical-align:middle';
+      b.textContent='📅 '+_histLabel();
+    } else {
+      b.style.cssText='display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.08em;background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.35);vertical-align:middle';
+      b.textContent='● AO VIVO';
+    }
     e.appendChild(b);
   };
+  // Modo HISTÓRICO (mês passado / range): NÃO sobrescrever os KPIs com live —
+  // updateKPIs(op) já preencheu com valores corretos do XLSX. Só marcar com tag 📅.
+  if(!_shouldShowLive()){
+    addBadge('kpi-s-1','hist');
+    addBadge('kpi-ma-sub','hist');
+    addBadge('kpi-bloq-sub','hist');
+    addBadge('ch-kpi-bloq-sub','hist');
+    addBadge('ch-kpi-ma-sub','hist');
+    return;
+  }
+  var s=liveStats();
+  if(!s){
+    // Sem dados live ainda: limpa qualquer badge antigo, deixa updateKPIs valer.
+    clearBadge('kpi-s-1');clearBadge('kpi-ma-sub');clearBadge('kpi-bloq-sub');
+    clearBadge('ch-kpi-bloq-sub');clearBadge('ch-kpi-ma-sub');
+    return;
+  }
+  var total=s.abertos, muitoAlta=s.muitoAlta, bloqueados=s.bloqueados;
   // Dashboard (s-ov): KPI "Em aberto"
   setText('kpi-v-1',total);
-  addLiveBadge('kpi-s-1');
+  addBadge('kpi-s-1','live');
   // Alertas Críticos (s-alertas)
   setText('kpi-ma-abertos',muitoAlta);
-  addLiveBadge('kpi-ma-sub');
+  addBadge('kpi-ma-sub','live');
   setText('kpi-bloq-aging',bloqueados);
-  addLiveBadge('kpi-bloq-sub');
+  addBadge('kpi-bloq-sub','live');
   // Chamados (s-ch)
   setText('ch-kpi-bloq',bloqueados);
-  addLiveBadge('ch-kpi-bloq-sub');
+  addBadge('ch-kpi-bloq-sub','live');
   setText('ch-kpi-ma',muitoAlta);
-  addLiveBadge('ch-kpi-ma-sub');
+  addBadge('ch-kpi-ma-sub','live');
 }
 function closeTicketDetail(){ var el=document.getElementById('tkd-overlay'); if(el) el.classList.remove('open'); }
 function handleTkdOverlay(e){ if(e.target===document.getElementById('tkd-overlay')) closeTicketDetail(); }
