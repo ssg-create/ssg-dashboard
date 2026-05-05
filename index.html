@@ -3507,20 +3507,38 @@ function populateBlHero(){
   var g=function(id){return document.getElementById(id);};
   var hero=g('bl-hero-status'), sub=g('bl-hero-sub'), ringNum=g('bl-ring-num'), ringFg=g('bl-ring-fg');
   if(!hero) return;
-  var op=getActiveOP();
-  var e=op.estado||{};
-  var aguarCli=e['Aguardando Cliente']||0;
-  var aguarInt=e['Aguardando Interno']||0;
-  var aguarExt=e['Aguardando Externo']||0;
-  var retorno=e['Retorno Cliente']||0;
-  var total=aguarCli+aguarInt+aguarExt+retorno;
+  // Em modo live: lê do GWMS (estado atual). Em histórico: lê do XLSX (op.estado).
+  // Garante que o número aqui bate com o KPI principal "Bloqueados".
+  var aguarCli, aguarInt, aguarExt, retorno, total, semAtend=0;
+  var liveMode = typeof _shouldShowLive==='function' && _shouldShowLive();
+  var ls = liveMode && typeof liveStats==='function' ? liveStats() : null;
+  if(ls && ls.rows){
+    var ct=function(name){var u=name.toUpperCase();return ls.rows.filter(function(r){return (r.estado||'').toUpperCase()===u;}).length;};
+    aguarCli = ct('Aguardando Cliente');
+    aguarInt = ct('Aguardando Interno');
+    aguarExt = ct('Aguardando Externo') + ct('Aguardando Agentes Externos');
+    retorno  = ct('Retorno Cliente');
+    total = ls.bloqueados;
+    semAtend = ls.semAtendente || 0;
+  } else {
+    var op=getActiveOP();
+    var e=op.estado||{};
+    aguarCli=e['Aguardando Cliente']||0;
+    aguarInt=e['Aguardando Interno']||0;
+    aguarExt=e['Aguardando Externo']||0;
+    retorno=e['Retorno Cliente']||0;
+    total=aguarCli+aguarInt+aguarExt+retorno;
+  }
   hero.textContent=total+' BLOQUEADOS';
   if(sub){
-    sub.innerHTML=
-      '<strong>'+aguarCli+'</strong> aguardando cliente · '
+    var line1='<strong>'+aguarCli+'</strong> aguardando cliente · '
       +'<strong>'+aguarInt+'</strong> aguardando interno · '
       +'<strong>'+retorno+'</strong> retorno cliente · '
       +'<strong>'+aguarExt+'</strong> aguardando externo';
+    if(semAtend>0){
+      line1+='<br><span style="color:#a78bfa;font-size:11px"><strong>'+semAtend+'</strong> sem atendente designado <span style="opacity:.7">(triagem pendente)</span></span>';
+    }
+    sub.innerHTML=line1;
   }
   if(ringNum)ringNum.textContent=total;
   if(ringFg){
@@ -9367,12 +9385,19 @@ function _histLabel(){
 function liveStats(){
   var rows=liveFilteredTickets();
   if(!rows) return null;
-  var BLOQ_STATES=['AGUARDANDO CLIENTE','AGUARDANDO INTERNO','AGUARDANDO EXTERNO','RETORNO CLIENTE','AGUARDANDO ATENDENTE (INTERNO)','AGUARDANDO AGENTES EXTERNOS','AGUARDANDO ATENDENTE','MELHORIA','GMUD'];
+  // BLOQ_STATES = ticket parado esperando alguém de FORA da equipe (cliente, área interna, fornecedor).
+  // MELHORIA/GMUD removidos — são desenvolvimento em curso (Em Atendimento), não bloqueio.
+  // AGUARDANDO ATENDENTE / AGUARDANDO ATENDENTE (INTERNO) também removidos do "bloqueado":
+  // são gargalo de triagem (sem assignee) — métrica separada via campo semAtendente.
+  var BLOQ_STATES=['AGUARDANDO CLIENTE','AGUARDANDO INTERNO','AGUARDANDO EXTERNO','RETORNO CLIENTE','AGUARDANDO AGENTES EXTERNOS'];
+  var TRIAGEM_STATES=['AGUARDANDO ATENDENTE','AGUARDANDO ATENDENTE (INTERNO)'];
   var isMA=function(p){var l=(p||'').toLowerCase();return l.indexOf('muito alta')!==-1||l.indexOf('very high')!==-1||l.charAt(0)==='5';};
   var isBloq=function(e){return BLOQ_STATES.indexOf((e||'').toUpperCase())!==-1;};
+  var isTriagem=function(e){return TRIAGEM_STATES.indexOf((e||'').toUpperCase())!==-1;};
   return {
     abertos:rows.length,
     bloqueados:rows.filter(function(r){return isBloq(r.estado);}).length,
+    semAtendente:rows.filter(function(r){return isTriagem(r.estado);}).length,
     muitoAlta:rows.filter(function(r){return isMA(r.prioridade);}).length,
     emAtendimento:rows.filter(function(r){return (r.estado||'').toUpperCase()==='EM ATENDIMENTO';}).length,
     rows:rows
