@@ -238,9 +238,12 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     LEFT JOIN service    s  ON t.service_id         = s.id
     LEFT JOIN customer_user cu ON cu.login          = t.customer_user_id
     WHERE {FILAS_WHERE}
-      AND t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+      AND (
+        t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+        OR t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+      )
     ORDER BY t.create_time DESC
-    LIMIT 5000
+    LIMIT 10000
     """
     rows = query_mysql(session, sql)
 
