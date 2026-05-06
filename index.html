@@ -974,8 +974,83 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
    Paleta: laranja GW #ff7024 + navy slate #283645 + cyan accent #22d3ee
    Escopo: tudo dentro de #ia-live (não afeta o resto do dash)
    ════════════════════════════════════════════════════════════════════ */
-#ia-live{--gw:#ff7024;--gw-2:#f37633;--gw-deep:#c94e0e;--slate:#283645;--cyan:#22d3ee;--cyan-soft:#67e8f9;--ial-bg:#0b1118;--ial-surface:#141d28;--ial-surface-2:#1a2432;--ial-border:rgba(40,54,69,.6);--ial-border-bright:rgba(40,54,69,.95);--ial-text:#e5edf5;--ial-muted:#8a9bb0;--ial-danger:#ff7024;--ial-warn:#f59e0b;--ial-ok:#10b981}
-#ia-live *{box-sizing:border-box}
+/* ── BLOCOS LINEARES DA ABA IA (redesign 2026-05-05) ── */
+.ia-block{margin-bottom:32px;scroll-margin-top:80px}
+.ia-block:last-child{margin-bottom:0}
+.ia-block-head{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.ia-block-head h2{font-size:18px;font-weight:700;color:var(--text);margin:0 0 4px 0;letter-spacing:-.01em}
+.ia-block-head p{font-size:11.5px;color:var(--muted);margin:0;font-family:var(--mono)}
+.ia-scope-strip{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-top:8px;padding:5px 11px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(34,211,238,.04));border:1px solid rgba(168,85,247,.18);border-radius:999px;width:fit-content}
+.ia-scope-strip .scope-chip{padding:2px 8px;background:rgba(168,85,247,.14);color:#c4b5fd;border-radius:6px;font-weight:600}
+.ia-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
+.ia-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
+.ia-scope-strip .scope-mute{color:var(--muted)}
+
+/* ── PADRÕES POR ÁREA (barras horizontais clicáveis) ── */
+.ia-areas-list{display:flex;flex-direction:column;gap:6px}
+.ia-area-row{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .15s,background .15s;overflow:hidden}
+.ia-area-row:hover{border-color:rgba(168,85,247,.45);background:linear-gradient(135deg,var(--bg2),rgba(168,85,247,.04))}
+.ia-area-row.expanded{border-color:rgba(168,85,247,.6);background:linear-gradient(135deg,var(--bg2),rgba(168,85,247,.06))}
+.ia-area-bar-wrap{position:relative;height:4px;background:rgba(168,85,247,.08);border-radius:2px;margin-top:8px;overflow:hidden}
+.ia-area-bar-fill{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,#a855f7,#22d3ee);border-radius:2px;transition:width .4s ease}
+.ia-area-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ia-area-name{font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0}
+.ia-area-macro{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:2px 7px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px}
+.ia-area-counts{display:flex;gap:10px;align-items:center;font-size:11px;font-family:var(--mono);color:var(--sub)}
+.ia-area-count-total{font-size:14px;font-weight:700;color:var(--text)}
+.ia-area-count-pct{font-size:10px;color:var(--muted)}
+.ia-area-count-open{color:#f59e0b}
+.ia-area-count-closed{color:#10b981}
+.ia-area-arrow{font-size:11px;color:var(--muted);transition:transform .2s}
+.ia-area-row.expanded .ia-area-arrow{transform:rotate(90deg);color:#a855f7}
+.ia-area-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.ia-area-row.expanded .ia-area-detail{display:block;animation:iaAreaExpand .2s ease}
+@keyframes iaAreaExpand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ia-area-detail-title{font-size:9.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ia-pattern-row{display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,.02);border-radius:6px;margin-bottom:5px}
+.ia-pattern-row:last-child{margin-bottom:0}
+.ia-pattern-label{flex:1;min-width:0;font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ia-pattern-count{font-size:10.5px;font-family:var(--mono);font-weight:700;color:var(--text);padding:2px 8px;background:rgba(168,85,247,.15);color:#c4b5fd;border-radius:4px;flex-shrink:0}
+.ia-pattern-status{display:flex;gap:6px;font-size:9px;font-family:var(--mono);flex-shrink:0}
+.ia-pattern-status .ps-open{color:#f59e0b}
+.ia-pattern-status .ps-closed{color:#10b981}
+
+/* ── RISCOS UNIFICADOS ── */
+.ia-risk-unified{display:flex;flex-direction:column;gap:8px}
+.ia-risk-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--sub);border-radius:8px}
+.ia-risk-row.lvl-high{border-left-color:#f43f5e;background:linear-gradient(135deg,var(--bg2),rgba(244,63,94,.04))}
+.ia-risk-row.lvl-medium{border-left-color:#f59e0b;background:linear-gradient(135deg,var(--bg2),rgba(245,158,11,.03))}
+.ia-risk-row.lvl-low{border-left-color:#10b981}
+.ia-risk-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ia-risk-body{flex:1;min-width:0}
+.ia-risk-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.ia-risk-desc{font-size:11.5px;color:var(--sub);line-height:1.5}
+.ia-risk-source{font-size:9px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.ia-risk-action{font-size:11px;color:#22d3ee;margin-top:6px;padding:6px 10px;background:rgba(34,211,238,.06);border-left:2px solid rgba(34,211,238,.3);border-radius:0 4px 4px 0}
+.ia-risk-action::before{content:'→ ';opacity:.6}
+.ia-risk-meta{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* ── DRAWER · SINAIS AO VIVO ── */
+#ial-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:9998;display:none;animation:ialFadeIn .2s ease}
+#ial-drawer-overlay.open{display:block}
+#ial-drawer{position:fixed;top:0;right:0;bottom:0;width:min(580px,92vw);background:#0b1118;border-left:1px solid rgba(40,54,69,.95);z-index:9999;display:none;flex-direction:column;box-shadow:-20px 0 40px rgba(0,0,0,.5);animation:ialDrawerIn .25s cubic-bezier(.2,.9,.3,1.1)}
+#ial-drawer.open{display:flex}
+@keyframes ialFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes ialDrawerIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.ial-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 22px 14px;border-bottom:1px solid rgba(40,54,69,.6)}
+.ial-drawer-badge{display:inline-block;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.12em;color:#22d3ee;background:rgba(34,211,238,.12);padding:3px 9px;border-radius:4px;text-transform:uppercase;border:1px solid rgba(34,211,238,.3)}
+.ial-drawer-close{background:transparent;border:1px solid rgba(40,54,69,.6);color:#8a9bb0;width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:20px;line-height:1;flex-shrink:0;transition:all .15s}
+.ial-drawer-close:hover{background:rgba(255,255,255,.04);color:#e5edf5;border-color:rgba(40,54,69,.95)}
+.ial-drawer-body{flex:1;overflow-y:auto;padding:18px 22px 22px}
+.ial-drawer-body .ial-hero{padding:22px 24px 18px}
+.ial-drawer-body .ial-hero-status{font-size:42px}
+.ial-drawer-body .ial-ring{width:120px;height:120px}
+.ial-drawer-body .ial-ring-num{font-size:28px}
+.ial-drawer-body .ial-stats{grid-template-columns:repeat(2,1fr)}
+
+/* Aliases p/ tema dark do live aplicar dentro do drawer também */
+#ia-live, #ial-drawer{--gw:#ff7024;--gw-2:#f37633;--gw-deep:#c94e0e;--slate:#283645;--cyan:#22d3ee;--cyan-soft:#67e8f9;--ial-bg:#0b1118;--ial-surface:#141d28;--ial-surface-2:#1a2432;--ial-border:rgba(40,54,69,.6);--ial-border-bright:rgba(40,54,69,.95);--ial-text:#e5edf5;--ial-muted:#8a9bb0;--ial-danger:#ff7024;--ial-warn:#f59e0b;--ial-ok:#10b981}
+#ia-live *,#ial-drawer *{box-sizing:border-box}
 #ia-live .page-body{padding:0}
 /* ── HERO ─────────────────────────────────────────────────── */
 .ial-hero{position:relative;overflow:hidden;border-radius:14px;border:1px solid var(--ial-border);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:32px 36px 28px;margin-bottom:22px}
@@ -1745,13 +1820,11 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
   <div id="nav-ia" style="display:none">
     <div class="sb-head">Inteligência</div>
-    <div class="nav" id="nav-ia-resumo" onclick="goSecIA('ia-resumo',this)" style="color:#a855f7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Resumo de Gestão</div>
-    <div class="nav" id="nav-ia-live" onclick="goSecIA('ia-live',this)" style="color:#22d3ee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5.5 5.5a9 9 0 0113 0M7.5 7.5a6 6 0 019 0"/></svg>Sinais Ao Vivo</div>
-    <div class="nav" id="nav-ia-op" onclick="goSecIA('ia-op',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Riscos Operacionais</div>
-    <div class="nav" id="nav-ia-cli" onclick="goSecIA('ia-cli',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Riscos de Cliente</div>
-    <div class="nav" id="nav-ia-ri" onclick="goSecIA('ia-ri',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>Problemas Recorrentes</div>
-    <div class="nav" id="nav-ia-cs" onclick="goSecIA('ia-cs',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Insights CS</div>
-    <div class="nav" id="nav-ia-exec" onclick="goSecIA('ia-exec',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Rel. Executivo</div>
+    <div class="nav on" id="nav-ia-resumo" onclick="scrollToIA('ia-resumo',this)" style="color:#a855f7"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Resumo</div>
+    <div class="nav" id="nav-ia-areas" onclick="scrollToIA('ia-areas',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Padrões por Área</div>
+    <div class="nav" id="nav-ia-riscos" onclick="scrollToIA('ia-riscos',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Riscos & Ações</div>
+    <div class="nav" id="nav-ia-exec" onclick="scrollToIA('ia-exec',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Rel. Executivo</div>
+    <div class="nav" id="nav-ia-livebtn" onclick="openIALive()" style="color:#22d3ee;margin-top:14px;border-top:1px solid var(--border);padding-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5.5 5.5a9 9 0 0113 0M7.5 7.5a6 6 0 019 0"/></svg>Sinais ao Vivo<span style="font-size:8.5px;color:#22d3ee;margin-left:6px;font-weight:700;background:rgba(34,211,238,.15);padding:1px 5px;border-radius:3px">GLOBAL</span></div>
   </div>
   <div id="nav-acoes" style="display:none">
     <div class="sb-head">Ações da Operação</div>
@@ -2824,115 +2897,111 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 <!-- ══════ IA VIEW ══════ -->
 <div id="view-ia" class="view">
   <div class="ai-view-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-    <div>
-      <h1>✦ Análise de IA</h1>
+    <div style="flex:1;min-width:0">
+      <h1>✦ Análise IA</h1>
       <p id="ia-subtitle">Análise gerada automaticamente a partir dos dados carregados</p>
+      <div id="ia-scope-strip" class="ia-scope-strip">—</div>
     </div>
-    <button onclick="openActionPlan()" class="ia-plan-btn">📋 Plano de Ação</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="openIALive()" class="ia-plan-btn-sec" title="Sinais ao vivo (global, ignora filtros)" style="border-color:rgba(34,211,238,.4);color:#22d3ee">📡 Sinais ao Vivo <span style="font-size:8.5px;background:rgba(34,211,238,.15);padding:1px 5px;border-radius:3px;margin-left:4px">GLOBAL</span></button>
+      <button onclick="openActionPlan()" class="ia-plan-btn">📋 Plano de Ação</button>
+    </div>
   </div>
   <div class="page-body">
 
-    <!-- RESUMO DE GESTÃO IA -->
-    <div id="ia-resumo" class="sec on">
+    <!-- BLOCO 1: RESUMO + KPIs -->
+    <section id="ia-resumo" class="ia-block">
       <div id="ia-resumo-content"></div>
       <div id="ia-detect-content" style="margin-top:24px"></div>
-    </div>
+    </section>
 
-    <!-- SINAIS AO VIVO (GWMS) — tema Groundwork futurista -->
-    <div id="ia-live" class="sec">
-      <div class="page-body">
-        <div class="ial-hero" id="ial-hero">
-          <div class="ial-hero-grid">
-            <div class="ial-hero-left">
-              <div class="ial-hero-tag"><span class="ial-dot"></span>SINAIS AO VIVO · GWMS</div>
-              <div class="ial-hero-status" id="ial-hero-status">—</div>
-              <div class="ial-hero-sub" id="ial-hero-sub">carregando sinais…</div>
-              <div class="ial-hero-meta" id="ial-hero-meta">—</div>
-            </div>
-            <div class="ial-ring" id="ial-ring">
-              <svg viewBox="0 0 200 200">
-                <circle class="ial-ring-bg" cx="100" cy="100" r="90"/>
-                <circle class="ial-ring-fg" id="ial-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
-              </svg>
-              <div class="ial-ring-core">
-                <div class="ial-ring-num" id="ial-ring-num">—</div>
-                <div class="ial-ring-lbl">sinais</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="ial-stats">
-          <div class="ial-stat" id="ial-stat-total">
-            <div class="ial-stat-lbl">Total de sinais</div>
-            <div class="ial-stat-val" id="ial-kpi-total">—</div>
-            <div class="ial-stat-sub" id="ial-kpi-ts">—</div>
-          </div>
-          <div class="ial-stat ial-stat-crit">
-            <div class="ial-stat-lbl">Críticos</div>
-            <div class="ial-stat-val ial-v-crit" id="ial-kpi-crit">—</div>
-            <div class="ial-stat-sub">ação imediata</div>
-          </div>
-          <div class="ial-stat ial-stat-warn">
-            <div class="ial-stat-lbl">Alertas</div>
-            <div class="ial-stat-val ial-v-warn" id="ial-kpi-warn">—</div>
-            <div class="ial-stat-sub">acompanhar</div>
-          </div>
-          <div class="ial-stat">
-            <div class="ial-stat-lbl">Status</div>
-            <div class="ial-stat-val" id="ial-kpi-status">—</div>
-            <div class="ial-stat-sub" id="ial-kpi-status-sub">panorama atual</div>
-          </div>
-        </div>
-        <div id="ial-cards"></div>
+    <!-- BLOCO 2: PADRÕES POR ÁREA (motor svc::area) -->
+    <section id="ia-areas" class="ia-block">
+      <div class="ia-block-head">
+        <h2>Padrões por Área</h2>
+        <p>Onde os chamados se concentram — clique numa área para ver os assuntos reais</p>
       </div>
-    </div>
+      <div id="ia-areas-content"></div>
+    </section>
 
-    <!-- RISCOS OPERACIONAIS -->
-    <div id="ia-op" class="sec">
-      <div id="ia-op-content"></div>
-    </div>
-
-    <!-- RISCOS DE CLIENTE -->
-    <div id="ia-cli" class="sec">
-      <div id="ia-cli-content"></div>
-    </div>
-
-    <!-- INSIGHTS CS -->
-    <div id="ia-cs" class="sec">
-      <div id="ia-cs-content"></div>
-    </div>
-
-
-    <!-- RELATÓRIO EXECUTIVO -->
-    <div id="ia-exec" class="sec">
-      <div class="page-header"><h1>Relatório Executivo</h1><p>Narrativa gerada automaticamente a partir dos dados — pronta para apresentação</p></div>
-      <div class="page-body"><div id="ia-exec-content"></div></div>
-    </div>
-
-    <!-- PROBLEMAS RECORRENTES -->
-    <div id="ia-ri" class="sec">
-      <div class="page-header"><h1>Problemas Recorrentes</h1><p>Termos mais frequentes nos assuntos dos chamados — padrões que podem virar problema sistêmico</p></div>
-      <div class="page-body">
-        <div id="ri-empty" class="empty" style="display:none"><div class="empty-icon"></div><p>Importe dados para detectar padrões</p></div>
-        <div id="ri-content">
-          <div class="ri-filters">
-            <span style="font-size:10px;color:var(--muted);font-family:var(--mono)">Filtrar:</span>
-            <button class="ri-filter-btn on" onclick="riFilter('all',this)">Todos</button>
-            <button class="ri-filter-btn" onclick="riFilter('open',this)">Apenas abertos</button>
-            <button class="ri-filter-btn" onclick="riFilter('closed',this)">Apenas fechados</button>
-            <span style="margin-left:auto;font-size:10px;color:var(--muted)" id="ri-stats"></span>
-          </div>
-          <div id="ri-wordcloud" class="ri-wordcloud"></div>
-          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Top padrões — clique no card para ver chamados</div>
-          <div id="ri-cards" class="ri-top-grid"></div>
-          <div id="ri-cli-rec" class="ri-cli-section" style="display:none"></div>
-          <div id="ri-churn" class="ri-cli-section" style="display:none"></div>
-        </div>
+    <!-- BLOCO 3: RISCOS & AÇÕES PRIORIZADAS -->
+    <section id="ia-riscos" class="ia-block">
+      <div class="ia-block-head">
+        <h2>Riscos &amp; Ações</h2>
+        <p>Operacionais, por cliente e Customer Success — ordenado por gravidade</p>
       </div>
-    </div>
+      <div id="ia-riscos-content"></div>
+    </section>
+
+    <!-- BLOCO 4: RELATÓRIO EXECUTIVO -->
+    <section id="ia-exec" class="ia-block">
+      <div class="ia-block-head">
+        <h2>Relatório Executivo</h2>
+        <p>Narrativa detalhada — pronta para apresentação</p>
+      </div>
+      <div id="ia-exec-content"></div>
+    </section>
 
   </div>
 </div><!-- /view-ia -->
+
+<!-- ════════════════ DRAWER · SINAIS AO VIVO (GLOBAL) ════════════════ -->
+<div id="ial-drawer-overlay" onclick="closeIALive()"></div>
+<div id="ial-drawer" role="dialog" aria-label="Sinais ao Vivo">
+  <div class="ial-drawer-head">
+    <div>
+      <span class="ial-drawer-badge">GLOBAL · ignora filtros</span>
+      <h2 style="margin:6px 0 0 0;font-size:18px;color:var(--text)">📡 Sinais ao Vivo · GWMS</h2>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)">Atualizado a cada 10 min · operação inteira</div>
+    </div>
+    <button class="ial-drawer-close" onclick="closeIALive()" aria-label="Fechar">×</button>
+  </div>
+  <div class="ial-drawer-body">
+    <div class="ial-hero" id="ial-hero">
+      <div class="ial-hero-grid">
+        <div class="ial-hero-left">
+          <div class="ial-hero-tag"><span class="ial-dot"></span>SINAIS AO VIVO · GWMS</div>
+          <div class="ial-hero-status" id="ial-hero-status">—</div>
+          <div class="ial-hero-sub" id="ial-hero-sub">carregando sinais…</div>
+          <div class="ial-hero-meta" id="ial-hero-meta">—</div>
+        </div>
+        <div class="ial-ring" id="ial-ring">
+          <svg viewBox="0 0 200 200">
+            <circle class="ial-ring-bg" cx="100" cy="100" r="90"/>
+            <circle class="ial-ring-fg" id="ial-ring-fg" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="565.48"/>
+          </svg>
+          <div class="ial-ring-core">
+            <div class="ial-ring-num" id="ial-ring-num">—</div>
+            <div class="ial-ring-lbl">sinais</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ial-stats">
+      <div class="ial-stat" id="ial-stat-total">
+        <div class="ial-stat-lbl">Total de sinais</div>
+        <div class="ial-stat-val" id="ial-kpi-total">—</div>
+        <div class="ial-stat-sub" id="ial-kpi-ts">—</div>
+      </div>
+      <div class="ial-stat ial-stat-crit">
+        <div class="ial-stat-lbl">Críticos</div>
+        <div class="ial-stat-val ial-v-crit" id="ial-kpi-crit">—</div>
+        <div class="ial-stat-sub">ação imediata</div>
+      </div>
+      <div class="ial-stat ial-stat-warn">
+        <div class="ial-stat-lbl">Alertas</div>
+        <div class="ial-stat-val ial-v-warn" id="ial-kpi-warn">—</div>
+        <div class="ial-stat-sub">acompanhar</div>
+      </div>
+      <div class="ial-stat">
+        <div class="ial-stat-lbl">Status</div>
+        <div class="ial-stat-val" id="ial-kpi-status">—</div>
+        <div class="ial-stat-sub" id="ial-kpi-status-sub">panorama atual</div>
+      </div>
+    </div>
+    <div id="ial-cards"></div>
+  </div>
+</div>
 
 <!-- MODAL PLANO DE AÇÃO -->
 <div id="ia-plan-overlay" class="ia-plan-overlay" style="display:none">
@@ -5890,11 +5959,12 @@ function parseR(rows){
     var cliNome=C.cli_nome?String(r[C.cli_nome]||'').trim():'';
     var fn=C.pnome?String(r[C.pnome]||'').trim():'',ln=C.unome?String(r[C.unome]||'').trim():'';
     var at=(fn+' '+ln).trim()||(C.atend?String(r[C.atend]||'').trim():'')||'—';
-    var sv=C.servico?String(r[C.servico]||'').split('::').pop().trim()||'Outros':'Outros';
+    var svRaw=C.servico?String(r[C.servico]||'').trim():'';
+    var sv=svRaw?(svRaw.split('::').pop().trim()||'Outros'):'Outros';
     var solH=(sm&&!isNaN(sm))?Math.round(sm/60*10)/10:null;
     var crD=(cr&&!isNaN(cr))?cr:null, feD=(fe&&!isNaN(fe))?fe:null;
     var solHbh=crD&&feD?calcBusinessHoursH(crD,feD):null;
-    return{num:C.num?String(r[C.num]||'#'+(i+1)):'#'+(i+1),criado:crD,fechado:feD,estado:EM2[eR]||eR||'Aberto',prior:PM2[pR]||pR||'Normal',atend:at,cli_id:cid,cli_nome:cliNome,assunto:C.assunto?String(r[C.assunto]||'—').slice(0,70):'—',servico:sv,fila:C.fila?String(r[C.fila]||'').trim().toUpperCase():'',resp_min:(rm&&!isNaN(rm))?rm:null,sol_h:solH,sol_h_bh:solHbh};
+    return{num:C.num?String(r[C.num]||'#'+(i+1)):'#'+(i+1),criado:crD,fechado:feD,estado:EM2[eR]||eR||'Aberto',prior:PM2[pR]||pR||'Normal',atend:at,cli_id:cid,cli_nome:cliNome,assunto:C.assunto?String(r[C.assunto]||'—').slice(0,70):'—',servico:sv,servico_full:svRaw,fila:C.fila?String(r[C.fila]||'').trim().toUpperCase():'',resp_min:(rm&&!isNaN(rm))?rm:null,sol_h:solH,sol_h_bh:solHbh};
   });
 }
 
@@ -12258,13 +12328,25 @@ function computeInsights(){
   var solP90    = op.sol_p90!=null ? op.sol_p90 : null;
   var autoClosed= op.auto_closed!=null ? op.auto_closed : 0;
   var slaSample = (op.sla && op.sla.sample_size) ? op.sla.sample_size : 0;
-  // criticos do escopo: usa op.criticos quando vier (range mode), senão OP global
-  // Antes: criticos sempre vinha de OP global, ignorando filtros.
-  var criticosScope = (op.criticos && op.criticos.length>=0) ? op.criticos : criticos;
+  // P3 fix: críticos só vêm do escopo. Antes o fallback p/ OP global poluía
+  // mês passado com tickets críticos atuais. Agora: filtro ativo → escopo;
+  // sem filtro (activeMonth==='all' e sem fila/cliente) → global é OK.
+  var hasFiltroAtivo = (typeof activeMonth!=='undefined' && activeMonth!=='all') ||
+                       (typeof activeRangeStart!=='undefined' && activeRangeStart) ||
+                       (typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all') ||
+                       (typeof activeCliente!=='undefined' && !!activeCliente);
+  var criticosScope;
+  if(op.criticos && op.criticos.length>0) criticosScope = op.criticos;
+  else if(!hasFiltroAtivo) criticosScope = criticos;
+  else criticosScope = []; // filtro ativo + escopo vazio → sem aging, sem fallback global
 
   // Aging — usa criticosScope (respeita filtro quando disponível)
   var age30p=0;
   criticosScope.forEach(function(c){var m=String(c.idade||'').match(/(\d+)/);if(m&&parseInt(m[1])>30)age30p++;});
+
+  // P5 helper: 'Aguardando Cliente' só faz sentido como alerta no modo AO VIVO.
+  // Em janela histórica (mês passado / range), o estado do snapshot pode ter mudado.
+  var _isLiveScope = (typeof _shouldShowLive==='function') ? _shouldShowLive() : !hasFiltroAtivo;
 
   // Health score unificado (operacional)
   var healthScore=calcUnifiedScore({total:total,fechados:fechados,abertos:abertos,resp_med:respMed,solucao_med_h:solMed,estados:estado,prior:prior});
@@ -12375,7 +12457,9 @@ function computeInsights(){
     else if(d.resp_med&&d.resp_med>30)riscos.push({titulo:'1ª resposta acima da meta',desc:d.resp_med+' min médio',nivel:'medium',confianca:75});
     if(d.solucao_med_h&&d.solucao_med_h>72)riscos.push({titulo:'Tempo de solução crítico',desc:d.solucao_med_h+'h médio para este cliente',nivel:'high',confianca:87});
     var aci=(d.estados&&d.estados['Aguardando Cliente'])||0;
-    if(aci>3)riscos.push({titulo:aci+' chamados aguardando cliente',desc:'Risco de aging acumulado se cliente não responder',nivel:'medium',confianca:72});
+    // P5: 'Aguardando Cliente' só dispara alerta em modo AO VIVO. Em janela
+    // histórica o estado pode ter mudado e não refletir realidade atual.
+    if(aci>3 && _isLiveScope)riscos.push({titulo:aci+' chamados aguardando cliente',desc:'Risco de aging acumulado se cliente não responder',nivel:'medium',confianca:72});
     riscosClientes.push({cliente:d.nome,narrativa:narr,riscos:riscos});
   });
 
@@ -12393,16 +12477,28 @@ function computeInsights(){
     else if(sc<70){narr='Cliente requer atenção. Indicadores que precisam ser endereçados antes da próxima reunião.';prox='Próximos 3 dias — call de alinhamento';tom='Transparente — compartilhar métricas e melhorias previstas';prio='🟡 Atenção';}
     else if(sc<85){narr='Cliente com boa performance. Oportunidade de reforçar valor entregue e abrir espaço para expansão.';prox='Próximos 7 dias — check-in de rotina';tom='Consultivo — explorar novas necessidades';prio='🔵 Regular';}
     else{narr='Excelente performance. '+tc+'% de resolução, resposta rápida. Momento ideal para renovação ou upsell.';prox='Próximos 15 dias — reunião de resultados';tom='Celebratório e estratégico — apresentar resultados, propor expansão';prio='🟢 Saudável';}
-    if(aci>3)narr+=' '+aci+' chamados aguardando retorno — lembrar durante o contato.';
+    if(aci>3 && _isLiveScope)narr+=' '+aci+' chamados aguardando retorno — lembrar durante o contato.';
     csInsights.push({cliente:d.nome,narrativa:narr,proximo_contato:prox,tom_sugerido:tom,prioridade:prio});
   });
+
+  // ── PADRÕES POR ÁREA (motor svc::area::sub) ──────────────
+  var areas = (typeof buildAreasReport==='function') ? buildAreasReport() : [];
 
   AI_DATA={
     generated_at:now,
     resumo_gestao:{kpis:kpis,narrativa:narrativa,risco_principal:riscoPrincipal,oportunidade:oportunidade,previsao:previsao},
     riscos_operacionais:riscosOp,
     riscos_clientes:riscosClientes,
-    cs_insights:csInsights
+    cs_insights:csInsights,
+    areas:areas,
+    scope:{
+      mes:(typeof activeMonth!=='undefined')?activeMonth:'all',
+      fila:(typeof activeFilaOP!=='undefined')?activeFilaOP:'all',
+      cliente:(typeof activeCliente!=='undefined')?activeCliente:null,
+      range_start:(typeof activeRangeStart!=='undefined')?activeRangeStart:null,
+      range_end:(typeof activeRangeEnd!=='undefined')?activeRangeEnd:null,
+      live:_isLiveScope
+    }
   };
 
   // Atualiza badge da topbar
@@ -12545,6 +12641,119 @@ function renderIACS(){
     H+='</div>';
   });
   el.innerHTML=H;
+}
+
+// ════════════════════════════════════════════════════════════
+// MOTOR DE CLASSIFICAÇÃO POR ÁREA (substitui motor de tokens)
+// ════════════════════════════════════════════════════════════
+// Usa o campo `servico` do ticket (hierárquico: Macro::Modulo::Area)
+// para agrupar chamados por área de domínio (Fiscal, Contabilidade, etc).
+// Cobertura no histórico: 99.7% (apenas 8 de 2329 tickets sem servico).
+
+var _AREA_SYNS = {
+  'rh (recursos humanos)':'RH',
+  'sistema - performance rotinas':'Performance',
+  '(gwms) operacional':'Operacional',
+  '(gwms) tecnologia':'Tecnologia',
+  'melhorias (novos desenvolvimentos ou melhorias)':'Melhorias',
+  'monitoramento & observabilidade (gwms)':'Monitoramento',
+  'serviço de sustentação groundwork':'Sustentação Geral'
+};
+var _MACRO_SYNS = {
+  'banco de horas':'BH',
+  'serviço de sustentação groundwork':'Sustentação',
+  'monitoramento & observabilidade (gwms)':'GWMS'
+};
+
+function classifyArea(servico){
+  if(!servico) return {macro:'Outros', area:'Outros'};
+  var parts = String(servico).split('::').map(function(p){return p.trim();}).filter(Boolean);
+  if(!parts.length) return {macro:'Outros', area:'Outros'};
+  var macro = _MACRO_SYNS[parts[0].toLowerCase()] || parts[0];
+  var raw = parts[parts.length-1];
+  var area = _AREA_SYNS[raw.toLowerCase()] || raw;
+  return {macro:macro, area:area};
+}
+
+function normalizeSubject(s){
+  if(!s) return '';
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/\d+/g,'')
+    .replace(/[^a-z\s]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+// Top assuntos REAIS dentro de um conjunto de tickets (não tokens, não bigramas).
+// Agrupa por assunto normalizado; retorna até `limit` itens com 2+ ocorrências,
+// preservando o assunto original mais frequente como rótulo.
+function topPatternsInArea(tickets, limit){
+  limit = limit || 5;
+  var groups = {};
+  tickets.forEach(function(t){
+    var raw = (t.assunto||'').trim();
+    if(!raw || raw==='—') return;
+    var key = normalizeSubject(raw);
+    if(!key) return;
+    if(!groups[key]) groups[key] = {key:key, count:0, open:0, closed:0, samples:{}, tickets:[]};
+    groups[key].count++;
+    if(isAb(t.estado)) groups[key].open++;
+    else if(isFe(t.estado)) groups[key].closed++;
+    groups[key].samples[raw] = (groups[key].samples[raw]||0)+1;
+    groups[key].tickets.push(t);
+  });
+  var arr = Object.values(groups);
+  // só padrões reais (2+); se nenhum, devolve os assuntos únicos mais recentes
+  var rec = arr.filter(function(g){return g.count>=2;});
+  if(!rec.length){
+    rec = arr.slice().sort(function(a,b){
+      var ta=(a.tickets[0]&&a.tickets[0].criado)?a.tickets[0].criado:0;
+      var tb=(b.tickets[0]&&b.tickets[0].criado)?b.tickets[0].criado:0;
+      return tb-ta;
+    }).slice(0,limit);
+  } else {
+    rec.sort(function(a,b){return b.count-a.count;});
+    rec = rec.slice(0,limit);
+  }
+  // escolhe o sample mais frequente como label
+  rec.forEach(function(g){
+    var best=null,bestN=0;
+    Object.keys(g.samples).forEach(function(s){
+      if(g.samples[s]>bestN){bestN=g.samples[s];best=s;}
+    });
+    g.label = best || g.key;
+  });
+  return rec;
+}
+
+// Constrói o relatório de áreas para o escopo ativo.
+// Aplica activeMonth/activeRange + activeFilaOP + activeCliente já consolidados.
+function buildAreasReport(){
+  if(typeof RAW_DATA==='undefined'||!RAW_DATA||!RAW_DATA.length) return [];
+  var scoped = RAW_DATA.filter(function(t){
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return false;
+    if(typeof activeCliente!=='undefined' && activeCliente && t.cli_id!==activeCliente) return false;
+    return true;
+  });
+  if(!scoped.length) return [];
+  var byArea = {};
+  scoped.forEach(function(t){
+    // servico_full preserva hierarquia completa (Macro::Modulo::Area).
+    // servico (legacy) tem só o último nível por causa do split.pop em _processData.
+    var c = classifyArea(t.servico_full || t.servico);
+    var key = c.macro + ' :: ' + c.area;
+    if(!byArea[key]) byArea[key]={macro:c.macro, area:c.area, total:0, abertos:0, fechados:0, tickets:[]};
+    byArea[key].total++;
+    if(isAb(t.estado)) byArea[key].abertos++;
+    else if(isFe(t.estado)) byArea[key].fechados++;
+    byArea[key].tickets.push(t);
+  });
+  var rows = Object.values(byArea).sort(function(a,b){return b.total-a.total;});
+  // anexa top padrões por área (calculado on-demand para não estourar tempo)
+  rows.forEach(function(r){ r.patterns = topPatternsInArea(r.tickets, 5); });
+  return rows;
 }
 
 function buildRecurringDataForTickets(tickets, mode) {
@@ -12980,22 +13189,215 @@ function renderExecutiveReport() {
     +'<pre id="exec-report-text" style="font-family:var(--mono);font-size:11.5px;line-height:1.8;color:var(--sub);white-space:pre-wrap;word-break:break-word;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin:0">'+escaped+'</pre>';
 }
 
+// ════════════════════════════════════════════════════════════
+// Layout linear da aba IA (redesign 2026-05-05)
+// ════════════════════════════════════════════════════════════
+function scrollToIA(id, el){
+  var sec = document.getElementById(id);
+  if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('#nav-ia .nav').forEach(function(n){n.classList.remove('on');});
+  if(el) el.classList.add('on');
+}
+
+function openIALive(){
+  var ov = document.getElementById('ial-drawer-overlay');
+  var dr = document.getElementById('ial-drawer');
+  if(ov) ov.classList.add('open');
+  if(dr) dr.classList.add('open');
+  if(typeof fetchIALive==='function') fetchIALive();
+}
+function closeIALive(){
+  var ov = document.getElementById('ial-drawer-overlay');
+  var dr = document.getElementById('ial-drawer');
+  if(ov) ov.classList.remove('open');
+  if(dr) dr.classList.remove('open');
+}
+
+// Cabeçalho de escopo dinâmico — mostra Mês · Fila · Cliente · Modo
+function renderIAScopeStrip(){
+  var el = document.getElementById('ia-scope-strip');
+  if(!el) return;
+  if(!AI_DATA || !AI_DATA.scope){ el.innerHTML='<span class="scope-mute">Importe dados</span>'; return; }
+  var s = AI_DATA.scope;
+  var parts = [];
+  // Modo (live vs histórico)
+  parts.push('<span class="scope-chip '+(s.live?'scope-chip-live':'scope-chip-hist')+'">'+(s.live?'● AO VIVO':'📅 HISTÓRICO')+'</span>');
+  // Mês ou range
+  if(s.range_start && s.range_end){
+    var fmt=function(d){return d?new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';};
+    parts.push('<span class="scope-chip">📆 '+fmt(s.range_start)+' → '+fmt(s.range_end)+'</span>');
+  } else if(s.mes && s.mes!=='all'){
+    var mn={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+    var p=String(s.mes).split('-');
+    parts.push('<span class="scope-chip">📆 '+(mn[p[1]]||p[1])+'/'+(p[0]||'').slice(2)+'</span>');
+  } else {
+    parts.push('<span class="scope-chip" style="background:rgba(140,148,168,.14);color:var(--muted)">📆 todo período</span>');
+  }
+  // Fila
+  if(s.fila && s.fila!=='all') parts.push('<span class="scope-chip" style="background:rgba(34,211,238,.14);color:#67e8f9">⚙️ '+s.fila+'</span>');
+  // Cliente
+  if(s.cliente){
+    var nome = (typeof EMPRESAS!=='undefined' && EMPRESAS[s.cliente]) ? (EMPRESAS[s.cliente].nome||s.cliente) : s.cliente;
+    parts.push('<span class="scope-chip" style="background:rgba(255,112,36,.14);color:#ffa46e">🏢 '+nome+'</span>');
+  }
+  // Total
+  var op = (typeof getActiveOP==='function')?getActiveOP():null;
+  if(op) parts.push('<span class="scope-mute">'+op.total+' chamados</span>');
+  el.innerHTML = parts.join(' ');
+}
+
+// Bloco 2: Padrões por Área — barras horizontais clicáveis
+function renderIAAreas(){
+  var el = document.getElementById('ia-areas-content');
+  if(!el) return;
+  if(!AI_DATA || !AI_DATA.areas || !AI_DATA.areas.length){ el.innerHTML = aiNoData(); return; }
+  var areas = AI_DATA.areas;
+  var totalScope = areas.reduce(function(s,a){return s+a.total;},0);
+  var maxTotal = areas[0]?areas[0].total:1;
+  // limita a 12 áreas no display principal (se houver cauda longa)
+  var top = areas.slice(0,12);
+  var H = '<div class="ia-areas-list">';
+  top.forEach(function(a, idx){
+    var pct = totalScope>0 ? Math.round(a.total/totalScope*100) : 0;
+    var barW = Math.round(a.total/maxTotal*100);
+    var safeKey = (a.macro+'-'+a.area).replace(/[^a-z0-9]/gi,'-').toLowerCase();
+    H += '<div class="ia-area-row" data-key="'+safeKey+'" onclick="this.classList.toggle(\'expanded\')">';
+    H += '<div class="ia-area-head">';
+    H += '<span class="ia-area-arrow">▶</span>';
+    H += '<span class="ia-area-name">'+a.area+'</span>';
+    H += '<span class="ia-area-macro">'+a.macro+'</span>';
+    H += '<span class="ia-area-counts">';
+    H += '<span class="ia-area-count-total">'+a.total+'</span>';
+    H += '<span class="ia-area-count-pct">'+pct+'%</span>';
+    if(a.abertos>0) H += '<span class="ia-area-count-open">'+a.abertos+' aberto'+(a.abertos!==1?'s':'')+'</span>';
+    if(a.fechados>0) H += '<span class="ia-area-count-closed">'+a.fechados+' fechado'+(a.fechados!==1?'s':'')+'</span>';
+    H += '</span>';
+    H += '</div>';
+    H += '<div class="ia-area-bar-wrap"><div class="ia-area-bar-fill" style="width:'+barW+'%"></div></div>';
+    // Detalhe (expansão): top assuntos reais da área
+    H += '<div class="ia-area-detail">';
+    if(a.patterns && a.patterns.length){
+      H += '<div class="ia-area-detail-title">Top assuntos · '+a.patterns.length+' padr'+(a.patterns.length>1?'ões':'ão')+'</div>';
+      a.patterns.forEach(function(p){
+        var lbl = (p.label||p.key||'').slice(0,90);
+        H += '<div class="ia-pattern-row">';
+        H += '<span class="ia-pattern-label" title="'+(p.label||'')+'">'+lbl+'</span>';
+        H += '<span class="ia-pattern-status">';
+        if(p.open>0) H += '<span class="ps-open">'+p.open+' aberto'+(p.open!==1?'s':'')+'</span>';
+        if(p.closed>0) H += '<span class="ps-closed">'+p.closed+' fechado'+(p.closed!==1?'s':'')+'</span>';
+        H += '</span>';
+        H += '<span class="ia-pattern-count">'+p.count+'</span>';
+        H += '</div>';
+      });
+    } else {
+      H += '<div class="ia-area-detail-title" style="color:var(--muted)">Sem padrões repetidos nessa área (cada chamado é único)</div>';
+    }
+    H += '</div>'; // /detail
+    H += '</div>'; // /row
+  });
+  H += '</div>';
+  // cauda longa
+  if(areas.length>12){
+    var rest = areas.slice(12);
+    var restTotal = rest.reduce(function(s,a){return s+a.total;},0);
+    H += '<div style="margin-top:10px;font-size:10.5px;color:var(--muted);font-family:var(--mono)">+ '+rest.length+' áreas com '+restTotal+' chamados (cauda longa)</div>';
+  }
+  el.innerHTML = H;
+}
+
+// Bloco 3: Riscos & Ações — funde operacionais + cliente + CS
+function renderIARiscosUnified(){
+  var el = document.getElementById('ia-riscos-content');
+  if(!el) return;
+  if(!AI_DATA){ el.innerHTML = aiNoData(); return; }
+  var unified = [];
+  var ICONS = {high:'🔴', medium:'🟡', low:'🟢'};
+  var LVL_ORDER = {high:0, alto:0, medium:1, medio:1, low:2, baixo:2};
+  // Operacionais
+  (AI_DATA.riscos_operacionais||[]).forEach(function(r){
+    unified.push({
+      lvl: String(r.nivel||'low').toLowerCase(),
+      title: r.titulo,
+      desc: r.desc,
+      source: 'Operacional',
+      action: _suggestAction('op', r)
+    });
+  });
+  // Por cliente — só se houver riscos
+  (AI_DATA.riscos_clientes||[]).forEach(function(rc){
+    (rc.riscos||[]).forEach(function(r){
+      unified.push({
+        lvl: String(r.nivel||'low').toLowerCase(),
+        title: r.titulo,
+        desc: r.desc + ' · ' + rc.cliente,
+        source: 'Cliente: '+rc.cliente,
+        action: _suggestAction('cli', r, rc.cliente)
+      });
+    });
+  });
+  // CS Insights — usa prioridade como nível
+  (AI_DATA.cs_insights||[]).forEach(function(cs){
+    var prio = (cs.prioridade||'').toLowerCase();
+    var lvl = prio.indexOf('crítico')!==-1?'high':(prio.indexOf('atenção')!==-1?'medium':'low');
+    if(lvl==='low') return; // só mostra CS quando exige ação
+    unified.push({
+      lvl: lvl,
+      title: cs.cliente+' · '+(cs.prioridade||'CS'),
+      desc: cs.narrativa,
+      source: 'Customer Success',
+      action: cs.proximo_contato || cs.tom_sugerido || ''
+    });
+  });
+  unified.sort(function(a,b){
+    var oa = LVL_ORDER[a.lvl]==null?9:LVL_ORDER[a.lvl];
+    var ob = LVL_ORDER[b.lvl]==null?9:LVL_ORDER[b.lvl];
+    return oa-ob;
+  });
+  if(!unified.length){ el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">✓ Nenhum risco crítico no escopo atual</div>'; return; }
+  var H = '<div class="ia-risk-unified">';
+  unified.forEach(function(r){
+    var lvlNorm = (r.lvl==='alto'||r.lvl==='high')?'high':((r.lvl==='medio'||r.lvl==='medium')?'medium':'low');
+    H += '<div class="ia-risk-row lvl-'+lvlNorm+'">';
+    H += '<div class="ia-risk-icon">'+(ICONS[lvlNorm]||'🟢')+'</div>';
+    H += '<div class="ia-risk-body">';
+    H += '<div class="ia-risk-title">'+r.title+'</div>';
+    H += '<div class="ia-risk-desc">'+r.desc+'</div>';
+    H += '<div class="ia-risk-source">'+r.source+'</div>';
+    if(r.action) H += '<div class="ia-risk-action">'+r.action+'</div>';
+    H += '</div>';
+    H += '</div>';
+  });
+  H += '</div>';
+  el.innerHTML = H;
+}
+
+function _suggestAction(kind, r, cliNome){
+  var t = (r.titulo||'').toLowerCase();
+  var d = (r.desc||'').toLowerCase();
+  if(t.indexOf('sla')!==-1) return 'Revisar fila com mais aging e priorizar resoluções nas próximas 48h.';
+  if(t.indexOf('aguardando cliente')!==-1) return 'Disparar follow-up com '+(cliNome||'cliente')+' — fechamentos rápidos disponíveis.';
+  if(t.indexOf('aguardando')!==-1 && t.indexOf('interna')!==-1) return 'Reunir time interno para destravar dependências.';
+  if(t.indexOf('muito alta')!==-1 || t.indexOf('prioridade')!==-1) return 'Reavaliar classificação de prioridade — pode estar inflada.';
+  if(t.indexOf('1ª resposta')!==-1 || t.indexOf('1a resposta')!==-1 || t.indexOf('resposta')!==-1) return 'Reforçar plantão na primeira hora do turno.';
+  if(t.indexOf('tempo de solução')!==-1) return 'Investigar gargalos: alocação, especialização, dependências externas.';
+  if(t.indexOf('volume cresc')!==-1) return 'Monitorar capacidade da equipe — considerar reforço temporário.';
+  if(t.indexOf('antigos')!==-1 || t.indexOf('aging')!==-1) return 'Triagem dedicada para chamados +30 dias — fechar ou cancelar.';
+  if(t.indexOf('em aberto')!==-1) return 'Revisar pipeline de fechamento — identificar travamentos.';
+  if(kind==='cli') return 'Agendar reunião de alinhamento com '+(cliNome||'cliente')+' nas próximas 72h.';
+  return '';
+}
+
+// Render orchestrator
 function renderIA(){
+  renderIAScopeStrip();
   renderIAResumo();
   try{if(typeof renderAdvancedDetections==='function')renderAdvancedDetections();}catch(e){console.warn('advDetect:',e);}
-  renderIAOp();
-  renderIACli();
-  renderIACS();
-  renderIARecurring();
+  renderIAAreas();
+  renderIARiscosUnified();
   renderExecutiveReport();
-  // atualiza nav active state
+  // sub-nav active state
   document.querySelectorAll('#nav-ia .nav').forEach(function(n){n.classList.remove('on');});
   var first=document.getElementById('nav-ia-resumo');if(first)first.classList.add('on');
-  // mostra sec ativa
-  ['ia-resumo','ia-op','ia-cli','ia-cs','ia-ri'].forEach(function(s){
-    var sec=document.getElementById(s);if(sec)sec.classList.remove('on');
-  });
-  var active=document.getElementById('ia-resumo');if(active)active.classList.add('on');
   // subtitle
   var sub=document.getElementById('ia-subtitle');
   if(sub&&AI_DATA&&AI_DATA.generated_at){
