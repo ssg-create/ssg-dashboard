@@ -30,6 +30,9 @@ DATASOURCE_UID = "PIz1Yx14k"  # MySQL:otrs
 # painel em Abr/26). Agora usamos REGEXP `^(FILA)(::|$)` para pegar fila raiz +
 # qualquer sub-fila.
 FILAS = ("DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELHORIAS")
+# NOTA: filas NOC, MONITORAMENTO e TECNOLOGIA foram MIGRADAS para GWMS
+# (não são filas ativas, contém apenas histórico legacy pré-migração).
+# Fila LIXO é triagem de spam — não entra no fluxo operacional.
 FILAS_SQL = ",".join(f"'{f}'" for f in FILAS)
 # REGEXP: ^(DATASUL|DBA|GWMS|...)(::|$) — casa fila raiz E qualquer sub-fila
 FILAS_REGEX = "^(" + "|".join(FILAS) + ")(::|$)"
@@ -239,8 +242,14 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     LEFT JOIN customer_user cu ON cu.login          = t.customer_user_id
     WHERE {FILAS_WHERE}
       AND (
+        -- Recém criado na janela
         t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+        -- OU recém modificado na janela (fechamentos, atualizações)
         OR t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+        -- OU ainda ativo (não fechado), independente de quando criado.
+        -- Garante paridade com OTRS Report que mostra tickets vivos
+        -- mesmo sem atividade recente.
+        OR t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       )
     ORDER BY t.create_time DESC
     LIMIT 10000
@@ -335,37 +344,17 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     return query_mysql(session, sql)
 
 
-def q_diagnostic_filas(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO: lista TODAS as filas (sem filtro REGEX) com tickets nos últimos
-    4 meses. Permite identificar filas-raiz que faltam no whitelist FILAS.
-    Não usa em produção, só pra investigação do gap AutoZone (118 OTRS vs 73 painel)."""
-    sql = f"""
-    SELECT
-      q.name AS fila,
-      COUNT(*) AS total,
-      SUM(CASE WHEN t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS criados_4m,
-      SUM(CASE WHEN t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS modif_4m,
-      SUM(CASE WHEN t.customer_id = 'AUTOZONE' AND t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS autozone_4m,
-      SUM(CASE WHEN t.customer_id = 'GROUNDWORK' AND t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS groundwork_4m
-    FROM ticket t
-    JOIN queue q ON t.queue_id = q.id
-    WHERE t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
-    GROUP BY q.name
-    ORDER BY total DESC
-    LIMIT 100
-    """
-    return query_mysql(session, sql)
-
-
-def q_diagnostic_autozone_abr(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO: lista TODOS os tickets AutoZone com atividade em abril/26
-    (sem filtro de fila). Inclui fila e estado para validação 1:1 com OTRS Report."""
+def q_diagnostic_autozone_v2(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO V2: tickets AutoZone com atividade em abril/26 — usando COALESCE
+    com customer_user JOIN (cobre tickets com t.customer_id = email mas
+    cu.customer_id = AUTOZONE). Sem filtro de fila."""
     sql = """
     SELECT
       t.tn AS num,
       q.name AS fila,
       ts.name AS estado,
-      t.customer_id AS cli_id,
+      t.customer_id AS t_customer_id,
+      cu.customer_id AS cu_customer_id,
       t.customer_user_id AS cli_user,
       DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s') AS criado,
       DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s') AS modificado,
@@ -376,13 +365,39 @@ def q_diagnostic_autozone_abr(session: requests.Session) -> list[dict]:
     FROM ticket t
     JOIN queue q ON t.queue_id = q.id
     JOIN ticket_state ts ON t.ticket_state_id = ts.id
-    WHERE t.customer_id = 'AUTOZONE'
+    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
+    WHERE COALESCE(NULLIF(cu.customer_id, ''), t.customer_id) = 'AUTOZONE'
+      AND t.create_time < '2026-05-01'
       AND (
-        (t.create_time >= '2026-04-01' AND t.create_time < '2026-05-01')
-        OR (t.change_time >= '2026-04-01' AND t.change_time < '2026-05-01')
+        t.create_time >= '2026-04-01'
+        OR t.change_time >= '2026-04-01'
+        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
       )
     ORDER BY t.change_time DESC
     LIMIT 500
+    """
+    return query_mysql(session, sql)
+
+
+def q_diagnostic_az_breakdown(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO: contagem AutoZone abril por estado, casando com o OTRS Report."""
+    sql = """
+    SELECT
+      ts.name AS estado,
+      COUNT(*) AS total,
+      SUM(CASE WHEN t.create_time >= '2026-04-01' AND t.create_time < '2026-05-01' THEN 1 ELSE 0 END) AS criados_abr,
+      SUM(CASE WHEN t.change_time >= '2026-04-01' AND t.change_time < '2026-05-01' THEN 1 ELSE 0 END) AS mod_abr
+    FROM ticket t
+    JOIN ticket_state ts ON t.ticket_state_id = ts.id
+    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
+    WHERE COALESCE(NULLIF(cu.customer_id, ''), t.customer_id) = 'AUTOZONE'
+      AND t.create_time < '2026-05-01'
+      AND (
+        t.change_time >= '2026-04-01'
+        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
+      )
+    GROUP BY ts.name
+    ORDER BY total DESC
     """
     return query_mysql(session, sql)
 
@@ -473,8 +488,8 @@ def main() -> None:
         ("utilizacao.json",        q_utilizacao,        None),
         ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
-        ("_diag_filas.json",       q_diagnostic_filas,   {"obs": "diagnóstico: todas as filas com atividade em 4 meses"}),
-        ("_diag_autozone_abr.json", q_diagnostic_autozone_abr, {"obs": "diagnóstico: tickets AutoZone abril completos"}),
+        ("_diag_az_v2.json",       q_diagnostic_autozone_v2, {"obs": "diag v2: AutoZone abr c/ COALESCE JOIN"}),
+        ("_diag_az_breakdown.json", q_diagnostic_az_breakdown, {"obs": "diag: AutoZone abr breakdown por estado (paridade OTRS Report)"}),
     ]
 
     collected = {}
