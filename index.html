@@ -5698,7 +5698,7 @@ function _cliScopeStrip(){
   chips.push('<span class="scope-chip '+(hist?'scope-chip-hist':'scope-chip-live')+'">'+(hist?'📅 Histórico':'📡 Atual')+'</span>');
   chips.push('<span class="scope-chip">'+(typeof _csScopeLabel==='function'?_csScopeLabel():'todo período')+'</span>');
   if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
-    chips.push('<span class="scope-chip">Fila: '+activeFilaOP+'</span>');
+    chips.push('<span class="scope-chip">Fila: '+_displayFila(activeFilaOP)+'</span>');
   }
   if(key && EMPRESAS[key]){
     chips.push('<span class="scope-chip scope-chip-cli">'+(EMPRESAS[key].nome||key)+'</span>');
@@ -5788,7 +5788,7 @@ function renderPainel(d){
     var filasKeys=Object.keys(d.filas).filter(function(f){return f&&f!=='LIXO';}).sort();
     if(filasKeys.length>1){
       filasBtns.innerHTML='<button onclick="cliFilaFiltro(\'all\',this)" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid var(--teal2);background:var(--teal2);color:#fff;cursor:pointer;font-family:var(--font)">Todas</button>'
-        +filasKeys.map(function(f){return'<button onclick="cliFilaFiltro(\''+f+'\',this)" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-family:var(--font)">'+f+' <span style="opacity:.6">'+d.filas[f]+'</span></button>';}).join('');
+        +filasKeys.map(function(f){return'<button onclick="cliFilaFiltro(\''+f+'\',this)" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid var(--border);background:transparent;color:var(--sub);cursor:pointer;font-family:var(--font)">'+_displayFila(f)+' <span style="opacity:.6">'+d.filas[f]+'</span></button>';}).join('');
       filasBtns._d=d;
     } else { filasBtns.innerHTML=''; }
   }
@@ -9154,7 +9154,7 @@ function buildFilaBtns(containerId, activeFila, onClickFn) {
   var btns = '<button data-fila="all" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(activeFila==='all'?'var(--blue2)':'var(--border)')+';background:'+(activeFila==='all'?'var(--blue2)':'transparent')+';color:'+(activeFila==='all'?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">Todas</button>';
   listaFiias.forEach(function(f) {
     var on = activeFila === f;
-    btns += '<button data-fila="'+f+'" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(on?'var(--blue2)':'var(--border)')+';background:'+(on?'var(--blue2)':'transparent')+';color:'+(on?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">'+f+'</button>';
+    btns += '<button data-fila="'+f+'" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(on?'var(--blue2)':'var(--border)')+';background:'+(on?'var(--blue2)':'transparent')+';color:'+(on?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">'+_displayFila(f)+'</button>';
   });
   el.innerHTML = btns;
   el.querySelectorAll('button').forEach(function(b) {
@@ -9889,13 +9889,43 @@ function _shouldShowLive(){
   var mesCorrente=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
   return activeMonth===mesCorrente;
 }
+// Helper: mapeia typos comuns vindos do OTRS (fonte de dados) para display amigável.
+// IMPORTANTE: usar SOMENTE no que é exibido — NÃO em comparações/filtros.
+// Filtros continuam usando os keys originais (d.fila === activeFilaOP) para não quebrar.
+var _FILA_DISPLAY_MAP = {
+  'INFRAESTUTURA': 'Infraestrutura',
+  'DBA': 'DBA',
+  'DATASUL': 'Datasul',
+  'GWMS': 'GWMS',
+  'PROTHEUS': 'Protheus',
+  'SSG': 'SSG',
+  'SSG-MELHORIAS': 'SSG · Melhorias'
+};
+function _displayFila(name){
+  if(!name) return name;
+  if(name === 'all') return 'Todas';
+  return _FILA_DISPLAY_MAP[name] || name;
+}
+// Helper centralizado: formata range "start-end" incluindo ano quando relevante.
+// - Ambas datas no ano corrente: "31 mai–29 jun" (compacto)
+// - Mesmo ano mas != atual: "31 mai–29 jun/25" (ano só no fim)
+// - Anos diferentes: "31 dez/25–29 jan/26" (ano em ambos)
+function _fmtRangeLabel(start, end){
+  if(!start || !end) return '';
+  var fmtNoYr = function(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','');};
+  var fmtYr   = function(d){return fmtNoYr(d)+'/'+String(d.getFullYear()).slice(2);};
+  var ys = start.getFullYear(), ye = end.getFullYear();
+  var yc = new Date().getFullYear();
+  if(ys === ye && ys === yc) return fmtNoYr(start)+'–'+fmtNoYr(end);
+  if(ys === ye)              return fmtNoYr(start)+'–'+fmtYr(end);
+  return fmtYr(start)+'–'+fmtYr(end);
+}
 // Label do tag mostrado ao lado dos KPIs/heros quando em modo histórico.
 // Ex: '📅 Mar/26' / '📅 Abr/26'. Em modo live retorna ''.
 function _histLabel(){
   if(_shouldShowLive()) return '';
   if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
-    var fmt=function(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});};
-    return fmt(activeRangeStart)+'–'+fmt(activeRangeEnd);
+    return _fmtRangeLabel(activeRangeStart, activeRangeEnd);
   }
   var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   var p=String(activeMonth).split('-');
@@ -9905,8 +9935,7 @@ function _histLabel(){
 // Substitui o hardcoded 'jan–mar 2026' que ficava errado quando filtrava mês ou range.
 function _csScopeLabel(){
   if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
-    var fmt=function(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','');};
-    return fmt(activeRangeStart)+'–'+fmt(activeRangeEnd);
+    return _fmtRangeLabel(activeRangeStart, activeRangeEnd);
   }
   if(typeof activeMonth!=='undefined' && activeMonth && activeMonth!=='all'){
     return _histLabel();
@@ -13121,6 +13150,12 @@ function computeInsights(){
   // ── PADRÕES POR ÁREA (motor svc::area::sub) ──────────────
   var areas = (typeof buildAreasReport==='function') ? buildAreasReport() : [];
 
+  // AI_DATA é RECONSTRUÍDO inteiro a cada chamada de computeInsights() — que dispara
+  // sempre que filtros mudam (mês, fila, cliente, range). Isso é por design:
+  // — `areas`, `riscos_*`, `cs_insights` precisam refletir o escopo atual.
+  // — Quem consome (renderIA, gerarOportunidadesComerciais) lê AI_DATA fresh.
+  // No debug, abrir DevTools e olhar `AI_DATA.scope` para saber o filtro vigente
+  // no momento da última geração. O log abaixo aparece no console pra rastreabilidade.
   AI_DATA={
     generated_at:now,
     resumo_gestao:{kpis:kpis,narrativa:narrativa,risco_principal:riscoPrincipal,oportunidade:oportunidade,previsao:previsao},
@@ -13137,6 +13172,12 @@ function computeInsights(){
       live:_isLiveScope
     }
   };
+  // Log curto e estruturado — facilita debug ao mudar filtros sem precisar abrir AI_DATA inteiro
+  try {
+    var s = AI_DATA.scope;
+    var scopeStr = (s.live?'LIVE':'HIST')+' · mes='+s.mes+' · fila='+s.fila+(s.cliente?(' · cliente='+s.cliente):'')+(s.range_start?(' · range='+s.range_start.toISOString().slice(0,10)+'→'+s.range_end.toISOString().slice(0,10)):'');
+    console.debug('[AI_DATA] recalculado · '+scopeStr+' · areas='+(areas?areas.length:0)+' · riscos_op='+riscosOp.length+' · clientes='+csInsights.length);
+  } catch(e){}
 
   // Atualiza badge da topbar
   var badge=document.getElementById('tb-ai-badge');
@@ -14657,7 +14698,7 @@ function _acoesScopeStrip(){
   chips.push('<span class="scope-chip '+(hist?'scope-chip-hist':'scope-chip-live')+'">'+(hist?'📅 Histórico':'📡 Live')+'</span>');
   chips.push('<span class="scope-chip">'+_acoesScopeLabel()+'</span>');
   if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
-    chips.push('<span class="scope-chip">Fila: '+activeFilaOP+'</span>');
+    chips.push('<span class="scope-chip">Fila: '+_displayFila(activeFilaOP)+'</span>');
   }
   if(typeof activeCliente!=='undefined' && activeCliente){
     var nomeCli=(EMPRESAS[activeCliente]&&EMPRESAS[activeCliente].nome)||activeCliente;
