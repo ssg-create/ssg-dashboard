@@ -344,6 +344,59 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     return query_mysql(session, sql)
 
 
+def q_diagnostic_autozone_v3(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO V3: testa hipótese FINAL — OTRS Report usa o DYNAMIC FIELD
+    'C_Cliente' (campo customizado), não t.customer_id. URL evidência:
+    .../dashboard?var-gwdynamic_field_cliente=C_Cliente&var-gwclients=AUTOZONE
+
+    Conta tickets AutoZone abr/26 cruzando com dynamic_field_value."""
+    sql = """
+    SELECT
+      t.tn AS num,
+      q.name AS fila,
+      ts.name AS estado,
+      t.customer_id AS t_customer_id,
+      cu.customer_id AS cu_customer_id,
+      dfv.value_text AS c_cliente,
+      DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s') AS criado,
+      DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s') AS modificado
+    FROM ticket t
+    JOIN queue q ON t.queue_id = q.id
+    JOIN ticket_state ts ON t.ticket_state_id = ts.id
+    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
+    LEFT JOIN dynamic_field df ON df.name = 'C_Cliente'
+    LEFT JOIN dynamic_field_value dfv ON dfv.field_id = df.id AND dfv.object_id = t.id
+    WHERE dfv.value_text = 'AUTOZONE'
+      AND t.create_time < '2026-05-01'
+      AND (
+        t.change_time >= '2026-04-01'
+        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
+      )
+    ORDER BY t.change_time DESC
+    LIMIT 500
+    """
+    return query_mysql(session, sql)
+
+
+def q_diagnostic_dynamic_fields(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO: lista todos os dynamic fields existentes no OTRS para
+    confirmar que C_Cliente existe e descobrir outros campos relevantes."""
+    sql = """
+    SELECT
+      df.id,
+      df.name,
+      df.label,
+      df.field_type,
+      df.object_type,
+      COUNT(dfv.id) AS values_count
+    FROM dynamic_field df
+    LEFT JOIN dynamic_field_value dfv ON dfv.field_id = df.id
+    GROUP BY df.id, df.name, df.label, df.field_type, df.object_type
+    ORDER BY values_count DESC
+    """
+    return query_mysql(session, sql)
+
+
 def q_diagnostic_autozone_v2(session: requests.Session) -> list[dict]:
     """DIAGNÓSTICO V2: tickets AutoZone com atividade em abril/26 — usando COALESCE
     com customer_user JOIN (cobre tickets com t.customer_id = email mas
@@ -488,8 +541,8 @@ def main() -> None:
         ("utilizacao.json",        q_utilizacao,        None),
         ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
-        ("_diag_az_v2.json",       q_diagnostic_autozone_v2, {"obs": "diag v2: AutoZone abr c/ COALESCE JOIN"}),
-        ("_diag_az_breakdown.json", q_diagnostic_az_breakdown, {"obs": "diag: AutoZone abr breakdown por estado (paridade OTRS Report)"}),
+        ("_diag_az_v3.json",       q_diagnostic_autozone_v3, {"obs": "diag v3: AutoZone abr usando dynamic field C_Cliente"}),
+        ("_diag_dyn_fields.json",  q_diagnostic_dynamic_fields, {"obs": "diag: lista todos os dynamic fields do OTRS"}),
     ]
 
     collected = {}
