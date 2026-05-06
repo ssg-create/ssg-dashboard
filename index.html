@@ -1578,6 +1578,16 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .cs-tl-hero-status{font-size:38px;background:linear-gradient(135deg,#22d3ee 0%,#4f8ef7 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(34,211,238,.3))}
 .cs-csat-hero-status{font-size:38px;background:linear-gradient(135deg,#10b981 0%,#22d3ee 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(16,185,129,.3))}
 .cs-act-hero-status{font-size:38px;background:linear-gradient(135deg,#ff7024 0%,#f37633 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(255,112,36,.3))}
+/* Toggle Tabela/Matriz da Carteira */
+.cs-view-btn{padding:6px 14px;font-size:11px;font-family:var(--mono);font-weight:600;letter-spacing:.06em;background:var(--bg2);color:var(--sub);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .15s}
+.cs-view-btn:hover{background:var(--bg3);color:var(--text)}
+.cs-view-btn.on{background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(168,85,247,.08));color:#c4b5fd;border-color:rgba(168,85,247,.45)}
+/* Scope strip header CS */
+.cs-scope-strip{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 0 0;padding:5px 11px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(34,211,238,.04));border:1px solid rgba(168,85,247,.18);border-radius:999px;width:fit-content}
+.cs-scope-strip .scope-chip{padding:2px 8px;border-radius:6px;font-weight:600;background:rgba(168,85,247,.14);color:#c4b5fd}
+.cs-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
+.cs-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
+.cs-scope-strip .scope-mute{color:var(--muted)}
 [data-theme="light"] .cs-hero{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08);border-color:rgba(148,163,184,.3)}
 [data-theme="light"] .cs-hero-overview::before{background:radial-gradient(circle at 88% 25%,rgba(168,85,247,.1),transparent 52%)}
 [data-theme="light"] .cs-hero-health::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.1),transparent 52%)}
@@ -1799,13 +1809,14 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
   <div id="nav-cs" style="display:none">
     <div class="sb-head">Customer Success</div>
-    <div class="nav" id="cs-nav-overview" onclick="goSecCS('cs-overview',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Visão Geral</div>
-    <div class="nav" id="cs-nav-health" onclick="goSecCS('cs-health',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Health Score</div>
-    <div class="nav" id="cs-nav-matrix" onclick="goSecCS('cs-matrix',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>Matriz de Risco</div>
-    <div class="nav" id="cs-nav-risks" onclick="goSecCS('cs-risks',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Riscos &amp; Alertas</div>
-    <div class="nav" id="cs-nav-timeline" onclick="goSecCS('cs-timeline',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Histórico Conta</div>
+    <div class="nav" id="cs-nav-overview" onclick="goSecCS('cs-overview',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Carteira</div>
+    <div class="nav" id="cs-nav-health" onclick="goSecCS('cs-health',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Conta Detalhada</div>
+    <div class="nav" id="cs-nav-actions" onclick="goSecCS('cs-actions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Riscos &amp; Ações</div>
     <div class="nav" id="cs-nav-csat" onclick="goSecCS('cs-csat',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>CSAT Proxy</div>
-    <div class="nav" id="cs-nav-actions" onclick="goSecCS('cs-actions',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Próximas Ações</div>
+    <div class="nav" id="cs-nav-timeline" onclick="goSecCS('cs-timeline',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Histórico</div>
+    <!-- cs-nav-matrix e cs-nav-risks escondidos: matriz vira toggle dentro de Carteira; alertas migraram pra Riscos & Ações -->
+    <div class="nav" id="cs-nav-matrix" onclick="goSecCS('cs-matrix',this)" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1"/></svg>Matriz</div>
+    <div class="nav" id="cs-nav-risks" onclick="goSecCS('cs-risks',this)" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18"/></svg>Riscos</div>
 
   <!-- MONTH FILTER CS -->
   <div class="month-filter-wrap" id="mf-cs" style="display:none">
@@ -2617,11 +2628,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
   <!-- HEADER: seletor + botão PDF -->
   <div class="cs-header-strip">
-    <div class="cs-empresa-sel">
+    <div class="cs-empresa-sel" style="flex:1;min-width:0">
       <label>Conta</label>
       <select id="cs-sel-empresa" onchange="setClienteGlobal(this.value)">
         <option value="">— Selecione a conta —</option>
       </select>
+      <div id="cs-scope-strip" class="cs-scope-strip">—</div>
     </div>
     <button class="cs-export-btn" onclick="exportCSPDF()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="18"/><line x1="15" y1="15" x2="12" y2="18"/></svg>
@@ -2629,20 +2641,26 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </button>
   </div>
 
-  <!-- VISÃO GERAL -->
+  <!-- CARTEIRA (antiga Visão Geral) -->
   <div id="cs-overview" class="sec on">
-    <div class="page-header"><h1>Visão Geral da Conta</h1><p>Resumo executivo Customer Success · SSG / Groundwork</p></div>
+    <div class="page-header"><h1>Carteira</h1><p>Saúde de todos os clientes do escopo + detalhe da conta selecionada</p></div>
     <div class="page-body">
       <div class="cs-hero cs-hero-overview">
         <div class="gw-hero-grid-min">
           <div class="gw-hero-left">
-            <div class="gw-hero-tag"><span class="gw-dot" style="background:#a855f7;box-shadow:0 0 10px #a855f7;animation:ialPulse 2.4s ease-in-out infinite"></span>CUSTOMER SUCCESS · VISÃO GERAL</div>
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#a855f7;box-shadow:0 0 10px #a855f7;animation:ialPulse 2.4s ease-in-out infinite"></span>CUSTOMER SUCCESS · CARTEIRA</div>
             <div class="gw-hero-status cs-ov-hero-status">Painel CS</div>
-            <div class="gw-hero-sub">resumo executivo da carteira — saúde, risco e próximas ações por conta</div>
+            <div class="gw-hero-sub">visão da carteira no escopo ativo — clique numa linha (ou ponto na matriz) pra detalhar</div>
           </div>
         </div>
       </div>
+      <!-- Toggle Tabela / Matriz -->
+      <div class="cs-view-toggle" id="cs-carteira-toggle" style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="cs-view-btn on" data-view="table" onclick="csCarteiraView('table',this)">📋 Tabela</button>
+        <button class="cs-view-btn" data-view="matrix" onclick="csCarteiraView('matrix',this)">▦ Matriz 2×2</button>
+      </div>
       <div id="cs-all-health" style="margin-bottom:14px"></div>
+      <div id="cs-carteira-matrix-host" style="display:none;margin-bottom:14px"></div>
       <div id="cs-ov-empty" class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><p>Selecione uma conta acima</p><span>para ver o painel Customer Success</span></div>
       <div id="cs-ov-content" style="display:none">
         <!-- Account card -->
@@ -2849,12 +2867,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
   <!-- PRÓXIMAS AÇÕES -->
   <div id="cs-actions" class="sec">
-    <div class="page-header"><h1>Próximas Ações CS</h1><p>Recomendações automáticas baseadas nos dados da conta</p></div>
+    <div class="page-header"><h1>Riscos &amp; Ações</h1><p>Sinais de risco, estado atual e ações priorizadas — tudo em uma página</p></div>
     <div class="page-body">
       <div class="cs-hero cs-hero-actions">
         <div class="gw-hero-grid-min">
           <div class="gw-hero-left">
-            <div class="gw-hero-tag"><span class="gw-dot" style="background:#ff7024;box-shadow:0 0 10px #ff7024;animation:ialPulse 2s ease-in-out infinite"></span>CS · PRÓXIMAS AÇÕES</div>
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#ff7024;box-shadow:0 0 10px #ff7024;animation:ialPulse 2s ease-in-out infinite"></span>CS · RISCOS &amp; AÇÕES</div>
             <div class="gw-hero-status cs-act-hero-status">Recomendações Ativas</div>
             <div class="gw-hero-sub">ações sugeridas automaticamente baseadas no estado atual da conta</div>
           </div>
@@ -2862,10 +2880,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       </div>
       <div id="cs-act-empty" class="empty"><div class="empty-icon"></div><p>Selecione uma conta</p></div>
       <div id="cs-act-content" style="display:none">
-        <div class="grid2">
-          <div class="card"><div class="card-title">Ações recomendadas</div><div id="cs-actions-list"></div></div>
-          <div class="card"><div class="card-title">Resumo executivo</div><div id="cs-exec-summary" style="font-size:12.5px;color:var(--sub);line-height:1.8;padding:4px 0"></div></div>
+        <div class="grid2" style="margin-bottom:14px">
+          <div class="card"><div class="card-title">Ações priorizadas</div><div id="cs-actions-list"></div></div>
+          <div class="card"><div class="card-title">Distribuição de estados</div><div class="cw" style="height:180px"><canvas id="cs-act-c-estados"></canvas></div></div>
         </div>
+        <div class="card" style="margin-bottom:14px"><div class="card-title">Chamados críticos abertos</div><div id="cs-act-criticos-list"></div></div>
+        <div class="card"><div class="card-title">Resumo executivo</div><div id="cs-exec-summary" style="font-size:12.5px;color:var(--sub);line-height:1.8;padding:4px 0"></div></div>
       </div>
     </div>
   </div>
@@ -5874,6 +5894,8 @@ function updateFilterChip(){
   } else {
     chip.classList.remove('on');
   }
+  // Sincroniza o scope strip do painel CS (também muda quando o filtro muda)
+  if(typeof renderCSScopeStrip==='function') try{renderCSScopeStrip();}catch(e){}
 }
 
 // K13: limpa todos os filtros (chamado ao clicar no chip)
@@ -9479,6 +9501,22 @@ function _histLabel(){
   var p=String(activeMonth).split('-');
   return (mNames[p[1]]||p[1])+'/'+p[0].slice(2);
 }
+// Label do escopo de período para o painel CS — usado em sub-textos, account-id, exec summary.
+// Substitui o hardcoded 'jan–mar 2026' que ficava errado quando filtrava mês ou range.
+function _csScopeLabel(){
+  if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
+    var fmt=function(d){return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}).replace('.','');};
+    return fmt(activeRangeStart)+'–'+fmt(activeRangeEnd);
+  }
+  if(typeof activeMonth!=='undefined' && activeMonth && activeMonth!=='all'){
+    return _histLabel();
+  }
+  // Sem filtro de mês — derivar janela real do JSON em vez de string hardcoded.
+  // Usa generated_at_iso (sync mais recente) e janela_meses (3 meses padrão) quando disponível;
+  // senão cai pra 'todo período'.
+  if(typeof window.HIST_RANGE_LABEL==='string' && window.HIST_RANGE_LABEL) return window.HIST_RANGE_LABEL;
+  return 'todo período';
+}
 // Fonte única de verdade para "estado atual" — consumida pelos heros e KPIs.
 // Retorna null se dados GWMS ainda não carregaram (aí chamador usa XLSX como fallback).
 function liveStats(){
@@ -10004,11 +10042,71 @@ function goSecCS(id, el) {
   document.querySelectorAll('#view-cs .sec').forEach(function(s){ s.classList.remove('on'); });
   document.querySelectorAll('#nav-cs .nav').forEach(function(n){ n.classList.remove('on'); });
   document.getElementById(id).classList.add('on');
-  el.classList.add('on');
-  if(id==='cs-overview') renderCSHealthList();
+  if(el) el.classList.add('on');
+  if(id==='cs-overview') {
+    renderCSHealthList();
+    // Garante que o toggle volta pro state ativo
+    var hostEl = document.getElementById('cs-carteira-matrix-host');
+    if(hostEl && hostEl.dataset.view==='matrix') renderRiskMatrix();
+  }
   if(id==='cs-matrix') renderRiskMatrix();
   if(id==='cs-csat') renderCSAT();
   if (csCurrentKey && id!=='cs-matrix'&&id!=='cs-csat') renderCSSection(id, EMPRESAS[csCurrentKey]);
+  renderCSScopeStrip();
+}
+
+// Toggle Tabela ↔ Matriz dentro da Carteira
+function csCarteiraView(view, btn){
+  document.querySelectorAll('#cs-carteira-toggle .cs-view-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  var listEl = document.getElementById('cs-all-health');
+  var hostEl = document.getElementById('cs-carteira-matrix-host');
+  if(view==='matrix'){
+    // Move o conteúdo da matriz pro host (uma vez)
+    var matrixSec = document.getElementById('cs-matrix');
+    var rmContent = document.getElementById('rm-content');
+    var rmEmpty = document.getElementById('rm-empty');
+    if(matrixSec && hostEl && rmContent && hostEl.children.length===0){
+      // Move (não clona pra preservar IDs e bindings)
+      hostEl.appendChild(rmContent);
+      hostEl.appendChild(rmEmpty);
+    }
+    if(listEl) listEl.style.display='none';
+    if(hostEl){ hostEl.style.display=''; hostEl.dataset.view='matrix'; }
+    renderRiskMatrix();
+  } else {
+    if(listEl) listEl.style.display='';
+    if(hostEl){ hostEl.style.display='none'; hostEl.dataset.view='table'; }
+    renderCSHealthList();
+  }
+}
+
+// Scope strip no header CS — mostra escopo ativo (live/histórico + mês + fila + cliente)
+function renderCSScopeStrip(){
+  var el = document.getElementById('cs-scope-strip');
+  if(!el) return;
+  var parts = [];
+  var live = (typeof _shouldShowLive==='function') ? _shouldShowLive() : false;
+  parts.push('<span class="scope-chip '+(live?'scope-chip-live':'scope-chip-hist')+'">'+(live?'● AO VIVO':'📅 HISTÓRICO')+'</span>');
+  // Mês ou range
+  if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
+    var fmt=function(d){return d?new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'';};
+    parts.push('<span class="scope-chip">📆 '+fmt(activeRangeStart)+' → '+fmt(activeRangeEnd)+'</span>');
+  } else if(typeof activeMonth!=='undefined' && activeMonth && activeMonth!=='all'){
+    parts.push('<span class="scope-chip">📆 '+_csScopeLabel()+'</span>');
+  } else {
+    parts.push('<span class="scope-chip" style="background:rgba(140,148,168,.14);color:var(--muted)">📆 '+_csScopeLabel()+'</span>');
+  }
+  // Fila
+  if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
+    parts.push('<span class="scope-chip" style="background:rgba(34,211,238,.14);color:#67e8f9">⚙️ '+activeFilaOP+'</span>');
+  }
+  // Cliente
+  if(typeof activeCliente!=='undefined' && activeCliente){
+    var nome = (typeof EMPRESAS!=='undefined' && EMPRESAS[activeCliente]) ? (EMPRESAS[activeCliente].nome||activeCliente) : activeCliente;
+    parts.push('<span class="scope-chip" style="background:rgba(255,112,36,.14);color:#ffa46e">🏢 '+nome+'</span>');
+  }
+  el.innerHTML = parts.join(' ');
 }
 
 function calcCSScore(d) { return calcUnifiedScore(d); }
@@ -10033,21 +10131,32 @@ function csPriorColor(p) {
 function renderCSHealthList() {
   var el = document.getElementById('cs-all-health');
   if(!el) return;
-  var empIds = Object.keys(EMPRESAS).filter(function(k){
-    return k && k.indexOf('@')===-1 && EMPRESAS[k].total>0;
-  }).sort(function(a,b){ return EMPRESAS[b].total - EMPRESAS[a].total; });
-  if(!empIds.length){ el.innerHTML=''; return; }
+  // P3 fix: filtra por total>0 NO ESCOPO atual, não no agregado global.
+  // Antes mostrava 45 clientes sempre; quando filtro=Mar/26 vários ficavam 0/0/0%.
+  var rowsData = [];
+  Object.keys(EMPRESAS).forEach(function(k){
+    if(!k || k.indexOf('@')!==-1) return;
+    var d = (typeof getFilteredEmpresa==='function') ? (getFilteredEmpresa(EMPRESAS[k]) || null) : EMPRESAS[k];
+    if(!d || !d.total) return; // sem chamado no escopo → fora da lista
+    rowsData.push({k:k, d:d});
+  });
+  rowsData.sort(function(a,b){ return b.d.total - a.d.total; });
+  if(!rowsData.length){
+    el.innerHTML='<div style="padding:14px;color:var(--muted);font-size:12px;text-align:center">Nenhum cliente com chamado no escopo atual</div>';
+    return;
+  }
 
-  var rows = empIds.map(function(k){
-    var d = getFilteredEmpresa(EMPRESAS[k]);
-    var score = d ? calcCSScore(d) : 0;
-    var total = d ? (d.total||0) : 0;
-    var abertos = d ? (d.abertos||0) : 0;
-    var fechados = d ? (d.fechados||0) : 0;
+  var rows = rowsData.map(function(rd){
+    var k = rd.k;
+    var d = rd.d;
+    var score = calcCSScore(d);
+    var total = d.total||0;
+    var abertos = d.abertos||0;
+    var fechados = d.fechados||0;
     var taxa = total>0 ? Math.round(fechados/total*100) : 0;
-    var ma = (d && d.prior) ? (d.prior['Muito Alta']||0) : 0;
-    var aguard = (d && d.estados) ? (d.estados['Aguardando Cliente']||0) : 0;
-    var sol = d ? (d.sol_med||d.solucao_med_h||0) : 0;
+    var ma = (d.prior) ? (d.prior['Muito Alta']||0) : 0;
+    var aguard = (d.estados) ? (d.estados['Aguardando Cliente']||0) : 0;
+    var sol = d.sol_med||d.solucao_med_h||0;
 
     var emoji = score>=70?'🟢':score>=50?'🟡':'🔴';
     var scoreColor = score>=70?'var(--ok)':score>=50?'var(--warn)':'var(--danger)';
@@ -10077,8 +10186,12 @@ function renderCSHealthList() {
   }).join('');
 
   var th = function(t){ return '<th style="padding:6px 12px;text-align:center;font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-weight:600;white-space:nowrap">'+t+'</th>'; };
+  // P3: título reflete escopo. "Carteira" + label do período + nº de clientes na lista.
+  var scopeLbl = _csScopeLabel();
+  var titleHtml = 'Health Score — Carteira ('+rowsData.length+' cliente'+(rowsData.length!==1?'s':'')+')';
+  var subHtml = scopeLbl + ' · clique numa linha pra detalhar';
   el.innerHTML = '<div class="card">'+
-    '<div class="card-title">Health Score — Todos os Clientes<span class="card-title-right" style="font-size:10px;color:var(--muted)">clique para detalhar</span></div>'+
+    '<div class="card-title">'+titleHtml+'<span class="card-title-right" style="font-size:10px;color:var(--muted)">'+subHtml+'</span></div>'+
     '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
     '<thead><tr style="border-bottom:1px solid var(--border)">'+
     '<th style="padding:6px 12px;text-align:left;font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Cliente</th>'+
@@ -10122,7 +10235,7 @@ function renderCSOverview(d) {
   var initials = d.nome.split(' ').slice(0,2).map(function(w){return w[0];}).join('');
   document.getElementById('cs-avatar').textContent = initials;
   document.getElementById('cs-account-name').textContent = d.nome;
-  document.getElementById('cs-account-id').textContent = 'ID: ' + d.id + ' · jan–mar 2026';
+  document.getElementById('cs-account-id').textContent = 'ID: ' + d.id + ' · ' + _csScopeLabel();
   document.getElementById('cs-ov-score').textContent = score;
   document.getElementById('cs-ov-score').style.color = sl.color;
   document.getElementById('cs-ov-score-lbl').textContent = sl.label;
@@ -10141,7 +10254,7 @@ function renderCSOverview(d) {
   var aguard = (d.estados && d.estados['Aguardando Cliente']) || 0;
   var alta = (d.prior && d.prior['Muito Alta']) || 0;
   document.getElementById('cs-kpi-total').textContent = total;
-  document.getElementById('cs-kpi-total-sub').textContent = 'jan–mar 2026';
+  document.getElementById('cs-kpi-total-sub').textContent = _csScopeLabel();
   document.getElementById('cs-kpi-abertos').textContent = d.abertos || 0;
   document.getElementById('cs-kpi-abertos-sub').textContent = (total>0?Math.round((d.abertos||0)/total*100):0)+'% do total';
   document.getElementById('cs-kpi-taxa').textContent = taxa + '%';
@@ -10244,12 +10357,40 @@ function renderCSHealth(d) {
       recEl.innerHTML=recHtml;
     }
   }
-  // Score trend chart
-  var mesCats = Object.keys(d.by_mes||{});
-  var baseTrend = [Math.max(score-15,30), Math.max(score-5,40), score];
+  // P9 fix: trend chart agora usa dados REAIS de EMP_MESES (score por mês recalculado).
+  // Antes era mock: [score-15, score-5, score]. Agora cada ponto é o score real do mês.
+  var mesCats = [];
+  var trendVals = [];
+  if(typeof EMP_MESES!=='undefined' && EMP_MESES[d.id]){
+    var mNamesGW={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+    var mks = Object.keys(EMP_MESES[d.id]).sort();
+    mks.forEach(function(mk){
+      var em = EMP_MESES[d.id][mk];
+      if(!em || !em.total) return;
+      // calcula score por mês usando os mesmos campos disponíveis no struct
+      var scoreM = (typeof calcUnifiedScore==='function') ? calcUnifiedScore({
+        total: em.total, fechados: em.fechados, abertos: em.abertos,
+        resp_med: em.resp_med || d.resp_med, solucao_med_h: em.sol_med || em.sol_median,
+        estados: em.estados || {}, prior: em.prior || {}
+      }) : 0;
+      var p = mk.split('-');
+      mesCats.push((mNamesGW[p[1]]||p[1])+'/'+p[0].slice(2));
+      trendVals.push(scoreM);
+    });
+  }
   if (csCharts['cs-c-score-trend']) csCharts['cs-c-score-trend'].destroy();
   var ctxT = document.getElementById('cs-c-score-trend');
-  if (ctxT) csCharts['cs-c-score-trend'] = new Chart(ctxT, {type:'line',data:{labels:mesCats,datasets:[{label:'Health Score',data:baseTrend.slice(0,mesCats.length),borderColor:'#a855f7',backgroundColor:'rgba(139,92,246,.1)',tension:.4,fill:true,pointBackgroundColor:'#a855f7',pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#5a6278',font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#5a6278',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}}}}});
+  if (ctxT && mesCats.length) {
+    csCharts['cs-c-score-trend'] = new Chart(ctxT, {type:'line',data:{labels:mesCats,datasets:[{label:'Health Score',data:trendVals,borderColor:'#a855f7',backgroundColor:'rgba(139,92,246,.1)',tension:.4,fill:true,pointBackgroundColor:'#a855f7',pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#5a6278',font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#5a6278',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}}}}});
+  } else if (ctxT) {
+    // Sem histórico mensal — mostra apenas placeholder no canvas
+    var c = ctxT.getContext('2d');
+    c.clearRect(0,0,ctxT.width,ctxT.height);
+    c.fillStyle = '#5a6278';
+    c.font = '11px monospace';
+    c.textAlign = 'center';
+    c.fillText('histórico mensal indisponível', ctxT.width/2, ctxT.height/2);
+  }
 }
 
 function renderCSRisks(d) {
@@ -10288,14 +10429,47 @@ function renderCSRisks(d) {
 }
 
 function renderCSTimeline(d) {
-  var tickets = (d.tickets || []).slice().sort(function(a,b){ return (b.criado||'').localeCompare(a.criado||''); });
-  document.getElementById('cs-tl-title').textContent = 'Chamados de '+d.nome+' ('+tickets.length+')';
-  var html = tickets.map(function(t) {
+  // P8 fix: antes usava d.tickets (amostra de 25 mais recentes do agregado total).
+  // Agora busca em RAW_DATA filtrado pelo escopo ativo (mês/range/fila + cliente).
+  // Resultado: histórico real do período, não amostra fixa.
+  var cliId = d && d.id ? d.id : (csCurrentKey || activeCliente);
+  var tickets;
+  if(typeof RAW_DATA!=='undefined' && RAW_DATA && RAW_DATA.length && cliId){
+    tickets = RAW_DATA.filter(function(t){
+      if(t.cli_id !== cliId) return false;
+      if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+      if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return false;
+      return true;
+    }).slice().sort(function(a,b){ return (b.criado||0) - (a.criado||0); });
+  } else {
+    // Fallback: amostra do EMPRESA[].tickets (legacy)
+    tickets = (d.tickets || []).slice().sort(function(a,b){ return (b.criado||'').localeCompare(a.criado||''); });
+  }
+  // Normaliza para o formato esperado pela UI
+  var pad=function(n){return n<10?'0'+n:n;};
+  var rows = tickets.map(function(t){
+    var criadoStr = t.criado;
+    if(t.criado instanceof Date){
+      criadoStr = pad(t.criado.getDate())+'/'+pad(t.criado.getMonth()+1)+' '+pad(t.criado.getHours())+':'+pad(t.criado.getMinutes());
+    }
+    return {
+      num: t.num,
+      assunto: t.assunto || '—',
+      estado: t.estado || '—',
+      prioridade: t.prioridade || t.prior || '—',
+      servico: t.servico || '',
+      criado: criadoStr,
+      resp_min: t.resp_min,
+      sol: (t.sol_h_bh!=null ? t.sol_h_bh : (t.sol_h!=null ? t.sol_h : t.sol))
+    };
+  });
+  document.getElementById('cs-tl-title').textContent = 'Chamados de '+d.nome+' ('+rows.length+') · '+_csScopeLabel();
+  var html = rows.map(function(t) {
     var solStr = t.sol ? ' · Solução: '+t.sol+'h' : '';
     var respStr = t.resp_min != null ? ' · 1ª resp: '+fmtRespTxt(t.resp_min) : '';
     return '<div class="cs-tl-item"><div class="cs-tl-dot" style="background:'+csStateColor(t.estado).replace(/var\(([^)]+)\)/g,function(_,v){return {'--ok':'#10b981','--teal':'#00d4a8','--sub':'#8892a4','--blue':'#4f8ef7','--warn':'#f59e0b','--orange':'#f97316','--purple':'#8b5cf6','--danger':'#f43f5e','--muted':'#5a6278'}[v]||'#8892a4';})+'"></div><div class="cs-tl-body"><div class="cs-tl-num">#'+t.num+' · '+t.criado+'</div><div class="cs-tl-assunto">'+t.assunto+'</div><div class="cs-tl-meta"><span class="cs-tl-tag" style="background:rgba(139,92,246,.1);color:#a855f7">'+t.estado+'</span><span class="cs-tl-tag" style="background:rgba(255,255,255,.05);color:var(--sub)">'+t.prioridade+'</span>'+(t.servico?'<span class="cs-tl-tag" style="background:rgba(79,142,247,.1);color:var(--blue)">'+t.servico+'</span>':'')+'<span class="cs-tl-tag" style="background:rgba(255,255,255,.04);color:var(--muted)">'+respStr.replace(' · ','')+solStr.replace(' · ','')+'</span></div></div></div>';
   }).join('');
-  document.getElementById('cs-tl-list').innerHTML = html || '<div style="padding:14px;color:var(--muted)">Sem chamados registrados</div>';
+  document.getElementById('cs-tl-list').innerHTML = html || '<div style="padding:14px;color:var(--muted)">Sem chamados no escopo atual</div>';
 }
 
 function calcCSATProxy(tickets) {
@@ -10349,9 +10523,10 @@ function renderCSAT() {
   if(emEl) emEl.style.display='none';
   if(ctEl) ctEl.style.display='';
 
-  // Usa a conta selecionada no seletor CS (csCurrentKey) antes do filtro global.
-  // Fallback: activeCliente global. Sem nenhum dos dois: todos.
-  var acctKey = csCurrentKey || activeCliente || '';
+  // P5 fix: filtro global de cliente é a fonte única de verdade. csCurrentKey é só fallback
+  // (caso o user selecione conta pelo dropdown da aba CS sem dar set no filtro global).
+  // Antes: csCurrentKey vinha primeiro e podia divergir do resto da aba.
+  var acctKey = activeCliente || csCurrentKey || '';
   var allClosed = RAW_DATA.filter(function(t){
     if(!ticketInFilter(t)) return false;
     if(activeFilaOP!=='all'&&t.fila!==activeFilaOP) return false;
@@ -10449,14 +10624,20 @@ function renderCSAT() {
 }
 
 function renderRiskMatrix() {
-  var empIds = Object.keys(EMPRESAS).filter(function(k){
-    if(!k||k.indexOf('@')!==-1||!EMPRESAS[k].total) return false;
-    if(activeCliente&&k!==activeCliente) return false;
-    return true;
+  // P2 fix: matriz agora usa getFilteredEmpresa (respeita mês/range/fila).
+  // Antes lia EMPRESAS[k] direto e mentia ao filtrar mês.
+  // Empresa só entra na matriz se tem chamado NO ESCOPO (total filtrado > 0).
+  var entries = [];
+  Object.keys(EMPRESAS).forEach(function(k){
+    if(!k || k.indexOf('@')!==-1) return;
+    if(activeCliente && k!==activeCliente) return;
+    var df = (typeof getFilteredEmpresa==='function') ? (getFilteredEmpresa(EMPRESAS[k]) || null) : EMPRESAS[k];
+    if(!df || !df.total) return; // sem chamado no escopo → fora da matriz
+    entries.push({k:k, d:df});
   });
   var elC = document.getElementById('rm-content');
   var elE = document.getElementById('rm-empty');
-  if (!empIds.length) {
+  if (!entries.length) {
     if(elC) elC.style.display='none';
     if(elE) elE.style.display='';
     return;
@@ -10464,8 +10645,8 @@ function renderRiskMatrix() {
   if(elC) elC.style.display='';
   if(elE) elE.style.display='none';
 
-  // Mediana de volume como limiar
-  var vols = empIds.map(function(k){return EMPRESAS[k].total;}).slice().sort(function(a,b){return a-b;});
+  // Mediana de volume como limiar (do escopo filtrado, não do agregado global)
+  var vols = entries.map(function(e){return e.d.total;}).slice().sort(function(a,b){return a-b;});
   var mid = Math.floor(vols.length/2);
   var medVol = vols.length%2===0 ? Math.round((vols[mid-1]+vols[mid])/2) : vols[mid];
   var HEALTH_THR = 65;
@@ -10473,16 +10654,16 @@ function renderRiskMatrix() {
   var tvEl = document.getElementById('rm-threshold-vol');
   if(tvEl) tvEl.textContent = medVol + ' chamados';
   var tcEl = document.getElementById('rm-total-cli');
-  if(tcEl) tcEl.textContent = empIds.length + ' clientes analisados';
+  if(tcEl) tcEl.textContent = entries.length + ' clientes analisados';
 
   var quads = {stable:[],monitor:[],risk:[],critical:[]};
-  empIds.forEach(function(k){
-    var d = EMPRESAS[k];
+  entries.forEach(function(e){
+    var d = e.d;
     var score = calcCSScore(d);
     var hiVol = d.total >= medVol;
     var healthy = score >= HEALTH_THR;
     var q = healthy ? (hiVol ? 'monitor' : 'stable') : (hiVol ? 'critical' : 'risk');
-    quads[q].push({id:k, nome:d.nome, score:score, total:d.total});
+    quads[q].push({id:e.k, nome:d.nome, score:score, total:d.total});
   });
   quads.critical.sort(function(a,b){return a.score-b.score;});
   quads.risk.sort(function(a,b){return a.score-b.score;});
@@ -10533,12 +10714,56 @@ function renderCSActions(d) {
   document.getElementById('cs-actions-list').innerHTML = aHtml;
   // Executive summary
   var taxa = pct(d.fechados, total);
-  var summary = '<strong>'+d.nome+'</strong> registrou <strong>'+total+' chamados</strong> no período (jan–mar 2026), com taxa de resolução de <strong>'+taxa+'%</strong> e mediana de 1ª resposta de <strong>'+d.resp_med+'min</strong>.<br><br>';
+  var summary = '<strong>'+d.nome+'</strong> registrou <strong>'+total+' chamados</strong> no período ('+_csScopeLabel()+'), com taxa de resolução de <strong>'+taxa+'%</strong> e mediana de 1ª resposta de <strong>'+d.resp_med+'min</strong>.<br><br>';
   summary += 'O Health Score atual é de <strong>'+score+' pts</strong> — classificado como <strong>'+csScoreLabel(score).label+'</strong>. ';
   if (aguard > 0) summary += 'Há <strong>'+aguard+' chamado(s)</strong> aguardando retorno do cliente. ';
   summary += 'O módulo mais utilizado é <strong>'+Object.keys(d.servicos||{}).sort(function(a,b){return (d.servicos[b]||0)-(d.servicos[a]||0);})[0]+'</strong>.<br><br>';
   summary += 'Ação prioritária: ' + actions[0].title + '.';
   document.getElementById('cs-exec-summary').innerHTML = summary;
+
+  // P4 fix: popula gráfico de estados + lista de críticos no mesmo bloco
+  // (vinha de "Riscos & Alertas" que era redundante com "Próximas Ações")
+  var estados = d.estados || {};
+  var eKeys = Object.keys(estados).filter(function(k){return estados[k]>0;});
+  var eVals = eKeys.map(function(k){return estados[k];});
+  var stateColorMap = {'--ok':'#10b981','--teal':'#00d4a8','--sub':'#8892a4','--blue':'#4f8ef7','--warn':'#f59e0b','--orange':'#f97316','--purple':'#8b5cf6','--danger':'#f43f5e','--muted':'#5a6278'};
+  var eColors = eKeys.map(function(k){
+    return csStateColor(k).replace(/var\(([^)]+)\)/g, function(_,v){return stateColorMap[v]||'#8892a4';});
+  });
+  if (csCharts['cs-act-c-estados']) csCharts['cs-act-c-estados'].destroy();
+  var ctxE2 = document.getElementById('cs-act-c-estados');
+  if (ctxE2 && eKeys.length) {
+    csCharts['cs-act-c-estados'] = new Chart(ctxE2, {
+      type:'doughnut',
+      data:{labels:eKeys,datasets:[{data:eVals,backgroundColor:eColors,borderWidth:0}]},
+      options:{plugins:{legend:{position:'right',labels:{color:'#8892a4',font:{size:10},boxWidth:10}}}}
+    });
+  }
+  // Críticos: pega do RAW_DATA filtrado (P8: era amostra fixa de d.tickets, virou escopo real)
+  var criticos = [];
+  var pad2=function(n){return n<10?'0'+n:n;};
+  if(typeof RAW_DATA!=='undefined' && RAW_DATA && RAW_DATA.length){
+    criticos = RAW_DATA.filter(function(t){
+      if(t.cli_id !== d.id) return false;
+      if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return false;
+      if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return false;
+      return ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente'].indexOf(t.estado)!==-1;
+    }).map(function(t){
+      var c = t.criado;
+      var cs = c instanceof Date ? (pad2(c.getDate())+'/'+pad2(c.getMonth()+1)+' '+pad2(c.getHours())+':'+pad2(c.getMinutes())) : c;
+      return {num:t.num, assunto:t.assunto, estado:t.estado, prioridade:t.prior||t.prioridade, criado:cs};
+    });
+  } else {
+    criticos = (d.tickets||[]).filter(function(t){return ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente'].indexOf(t.estado)!==-1;});
+  }
+  var crEl = document.getElementById('cs-act-criticos-list');
+  if(crEl){
+    crEl.innerHTML = criticos.length === 0
+      ? '<div style="padding:14px;color:var(--muted);font-size:12px">Nenhum chamado crítico aberto ✓</div>'
+      : criticos.map(function(t) {
+        return '<div class="cs-tl-item"><div class="cs-tl-dot" style="background:'+csStateColor(t.estado).replace(/var\(([^)]+)\)/g,function(_,v){return stateColorMap[v]||'#8892a4';})+'"></div><div class="cs-tl-body"><div class="cs-tl-num">#'+t.num+'</div><div class="cs-tl-assunto">'+t.assunto+'</div><div class="cs-tl-meta"><span class="cs-tl-tag" style="background:rgba(139,92,246,.1);color:#a855f7">'+t.estado+'</span><span class="cs-tl-tag" style="background:rgba(255,255,255,.05);color:var(--sub)">'+t.prioridade+'</span><span class="cs-tl-tag" style="background:rgba(255,255,255,.05);color:var(--muted)">'+t.criado+'</span></div></div></div>';
+      }).join('');
+  }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -11558,6 +11783,18 @@ function autoFetchJSON(){
     .then(function(d){
       _autoFetching=false;
       var rows=(d.rows||[]).map(_adaptJsonRowToXlsx);
+      // Calcula label da janela real (substitui hardcode 'jan–mar 2026' no painel CS).
+      try{
+        var mNamesGW={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+        var dates=(d.rows||[]).map(function(r){return r.criado;}).filter(Boolean).sort();
+        if(dates.length){
+          var first=String(dates[0]).slice(0,7).split('-');
+          var last=String(dates[dates.length-1]).slice(0,7).split('-');
+          var lblFirst=(mNamesGW[first[1]]||first[1])+'/'+(first[0]||'').slice(2);
+          var lblLast=(mNamesGW[last[1]]||last[1])+'/'+(last[0]||'').slice(2);
+          window.HIST_RANGE_LABEL = lblFirst===lblLast ? lblFirst : (lblFirst+'–'+lblLast);
+        }
+      }catch(e){console.warn('HIST_RANGE_LABEL build:',e);}
       var _sm=activeMonth,_sf=activeFilaOP,_sfc=activeFilaCli,_sc=activeCliente,_srs=activeRangeStart,_sre=activeRangeEnd;
       rebuildAll(parseR(rows));
       if(typeof _refreshAllHeroes==='function') _refreshAllHeroes();
