@@ -5080,14 +5080,18 @@ function computeTeamCapacity(atendList) {
 function renderTeamCapacity() {
   var el=document.getElementById('at-capacity');
   if(!el) return;
-  // Capacidade da equipe = quem tem ticket aberto AGORA (estado vivo, GWMS),
-  // não quem teve ticket criado no escopo histórico. Filtros de mês não fazem
-  // sentido para capacidade atual; filtros de cliente/fila sim.
+  // Carga ATUAL da equipe = quem tem ticket aberto AGORA (estado vivo, GWMS).
+  // Conceitualmente é uma métrica do "agora" — filtro de mês NÃO se aplica.
+  // Apenas filtros de cliente e fila são respeitados (escopo, não recorte temporal).
+  // Fallback: se TICKETS_ATIVOS_DATA não estiver carregado ainda, usa histórico do mês.
   var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
   var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
-  var atendFilt;
-  if((_hasCli||_hasFila) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows && TICKETS_ATIVOS_DATA.rows.length){
-    // Live: agrupa tickets ativos por atendente, respeitando filtro de cliente/fila
+  var _hasMes=(typeof activeMonth!=='undefined' && activeMonth && activeMonth!=='all');
+  var _liveAvail=(typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows && TICKETS_ATIVOS_DATA.rows.length);
+  var atendFilt, _isLive=false;
+  if(_liveAvail){
+    _isLive=true;
+    // Live: agrupa tickets ativos por atendente, respeitando cliente/fila (não mês)
     var norm=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
     var acCliN=_hasCli?norm(activeCliente):'';
     var byAt={};
@@ -5102,7 +5106,7 @@ function renderTeamCapacity() {
     });
     atendFilt=Object.keys(byAt).map(function(k){return byAt[k];}).sort(function(a,b){return b.ab-a.ab;});
   } else {
-    // Sem filtro de escopo: usa o agregado histórico do mês ativo
+    // Fallback: GWMS ainda não carregou — usa histórico
     atendFilt=(getActiveOP().atend||OP.atend||[]).filter(function(a){return a.t>0;});
   }
   if(!atendFilt.length){el.style.display='none';return;}
@@ -5143,7 +5147,11 @@ function renderTeamCapacity() {
   var _atFilaQ=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?';Queues[]='+encodeURIComponent(activeFilaOP):'';
   var _atHref=_atOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open'+_atFilaQ;
   var _atLink='<a href="'+_atHref+'" target="_blank" rel="noopener" style="margin-left:auto;font-size:10px;color:var(--teal);font-family:var(--mono);text-decoration:none;opacity:.8;cursor:pointer">↗ OTRS</a>';
-  el.innerHTML='<a href="'+_atHref+'" target="_blank" rel="noopener" class="card-title" style="display:flex;align-items:center;text-decoration:none;color:inherit;cursor:pointer">Capacidade da Equipe'+_atLink+'</a>'+sumHtml+cardsHtml;
+  // Título: "Carga Atual da Equipe" deixa explícito que é estado vivo (não recorte de mês)
+  var _liveBadge=_isLive?'<span style="margin-left:8px;font-size:9px;background:rgba(16,185,129,.15);color:var(--ok);padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px">AGORA</span>':'';
+  // Aviso quando há filtro de mês ativo (este card ignora o mês intencionalmente)
+  var _mesAviso=(_isLive && _hasMes)?'<div style="font-size:10px;color:var(--muted);margin:4px 0 8px;padding:6px 10px;background:rgba(245,158,11,.08);border-left:2px solid rgba(245,158,11,.5);border-radius:3px"><span style="color:var(--warn)">i</span> Carga é estado <b>atual</b> — filtro de mês não se aplica aqui. Mostra quem tem ticket aberto agora'+(_hasCli?' para <b>'+activeCliente+'</b>':'')+'.</div>':'';
+  el.innerHTML='<a href="'+_atHref+'" target="_blank" rel="noopener" class="card-title" style="display:flex;align-items:center;text-decoration:none;color:inherit;cursor:pointer">Carga Atual da Equipe'+_liveBadge+_atLink+'</a>'+_mesAviso+sumHtml+cardsHtml;
 }
 
 function renderAt(){
