@@ -2671,7 +2671,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
           </div>
         </div>
       </div>
-      <div style="margin-bottom:12px;padding:9px 14px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.22);border-radius:8px;font-size:11.5px;color:var(--sub);line-height:1.5">ℹ️ Os números abaixo são da <b>operação inteira</b> da Groundwork (todas empresas atendidas) — <b>não são filtrados pela sua conta</b>. Use o <b>Painel da Empresa</b> para ver seus dados específicos.</div>
+      <div id="cinf-banner" style="margin-bottom:12px;padding:9px 14px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.22);border-radius:8px;font-size:11.5px;color:var(--sub);line-height:1.5"></div>
       <div id="cinf-kpis" class="kpi-row kpi-row-4"></div>
       <div class="grid2">
         <div class="card"><div class="card-title">Volume mensal da fila</div><div class="cw" style="height:170px"><canvas id="c-vol-inf"></canvas></div></div>
@@ -6011,6 +6011,18 @@ function getInfDataFromRaw(){
 
 function renderInf(){
   var _op=(typeof RAW_DATA!=='undefined'&&RAW_DATA&&RAW_DATA.length)?getInfDataFromRaw():getActiveOP();
+  // Banner explicativo dinâmico — mostra o escopo real (cliente/operação) que renderInf está usando.
+  // Antes: hardcode mentia ('operação inteira') quando havia activeCliente. Agora: reflete o filtro real.
+  try {
+    var bannerEl = document.getElementById('cinf-banner');
+    if(bannerEl){
+      if(typeof activeCliente!=='undefined' && activeCliente && EMPRESAS[activeCliente]){
+        bannerEl.innerHTML = 'ℹ️ Os números abaixo refletem <b>'+(EMPRESAS[activeCliente].nome||activeCliente)+'</b> no escopo atual. Use o filtro de mês acima para ajustar o período.';
+      } else {
+        bannerEl.innerHTML = 'ℹ️ Os números abaixo são da <b>operação inteira</b> da Groundwork (todas empresas atendidas, no escopo atual). Selecione sua empresa no <b>Painel da Empresa</b> para ver seus dados específicos.';
+      }
+    }
+  } catch(e){}
   // — gráfico de volume
   var volMes=_op.volMes||{};
   var mK=Object.keys(volMes);
