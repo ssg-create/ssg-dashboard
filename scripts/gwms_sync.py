@@ -335,6 +335,58 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     return query_mysql(session, sql)
 
 
+def q_diagnostic_filas(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO: lista TODAS as filas (sem filtro REGEX) com tickets nos últimos
+    4 meses. Permite identificar filas-raiz que faltam no whitelist FILAS.
+    Não usa em produção, só pra investigação do gap AutoZone (118 OTRS vs 73 painel)."""
+    sql = f"""
+    SELECT
+      q.name AS fila,
+      COUNT(*) AS total,
+      SUM(CASE WHEN t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS criados_4m,
+      SUM(CASE WHEN t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS modif_4m,
+      SUM(CASE WHEN t.customer_id = 'AUTOZONE' AND t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS autozone_4m,
+      SUM(CASE WHEN t.customer_id = 'GROUNDWORK' AND t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH) THEN 1 ELSE 0 END) AS groundwork_4m
+    FROM ticket t
+    JOIN queue q ON t.queue_id = q.id
+    WHERE t.change_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
+    GROUP BY q.name
+    ORDER BY total DESC
+    LIMIT 100
+    """
+    return query_mysql(session, sql)
+
+
+def q_diagnostic_autozone_abr(session: requests.Session) -> list[dict]:
+    """DIAGNÓSTICO: lista TODOS os tickets AutoZone com atividade em abril/26
+    (sem filtro de fila). Inclui fila e estado para validação 1:1 com OTRS Report."""
+    sql = """
+    SELECT
+      t.tn AS num,
+      q.name AS fila,
+      ts.name AS estado,
+      t.customer_id AS cli_id,
+      t.customer_user_id AS cli_user,
+      DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s') AS criado,
+      DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s') AS modificado,
+      (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
+       FROM ticket_history th
+       WHERE th.ticket_id = t.id
+         AND th.state_id IN (2, 3, 5, 9, 17, 18, 19)) AS fechado
+    FROM ticket t
+    JOIN queue q ON t.queue_id = q.id
+    JOIN ticket_state ts ON t.ticket_state_id = ts.id
+    WHERE t.customer_id = 'AUTOZONE'
+      AND (
+        (t.create_time >= '2026-04-01' AND t.create_time < '2026-05-01')
+        OR (t.change_time >= '2026-04-01' AND t.change_time < '2026-05-01')
+      )
+    ORDER BY t.change_time DESC
+    LIMIT 500
+    """
+    return query_mysql(session, sql)
+
+
 def q_utilizacao(session: requests.Session) -> list[dict]:
     """Carga atual por atendente: count de ativos e em_atendimento.
     Simplificação: não computa % de utilização histórica (exigiria time-series),
@@ -421,6 +473,8 @@ def main() -> None:
         ("utilizacao.json",        q_utilizacao,        None),
         ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
+        ("_diag_filas.json",       q_diagnostic_filas,   {"obs": "diagnóstico: todas as filas com atividade em 4 meses"}),
+        ("_diag_autozone_abr.json", q_diagnostic_autozone_abr, {"obs": "diagnóstico: tickets AutoZone abril completos"}),
     ]
 
     collected = {}
