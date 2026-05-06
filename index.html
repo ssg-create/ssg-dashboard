@@ -1588,6 +1588,56 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .cs-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
 .cs-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
 .cs-scope-strip .scope-mute{color:var(--muted)}
+/* Scope strip + blocos da aba Ações (redesign 2026-05-05 parte 6) — tema laranja/operacional */
+.acoes-scope-strip{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 0 0;padding:5px 11px;background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(244,63,94,.04));border:1px solid rgba(245,158,11,.22);border-radius:999px;width:fit-content}
+.acoes-scope-strip .scope-chip{padding:2px 8px;border-radius:6px;font-weight:600;background:rgba(245,158,11,.16);color:#fbbf24}
+.acoes-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
+.acoes-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
+.acoes-scope-strip .scope-chip-cli{background:rgba(244,63,94,.14);color:#fb7185}
+.acoes-scope-strip .scope-mute{color:var(--muted)}
+.acoes-block{margin-bottom:32px;scroll-margin-top:80px}
+.acoes-block:last-child{margin-bottom:0}
+.acoes-block-head{margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px}
+.acoes-block-head h2{font-size:17px;font-weight:700;color:var(--text);margin:0 0 4px 0;letter-spacing:-.01em}
+.acoes-block-head p{font-size:11.5px;color:var(--muted);margin:0;font-family:var(--mono)}
+.acoes-block-head .acoes-counter{font-size:11px;font-family:var(--mono);color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:3px 10px;border-radius:999px;font-weight:700}
+.acoes-hist-warn{font-size:11.5px;color:#c4b5fd;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.22);border-radius:8px;padding:10px 14px;line-height:1.5}
+.acoes-hist-warn b{color:#e9d5ff}
+.acoes-empty{text-align:center;padding:24px 16px;font-size:12px;color:var(--muted);background:var(--bg2);border:1px dashed var(--border);border-radius:8px}
+.acoes-opp-card{border-left:3px solid #3b82f6;margin-bottom:12px;padding:14px 16px;background:var(--bg);border-radius:8px;border:1px solid var(--border);position:relative}
+.acoes-opp-card.tier-A{border-left-color:#10b981}
+.acoes-opp-card.tier-B{border-left-color:#3b82f6}
+.acoes-opp-card.tier-C{border-left-color:#a78bfa}
+.acoes-opp-tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+.acoes-opp-card.tier-A .acoes-opp-tag{color:#10b981;background:rgba(16,185,129,.14)}
+.acoes-opp-card.tier-B .acoes-opp-tag{color:#3b82f6;background:rgba(59,130,246,.14)}
+.acoes-opp-card.tier-C .acoes-opp-tag{color:#a78bfa;background:rgba(167,139,250,.14)}
+.acoes-opp-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:4px}
+.acoes-opp-meta{font-size:10.5px;color:var(--muted);margin-bottom:8px}
+.acoes-opp-meta .acoes-opp-cli{color:var(--text);font-weight:600}
+.acoes-opp-acao{background:var(--bg2);border-radius:6px;padding:8px 11px;font-size:11.5px;color:var(--sub);line-height:1.5}
+.acoes-opp-acao b{color:var(--text)}
+.acoes-opp-value{position:absolute;top:14px;right:16px;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px}
+.acoes-opp-value.alto{background:rgba(16,185,129,.14);color:#10b981}
+.acoes-opp-value.medio{background:rgba(245,158,11,.14);color:#f59e0b}
+.acoes-opp-value.baixo{background:rgba(148,163,184,.14);color:#94a3b8}
+.acoes-plan-btn{padding:7px 14px;background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.08));border:1px solid rgba(245,158,11,.4);color:#fbbf24;border-radius:8px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.02em;display:inline-flex;align-items:center;gap:6px}
+.acoes-plan-btn:hover{background:linear-gradient(135deg,rgba(245,158,11,.28),rgba(245,158,11,.14));border-color:rgba(245,158,11,.6)}
+@media print{
+  .acoes-plan-btn,#acoes-print-skip{display:none !important}
+  .acoes-block{break-inside:avoid;page-break-inside:avoid}
+  /* Modo briefing: esconde tudo fora do bloco oportunidades */
+  body.print-briefing #global-header,
+  body.print-briefing #sidebar,
+  body.print-briefing .topbar,
+  body.print-briefing .view:not(#view-acoes),
+  body.print-briefing #acoes-op,
+  body.print-briefing #acoes-body > div:first-child{display:none !important}
+  body.print-briefing #view-acoes{display:block !important;padding:0}
+  body.print-briefing .acoes-opp-card{break-inside:avoid;page-break-inside:avoid;border-color:#ddd !important;background:#fff !important}
+  body.print-briefing .acoes-opp-card .acoes-opp-acao{background:#f7f7f7 !important;color:#333 !important}
+  body.print-briefing .acoes-opp-card .acoes-opp-title{color:#000 !important}
+}
 [data-theme="light"] .cs-hero{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08);border-color:rgba(148,163,184,.3)}
 [data-theme="light"] .cs-hero-overview::before{background:radial-gradient(circle at 88% 25%,rgba(168,85,247,.1),transparent 52%)}
 [data-theme="light"] .cs-hero-health::before{background:radial-gradient(circle at 88% 25%,rgba(16,185,129,.1),transparent 52%)}
@@ -2894,9 +2944,15 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 
 <!-- ══════ AÇÕES VIEW ══════ -->
 <div id="view-acoes" class="view">
-  <div class="page-header">
-    <h1>🚨 Ações da Operação</h1>
-    <p>Chamados que requerem ação imediata · atualizado automaticamente com os filtros ativos</p>
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div style="flex:1;min-width:0">
+      <h1>🚨 Ações da Operação</h1>
+      <p>Operação imediata + oportunidades comerciais — atualizado automaticamente com os filtros ativos</p>
+      <div id="acoes-scope-strip" class="acoes-scope-strip">—</div>
+    </div>
+    <div id="acoes-print-skip" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="exportBriefingComercial()" class="acoes-plan-btn" title="Imprimir/exportar PDF apenas do bloco de oportunidades comerciais">📋 Briefing Comercial</button>
+    </div>
   </div>
   <div class="page-body" id="acoes-body">
     <div style="color:var(--muted);font-size:13px;padding:24px 0">Carregando dados…</div>
@@ -14234,17 +14290,268 @@ function gerarAcoes(op) {
   return acoes.slice(0, 7);
 }
 
+// ── helpers de escopo da aba Ações (parte 6) ───────────────────────
+// Detecta se o filtro ativo é histórico (mês passado ou range) — operacional não roda nesse caso.
+function _acoesIsHistorical(){
+  if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd) return true;
+  if(typeof activeMonth==='undefined' || activeMonth==='all') return false;
+  // Mês corrente (live) vs histórico
+  var now=new Date();
+  var mesCorrente=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  return activeMonth!==mesCorrente;
+}
+function _acoesScopeLabel(){
+  // Reusa _csScopeLabel quando disponível (mesma fonte de verdade)
+  if(typeof _csScopeLabel==='function') return _csScopeLabel();
+  return 'todo período';
+}
+function _acoesScopeStrip(){
+  var el=document.getElementById('acoes-scope-strip');
+  if(!el) return;
+  var chips=[];
+  var hist=_acoesIsHistorical();
+  chips.push('<span class="scope-chip '+(hist?'scope-chip-hist':'scope-chip-live')+'">'+(hist?'📅 Histórico':'📡 Live')+'</span>');
+  chips.push('<span class="scope-chip">'+_acoesScopeLabel()+'</span>');
+  if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
+    chips.push('<span class="scope-chip">Fila: '+activeFilaOP+'</span>');
+  }
+  if(typeof activeCliente!=='undefined' && activeCliente){
+    var nomeCli=(EMPRESAS[activeCliente]&&EMPRESAS[activeCliente].nome)||activeCliente;
+    chips.push('<span class="scope-chip scope-chip-cli">Cliente: '+nomeCli+'</span>');
+  }
+  el.innerHTML=chips.join(' ');
+}
+
+// ── gerarOportunidadesComerciais(op) ──────────────────────────────
+// Motor novo: gera oportunidades de venda/projeto pro Comercial/CS.
+// Limites validados contra a base real (5 expansão, 11 consultoria, 9 churn).
+// Retorna até 8 oportunidades, ordenadas por valor potencial desc.
+function gerarOportunidadesComerciais(op){
+  var ops=[];
+  if(typeof EMPRESAS==='undefined'||!EMPRESAS) return ops;
+
+  var hasFiltroCli=typeof activeCliente!=='undefined' && activeCliente && EMPRESAS[activeCliente];
+
+  // Helper: tier de valor potencial (alto/medio/baixo)
+  function tierByVol(vol){ return vol>=100?'alto':vol>=30?'medio':'baixo'; }
+  function tierAB(vol){ return vol>=100?'A':vol>=30?'B':'C'; }
+
+  // Constrói lista de clientes com snapshot (total, sla, vol_ult, vol_pen)
+  // by_mes usa formato 'Abr/26' (não ISO) — converter via mNames
+  var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  function isoToByMesKey(iso){
+    if(!iso || iso==='all') return null;
+    var p=String(iso).split('-');
+    return mNames[p[1]]+'/'+(p[0]||'').slice(2);
+  }
+  var meses=Object.keys(OP_MESES||{}).filter(function(k){return k!=='all';}).sort();
+  var ultISO=meses[meses.length-1], penISO=meses[meses.length-2];
+  var ultM=isoToByMesKey(ultISO), penM=isoToByMesKey(penISO);
+  var clientes=[];
+  Object.keys(EMPRESAS).forEach(function(k){
+    var e=EMPRESAS[k];
+    if(!e) return;
+    var byM=e.by_mes||{};
+    clientes.push({
+      key:k,
+      nome:e.nome||k,
+      total:e.total||0,
+      sla:(e.sla_pct!=null)?e.sla_pct:(e.sla?e.sla.pct_within_sla:null),
+      vol_ult:(ultM && byM[ultM])||0,
+      vol_pen:(penM && byM[penM])||0,
+      svc:e.servicos||{},
+      tickets:e.tickets||[]
+    });
+  });
+
+  // ── Quando filtro=cliente: oportunidades temáticas (desse cliente) ─────
+  if(hasFiltroCli){
+    var cli=clientes.filter(function(c){return c.key===activeCliente;})[0];
+    if(cli){
+      // Áreas top do cliente (usando svc -> última parte é a area; ou Macro::Area se houver classifyArea)
+      var areasCli={};
+      var svcMap=cli.svc||{};
+      Object.keys(svcMap).forEach(function(s){
+        var label=s;
+        if(typeof classifyArea==='function'){
+          var c2=classifyArea(s);
+          label=(c2.macro&&c2.area)?(c2.macro+' · '+c2.area):c2.area||s;
+        }
+        areasCli[label]=(areasCli[label]||0)+(svcMap[s]||0);
+      });
+      var topAreas=Object.keys(areasCli).map(function(k){return{a:k,v:areasCli[k]};})
+        .sort(function(a,b){return b.v-a.v;}).slice(0,3);
+      var totalC=cli.total||1;
+      topAreas.forEach(function(t,i){
+        var pct=Math.round((t.v/totalC)*100);
+        if(pct<15) return; // só mostra áreas relevantes (≥15% do volume do cliente)
+        ops.push({
+          tipo:'tematica', tier:i===0?'A':'B', valor:tierByVol(t.v),
+          tag:'🎯 Concentração temática',
+          titulo:cli.nome+' tem '+pct+'% do volume em <b>'+t.a+'</b>',
+          meta:t.v+' chamados nesta área · '+totalC+' totais do cliente',
+          acao:'Propor projeto/consultoria específica de <b>'+t.a+'</b>: documentação proativa, automação ou treinamento. Conversar com '+cli.nome+' em QBR.',
+          origem:cli.nome+' · '+t.v+'/'+totalC+' chamados em '+t.a
+        });
+      });
+    }
+  }
+
+  // ── EXPANSÃO: clientes saudáveis com volume relevante (cross-sell/QBR) ──
+  // Critério: total ≥30 + sla ≥75 (5 candidatos atualmente)
+  // Skip quando filtrou cliente único (faz sentido só na visão consolidada)
+  if(!hasFiltroCli){
+    var expansao=clientes.filter(function(c){return c.total>=30 && c.sla!=null && c.sla>=75;})
+      .sort(function(a,b){return (b.sla*b.total)-(a.sla*a.total);}).slice(0,5);
+    expansao.forEach(function(c,i){
+      ops.push({
+        tipo:'expansao', tier:i<2?'A':'B', valor:tierByVol(c.total),
+        tag:'🟢 Expansão',
+        titulo:c.nome+' — base saudável com SLA '+c.sla+'%',
+        meta:c.total+' chamados no histórico · vol mês atual: '+c.vol_ult+' · cliente "fácil de servir"',
+        acao:'Candidato a <b>cross-sell, QBR estratégico ou expansão de plano</b>. Apresentar novos módulos ou serviços (cloud, monitoramento avançado, automação).',
+        origem:'SLA '+c.sla+'% · '+c.total+' chamados'
+      });
+    });
+  }
+
+  // ── CONSULTORIA: clientes com SLA baixo + volume relevante (projeto melhoria) ──
+  // Critério: total ≥20 + sla <70 (11 candidatos atualmente — top 5)
+  if(!hasFiltroCli){
+    var consultoria=clientes.filter(function(c){return c.total>=20 && c.sla!=null && c.sla<70;})
+      .sort(function(a,b){return a.sla-b.sla;}).slice(0,5);
+    consultoria.forEach(function(c,i){
+      ops.push({
+        tipo:'consultoria', tier:i===0?'A':'B', valor:tierByVol(c.total),
+        tag:'🟡 Consultoria / Projeto',
+        titulo:c.nome+' — SLA '+c.sla+'% (abaixo do esperado)',
+        meta:c.total+' chamados · oportunidade de projeto de melhoria/saneamento',
+        acao:'Propor <b>projeto de consultoria/melhoria</b>: análise de causa raiz, automação dos chamados recorrentes, treinamento da equipe do cliente. Justifica QBR técnico.',
+        origem:'SLA '+c.sla+'% · '+c.total+' chamados'
+      });
+    });
+  } else if(activeCliente){
+    // Quando filtrou um cliente, trata como caso individual de consultoria se SLA <70
+    var cli2=clientes.filter(function(c){return c.key===activeCliente;})[0];
+    if(cli2 && cli2.total>=20 && cli2.sla!=null && cli2.sla<70){
+      ops.push({
+        tipo:'consultoria', tier:'A', valor:tierByVol(cli2.total),
+        tag:'🟡 Consultoria / Projeto',
+        titulo:cli2.nome+' — SLA '+cli2.sla+'% sinaliza projeto de melhoria',
+        meta:cli2.total+' chamados · escopo: análise causa raiz + saneamento',
+        acao:'Propor <b>projeto de consultoria</b> dedicado a '+cli2.nome+': mapear causas dos atrasos, automação e plano de redução de chamados. Excelente justificativa para QBR técnico.',
+        origem:'SLA '+cli2.sla+'% · '+cli2.total+' chamados'
+      });
+    }
+  }
+
+  // ── CHURN: clientes com queda mês-a-mês ≥30% (sinal de risco) ──
+  // Critério: vol_pen ≥10 + queda ≥30% (5 candidatos)
+  if(penM){
+    var churnList=clientes.filter(function(c){
+      if(c.vol_pen<10) return false;
+      if(c.vol_ult<0) return false;
+      var d=(c.vol_ult-c.vol_pen)/c.vol_pen;
+      return d<=-0.30;
+    });
+    if(hasFiltroCli) churnList=churnList.filter(function(c){return c.key===activeCliente;});
+    churnList.sort(function(a,b){return (b.vol_pen-b.vol_ult)-(a.vol_pen-a.vol_ult);}).slice(0,5).forEach(function(c){
+      var delta=Math.round(((c.vol_ult-c.vol_pen)/c.vol_pen)*100);
+      ops.push({
+        tipo:'churn', tier:'A', valor:tierByVol(c.vol_pen),
+        tag:'🔴 Risco comercial',
+        titulo:c.nome+' caiu '+delta+'% no volume mês a mês',
+        meta:'Mês anterior: '+c.vol_pen+' chamados · Atual: '+c.vol_ult+' · sinal de afastamento',
+        acao:'<b>Atenção comercial imediata</b>: pode ser sinal de churn, redução de operação ou migração para outro fornecedor. Acionar Customer Success/Comercial para reunião de status.',
+        origem:c.vol_pen+'→'+c.vol_ult+' chamados · '+delta+'%'
+      });
+    });
+  }
+
+  // ── CRESCIMENTO: clientes com alta ≥30% (oportunidade de acompanhar) ──
+  if(penM && !hasFiltroCli){
+    var cresc=clientes.filter(function(c){
+      if(c.vol_pen<5) return false;
+      var d=(c.vol_ult-c.vol_pen)/c.vol_pen;
+      return d>=0.30;
+    }).sort(function(a,b){return (b.vol_ult-b.vol_pen)-(a.vol_ult-a.vol_pen);}).slice(0,5);
+    cresc.forEach(function(c){
+      var delta=Math.round(((c.vol_ult-c.vol_pen)/c.vol_pen)*100);
+      ops.push({
+        tipo:'crescimento', tier:'B', valor:tierByVol(c.vol_ult),
+        tag:'📈 Crescimento',
+        titulo:c.nome+' cresceu +'+delta+'% mês a mês',
+        meta:'Mês anterior: '+c.vol_pen+' · Atual: '+c.vol_ult+' chamados · operação aquecendo',
+        acao:'Cliente em expansão de demanda. Avaliar <b>upgrade de plano, alocação dedicada ou pacote de horas extra</b> antes que vire problema de SLA.',
+        origem:c.vol_pen+'→'+c.vol_ult+' chamados · +'+delta+'%'
+      });
+    });
+  }
+
+  // ── ÁREAS: top áreas Macro::Area do AI_DATA (oportunidade de automação/painel) ──
+  // Quando não há filtro de cliente — visão estrutural da operação inteira.
+  if(!hasFiltroCli && typeof AI_DATA!=='undefined' && AI_DATA && AI_DATA.areas){
+    var topAreasOp=AI_DATA.areas.filter(function(a){return a.total>=40;}).slice(0,3);
+    topAreasOp.forEach(function(a,i){
+      ops.push({
+        tipo:'area', tier:i===0?'A':'B', valor:tierByVol(a.total),
+        tag:'💡 Automação por área',
+        titulo:'<b>'+a.macro+' · '+a.area+'</b> concentra '+a.total+' chamados',
+        meta:'Top '+(i+1)+' área da operação · candidata a projeto/produto',
+        acao:'Avaliar <b>projeto de automação, painel dedicado ou produto recorrente</b> para esta área. Empacota como oferta comercial pra outros clientes que também consomem '+a.area+'.',
+        origem:a.macro+' · '+a.area+' · '+a.total+' chamados'
+      });
+    });
+  }
+
+  // Ordena: tier A > B > C, depois por valor (alto > medio > baixo)
+  var TIERORD={A:0,B:1,C:2};
+  var VALORD={alto:0,medio:1,baixo:2};
+  ops.sort(function(a,b){
+    var t=(TIERORD[a.tier]||0)-(TIERORD[b.tier]||0);
+    if(t!==0) return t;
+    return (VALORD[a.valor]||0)-(VALORD[b.valor]||0);
+  });
+
+  return ops.slice(0,8);
+}
+
+// ── exportBriefingComercial: imprime/exporta PDF do bloco oportunidades ──
+function exportBriefingComercial(){
+  // Adiciona class no body pra esconder o resto via @media print da CSS específica
+  var orig=document.title;
+  var scope=_acoesScopeLabel();
+  var cli=(typeof activeCliente!=='undefined' && activeCliente && EMPRESAS[activeCliente]) ? (EMPRESAS[activeCliente].nome||activeCliente) : '';
+  document.title='Briefing Comercial — '+(cli?cli+' · ':'')+scope;
+  // Marca classe pra esconder seções não-oportunidade durante print
+  document.body.classList.add('print-briefing');
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){
+      document.body.classList.remove('print-briefing');
+      document.title=orig;
+    }, 500);
+  }, 150);
+}
+
 // ── renderAcoes() ─────────────────────────────────────────────
 function renderAcoes() {
   var el = document.getElementById('acoes-body');
   if(!el) return;
 
+  // Atualiza scope strip do header (sempre, independente do conteúdo)
+  try { _acoesScopeStrip(); } catch(e){ console.warn('acoes scope strip:',e); }
+
   var op    = getActiveOP();
   var acoes = gerarAcoes(op);
+  var opsCom= gerarOportunidadesComerciais(op);
 
-  var criticos     = acoes.filter(function(a){ return a.prioridade === 'critico'; });
-  var atencao      = acoes.filter(function(a){ return a.prioridade === 'atencao'; });
-  var oportunidade = acoes.filter(function(a){ return a.prioridade === 'oportunidade'; });
+  // Separa críticos/atenção (operacional) das oportunidades antigas (regras 7-8)
+  var criticos = acoes.filter(function(a){ return a.prioridade === 'critico'; });
+  var atencao  = acoes.filter(function(a){ return a.prioridade === 'atencao'; });
+  var oportunidadeAntiga = acoes.filter(function(a){ return a.prioridade === 'oportunidade'; });
+
+  var isHist = _acoesIsHistorical();
 
   var PRAZO_LABEL = { imediato:'⚡ Imediato', hoje:'📅 Hoje', semana:'📆 Esta semana' };
   var PRAZO_COLOR = { imediato:'#f43f5e', hoje:'#f59e0b', semana:'#3b82f6' };
@@ -14254,6 +14561,7 @@ function renderAcoes() {
   var PRIORIDADE_LABEL = { critico:'🔴 Crítico', atencao:'🟡 Atenção', oportunidade:'💡 Oportunidade' };
   var PRIORIDADE_BG    = { critico:'rgba(244,63,94,0.15)', atencao:'rgba(245,158,11,0.15)', oportunidade:'rgba(59,130,246,0.15)' };
 
+  // Card operacional (regras 1-6 / 7-8 antigas) — preserva botões status
   function fmtCard(a) {
     var priorCor = a.prioridade === 'critico' ? '#f43f5e' : (a.prioridade === 'atencao' ? '#f59e0b' : '#3b82f6');
     function btnStyle(s) {
@@ -14264,6 +14572,10 @@ function renderAcoes() {
           : 'background:var(--bg3);color:var(--muted);border:none;');
     }
     var safeId = a.id.replace(/'/g, "\\'");
+    // Linka origens "#1234" → URL OTRS (mesmo padrão usado nas outras abas)
+    var origemHTML = (a.origem || '').replace(/#(\d{4,})/g, function(_,n){
+      return '<a href="https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+n+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-decoration-style:dotted">#'+n+'</a>';
+    });
     return '<div class="card" style="border-left:3px solid ' + priorCor + ';margin-bottom:12px;padding:14px 16px">'
       + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">'
       +   '<div style="flex:1;min-width:0">'
@@ -14272,7 +14584,7 @@ function renderAcoes() {
       +     '<div style="font-size:10px;color:var(--muted)">'
       +       '<span style="color:' + PRAZO_COLOR[a.prazo] + ';font-weight:600">' + PRAZO_LABEL[a.prazo] + '</span>'
       +       '&nbsp;·&nbsp;' + a.responsavel
-      +       '&nbsp;·&nbsp;<span style="font-family:var(--mono)">' + a.origem + '</span>'
+      +       '&nbsp;·&nbsp;<span style="font-family:var(--mono)">' + origemHTML + '</span>'
       +     '</div>'
       +   '</div>'
       + '</div>'
@@ -14288,33 +14600,82 @@ function renderAcoes() {
       + '</div>';
   }
 
+  // Card de oportunidade comercial (novo motor) — sem botões status (não é to-do operacional)
+  function fmtOpCard(o){
+    var VALOR_LABEL={alto:'Alto valor',medio:'Valor médio',baixo:'Baixo valor'};
+    return '<div class="acoes-opp-card tier-'+o.tier+'">'
+      + '<span class="acoes-opp-value '+o.valor+'">'+VALOR_LABEL[o.valor]+'</span>'
+      + '<div class="acoes-opp-tag">'+o.tag+'</div>'
+      + '<div class="acoes-opp-title">'+o.titulo+'</div>'
+      + '<div class="acoes-opp-meta">'+o.meta+'</div>'
+      + '<div class="acoes-opp-acao"><b>→ </b>'+o.acao+'</div>'
+      + '</div>';
+  }
+
   function fmtSection(emoji, label, cor, items) {
     if(!items.length) return '';
     return '<div style="font-family:var(--display);font-size:11px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;margin-top:4px">' + emoji + ' ' + label + '</div>'
       + items.map(fmtCard).join('');
   }
 
-  var total = acoes.length;
+  var totalOper = criticos.length + atencao.length;
+  var totalOps  = opsCom.length + oportunidadeAntiga.length;
   var H = '';
 
-  // Resumo executivo
+  // ─────── Mini-resumo (escopo + contadores) ───────
   H += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r)">'
     + '<div>'
-    +   '<div style="font-family:var(--mono);font-size:28px;font-weight:700;color:' + (criticos.length > 0 ? '#f43f5e' : total > 0 ? '#f59e0b' : 'var(--ok)') + '">' + total + '</div>'
-    +   '<div style="font-size:11px;color:var(--muted)">ações recomendadas</div>'
+    +   '<div style="font-family:var(--mono);font-size:28px;font-weight:700;color:' + (criticos.length > 0 ? '#f43f5e' : totalOper > 0 ? '#f59e0b' : 'var(--ok)') + '">' + (totalOper+totalOps) + '</div>'
+    +   '<div style="font-size:11px;color:var(--muted)">itens recomendados</div>'
     + '</div>'
-    + '<div style="flex:1;border-left:1px solid var(--border);padding-left:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+    + '<div style="flex:1;border-left:1px solid var(--border);padding-left:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'
     +   '<div><span style="font-size:10px;color:#f43f5e;font-weight:700">🔴 Crítico</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;margin-left:8px">' + criticos.length + '</span></div>'
     +   '<div><span style="font-size:10px;color:#f59e0b;font-weight:700">🟡 Atenção</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;margin-left:8px">' + atencao.length + '</span></div>'
-    +   '<div><span style="font-size:10px;color:#3b82f6;font-weight:700">💡 Oportunidade</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;margin-left:8px">' + oportunidade.length + '</span></div>'
+    +   '<div><span style="font-size:10px;color:#10b981;font-weight:700">🟢 Comercial</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;margin-left:8px">' + opsCom.length + '</span></div>'
+    +   '<div><span style="font-size:10px;color:#3b82f6;font-weight:700">💡 Outros</span><span style="font-family:var(--mono);font-size:15px;font-weight:700;margin-left:8px">' + oportunidadeAntiga.length + '</span></div>'
     + '</div>'
     + '</div>';
 
-  H += fmtSection('🔴', 'Críticos',      '#f43f5e', criticos);
-  H += fmtSection('🟡', 'Atenção',       '#f59e0b', atencao);
-  H += fmtSection('💡', 'Oportunidades', '#3b82f6', oportunidade);
+  // ─────── BLOCO 1 — OPERAÇÃO ───────
+  H += '<section class="acoes-block" id="acoes-op">'
+    + '<div class="acoes-block-head">'
+    +   '<div><h2>🚨 Operação</h2><p>Itens críticos e de atenção que precisam de ação imediata · baseado em chamados ATIVOS</p></div>'
+    +   '<span class="acoes-counter">' + totalOper + ' itens</span>'
+    + '</div>';
+  // Quando escopo é histórico E não temos itens operacionais, explicamos por quê
+  if(isHist && totalOper === 0){
+    H += '<div class="acoes-hist-warn">⏳ <b>Escopo histórico</b> — não há chamados ATIVOS criados em ' + _acoesScopeLabel() + ' que ainda estejam em aberto. Operacional ao vivo (SLA em risco, backlog envelhecido) só aparece quando há tickets do escopo ainda abertos. Mude para <b>"Atual"</b> no filtro de mês para ver toda a operação ao vivo.</div>';
+  } else if(totalOper === 0){
+    H += '<div class="acoes-empty">✅ Nenhum item crítico ou de atenção no escopo atual — operação saudável.</div>';
+  } else {
+    if(isHist){
+      H += '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-style:italic">📅 Itens abaixo são chamados criados em ' + _acoesScopeLabel() + ' que ainda estão em aberto.</div>';
+    }
+    H += fmtSection('🔴', 'Críticos', '#f43f5e', criticos);
+    H += fmtSection('🟡', 'Atenção',  '#f59e0b', atencao);
+  }
+  H += '</section>';
 
-  if(total === 0) {
+  // ─────── BLOCO 2 — OPORTUNIDADES COMERCIAIS ───────
+  H += '<section class="acoes-block" id="acoes-comercial">'
+    + '<div class="acoes-block-head">'
+    +   '<div><h2>💼 Oportunidades Comerciais</h2><p>Sinais para projetos, expansão, consultoria e prevenção de churn — pronto pro time comercial</p></div>'
+    +   '<span class="acoes-counter">' + opsCom.length + ' oportunidades</span>'
+    + '</div>';
+  if(opsCom.length === 0){
+    H += '<div class="acoes-empty">Nenhuma oportunidade comercial detectada no escopo atual. Tente ampliar o filtro (mês = Atual ou todos).</div>';
+  } else {
+    H += opsCom.map(fmtOpCard).join('');
+  }
+  // Oportunidades antigas (concentração) ficam aqui também, em sub-seção
+  if(oportunidadeAntiga.length){
+    H += '<div style="font-family:var(--display);font-size:10.5px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 10px">💡 Concentrações detectadas</div>';
+    H += oportunidadeAntiga.map(fmtCard).join('');
+  }
+  H += '</section>';
+
+  // ─────── BLOCO 3 — RESUMO EXECUTIVO ───────
+  if(totalOper === 0 && totalOps === 0) {
     H += '<div style="text-align:center;padding:48px 24px">'
       + '<div style="font-size:40px;margin-bottom:12px">✅</div>'
       + '<div style="font-family:var(--display);font-size:16px;font-weight:700;color:var(--ok)">Nenhuma ação necessária</div>'
