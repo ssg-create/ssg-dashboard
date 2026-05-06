@@ -1692,7 +1692,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="nav" onclick="goSec('op','s-wh',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="11" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="15" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/></svg>Heatmap por Analista</div>
     <div class="sb-head">Gestão</div>
     <div class="nav" onclick="goSec('op','s-sl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>SLA & Tempos</div>
-    <div class="nav" onclick="goSec('op','s-bl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Bloqueados</div>
+    <div class="nav" onclick="goSec('op','s-bl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Em Espera</div>
     <div class="nav" onclick="goSec('op','s-fv',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="18" y1="2" x2="22" y2="6"/><line x1="22" y1="2" x2="18" y2="6"/></svg>Previsão de Volume</div>
     <div class="nav" onclick="goSec('op','s-bk',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Backlog</div>
 
@@ -1823,8 +1823,8 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <div class="kpi-row kpi-row-4">
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl">Bloqueados</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">fila SSG operando</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
+        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl" id="kpi-l-7">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">equipe ativa</div></div>
       </div>
       <div class="grid2">
         <div class="card card-mb fu">
@@ -1889,7 +1889,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       </div>
       <div class="kpi-row kpi-row-3">
         <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)" id="kpi-ma-abertos">37</div><div class="kpi-sub" id="kpi-ma-sub">exige atenção imediata</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Bloqueados totais</div><div class="kpi-val" style="color:var(--orange)" id="kpi-bloq-aging">—</div><div class="kpi-sub" id="kpi-bloq-sub">aguardando ação</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Em Espera (totais)</div><div class="kpi-val" style="color:var(--orange)" id="kpi-bloq-aging">—</div><div class="kpi-sub" id="kpi-bloq-sub">aguardando ação</div></div>
         <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Sem 1ª resposta +30min</div><div class="kpi-val" style="color:var(--warn)" id="kpi-sem-resp">63</div><div class="kpi-sub">acima da meta</div></div>
       </div>
       <div class="alert-card">
@@ -1917,7 +1917,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
         <div id="lista-criticos"></div>
       </div>
       <div class="grid2">
-        <div class="card"><div class="card-title">Distribuição de bloqueados</div><div id="bloq-dist"></div></div>
+        <div class="card"><div class="card-title">Distribuição de espera</div><div id="bloq-dist"></div></div>
         <div class="card"><div class="card-title">Atendentes com maior backlog</div><div class="cw" style="height:200px"><canvas id="c-backlog"></canvas></div></div>
       </div>
       <div id="aging-card" class="card" style="margin-top:16px;display:none"></div>
@@ -2225,17 +2225,17 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
   </div>
 
-  <!-- BLOQUEADOS -->
+  <!-- EM ESPERA -->
   <div id="s-bl" class="sec">
-    <div class="page-header"><h1>Chamados Bloqueados</h1><p>Aguardando ação — risco de aging e insatisfação</p></div>
+    <div class="page-header"><h1>Chamados em Espera</h1><p>Aguardando retorno — risco de aging e insatisfação</p></div>
     <div class="page-body">
       <div class="bl-hero" id="bl-hero">
         <div class="gw-hero-grid">
           <div class="gw-hero-left">
-            <div class="gw-hero-tag"><span class="gw-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b;animation:ialPulse 2s ease-in-out infinite"></span>BLOQUEADOS · RISCO DE AGING</div>
+            <div class="gw-hero-tag"><span class="gw-dot" style="background:#f59e0b;box-shadow:0 0 10px #f59e0b;animation:ialPulse 2s ease-in-out infinite"></span>EM ESPERA · RISCO DE AGING</div>
             <div class="gw-hero-status bl-hero-status" id="bl-hero-status">—</div>
             <div class="gw-hero-sub" id="bl-hero-sub">calculando motivos…</div>
-            <div class="gw-hero-meta">aguardando ação — risco de aging e insatisfação</div>
+            <div class="gw-hero-meta">aguardando retorno — risco de aging e insatisfação</div>
           </div>
           <div class="gw-ring bl-ring" id="bl-ring">
             <svg viewBox="0 0 200 200">
@@ -2244,17 +2244,17 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             </svg>
             <div class="gw-ring-core">
               <div class="gw-ring-num" id="bl-ring-num">—</div>
-              <div class="gw-ring-lbl">bloqueados</div>
+              <div class="gw-ring-lbl">em espera</div>
             </div>
           </div>
         </div>
       </div>
       <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total bloqueados</div><div class="kpi-val" style="color:var(--danger)">119</div><div class="kpi-sub">do volume</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Desbloqueados</div><div class="kpi-val" style="color:var(--ok)">437</div><div class="kpi-sub">fluindo normalmente</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)">54</div><div class="kpi-sub">principal motivo</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
-      <div class="card"><div class="card-title">Motivos de bloqueio</div><div id="bloq-list"></div></div>
+      <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
     </div>
   </div>
 
@@ -3408,7 +3408,7 @@ function populateOvHero(op){
     sub.innerHTML=
       '<strong>'+total.toLocaleString('pt-BR')+'</strong> criados no período · '
       +'<strong>'+abertos+'</strong> '+lblAbertos+' ('+(total>0?Math.round(pctAberto*100):0)+'% do criado) · '
-      +'<strong>'+bloq+'</strong> bloqueados · '
+      +'<strong>'+bloq+'</strong> em espera · '
       +'<strong>'+muitoAlta+'</strong> em prioridade muito alta'
       +(crit?' · <strong style="color:var(--gw)">'+crit+' crítico'+(crit===1?'':'s')+' IA</strong>':'')
       +liveTag;
@@ -3463,7 +3463,7 @@ function populateChHero(op){
       +'<strong>'+fechados+'</strong> fechados · '
       +'<strong>'+taxa+'%</strong> taxa de conclusão · '
       +'<strong>'+muitoAlta+'</strong> prioridade muito alta'+(showLive?' em aberto':'')+' · '
-      +'<strong>'+bloq+'</strong> bloqueados'
+      +'<strong>'+bloq+'</strong> em espera'
       +liveTag;
   }
   if(meta)meta.textContent='distribuição temporal, estados e prioridades';
@@ -3529,7 +3529,12 @@ function populateBlHero(){
     retorno=e['Retorno Cliente']||0;
     total=aguarCli+aguarInt+aguarExt+retorno;
   }
-  hero.textContent=total+' BLOQUEADOS';
+  hero.textContent=total+' EM ESPERA';
+  // Atualizar 3 KPIs da aba s-bl (Total / Sem Atendente / Aguardando Cliente)
+  var elTotal=g('bl-kpi-total'); if(elTotal) elTotal.textContent=total;
+  var elSemAt=g('bl-kpi-semat'); if(elSemAt) elSemAt.textContent=(liveMode?semAtend:'—');
+  var elSemAtSub=g('bl-kpi-semat-sub'); if(elSemAtSub) elSemAtSub.textContent=(liveMode?(semAtend===0?'fila triada':'triagem pendente'):'só visível em modo live');
+  var elCli=g('bl-kpi-cli'); if(elCli) elCli.textContent=aguarCli;
   if(sub){
     var line1='<strong>'+aguarCli+'</strong> aguardando cliente · '
       +'<strong>'+aguarInt+'</strong> aguardando interno · '
@@ -3704,7 +3709,7 @@ function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
     var _alUrl=_alOtrs+'?Action=AgentTicketSearch;Subaction=Search;StateType=Open;PriorityIDs[]=5'+_alFilaQ;
     sub.innerHTML=
       '<strong>'+totalCrit+'</strong> muito alta em aberto · '
-      +'<strong>'+totalBloq+'</strong> bloqueados ('+bloqExato+' com aging) · '
+      +'<strong>'+totalBloq+'</strong> em espera ('+bloqExato+' com aging) · '
       +'<strong>'+semResp+'</strong> sem 1ª resposta &gt;30min'
       +(criticosIA?' · <strong style="color:var(--gw)">'+criticosIA+' crítico'+(criticosIA===1?'':'s')+' IA</strong>':'')
       +liveTag
@@ -3724,10 +3729,10 @@ function populateAlertasHero(totalCrit,totalBloq,semResp,bloqExato){
 
 // Bloqueados por mês (dados reais do Excel)
 var BLOQ_MESES = {
-  'all':     [{l:'Aguardando Cliente',n:54,c:'var(--warn)'},{l:'Aguardando Interno',n:16,c:'var(--purple)'},{l:'Retorno Cliente',n:11,c:'var(--blue)'},{l:'Aguardando Externo',n:2,c:'var(--orange)'},{l:'Outros bloqueados',n:36,c:'var(--muted)'}],
-  '2026-01': [{l:'Aguardando Cliente',n:4,c:'var(--warn)'},{l:'Aguardando Interno',n:3,c:'var(--purple)'},{l:'Retorno Cliente',n:4,c:'var(--blue)'},{l:'Aguardando Externo',n:1,c:'var(--orange)'},{l:'Outros bloqueados',n:6,c:'var(--muted)'}],
-  '2026-02': [{l:'Aguardando Cliente',n:9,c:'var(--warn)'},{l:'Aguardando Interno',n:8,c:'var(--purple)'},{l:'Retorno Cliente',n:5,c:'var(--blue)'},{l:'Aguardando Externo',n:1,c:'var(--orange)'},{l:'Outros bloqueados',n:9,c:'var(--muted)'}],
-  '2026-03': [{l:'Aguardando Cliente',n:41,c:'var(--warn)'},{l:'Aguardando Interno',n:5,c:'var(--purple)'},{l:'Retorno Cliente',n:2,c:'var(--blue)'},{l:'Aguardando Externo',n:0,c:'var(--orange)'},{l:'Outros bloqueados',n:21,c:'var(--muted)'}]
+  'all':     [{l:'Aguardando Cliente',n:54,c:'var(--warn)'},{l:'Aguardando Interno',n:16,c:'var(--purple)'},{l:'Retorno Cliente',n:11,c:'var(--blue)'},{l:'Aguardando Externo',n:2,c:'var(--orange)'},{l:'Outros em espera',n:36,c:'var(--muted)'}],
+  '2026-01': [{l:'Aguardando Cliente',n:4,c:'var(--warn)'},{l:'Aguardando Interno',n:3,c:'var(--purple)'},{l:'Retorno Cliente',n:4,c:'var(--blue)'},{l:'Aguardando Externo',n:1,c:'var(--orange)'},{l:'Outros em espera',n:6,c:'var(--muted)'}],
+  '2026-02': [{l:'Aguardando Cliente',n:9,c:'var(--warn)'},{l:'Aguardando Interno',n:8,c:'var(--purple)'},{l:'Retorno Cliente',n:5,c:'var(--blue)'},{l:'Aguardando Externo',n:1,c:'var(--orange)'},{l:'Outros em espera',n:9,c:'var(--muted)'}],
+  '2026-03': [{l:'Aguardando Cliente',n:41,c:'var(--warn)'},{l:'Aguardando Interno',n:5,c:'var(--purple)'},{l:'Retorno Cliente',n:2,c:'var(--blue)'},{l:'Aguardando Externo',n:0,c:'var(--orange)'},{l:'Outros em espera',n:21,c:'var(--muted)'}]
 };
 // Sem 1ª resposta >30min por mês
 var RESP30_MESES = {'all':63,'2026-01':31,'2026-02':17,'2026-03':15};
@@ -3866,7 +3871,7 @@ function renderAlertas(){
   var alertPill=document.getElementById('alert-criticos-txt');
   if(alertPill) alertPill.textContent=totalCrit+' crítico'+(totalCrit!==1?'s':'')+' aberto'+(totalCrit!==1?'s':'');
   var alertBloqTxt=document.getElementById('alert-bloqueados-txt');
-  if(alertBloqTxt) alertBloqTxt.textContent=totalBloq+' bloqueados';
+  if(alertBloqTxt) alertBloqTxt.textContent=totalBloq+' em espera';
 
   // Botões filtro por FILA
   var filas=[];
@@ -5754,7 +5759,7 @@ function buildBloqEntry(estadoObj){
     {l:'Aguardando Interno',n:estadoObj['Aguardando Interno']||0,c:'var(--purple)'},
     {l:'Retorno Cliente',n:estadoObj['Retorno Cliente']||0,c:'var(--blue)'},
     {l:'Aguardando Externo',n:estadoObj['Aguardando Externo']||0,c:'var(--orange)'},
-    {l:'Outros bloqueados',n:estadoObj['Aberto']||0,c:'var(--muted)'}];
+    {l:'Outros em espera',n:estadoObj['Aberto']||0,c:'var(--muted)'}];
 }
 
 // K13: atualiza o chip "Filtros ativos" no topbar conforme escopo atual.
@@ -5784,8 +5789,18 @@ function updateFilterChip(){
   if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
     parts.push(activeFilaOP);
   }
+  // Modo (LIVE vs HISTÓRICO) — indicador da fonte dos KPIs ao vivo (Em aberto, Em espera, Sem atendente).
+  // Quem usa XLSX (Total, Fechados, etc) é sempre escopado pelo filtro acima.
+  var modoTag = '';
+  if(typeof _shouldShowLive==='function'){
+    if(_shouldShowLive()){
+      modoTag = '<span style="margin-left:6px;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.06em;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.4)">● AO VIVO</span>';
+    } else {
+      modoTag = '<span style="margin-left:6px;padding:1px 7px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.06em;background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.4)">📅 HISTÓRICO</span>';
+    }
+  }
   if(parts.length){
-    txt.textContent = parts.join(' · ');
+    txt.innerHTML = parts.join(' · ') + modoTag;
     chip.classList.add('on');
   } else {
     chip.classList.remove('on');
@@ -7929,7 +7944,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">';
   H+='<div class="kpi"><div class="kpi-lbl">Em aberto</div><div class="kpi-val" style="color:#d97706">'+_ema+'</div><div class="kpi-sub">'+_ema_pct+'% do período</div></div>';
   H+='<div class="kpi '+(_ma>0?'red':'')+'"><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:'+(_ma>0?'#dc2626':'#16a34a')+'">'+_ma+'</div><div class="kpi-sub">'+_ma_pct+'% do volume</div></div>';
-  H+='<div class="kpi orange"><div class="kpi-lbl">Bloqueados</div><div class="kpi-val" style="color:#E8622A">'+_bl+'</div><div class="kpi-sub">'+_bl_pct+'% aguardando</div></div>';
+  H+='<div class="kpi orange"><div class="kpi-lbl">Em Espera</div><div class="kpi-val" style="color:#E8622A">'+_bl+'</div><div class="kpi-sub">'+_bl_pct+'% aguardando</div></div>';
   H+='<div class="kpi"><div class="kpi-lbl">Atendentes</div><div class="kpi-val" style="color:#1a2744">'+_at+'</div><div class="kpi-sub">atuaram no período</div></div>';
   H+='</div>';
   if(_bl>0){
@@ -7938,7 +7953,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     var _bl_x=_bl_e['Aguardando Externo']||0;
     var _bl_r=_bl_e['Retorno Cliente']||0;
     H+='<div style="font-size:10.5px;color:#374151;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;margin-top:8px">';
-    H+='<strong style="color:#E8622A">Detalhamento dos bloqueios:</strong> ';
+    H+='<strong style="color:#E8622A">Detalhamento da espera:</strong> ';
     var _parts=[];
     if(_bl_c>0)_parts.push('<strong>'+_bl_c+'</strong> aguardando cliente');
     if(_bl_i>0)_parts.push('<strong>'+_bl_i+'</strong> aguardando interno');
@@ -9069,10 +9084,24 @@ function updateKPIs(op) {
   var sm=op.sol_med!=null?op.sol_med:null;
   var rmDisp = (rm!=null) ? fmtResp(rm) : '—';
   var smDisp = (sm!=null) ? (sm+'<span>h</span>') : '—';
-  var vals=[total,ab,fe,maTotal,rmDisp,smDisp,bloq,14];
+  // Atendentes do escopo (real, não hardcoded). Conta atendentes únicos no RAW_DATA escopado.
+  var _atSetU={};
+  (typeof RAW_DATA!=='undefined' && RAW_DATA?RAW_DATA:[]).forEach(function(t){
+    if(!t||!t.atend||t.atend==='—') return;
+    if(typeof activeCliente!=='undefined' && activeCliente && t.cli_id!==activeCliente) return;
+    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return;
+    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
+    _atSetU[t.atend]=true;
+  });
+  var atendCount=Object.keys(_atSetU).length;
+  // KPI 8 dual-mode: histórico mostra Atendentes (do escopo). Live: applyLiveKPIs
+  // sobrescreve com Sem Atendente. Aqui só seto o default histórico.
+  var lblK7=document.getElementById('kpi-l-7');
+  if(lblK7) lblK7.textContent='Atendentes';
+  var vals=[total,ab,fe,maTotal,rmDisp,smDisp,bloq,atendCount];
   var colors=['var(--text)','var(--warn)','var(--ok)','var(--danger)','var(--teal)','var(--purple)','var(--orange)','var(--blue)'];
   var rmSub = (rm==null) ? 'sem amostra' : (rm<=META_RESP?'✓ dentro da meta':'acima de '+fmtRespTxt(META_RESP));
-  var subs=[activeMonth==='all'?'jan–mar':'período selecionado',pct(ab,total)+'% do total',taxa+'% de conclusão',pct(maTotal,total)+'% do volume',rmSub,'chamados fechados',pct(bloq,total)+'% aguardando','equipe ativa'];
+  var subs=[activeMonth==='all'?'jan–mar':'período selecionado',pct(ab,total)+'% do total',taxa+'% de conclusão',pct(maTotal,total)+'% do volume',rmSub,'chamados fechados',pct(bloq,total)+'% aguardando','atuaram no período'];
   for(var i=0;i<8;i++){
     var vEl=document.getElementById('kpi-v-'+i);
     var sEl=document.getElementById('kpi-s-'+i);
@@ -9424,12 +9453,16 @@ function applyLiveKPIs(){
   };
   // Modo HISTÓRICO (mês passado / range): NÃO sobrescrever os KPIs com live —
   // updateKPIs(op) já preencheu com valores corretos do XLSX. Só marcar com tag 📅.
+  // KPI 8 fica como "Atendentes" (mostrado em updateKPIs).
   if(!_shouldShowLive()){
     addBadge('kpi-s-1','hist');
     addBadge('kpi-ma-sub','hist');
     addBadge('kpi-bloq-sub','hist');
     addBadge('ch-kpi-bloq-sub','hist');
     addBadge('ch-kpi-ma-sub','hist');
+    // KPI 7 (Em Espera) e 8 (Atendentes) também ganham tag histórico
+    addBadge('kpi-s-6','hist');
+    addBadge('kpi-s-7','hist');
     return;
   }
   var s=liveStats();
@@ -9437,9 +9470,10 @@ function applyLiveKPIs(){
     // Sem dados live ainda: limpa qualquer badge antigo, deixa updateKPIs valer.
     clearBadge('kpi-s-1');clearBadge('kpi-ma-sub');clearBadge('kpi-bloq-sub');
     clearBadge('ch-kpi-bloq-sub');clearBadge('ch-kpi-ma-sub');
+    clearBadge('kpi-s-6');clearBadge('kpi-s-7');
     return;
   }
-  var total=s.abertos, muitoAlta=s.muitoAlta, bloqueados=s.bloqueados;
+  var total=s.abertos, muitoAlta=s.muitoAlta, bloqueados=s.bloqueados, semAtend=s.semAtendente||0;
   // Dashboard (s-ov): KPI "Em aberto"
   setText('kpi-v-1',total);
   addBadge('kpi-s-1','live');
@@ -9453,6 +9487,16 @@ function applyLiveKPIs(){
   addBadge('ch-kpi-bloq-sub','live');
   setText('ch-kpi-ma',muitoAlta);
   addBadge('ch-kpi-ma-sub','live');
+  // KPI 7 (Em Espera) — sobrescreve com bloqueados live + tag
+  setText('kpi-v-6',bloqueados);
+  addBadge('kpi-s-6','live');
+  // KPI 8 dual-mode: vira "Sem Atendente" em live
+  var lblK7=document.getElementById('kpi-l-7');
+  var subK7=document.getElementById('kpi-s-7');
+  if(lblK7) lblK7.textContent='Sem Atendente';
+  setText('kpi-v-7',semAtend);
+  if(subK7) subK7.textContent=(semAtend===0?'fila triada':'triagem pendente');
+  addBadge('kpi-s-7','live');
 }
 function closeTicketDetail(){ var el=document.getElementById('tkd-overlay'); if(el) el.classList.remove('open'); }
 function handleTkdOverlay(e){ if(e.target===document.getElementById('tkd-overlay')) closeTicketDetail(); }
@@ -9602,10 +9646,10 @@ function renderOpActions(op) {
       desc: 'A Groundwork é o gargalo nesses chamados. Levantar pendências técnicas e cobrar avanço.'
     });
   }
-  // 4) Bloqueados com aging
+  // 4) Em espera com aging
   if (bloqTotal > 30) {
     actions.push({level:'atenc',
-      title: bloqTotal + ' chamados bloqueados — risco de aging',
+      title: bloqTotal + ' chamados em espera — risco de aging',
       desc: 'Cobrar retorno de clientes (' + aguardCliente + ') e fornecedores externos. Revisar os mais antigos primeiro.'
     });
   } else if (bloqTotal > 0) {
@@ -11204,8 +11248,8 @@ function renderResumo(){
 
   // ── Status geral ──────────────────────────────────────────
   var statusLevel=0;var statusReasons=[];
-  if(totalBloq>20){statusLevel=Math.max(statusLevel,2);statusReasons.push('bloqueados em nível crítico');}
-  else if(totalBloq>10){statusLevel=Math.max(statusLevel,1);statusReasons.push('bloqueados acima do normal');}
+  if(totalBloq>20){statusLevel=Math.max(statusLevel,2);statusReasons.push('chamados em espera em nível crítico');}
+  else if(totalBloq>10){statusLevel=Math.max(statusLevel,1);statusReasons.push('chamados em espera acima do normal');}
   if(pctMA>40){statusLevel=Math.max(statusLevel,2);statusReasons.push('prioridades críticas em nível crítico');}
   else if(pctMA>30){statusLevel=Math.max(statusLevel,1);statusReasons.push('prioridades críticas elevadas');}
   if(solMed>60){statusLevel=Math.max(statusLevel,2);statusReasons.push('tempo de solução muito elevado');}
@@ -11225,9 +11269,9 @@ function renderResumo(){
   else p1+='<strong>abaixo do esperado</strong> — requer atenção imediata.';
   var p2='';
   if(abertos>0)p2+='Existem atualmente <strong>'+abertos+' chamados em aberto</strong> ('+pctAbertos+'% do volume). ';
-  if(totalBloq>20)p2+='O número de chamados bloqueados está em <strong>'+totalBloq+'</strong>, o que é <strong>crítico e exige ação imediata</strong>.';
-  else if(totalBloq>10)p2+='Existem <strong>'+totalBloq+' chamados bloqueados</strong>, o que <strong>exige atenção</strong>.';
-  else if(totalBloq>0)p2+='Há <strong>'+totalBloq+' chamados bloqueados</strong>, dentro de um nível aceitável.';
+  if(totalBloq>20)p2+='O número de chamados em espera está em <strong>'+totalBloq+'</strong>, o que é <strong>crítico e exige ação imediata</strong>.';
+  else if(totalBloq>10)p2+='Existem <strong>'+totalBloq+' chamados em espera</strong>, o que <strong>exige atenção</strong>.';
+  else if(totalBloq>0)p2+='Há <strong>'+totalBloq+' chamados em espera</strong>, dentro de um nível aceitável.';
   var p3='';
   if(respMed>0){var respH=fmtRespTxt(respMed);p3+='O tempo médio de <strong>primeira resposta</strong> foi de <strong>'+respH+'</strong>'+(respMed<=30?', dentro da meta de 30 minutos.':', acima da meta de 30 minutos.')+' ';}
   if(solMed>0){p3+='O tempo médio de <strong>solução</strong> foi de <strong>'+solMed+'h</strong>'+(solMed<=24?', considerado <strong>bom</strong>.':solMed<=40?', dentro de um nível aceitável.':', <strong>acima do ideal</strong> — recomenda-se revisar chamados antigos.');}
@@ -11286,7 +11330,7 @@ function renderResumo(){
     {l:'Total de Chamados',v:total,s:'no período',c:'var(--blue)'},
     {l:'Chamados Fechados',v:fechados,s:(_emptyScope?'sem dados':taxaConc+'% de conclusão'),c:'var(--ok)'},
     {l:'Em Aberto',v:abertos,s:(_emptyScope?'sem dados':pctAbertos+'% do volume'),c:_emptyScope?'var(--sub)':pctAbertos>30?'var(--danger)':pctAbertos>20?'var(--warn)':'var(--sub)'},
-    {l:'Bloqueados',v:totalBloq,s:'aguardando alguma ação',c:totalBloq>20?'var(--danger)':totalBloq>10?'var(--warn)':'var(--sub)'},
+    {l:'Em Espera',v:totalBloq,s:'aguardando retorno',c:totalBloq>20?'var(--danger)':totalBloq>10?'var(--warn)':'var(--sub)'},
     {l:'Conformidade SLA',v:(slaGeral!=null?slaGeral+'%':'—'),s:(slaSample>0?slaSample+' resolvidos · '+autoClosed+' auto-fechados':'sem amostra'),c:slaGeral==null?'var(--sub)':slaGeral>=90?'var(--ok)':slaGeral>=70?'var(--warn)':'var(--danger)'},
     {l:'Tempo de Solução',v:_solDisp,s:_solSub,c:_solCol==null||_solCol===0?'var(--sub)':_solCol<=40?'var(--ok)':_solCol<=60?'var(--warn)':'var(--danger)'},
     {l:'Prioridade Muito Alta',v:prioMA,s:(_emptyScope?'sem dados':pctMA+'% do volume'),c:_emptyScope?'var(--sub)':pctMA>40?'var(--danger)':pctMA>30?'var(--warn)':'var(--sub)'},
@@ -11753,7 +11797,7 @@ function _advRule_clienteSlaRuim(ctx){
   return {nivel:'warn',titulo:ruins.length+' cliente'+(ruins.length===1?'':'s')+' com solução lenta (>72h úteis)',desc:ruins.map(function(r){return r.c+' med '+r.med.toFixed(1)+'h ('+r.n+')';}).join(' · '),acao:'Prioridade alta em fila pra esses clientes'};
 }
 
-// 14. Bloqueados antigos (Aguardando Cliente >7d)
+// 14. Em espera antigos (Aguardando Cliente >7d)
 function _advRule_bloqueadosAntigos(ctx){
   var hoje=Date.now();
   var bloq=ctx.raw.filter(function(t){
@@ -11763,7 +11807,7 @@ function _advRule_bloqueadosAntigos(ctx){
     return ((hoje-new Date(t.modificado).getTime())/86400000)>7;
   });
   if(!bloq.length) return null;
-  return {nivel:bloq.length>=20?'warn':'info',titulo:bloq.length+' chamados aguardando cliente há >7 dias',desc:'Risco de auto-fechamento sem resolução real. Esses tickets impactam métricas mas estão "esperando".',acao:'Disparar follow-up via CS ou aceitar fechamento'};
+  return {nivel:bloq.length>=20?'warn':'info',titulo:bloq.length+' chamados aguardando cliente há >7 dias',desc:'Risco de auto-fechamento sem resolução real. Esses tickets impactam métricas mas estão em espera.',acao:'Disparar follow-up via CS ou aceitar fechamento'};
 }
 
 // 15. Críticos antigos
@@ -12238,8 +12282,8 @@ function computeInsights(){
   else if(taxaConc>=60)narrativa+='Performance <strong>satisfatória</strong>, com espaço para melhoria. ';
   else narrativa+='Taxa de conclusão <strong>abaixo do esperado</strong> — requer ação. ';
   if(abertos>0)narrativa+='Há <strong>'+abertos+' chamados em aberto</strong> ('+pct(abertos,total)+'%). ';
-  if(totalBloq>10)narrativa+='<strong>'+totalBloq+' chamados bloqueados</strong> — nível crítico, ação imediata necessária. ';
-  else if(totalBloq>0)narrativa+=totalBloq+' chamados bloqueados. ';
+  if(totalBloq>10)narrativa+='<strong>'+totalBloq+' chamados em espera</strong> — nível crítico, ação imediata necessária. ';
+  else if(totalBloq>0)narrativa+=totalBloq+' chamados em espera. ';
   narrativa+='Tempo de 1ª resposta: <strong>'+respH+'</strong>. ';
   if(solMedian!=null) narrativa+='Solução mediana: <strong>'+solMedian+'h</strong> (média '+solMed+'h). ';
   else if(solMed) narrativa+='Solução média: <strong>'+solMed+'h</strong>. ';
@@ -12250,7 +12294,7 @@ function computeInsights(){
   var riscoPrincipal=null;
   if(slaGeral!=null && slaGeral<70 && slaSample>=3) riscoPrincipal={label:'SLA abaixo da meta',desc:slaGeral+'% dentro de 48h em '+slaSample+' resolvidos — mediana '+(solMedian||solMed)+'h'};
   else if(pctMA>40)riscoPrincipal={label:'Alta concentração crítica',desc:pctMA+'% dos chamados em Muito Alta — risco operacional elevado'};
-  else if(totalBloq>20)riscoPrincipal={label:'Backlog bloqueado crítico',desc:totalBloq+' chamados aguardando ação — SLA em risco'};
+  else if(totalBloq>20)riscoPrincipal={label:'Volume em espera crítico',desc:totalBloq+' chamados aguardando retorno — SLA em risco'};
   else if(solMedian!=null && solMedian>48)riscoPrincipal={label:'Tempo de solução elevado',desc:'Mediana de '+solMedian+'h — acima do SLA de 48h'};
   else if(solMed>60)riscoPrincipal={label:'Tempo de solução elevado',desc:'Média de '+solMed+'h para encerrar — acima do ideal'};
   else if(pctAbertos>25)riscoPrincipal={label:'Alto volume em aberto',desc:pctAbertos+'% do total sem resolução — monitorar aging'};
@@ -12284,8 +12328,8 @@ function computeInsights(){
   else if(slaGeral!=null && slaSample>=3 && slaGeral<85)riscosOp.push({titulo:'SLA abaixo da meta',desc:slaGeral+'% dentro de 48h — meta 90%',nivel:'medium',confianca:85});
   if(pctMA>40)riscosOp.push({titulo:'Concentração crítica de prioridades',desc:prioMA+' chamados Muito Alta ('+pctMA+'%) — SLA em risco',nivel:'high',confianca:92});
   else if(pctMA>25)riscosOp.push({titulo:'Prioridades críticas elevadas',desc:prioMA+' chamados Muito Alta ('+pctMA+'%) — monitorar',nivel:'medium',confianca:80});
-  if(totalBloq>20)riscosOp.push({titulo:'Backlog bloqueado crítico',desc:totalBloq+' chamados parados — ação interna ou externa necessária',nivel:'high',confianca:95});
-  else if(totalBloq>10)riscosOp.push({titulo:'Chamados bloqueados acima do normal',desc:totalBloq+' bloqueados — revisar dependências',nivel:'medium',confianca:85});
+  if(totalBloq>20)riscosOp.push({titulo:'Volume em espera crítico',desc:totalBloq+' chamados parados — ação interna ou externa necessária',nivel:'high',confianca:95});
+  else if(totalBloq>10)riscosOp.push({titulo:'Chamados em espera acima do normal',desc:totalBloq+' em espera — revisar dependências',nivel:'medium',confianca:85});
   // Tempo: prefere mediana (representativa) sobre média (sensível a outliers)
   var tempoRef = solMedian!=null ? solMedian : solMed;
   var tempoLbl = solMedian!=null ? 'mediana' : 'média';
@@ -13488,16 +13532,16 @@ function gerarAcoes(op) {
     });
   }
 
-  // 🟡 Regra 5 — Bloqueio interno
+  // 🟡 Regra 5 — Espera interna
   if(aguardInt.length >= 2) {
     var _id = makeId('bloqueio_interno');
     acoes.push({
       id: _id, prioridade: 'atencao',
-      problema: aguardInt.length + ' chamado' + (aguardInt.length > 1 ? 's' : '') + ' bloqueado' + (aguardInt.length > 1 ? 's' : '') + ' em "Aguardando Interno" — dependência interna não resolvida',
-      acao: 'Identificar o bloqueio de cada chamado. Acionar a área responsável ou realocar para atendente disponível.',
+      problema: aguardInt.length + ' chamado' + (aguardInt.length > 1 ? 's' : '') + ' em espera por "Aguardando Interno" — dependência interna não resolvida',
+      acao: 'Identificar a dependência de cada chamado. Acionar a área responsável ou realocar para atendente disponível.',
       responsavel: 'Gestor de Operações',
       prazo: 'hoje', status: getStatus(_id),
-      origem: aguardInt.length + ' chamados bloqueados internamente'
+      origem: aguardInt.length + ' chamados em espera interna'
     });
   }
 
