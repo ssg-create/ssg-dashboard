@@ -24,8 +24,16 @@ GWMS_URL = "https://gwms2.groundwork.com.br"
 DATASOURCE_UID = "PIz1Yx14k"  # MySQL:otrs
 
 # Filas ativas do dashcompleto (mesmas do index.html FILAS_LIST)
+# IMPORTANTE: o OTRS organiza filas em árvore (SSG::Atendimento, INFRAESTUTURA::NOC,
+# etc.). Antes filtrávamos só `q.name IN (FILAS)` — isso EXCLUÍA todas as sub-filas
+# e causava perda de ~60% dos tickets de clientes como AutoZone (118 OTRS vs 48
+# painel em Abr/26). Agora usamos REGEXP `^(FILA)(::|$)` para pegar fila raiz +
+# qualquer sub-fila.
 FILAS = ("DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELHORIAS")
 FILAS_SQL = ",".join(f"'{f}'" for f in FILAS)
+# REGEXP: ^(DATASUL|DBA|GWMS|...)(::|$) — casa fila raiz E qualquer sub-fila
+FILAS_REGEX = "^(" + "|".join(FILAS) + ")(::|$)"
+FILAS_WHERE = f"q.name REGEXP '{FILAS_REGEX}'"
 
 # Estados fechados (closed successful, unsuccessful, removed, merged,
 # fechado sem êxito auto, resolvido, cancelado)
@@ -115,7 +123,7 @@ def q_silenciosos(session: requests.Session) -> list[dict]:
     LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id NOT IN ({SILEN_EXCLUIR_SQL})
       AND UNIX_TIMESTAMP(t.change_time) <= (UNIX_TIMESTAMP() - 86400)
-      AND q.name IN ({FILAS_SQL})
+      AND {FILAS_WHERE}
     ORDER BY silent_sec DESC
     LIMIT 500
     """
@@ -143,7 +151,7 @@ def q_triagem(session: requests.Session) -> list[dict]:
     JOIN users           u  ON t.user_id            = u.id
     LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id = 4
-      AND q.name IN ({FILAS_SQL})
+      AND {FILAS_WHERE}
       AND NOT EXISTS(
         SELECT 1 FROM ticket_history th
         WHERE th.ticket_id = t.id
@@ -179,7 +187,7 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     LEFT JOIN ticket_history th ON th.ticket_id = t.id AND th.history_type_id = 27
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
-      AND q.name IN ({FILAS_SQL})
+      AND {FILAS_WHERE}
       AND t.create_time >= DATE_SUB(NOW(), INTERVAL 90 DAY)
     GROUP BY t.id
     HAVING vezes_fechado >= 1
@@ -229,7 +237,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     LEFT JOIN users      u  ON t.user_id            = u.id
     LEFT JOIN service    s  ON t.service_id         = s.id
     LEFT JOIN customer_user cu ON cu.login          = t.customer_user_id
-    WHERE q.name IN ({FILAS_SQL})
+    WHERE {FILAS_WHERE}
       AND t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
     ORDER BY t.create_time DESC
     LIMIT 5000
@@ -317,7 +325,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     JOIN users           u  ON t.user_id            = u.id
     LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
-      AND q.name IN ({FILAS_SQL})
+      AND {FILAS_WHERE}
     ORDER BY t.change_time DESC
     LIMIT 3000
     """
@@ -340,7 +348,7 @@ def q_utilizacao(session: requests.Session) -> list[dict]:
     FROM ticket t
     JOIN users u ON t.user_id = u.id
     JOIN queue q ON t.queue_id = q.id
-    WHERE q.name IN ({FILAS_SQL})
+    WHERE {FILAS_WHERE}
       AND t.ticket_state_id IN ({ESTADOS_ATIVOS_SQL})
     GROUP BY u.id
     ORDER BY ativos_total DESC
