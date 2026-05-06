@@ -1589,6 +1589,13 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 .cs-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
 .cs-scope-strip .scope-mute{color:var(--muted)}
 /* Scope strip + blocos da aba Ações (redesign 2026-05-05 parte 6) — tema laranja/operacional */
+/* Scope strip da Visão Cliente (parte 7 — tema teal/cliente) */
+.cli-scope-strip{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;padding:5px 11px;background:linear-gradient(135deg,rgba(0,212,168,.06),rgba(34,211,238,.04));border:1px solid rgba(0,212,168,.20);border-radius:999px;width:fit-content}
+.cli-scope-strip .scope-chip{padding:2px 8px;border-radius:6px;font-weight:600;background:rgba(0,212,168,.14);color:#34d399}
+.cli-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
+.cli-scope-strip .scope-chip-hist{background:rgba(168,85,247,.14);color:#c4b5fd}
+.cli-scope-strip .scope-chip-cli{background:rgba(34,211,238,.14);color:#22d3ee}
+.cli-scope-strip .scope-mute{color:var(--muted)}
 .acoes-scope-strip{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 0 0;padding:5px 11px;background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(244,63,94,.04));border:1px solid rgba(245,158,11,.22);border-radius:999px;width:fit-content}
 .acoes-scope-strip .scope-chip{padding:2px 8px;border-radius:6px;font-weight:600;background:rgba(245,158,11,.16);color:#fbbf24}
 .acoes-scope-strip .scope-chip-live{background:rgba(16,185,129,.14);color:#34d399}
@@ -2527,6 +2534,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
         <option value="">— Escolha sua empresa —</option>
       </select>
     </div>
+    <div id="cli-scope-strip" class="cli-scope-strip" style="margin-top:12px">—</div>
   </div>
 
   <!-- PAINEL -->
@@ -2547,7 +2555,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="co-kpi"><div class="co-kpi-lbl">Total período</div><div class="co-kpi-val" id="co-total" style="color:var(--teal)"></div></div>
             <div class="co-kpi"><div class="co-kpi-lbl">Em aberto</div><div class="co-kpi-val" id="co-abertos" style="color:var(--warn)"></div></div>
             <div class="co-kpi"><div class="co-kpi-lbl">Concluídos</div><div class="co-kpi-val" id="co-fechados" style="color:var(--ok)"></div></div>
-            <div class="co-kpi"><div class="co-kpi-lbl">1ª Resp (med.)</div><div class="co-kpi-val" id="co-resp" style="color:var(--purple)"></div></div>
+            <div class="co-kpi"><div class="co-kpi-lbl" title="Média do tempo de primeira resposta no escopo. Mediana e P90 disponíveis na aba SLA do Contrato.">1ª Resp (média)</div><div class="co-kpi-val" id="co-resp" style="color:var(--purple)"></div></div>
             <div class="co-kpi"><div class="co-kpi-lbl">Solução média</div><div class="co-kpi-val" id="co-sol" style="color:var(--blue)"></div></div>
           </div>
         </div>
@@ -2663,6 +2671,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
           </div>
         </div>
       </div>
+      <div style="margin-bottom:12px;padding:9px 14px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.22);border-radius:8px;font-size:11.5px;color:var(--sub);line-height:1.5">ℹ️ Os números abaixo são da <b>operação inteira</b> da Groundwork (todas empresas atendidas) — <b>não são filtrados pela sua conta</b>. Use o <b>Painel da Empresa</b> para ver seus dados específicos.</div>
       <div id="cinf-kpis" class="kpi-row kpi-row-4"></div>
       <div class="grid2">
         <div class="card"><div class="card-title">Volume mensal da fila</div><div class="cw" style="height:170px"><canvas id="c-vol-inf"></canvas></div></div>
@@ -3165,7 +3174,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <div class="import-progress-text" id="import-progress-text">Processando...</div>
     </div>
     <div class="import-last-import" id="import-last">
-      <span>Dados atuais: jan–mar 2026 · 556 chamados</span>
+      <span id="import-last-period">Dados atuais: <span id="import-last-period-val">—</span></span>
       <span id="import-last-time" style="font-family:var(--mono);font-size:10px;color:var(--muted)">Dados de exemplo</span>
     </div>
     <input type="file" id="imp-file" accept=".xlsx,.xls" onchange="handleFileImport(event)">
@@ -5642,6 +5651,61 @@ function renderBl(){
 // ════════════════════════════════════════════════════════════
 // CLI RENDERS
 // ════════════════════════════════════════════════════════════
+
+// Helper: deriva sistema(s) atendido(s) a partir do d.servicos do cliente.
+// Substitui o hardcode 'ERP Protheus'. Detecta padrões macro:
+//  - Protheus / TOTVS / Datasul / Folha / RH / Cloud / Backoffice etc.
+// Fallback: top-1 da lista de serviços ou texto genérico.
+function _cliSistemasLabel(d){
+  if(!d || !d.servicos) return 'Suporte & Sustentação';
+  var svc = d.servicos;
+  var keys = Object.keys(svc).sort(function(a,b){return svc[b]-svc[a];});
+  if(!keys.length) return 'Suporte & Sustentação';
+  // Detecta macros via classifyArea (motor de áreas) quando disponível
+  var macros = {};
+  keys.forEach(function(k){
+    var macro = null;
+    if(typeof classifyArea==='function'){
+      try { macro = classifyArea(k).macro; } catch(e){}
+    }
+    if(!macro){
+      var s = String(k).toLowerCase();
+      if(s.indexOf('protheus')>=0) macro='Protheus';
+      else if(s.indexOf('totvs')>=0||s.indexOf('tdn')>=0) macro='TOTVS';
+      else if(s.indexOf('datasul')>=0) macro='Datasul';
+      else if(s.indexOf('folha')>=0||s.indexOf('rh')>=0) macro='Folha & RH';
+      else if(s.indexOf('cloud')>=0||s.indexOf('infra')>=0) macro='Infraestrutura';
+      else macro='Sustentação';
+    }
+    macros[macro]=(macros[macro]||0)+(svc[k]||0);
+  });
+  var topMacros = Object.keys(macros).sort(function(a,b){return macros[b]-macros[a];}).slice(0,2);
+  return topMacros.join(' · ') || 'Suporte & Sustentação';
+}
+
+// Helper: scope strip do header da Visão Cliente (similar a CS/IA/Ações)
+function _cliScopeStrip(){
+  var el=document.getElementById('cli-scope-strip');
+  if(!el) return;
+  var key = document.getElementById('sel-empresa') ? document.getElementById('sel-empresa').value : '';
+  var chips=[];
+  // LIVE vs HIST
+  var hist = (typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd) ||
+             (typeof activeMonth!=='undefined' && activeMonth && activeMonth!=='all' && (function(){
+               var now=new Date(), m=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+               return activeMonth!==m;
+             })());
+  chips.push('<span class="scope-chip '+(hist?'scope-chip-hist':'scope-chip-live')+'">'+(hist?'📅 Histórico':'📡 Atual')+'</span>');
+  chips.push('<span class="scope-chip">'+(typeof _csScopeLabel==='function'?_csScopeLabel():'todo período')+'</span>');
+  if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
+    chips.push('<span class="scope-chip">Fila: '+activeFilaOP+'</span>');
+  }
+  if(key && EMPRESAS[key]){
+    chips.push('<span class="scope-chip scope-chip-cli">'+(EMPRESAS[key].nome||key)+'</span>');
+  }
+  el.innerHTML=chips.join(' ');
+}
+
 function initCli(){
   if(rendered['cli-init'])return;rendered['cli-init']=true;
   var sel=document.getElementById('sel-empresa');
@@ -5656,6 +5720,9 @@ function loadEmpresa(key){
   var d=key?getFilteredEmpresa(EMPRESAS[key]):null;
   // Atualiza filtro de mês com totais da empresa selecionada
   buildMonthFilter();
+  // Atualiza scope strip do header e heros das sub-abas
+  try { _cliScopeStrip(); } catch(e){ console.warn('cli scope:',e); }
+  try { _cliUpdateHeros(d); } catch(e){ console.warn('cli heros:',e); }
   // Sempre re-renderiza o painel ao trocar empresa ou filtro de mês
   renderPainel(d);
   rendered['c-ov']=true;
@@ -5664,12 +5731,33 @@ function loadEmpresa(key){
   if(rendered['c-sq'])renderSlaContrato(d);
 }
 
+// Atualiza subtítulos dos heros das sub-abas (Linha do Tempo, SLA, Status Fila)
+// Antes ficavam congelados em "selecione sua empresa..." mesmo após seleção.
+function _cliUpdateHeros(d){
+  var nome = d ? (d.nome||'') : '';
+  var total = d ? (d.total||0) : 0;
+  var scope = (typeof _csScopeLabel==='function')?_csScopeLabel():'todo período';
+  var sub = nome ? (nome+' · '+scope+' · '+total+' chamados') : null;
+  // Linha do Tempo
+  var tlSub = document.getElementById('tl-hero-sub');
+  if(tlSub) tlSub.textContent = sub || 'selecione sua empresa pra navegar o histórico completo ordenado por data';
+  // SLA Contrato
+  var sqSub = document.querySelector('#sq-hero .gw-hero-sub');
+  if(sqSub) sqSub.textContent = sub ? (sub+' · cumprimento por prioridade') : 'selecione sua empresa pra ver cumprimento de 1ª resposta, solução e distribuição';
+  // Status da Fila (sempre genérico — não filtrado por empresa)
+  var infSub = document.querySelector('#inf-hero .gw-hero-sub');
+  if(infSub) infSub.textContent = 'indicadores agregados da operação inteira — sem dados internos de outras empresas';
+}
+
 function renderPainel(d){
   var empty=document.getElementById('co-empty'),content=document.getElementById('co-content');
   if(!d){empty.style.display='block';content.style.display='none';return;}
   empty.style.display='none';content.style.display='block';
   document.getElementById('co-name').textContent=d.nome;
-  document.getElementById('co-id').textContent='ID: '+d.id+' · SSG Groundwork · ERP Protheus · jan–mar 2026';
+  // Subheader dinâmico: ID + sistema(s) derivado(s) de servicos + período do escopo
+  var sistemas = _cliSistemasLabel(d);
+  var periodo = (typeof _csScopeLabel==='function')?_csScopeLabel():'todo período';
+  document.getElementById('co-id').textContent='ID: '+d.id+' · '+sistemas+' · '+periodo;
   document.getElementById('co-total').textContent=d.total;
   document.getElementById('co-abertos').textContent=d.abertos;
   document.getElementById('co-fechados').textContent=d.fechados;
@@ -5750,12 +5838,13 @@ function renderHealthScore(d){
   var ap=pct(d.abertos,d.total);
   var rows=[
     {l:'Taxa de resolução',v:pct(d.fechados,d.total)+'%',c:pct(d.fechados,d.total)>=80?'var(--ok)':pct(d.fechados,d.total)>=60?'var(--warn)':'var(--danger)'},
-    {l:'1ª Resposta (med.)',v:(d.resp_med!=null?fmtRespTxt(d.resp_med):'—'),c:d.resp_med<=30?'var(--ok)':d.resp_med<=60?'var(--warn)':'var(--danger)'},
+    {l:'1ª Resposta (média)',v:(d.resp_med!=null?fmtRespTxt(d.resp_med):'—'),c:d.resp_med<=30?'var(--ok)':d.resp_med<=60?'var(--warn)':'var(--danger)'},
     {l:'Chamados em aberto',v:d.abertos+' ('+ap+'%)',c:ap<=10?'var(--ok)':ap<=25?'var(--warn)':'var(--danger)'},
     {l:'Tempo médio solução',v:(d.solucao_med_h||'—')+'h',c:d.solucao_med_h<=48?'var(--ok)':d.solucao_med_h<=96?'var(--warn)':'var(--danger)'}
   ];
   document.getElementById('hs-items').innerHTML=rows.map(function(r){return'<div class="hs-row"><span>'+r.l+'</span><span class="hs-row-val" style="color:'+r.c+'">'+r.v+'</span></div>';}).join('');
-  var insight=score>=80?'Excelente! Alta taxa de resolução e resposta rápida. Continue monitorando para manter este nível.':score>=65?'Performance satisfatória. Atenção aos chamados aguardando retorno para evitar aging.':score>=50?'Performance abaixo do esperado. Recomendamos revisão das prioridades com o gestor de conta.':'Atenção necessária. Contate o gestor de conta para priorização imediata dos chamados em aberto.';
+  // Insight personalizado: cita nome do cliente, números do escopo e ponto de atenção real
+  var insight = _cliBuildInsight(d, score);
   document.getElementById('hs-insight').textContent=insight;
   var pK=Object.keys(d.prior),pV=pK.map(function(k){return d.prior[k];});
   var pC={'Muito Alta':'#f43f5e','Alta':'#f59e0b','Normal':'#4f8ef7','Baixa':'#00d4a8','Muito Baixa':'#5a6278'};
@@ -5770,7 +5859,44 @@ function renderHealthScore(d){
     {l:'Taxa de resolução',emp:taxa+'%',geral:mediaGeral.taxa+'%',melhor:taxa>=mediaGeral.taxa},
     {l:'1ª Resposta mediana',emp:(d.resp_med!=null?fmtRespTxt(d.resp_med):'—'),geral:fmtRespTxt(mediaGeral.resp),melhor:d.resp_med<=mediaGeral.resp},
     {l:'Tempo médio solução',emp:(d.solucao_med_h||'—')+'h',geral:mediaGeral.sol+'h',melhor:d.solucao_med_h<=mediaGeral.sol}
-  ].map(function(r){var c=r.melhor?'var(--ok)':'var(--warn)';return'<div class="comp-row"><span class="comp-label">'+r.l+'</span><span class="comp-prev" title="Média geral">Fila: '+r.geral+'</span><span class="comp-arrow" style="color:'+c+'">'+(r.melhor?'✓':'!')+'</span><span class="comp-curr" style="color:'+c+'">'+r.emp+'</span><span class="comp-delta" style="background:'+(r.melhor?'rgba(16,185,129,.1)':'rgba(245,158,11,.1)')+';color:'+c+'">'+(r.melhor?'Acima':'Abaixo')+'</span></div>';}).join('');
+  ].map(function(r){
+    var c=r.melhor?'var(--ok)':'var(--warn)';
+    var lbl=r.melhor?'Melhor que a fila':'Pior que a fila';
+    return '<div class="comp-row" title="Compara seu cliente com a média da operação inteira"><span class="comp-label">'+r.l+'</span><span class="comp-prev" title="Média geral da operação">Fila: '+r.geral+'</span><span class="comp-arrow" style="color:'+c+'">'+(r.melhor?'✓':'!')+'</span><span class="comp-curr" style="color:'+c+'">'+r.emp+'</span><span class="comp-delta" style="background:'+(r.melhor?'rgba(16,185,129,.1)':'rgba(245,158,11,.1)')+';color:'+c+'">'+lbl+'</span></div>';
+  }).join('');
+}
+
+// Insight personalizado da Health Score (substitui texto fixo por análise data-driven).
+function _cliBuildInsight(d, score){
+  if(!d) return '';
+  var nome = d.nome || 'Esta empresa';
+  var taxa = pct(d.fechados, d.total);
+  var resp = d.resp_med;
+  var sol = d.solucao_med_h;
+  var aguard = (d.estados && d.estados['Aguardando Cliente']) || 0;
+  var aguardPct = d.total>0 ? Math.round(aguard/d.total*100) : 0;
+  var ma = (d.prior && d.prior['Muito Alta']) || 0;
+  var partes = [];
+  // Linha 1: status geral
+  if(score>=80) partes.push(nome+' está com indicadores saudáveis (score '+score+').');
+  else if(score>=65) partes.push(nome+' está em performance satisfatória (score '+score+'), com pontos de atenção.');
+  else if(score>=50) partes.push(nome+' tem performance abaixo do esperado (score '+score+') — recomendamos QBR técnico.');
+  else partes.push(nome+' apresenta indicadores críticos (score '+score+') — alinhamento imediato com gestor de conta.');
+  // Linha 2: ponto positivo principal
+  var positivos = [];
+  if(taxa>=90) positivos.push('taxa de conclusão de '+taxa+'%');
+  if(resp!=null && resp<=15) positivos.push('1ª resposta mediana de '+fmtRespTxt(resp));
+  else if(resp!=null && resp<=30) positivos.push('1ª resposta dentro da meta ('+fmtRespTxt(resp)+')');
+  if(sol!=null && sol<=48) positivos.push('solução média de '+sol+'h');
+  if(positivos.length) partes.push('Pontos fortes: '+positivos.slice(0,2).join(' e ')+'.');
+  // Linha 3: ponto de atenção real
+  var atencoes = [];
+  if(aguardPct>=15) atencoes.push(aguard+' chamado(s) aguardando cliente ('+aguardPct+'% do volume)');
+  if(ma>0 && d.total>0 && ma/d.total>=0.10) atencoes.push(ma+' chamado(s) Muito Alta');
+  if(resp!=null && resp>30) atencoes.push('1ª resposta acima da meta ('+fmtRespTxt(resp)+')');
+  if(sol!=null && sol>72) atencoes.push('solução média elevada ('+sol+'h)');
+  if(atencoes.length) partes.push('Atenção: '+atencoes.slice(0,2).join(', ')+'.');
+  return partes.join(' ');
 }
 
 function renderSlaContrato(d){
@@ -5791,9 +5917,46 @@ function renderSlaContrato(d){
     var col=pct2>=80?'#10b981':pct2>=60?'#f59e0b':'#f43f5e';
     gaugeHTML+='<div class="sla-card"><div class="sla-title">'+p+'<br><span style="font-size:9px;color:var(--muted)">Meta &lt;'+metas[p]+'h</span></div><div class="sla-pct" style="color:'+col+'">'+pct2+'%</div><div class="sla-bar-wrap"><div class="sla-bar" style="width:'+pct2+'%;background:'+col+'"></div></div><div class="sla-meta">'+dentro+' de '+withTime.length+' chamados</div></div>';
   });
+  // Banner orientador quando todos os gauges são 0% (SLA crítico) ou só "n/a"
+  var allZero = gaugeHTML && /sla-pct[^>]*>0%/g.test(gaugeHTML) && !/[1-9]\d*%/.test(gaugeHTML);
+  if(allZero){
+    gaugeHTML += '<div style="grid-column:1/-1;margin-top:10px;padding:12px 14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.30);border-radius:8px;font-size:12px;color:var(--text);line-height:1.5">⚠ <b>Todos os gauges marcaram 0%</b> — significa que nenhum chamado resolvido no escopo cumpriu o SLA por prioridade. Recomendamos uma reunião com seu gestor de conta para revisar prioridades, escopo de atendimento ou redefinição de metas.</div>';
+  }
   document.getElementById('sla-gauges').innerHTML=gaugeHTML||'<div style="font-size:12px;color:var(--muted);grid-column:1/-1">Dados insuficientes para calcular SLA com os tickets exibidos.</div>';
+  // c-sla-trend: ANTES era mock (mesmo resp_med pra todos os meses → linha reta).
+  // AGORA: mediana real de resp_min agrupando d.tickets por mês de criação.
   var mK=Object.keys(d.by_mes);
-  mk('c-sla-trend','line',mK,[{data:mK.map(function(){return d.resp_med;}),borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00d4a8',borderWidth:2}],{scales:xy('min')});
+  var respPorMes={};
+  (d.tickets||[]).forEach(function(t){
+    if(t.resp_min==null || isNaN(t.resp_min)) return;
+    // criado vem como string ou Date — extrai 'Mmm/YY' usando mNamesGW se disponível
+    var dt = (t.criado instanceof Date) ? t.criado : (t.criado ? new Date(t.criado) : null);
+    if(!dt || isNaN(dt)) return;
+    var mNamesT={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+    var mn=String(dt.getMonth()+1).padStart(2,'0');
+    var lbl=mNamesT[mn]+'/'+String(dt.getFullYear()).slice(2);
+    if(!respPorMes[lbl]) respPorMes[lbl]=[];
+    respPorMes[lbl].push(t.resp_min);
+  });
+  function _median(arr){
+    if(!arr || !arr.length) return null;
+    var s=arr.slice().sort(function(a,b){return a-b;});
+    var i=Math.floor(s.length/2);
+    return s.length%2?s[i]:Math.round((s[i-1]+s[i])/2);
+  }
+  var trendVals = mK.map(function(k){
+    var arr=respPorMes[k];
+    if(!arr || arr.length<2) return null; // amostra insuficiente — não mostra ponto falso
+    return _median(arr);
+  });
+  // Se todos os pontos são null, esconde o gráfico em favor de mensagem
+  var hasPts = trendVals.some(function(v){return v!=null;});
+  if(hasPts){
+    mk('c-sla-trend','line',mK,[{data:trendVals,borderColor:'#00d4a8',backgroundColor:'rgba(0,212,168,.07)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#00d4a8',borderWidth:2,spanGaps:true}],{scales:xy('min')});
+  } else {
+    var canvas=document.getElementById('c-sla-trend');
+    if(canvas && canvas.parentElement){ canvas.parentElement.innerHTML='<div style="text-align:center;padding:36px 20px;color:var(--muted);font-size:11px">Sem amostra suficiente de tempo de resposta neste período.</div>'; }
+  }
   // Distribuição de tempo de solução — só sucesso real (idem gauges)
   var sols=d.tickets.filter(function(t){
     return isClosedOKForSLA(t.estado) && t.sol!=null && !isNaN(t.sol);
@@ -5819,7 +5982,13 @@ function getInfDataFromRaw(){
   var abertos=rows.filter(function(d){return isAb(d.estado);}).length;
   var fechados=rows.filter(function(d){return isFe(d.estado);}).length;
   var respRows=rows.filter(function(d){return d.resp_min!=null&&!isNaN(d.resp_min);});
+  // resp_med = MÉDIA aritmética. Para mediana real, use _respArr ordenado abaixo.
   var resp_med=respRows.length?Math.round(respRows.reduce(function(s,d){return s+d.resp_min;},0)/respRows.length):null;
+  // Mediana real (fonte única — usada nos KPIs do Status da Fila)
+  var _respSort=respRows.map(function(d){return d.resp_min;}).sort(function(a,b){return a-b;});
+  var resp_median = _respSort.length ?
+    (_respSort.length%2 ? _respSort[Math.floor(_respSort.length/2)] : Math.round((_respSort[_respSort.length/2-1]+_respSort[_respSort.length/2])/2))
+    : null;
   // SLA — fonte única (calcSLA): só sucesso real, BH, mediana e p90 disponíveis
   var sla=calcSLA(rows);
   var svc={},prior={},volMes={};
@@ -5829,7 +5998,7 @@ function getInfDataFromRaw(){
     if(d.criado){var p=d.criado.toISOString().slice(0,7).split('-');var k=mN[p[1]]+'/'+p[0].slice(2);volMes[k]=(volMes[k]||0)+1;}
   });
   return{
-    total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,
+    total:total,abertos:abertos,fechados:fechados,resp_med:resp_med,resp_median:resp_median,
     sol_med:sla.avg_h,
     sol_median:sla.median_h,
     sol_p90:sla.p90_h,
@@ -5851,7 +6020,8 @@ function renderInf(){
   var fechados=_op.fechados||0;
   var abertos=_op.abertos||0;
   var taxa=pct(fechados,total);
-  var resp=_op.resp_med!=null?Math.round(_op.resp_med):null;
+  // Status da Fila usa MEDIANA real (mais representativa do "típico" — não puxada por outliers)
+  var resp=_op.resp_median!=null?Math.round(_op.resp_median):(_op.resp_med!=null?Math.round(_op.resp_med):null);
   var sol=_op.sol_med!=null?Math.round(_op.sol_med*10)/10:null;
   var metaResp=resp!=null&&resp<=30;
   var svc=_op.svc||{};
@@ -6273,10 +6443,19 @@ function rebuildAll(data){
           var periodoStr=labelInicio+' – '+labelFim;
           document.getElementById('sb-meta').textContent=total+' chamados · '+mNames[d0.getMonth()]+'–'+mNames[d1.getMonth()]+' '+d1.getFullYear();
           var ovSub=document.getElementById('ov-subtitle');
-          if(ovSub)ovSub.textContent='Centro de Operações SSG · Fila ERP Protheus · '+periodoStr;
+          if(ovSub)ovSub.textContent='Centro de Operações Groundwork · '+periodoStr;
         }
         var now=new Date();
-        document.getElementById('import-last').innerHTML='<span>'+total+' chamados importados</span><span id="import-last-time" style="font-family:var(--mono);font-size:10px;color:var(--ok)">'+now.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
+        // Mantém estrutura com #import-last-period-val (preenchido por buildMonthFilter)
+        document.getElementById('import-last').innerHTML='<span id="import-last-period">Dados atuais: <span id="import-last-period-val">'+total+' chamados</span></span><span id="import-last-time" style="font-family:var(--mono);font-size:10px;color:var(--ok)">'+now.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>';
+        // Re-popula com período + total via buildMonthFilter helper
+        try {
+          var bel = document.getElementById('import-last-period-val');
+          if(bel){
+            var per = (typeof _csScopeLabel==='function') ? _csScopeLabel() : 'todo período';
+            bel.textContent = per + ' · ' + total + ' chamados';
+          }
+        } catch(e){}
         // Reconstruir OP_FILAS + FILAS_LIST dinamicamente a partir dos dados importados
         var filasImport = [];
         data.forEach(function(d){ if(d.fila && d.fila !== 'LIXO' && filasImport.indexOf(d.fila) === -1) filasImport.push(d.fila); });
@@ -7645,14 +7824,23 @@ function exportPDF(){
   var d=getFilteredEmpresa(dRaw); // respeita filtro de mês
   var score=calcScore(d);
   var now=new Date().toLocaleDateString('pt-BR');
+  // Mapas de meses (suporta qualquer ano) \u2014 substitui hardcodes espec\u00edficos de 2026
+  var _mLong={'01':'Janeiro','02':'Fevereiro','03':'Mar\u00e7o','04':'Abril','05':'Maio','06':'Junho','07':'Julho','08':'Agosto','09':'Setembro','10':'Outubro','11':'Novembro','12':'Dezembro'};
+  var _mShort={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+  function _isoToLong(iso){ var p=String(iso).split('-'); return _mLong[p[1]] ? (_mLong[p[1]]+' '+p[0]) : iso; }
+  function _isoToShort(iso){ var p=String(iso).split('-'); return _mShort[p[1]] ? (_mShort[p[1]]+'/'+p[0].slice(2)) : iso; }
   var mesLabel = (activeRangeStart&&activeRangeEnd) ?
     activeRangeStart.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})+' a '+
     activeRangeEnd.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) :
-    (activeMonth==='all'?'Jan\u2013Mar 2026':({'2026-01':'Janeiro 2026','2026-02':'Fevereiro 2026','2026-03':'Mar\u00e7o 2026'}[activeMonth]||activeMonth));
+    (activeMonth==='all'
+      ? ((typeof _csScopeLabel==='function' && _csScopeLabel()!=='todo per\u00edodo') ? _csScopeLabel() : (window.HIST_RANGE_LABEL||'Per\u00edodo completo'))
+      : _isoToLong(activeMonth));
   var mesShort = (activeRangeStart&&activeRangeEnd) ?
     activeRangeStart.toLocaleDateString('pt-BR',{month:'short'})+'/'+activeRangeStart.getFullYear().toString().slice(2)+'\u2013'+
     activeRangeEnd.toLocaleDateString('pt-BR',{month:'short'})+'/'+activeRangeEnd.getFullYear().toString().slice(2) :
-    (activeMonth==='all'?'Jan/26':({'2026-01':'Jan/26','2026-02':'Fev/26','2026-03':'Mar/26'}[activeMonth]||activeMonth));
+    (activeMonth==='all'
+      ? ((typeof _csScopeLabel==='function' && _csScopeLabel()!=='todo per\u00edodo') ? _csScopeLabel() : (window.HIST_RANGE_LABEL||'Total'))
+      : _isoToShort(activeMonth));
 
   // ── Métricas — todas via fonte única (calcSLA) sobre rows REAIS do escopo ativo
   // Antes: usava d.tickets (amostra pequena) e d.solucao_med_h agregado de TODOS
@@ -7881,19 +8069,7 @@ function exportPDF(){
   // ══════════════════════════════════════════════════
   // HTML DO RELAT\u00d3RIO
   // ── Comparativo mês anterior ──────────────────────────────────────────
-  var mOrderKeys2=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12'];
-  var mNamesFull={'2026-01':'Jan/26','2026-02':'Fev/26','2026-03':'Mar/26','2026-04':'Abr/26','2026-05':'Mai/26','2026-06':'Jun/26','2026-07':'Jul/26','2026-08':'Ago/26','2026-09':'Set/26','2026-10':'Out/26','2026-11':'Nov/26','2026-12':'Dez/26'};
-  var EMP_MESES_COMP = typeof EMP_MESES !== 'undefined' ? EMP_MESES : {};
-  var empMonthMap = EMP_MESES_COMP[dRaw.id] || {};
-  var curMk2 = activeMonth !== 'all' ? activeMonth : null;
-  if(!curMk2) {
-    var availK = Object.keys(empMonthMap).filter(function(k){return mOrderKeys2.indexOf(k)!==-1;}).sort();
-    curMk2 = availK.length ? availK[availK.length-1] : null;
-  }
-  var prevMk2 = null;
-  if(curMk2){ var ci=mOrderKeys2.indexOf(curMk2); if(ci>0) prevMk2=mOrderKeys2[ci-1]; }
-  var curData  = curMk2  && empMonthMap[curMk2]  ? empMonthMap[curMk2]  : null;
-  var prevData = prevMk2 && empMonthMap[prevMk2] ? empMonthMap[prevMk2] : null;
+  // (mOrderKeys2 / mNamesFull / curData / prevData movidos pra antes do sistemasLabel — usados pelo TL;DR Executivo)
   function pctDelta(cur,prev,lower){
     if(cur==null||prev==null||prev===0) return null;
     var d=Math.round((cur-prev)/Math.abs(prev)*100);
@@ -8029,21 +8205,37 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
 }
 `.replace(/\$\{scoreBg\}/g,scoreBg).replace(/\$\{scoreColor\}/g,scoreColor);
 
-  var H='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Report ERP \u2013 '+d.nome+'</title><style>'+css+'</style></head><body><div class="page">';
+  // Comparativo mes anterior (movido pra cima \u2014 usado pelo TL;DR Executivo abaixo)
+  var mOrderKeys2=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12'];
+  var mNamesFull={'2026-01':'Jan/26','2026-02':'Fev/26','2026-03':'Mar/26','2026-04':'Abr/26','2026-05':'Mai/26','2026-06':'Jun/26','2026-07':'Jul/26','2026-08':'Ago/26','2026-09':'Set/26','2026-10':'Out/26','2026-11':'Nov/26','2026-12':'Dez/26'};
+  var EMP_MESES_COMP = typeof EMP_MESES !== 'undefined' ? EMP_MESES : {};
+  var empMonthMap = EMP_MESES_COMP[dRaw.id] || {};
+  var curMk2 = activeMonth !== 'all' ? activeMonth : null;
+  if(!curMk2) {
+    var availK = Object.keys(empMonthMap).filter(function(k){return mOrderKeys2.indexOf(k)!==-1;}).sort();
+    curMk2 = availK.length ? availK[availK.length-1] : null;
+  }
+  var prevMk2 = null;
+  if(curMk2){ var ci=mOrderKeys2.indexOf(curMk2); if(ci>0) prevMk2=mOrderKeys2[ci-1]; }
+  var curData  = curMk2  && empMonthMap[curMk2]  ? empMonthMap[curMk2]  : null;
+  var prevData = prevMk2 && empMonthMap[prevMk2] ? empMonthMap[prevMk2] : null;
+  // Sistemas atendidos derivados do d.servicos (substitui hardcode 'ERP Protheus')
+  var sistemasLabel = (typeof _cliSistemasLabel==='function') ? _cliSistemasLabel(d) : 'Suporte & Sustenta\u00e7\u00e3o';
+  var H='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relat\u00f3rio de Atendimento \u2013 '+d.nome+'</title><style>'+css+'</style></head><body><div class="page">';
 
   // ══ CAPA ══
   H+='<div class="cover">';
   H+='<div class="cover-accent"></div>';
   H+='<div class="cover-top">'+LOGO_WHITE+'<div style="font-size:10px;color:rgba(255,255,255,.5);text-align:right">Emitido em '+now+'<br>Confidencial</div></div>';
   H+='<div class="cover-body">';
-  H+='<div class="cover-tag">Report \u2013 ERP Services</div>';
+  H+='<div class="cover-tag">Relat\u00f3rio de Atendimento</div>';
   H+='<div class="cover-title">Relat\u00f3rio de<br>Atendimentos</div>';
-  H+='<div class="cover-sub">Protheus \u00b7 Suporte & Sustenta\u00e7\u00e3o</div>';
+  H+='<div class="cover-sub">'+sistemasLabel+'</div>';
   H+='<div class="cover-chips">';
   H+='<span class="cover-chip orange">'+d.nome+'</span>';
   H+='<span class="cover-chip blue">'+mesLabel+'</span>';
   H+='<span class="cover-chip gray">'+d.total+' chamados no per\u00edodo</span>';
-  H+='<span class="cover-chip gray">ERP Protheus</span>';
+  H+='<span class="cover-chip gray">'+sistemasLabel+'</span>';
   H+='</div>';
   H+='<div class="cover-score">';
   H+='<div class="cover-score-num">'+score+'</div>';
@@ -8059,6 +8251,136 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
 
   // Bot\u00e3o print
   H+='<div class="no-print" style="text-align:right;margin-bottom:24px"><button onclick="window.print()" style="padding:9px 22px;background:#1a2744;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.03em">\ud83d\udda8\ufe0f Imprimir / Salvar PDF</button></div>';
+
+  // ============================================================
+  // TL;DR EXECUTIVO (pra gerente decidir em 30 segundos)
+  // ============================================================
+  var _opBench = (function(){
+    var op = (typeof getActiveOP==='function') ? getActiveOP() : (typeof OP!=='undefined' ? OP : null);
+    if(!op) return null;
+    return {
+      taxa: (op.total>0) ? Math.round((op.fechados||0)/op.total*100) : null,
+      resp: op.resp_med!=null ? Math.round(op.resp_med) : null,
+      sol:  (op.sol_med!=null) ? Math.round(op.sol_med) : (op.sol_med_h!=null ? Math.round(op.sol_med_h) : null),
+      sla:  op.sla_pct!=null ? op.sla_pct : (op.sla ? op.sla.pct_within_sla : null)
+    };
+  })();
+  var prevScoreDelta = null;
+  if(typeof curData!=='undefined' && curData && typeof prevData!=='undefined' && prevData){
+    var prevScore = (typeof calcUnifiedScore==='function') ? calcUnifiedScore(prevData) : null;
+    if(prevScore!=null) prevScoreDelta = score - prevScore;
+  }
+  var deltaTxt = prevScoreDelta!=null ? (prevScoreDelta>0?'\u2191'+prevScoreDelta+'pp':prevScoreDelta<0?'\u2193'+Math.abs(prevScoreDelta)+'pp':'est\u00e1vel') : '';
+  var deltaCol = prevScoreDelta!=null ? (prevScoreDelta>0?'#16a34a':prevScoreDelta<0?'#dc2626':'#6b7280') : '#6b7280';
+  var highlights = [];
+  if(taxaConc>=90) highlights.push('<strong>'+taxaConc+'%</strong> dos chamados resolvidos ('+d.fechados+' de '+d.total+')');
+  else if(taxaConc>=70) highlights.push('Taxa de conclus\u00e3o de <strong>'+taxaConc+'%</strong>');
+  if(d.resp_med!=null && d.resp_med<=30) highlights.push('Resposta m\u00e9dia <strong>'+fmtRespTxt(d.resp_med)+'</strong> (meta 30min)');
+  if(d.sla_pct!=null && d.sla_pct>=90) highlights.push('SLA cumprido em <strong>'+d.sla_pct+'%</strong> dos chamados resolvidos');
+  if(_opBench && _opBench.taxa!=null && taxaConc>_opBench.taxa) highlights.push('Sua taxa est\u00e1 <strong>'+(taxaConc-_opBench.taxa)+'pp acima</strong> da m\u00e9dia da opera\u00e7\u00e3o');
+  var _atencoes = [];
+  var aging7 = (d.tickets||[]).filter(function(t){
+    if(!t || !t.criado) return false;
+    if(typeof isOpenState==='function' && !isOpenState(t.estado)) return false;
+    var dt = (t.criado instanceof Date) ? t.criado : new Date(t.criado);
+    if(!dt || isNaN(dt)) return false;
+    return ((new Date()-dt)/86400000) > 7;
+  }).length;
+  if(aging7>0) _atencoes.push('<strong>'+aging7+' chamado(s) em aberto h\u00e1 mais de 7 dias</strong>');
+  if(d.sla_pct!=null && d.sla_pct<70) _atencoes.push('SLA cumprido em apenas <strong>'+d.sla_pct+'%</strong> \u2014 abaixo da meta de 90%');
+  var _maPdf=0; (d.tickets||[]).forEach(function(t){if(t && t.prioridade==='Muito Alta') _maPdf++;});
+  if(_maPdf>0 && d.total>0 && _maPdf/d.total>=0.10) _atencoes.push('<strong>'+_maPdf+' chamado(s) Muito Alta</strong> ('+Math.round(_maPdf/d.total*100)+'% do volume)');
+  if(d.resp_med!=null && d.resp_med>30) _atencoes.push('1\u00aa resposta em <strong>'+fmtRespTxt(d.resp_med)+'</strong> \u2014 acima da meta');
+  var proximoPasso = '';
+  if(d.sla_pct!=null && d.sla_pct<70){
+    proximoPasso = 'Recomendamos <strong>QBR t\u00e9cnico</strong> para revisar SLA e prioriza\u00e7\u00e3o. Vamos agendar nas pr\u00f3ximas 2 semanas.';
+  } else if(score>=80 && d.total>=20){
+    proximoPasso = 'Cliente em performance saud\u00e1vel. Sugerimos <strong>QBR estrat\u00e9gico</strong> para discutir expans\u00e3o de servi\u00e7os e otimiza\u00e7\u00f5es.';
+  } else if(aging7>0){
+    proximoPasso = 'Foco no pr\u00f3ximo per\u00edodo: <strong>reduzir backlog de '+aging7+' chamado(s) com aging >7 dias</strong>. Plano de a\u00e7\u00e3o dedicado.';
+  } else if(d.servicos){
+    var topSvcKey = Object.keys(d.servicos).sort(function(a,b){return d.servicos[b]-d.servicos[a];})[0];
+    if(topSvcKey){
+      var topSvcVol = d.servicos[topSvcKey];
+      var topSvcPct = d.total>0 ? Math.round(topSvcVol/d.total*100) : 0;
+      if(topSvcPct>=30) proximoPasso = 'Volume concentrado em <strong>'+topSvcKey+' ('+topSvcPct+'%)</strong>. Vamos avaliar projeto preventivo ou automa\u00e7\u00e3o para esta \u00e1rea.';
+    }
+  }
+  if(!proximoPasso) proximoPasso = 'Acompanhamento mensal mantido. Continuaremos monitorando e reportando os indicadores.';
+  H+='<div style="page-break-after:always;margin-bottom:36px">';
+  H+='<div style="border-left:4px solid #E8622A;padding:0 0 0 18px;margin-bottom:18px">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#E8622A;margin-bottom:6px">Resumo Executivo</div>';
+  H+='<div style="font-size:22px;font-weight:900;color:#1a2744;line-height:1.2">'+d.nome+' \u00b7 '+mesLabel+'</div>';
+  H+='</div>';
+  H+='<div style="display:flex;align-items:center;gap:24px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin-bottom:18px">';
+  H+='<div style="font-size:48px;font-weight:900;color:'+scoreColor+';line-height:1;font-family:Arial">'+score+'</div>';
+  H+='<div style="flex:1">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">Health Score</div>';
+  H+='<div style="font-size:18px;font-weight:800;color:'+scoreColor+';margin-bottom:2px">'+scoreLabel+'</div>';
+  if(deltaTxt) H+='<div style="font-size:11px;color:'+deltaCol+';font-weight:700">'+deltaTxt+' vs '+(typeof prevMk2!=='undefined' && prevMk2 ? (mNamesFull[prevMk2]||prevMk2) : 'm\u00eas anterior')+'</div>';
+  H+='</div>';
+  if(_opBench){
+    H+='<div style="border-left:1px solid #e5e7eb;padding-left:24px;font-size:10.5px;line-height:1.7">';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px">Voc\u00ea vs Opera\u00e7\u00e3o</div>';
+    if(_opBench.taxa!=null){
+      var tCmp = taxaConc - _opBench.taxa;
+      H+='<div>Taxa: <b>'+taxaConc+'%</b> \u00b7 Fila: '+_opBench.taxa+'% <span style="color:'+(tCmp>=0?'#16a34a':'#dc2626')+';font-weight:700">'+(tCmp>=0?'\u2713 +':'')+tCmp+'pp</span></div>';
+    }
+    if(d.resp_med!=null && _opBench.resp!=null){
+      var rCmp = d.resp_med - _opBench.resp;
+      H+='<div>Resposta: <b>'+d.resp_med+'min</b> \u00b7 Fila: '+_opBench.resp+'min <span style="color:'+(rCmp<=0?'#16a34a':'#dc2626')+';font-weight:700">'+(rCmp<=0?'\u2713 ':'')+(rCmp>0?'+':'')+rCmp+'min</span></div>';
+    }
+    if(d.sla_pct!=null && _opBench.sla!=null){
+      var sCmp = d.sla_pct - _opBench.sla;
+      H+='<div>SLA cumprido: <b>'+d.sla_pct+'%</b> \u00b7 Fila: '+_opBench.sla+'% <span style="color:'+(sCmp>=0?'#16a34a':'#dc2626')+';font-weight:700">'+(sCmp>=0?'\u2713 +':'')+sCmp+'pp</span></div>';
+    }
+    H+='</div>';
+  }
+  H+='</div>';
+  H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">';
+  H+='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#166534;margin-bottom:8px">\u2705 O que foi bem</div>';
+  if(highlights.length){
+    highlights.slice(0,3).forEach(function(h){
+      H+='<div style="font-size:11.5px;line-height:1.5;color:#374151;padding:4px 0;border-bottom:1px solid #dcfce7">'+h+'</div>';
+    });
+  } else {
+    H+='<div style="font-size:11.5px;color:#9ca3af">Sem destaques no per\u00edodo.</div>';
+  }
+  H+='</div>';
+  H+='<div style="background:'+(_atencoes.length?'#fef9c3':'#f0fdf4')+';border:1px solid '+(_atencoes.length?'#fde68a':'#bbf7d0')+';border-radius:10px;padding:14px 16px">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:'+(_atencoes.length?'#854d0e':'#166534')+';margin-bottom:8px">\u26a0\ufe0f Aten\u00e7\u00e3o</div>';
+  if(_atencoes.length){
+    _atencoes.slice(0,3).forEach(function(a){
+      H+='<div style="font-size:11.5px;line-height:1.5;color:#374151;padding:4px 0;border-bottom:1px solid #fde68a">'+a+'</div>';
+    });
+  } else {
+    H+='<div style="font-size:11.5px;color:#166534;font-weight:600">Nenhum ponto cr\u00edtico no per\u00edodo. \u2713</div>';
+  }
+  H+='</div>';
+  H+='</div>';
+  H+='<div style="background:#fff7ed;border-left:4px solid #E8622A;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:18px">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#E8622A;margin-bottom:6px">\ud83d\udccc Pr\u00f3ximo passo</div>';
+  H+='<div style="font-size:12.5px;line-height:1.6;color:#374151">'+proximoPasso+'</div>';
+  H+='</div>';
+  var narrativa = d.nome + ' registrou <strong>' + d.total + ' chamados</strong> no per\u00edodo de ' + mesLabel + '.';
+  if(typeof curData!=='undefined' && curData && typeof prevData!=='undefined' && prevData && prevData.total>0){
+    var deltaVol = Math.round((curData.total - prevData.total) / prevData.total * 100);
+    if(deltaVol!==0) narrativa += ' Volume ' + (deltaVol>0?'subiu '+deltaVol+'%':'caiu '+Math.abs(deltaVol)+'%') + ' vs ' + (mNamesFull[prevMk2]||prevMk2) + '.';
+  }
+  if(d.solucao_median_h!=null) narrativa += ' Tempo t\u00edpico de solu\u00e7\u00e3o: <strong>'+d.solucao_median_h+'h</strong>' + (d.solucao_median_h<=48?' (dentro do SLA).':' (acima do SLA de 48h).');
+  if(d.servicos){
+    var topSvcK = Object.keys(d.servicos).sort(function(a,b){return d.servicos[b]-d.servicos[a];})[0];
+    if(topSvcK){
+      var topSvcP = d.total>0 ? Math.round(d.servicos[topSvcK]/d.total*100) : 0;
+      if(topSvcP>=30) narrativa += ' Concentra\u00e7\u00e3o em <strong>'+topSvcK+'</strong> ('+topSvcP+'% do volume) sugere oportunidade de projeto preventivo.';
+    }
+  }
+  H+='<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;font-size:12px;line-height:1.7;color:#374151">';
+  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">\ud83d\udcca An\u00e1lise do per\u00edodo</div>';
+  H+=narrativa;
+  H+='</div>';
+  H+='</div>';
 
   // ── SE\u00c7\u00c3O 1: INTRODU\u00c7\u00c3O
   H+='<div class="section">';
@@ -8360,7 +8682,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='</div>'; // /body
 
   // ── RODAP\u00c9
-  H+='<div class="footer">'+LOGO_WHITE+'<div class="footer-txt">ERP Protheus \u00b7 Relat\u00f3rio gerado em '+now+' \u00b7 Confidencial</div></div>';
+  H+='<div class="footer">'+LOGO_WHITE+'<div class="footer-txt">'+sistemasLabel+' \u00b7 Relat\u00f3rio gerado em '+now+' \u00b7 Confidencial</div></div>';
   H+='</div></body></html>';
 
   var win=window.open('','_blank');
@@ -8547,6 +8869,16 @@ function clearDateRange() {
 function buildMonthFilter() {
   var mNames = {'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
   function mLabel(k) { var p=k.split('-'); return mNames[p[1]]+'/'+(p[0].slice(2)); }
+
+  // Atualiza banner de import com período + total dinâmicos (substitui hardcode 'jan–mar 2026 · 556 chamados')
+  try {
+    var bannerEl = document.getElementById('import-last-period-val');
+    if(bannerEl){
+      var per = (typeof _csScopeLabel==='function') ? _csScopeLabel() : 'todo período';
+      var tot = (typeof OP!=='undefined' && OP && OP.total) ? OP.total : 0;
+      bannerEl.textContent = per + ' · ' + tot + ' chamados';
+    }
+  } catch(e){ console.warn('import banner:',e); }
 
   var keys = Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
 
