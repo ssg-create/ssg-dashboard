@@ -5080,7 +5080,31 @@ function computeTeamCapacity(atendList) {
 function renderTeamCapacity() {
   var el=document.getElementById('at-capacity');
   if(!el) return;
-  var atendFilt=(getActiveOP().atend||OP.atend||[]).filter(function(a){return a.t>0;});
+  // Capacidade da equipe = quem tem ticket aberto AGORA (estado vivo, GWMS),
+  // não quem teve ticket criado no escopo histórico. Filtros de mês não fazem
+  // sentido para capacidade atual; filtros de cliente/fila sim.
+  var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
+  var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+  var atendFilt;
+  if((_hasCli||_hasFila) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows && TICKETS_ATIVOS_DATA.rows.length){
+    // Live: agrupa tickets ativos por atendente, respeitando filtro de cliente/fila
+    var norm=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
+    var acCliN=_hasCli?norm(activeCliente):'';
+    var byAt={};
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+      if(!r.atendente) return;
+      if(_hasFila && r.fila!==activeFilaOP) return;
+      if(_hasCli && norm(r.cliente)!==acCliN) return;
+      if(!byAt[r.atendente]) byAt[r.atendente]={n:r.atendente,t:0,f:0,ab:0,tm:null,rm:null,est:{}};
+      byAt[r.atendente].t++; byAt[r.atendente].ab++;
+      var st=r.estado||'Aberto';
+      byAt[r.atendente].est[st]=(byAt[r.atendente].est[st]||0)+1;
+    });
+    atendFilt=Object.keys(byAt).map(function(k){return byAt[k];}).sort(function(a,b){return b.ab-a.ab;});
+  } else {
+    // Sem filtro de escopo: usa o agregado histórico do mês ativo
+    atendFilt=(getActiveOP().atend||OP.atend||[]).filter(function(a){return a.t>0;});
+  }
   if(!atendFilt.length){el.style.display='none';return;}
   el.style.display='';
   var list=computeTeamCapacity(atendFilt);
@@ -5812,7 +5836,14 @@ function calcUnifiedScore(d){
   var taxa=(d.fechados||0)/total;
   var resp=d.resp_med||99;
   var sol=d.solucao_med_h||d.sol_med||999;
-  var slaOk=resp<=15?1:resp<=30?0.85:resp<=60?0.65:0.35;
+  // slaOk: PREFERE sla_pct real do OTRS (1ª resposta por serviço/cliente/prioridade).
+  // Fallback heurístico (resp_med) só quando sla_pct ausente.
+  var slaOk;
+  if(d.sla_pct!=null && !isNaN(d.sla_pct)){
+    slaOk = d.sla_pct/100;
+  } else {
+    slaOk = resp<=15?1:resp<=30?0.85:resp<=60?0.65:0.35;
+  }
   var solOk=sol<=24?1:sol<=48?0.85:sol<=72?0.7:sol<=96?0.5:0.3;
   var est=d.estados||d.estado||{};
   var aguard=est['Aguardando Cliente']||0;
@@ -5903,22 +5934,25 @@ function renderSlaContrato(d){
   var empty=document.getElementById('sq-empty'),content=document.getElementById('sq-content');
   if(!d){empty.style.display='block';content.style.display='none';return;}
   empty.style.display='none';content.style.display='block';
-  // Metas de 1ª resposta (em horas) — valores reais do OTRS/Znuny (AdminSLA 2026-05-06).
-  // Sustentação: MA=0.5h, A=1h, N=2h | Banco de Horas: MA=1h, A=4h, N=8h, B=12h
-  // Exibimos o menor prazo por prioridade (Sustentação) como referência visual.
-  var metas={'Muito Alta':0.5,'Alta':1,'Normal':2,'Baixa':12};
+  // Gauges por prioridade — métrica: 1ª RESPOSTA contra regras OTRS por ticket.
+  // Cada ticket usa o threshold do seu cliente×serviço (não mais um global).
+  // Sustentação: MA=30min, A=1h, N=2h | Banco de Horas: MA=1h, A=4h, N=8h, B=12h, MB=24h
+  // Pamplásticos: agrupa em 4h e 12h | Monitoramento: sem SLA → excluído.
   var gaugeHTML='';
-  // Gauges por prioridade — só conta tickets com sucesso real (isClosedOKForSLA),
-  // exclui auto-fechados. Tempo: BH preferido (t.sol já vem como sol_h_bh||sol_h).
-  ['Muito Alta','Alta','Normal','Baixa'].forEach(function(p){
-    var withTime=d.tickets.filter(function(t){
-      return t.prioridade===p && isClosedOKForSLA(t.estado) && t.sol!=null && !isNaN(t.sol);
+  ['Muito Alta','Alta','Normal','Baixa','Muito Baixa'].forEach(function(p){
+    var withSLA=d.tickets.filter(function(t){
+      var thr=getOTRSSLAThreshold(t.servico_full,p,t.cli_id);
+      return t.prioridade===p && thr!==null && t.resp_min!=null && !isNaN(t.resp_min);
     });
-    if(!withTime.length)return;
-    var dentro=withTime.filter(function(t){return t.sol<=metas[p];}).length;
-    var pct2=Math.round(dentro/withTime.length*100);
+    if(!withSLA.length)return;
+    // Threshold "típico" pra exibir na label (mediana dos thresholds aplicáveis)
+    var thrs=withSLA.map(function(t){return getOTRSSLAThreshold(t.servico_full,p,t.cli_id);}).sort(function(a,b){return a-b;});
+    var thrTipico=thrs[Math.floor(thrs.length/2)];
+    var thrLbl=thrTipico<60?(thrTipico+'min'):(Math.round(thrTipico/60)+'h');
+    var dentro=withSLA.filter(function(t){return t.resp_min<=getOTRSSLAThreshold(t.servico_full,p,t.cli_id);}).length;
+    var pct2=Math.round(dentro/withSLA.length*100);
     var col=pct2>=80?'#10b981':pct2>=60?'#f59e0b':'#f43f5e';
-    gaugeHTML+='<div class="sla-card"><div class="sla-title">'+p+'<br><span style="font-size:9px;color:var(--muted)">Meta &lt;'+metas[p]+'h</span></div><div class="sla-pct" style="color:'+col+'">'+pct2+'%</div><div class="sla-bar-wrap"><div class="sla-bar" style="width:'+pct2+'%;background:'+col+'"></div></div><div class="sla-meta">'+dentro+' de '+withTime.length+' chamados</div></div>';
+    gaugeHTML+='<div class="sla-card"><div class="sla-title">'+p+'<br><span style="font-size:9px;color:var(--muted)">1ª resp &le;'+thrLbl+' (OTRS)</span></div><div class="sla-pct" style="color:'+col+'">'+pct2+'%</div><div class="sla-bar-wrap"><div class="sla-bar" style="width:'+pct2+'%;background:'+col+'"></div></div><div class="sla-meta">'+dentro+' de '+withSLA.length+' chamados</div></div>';
   });
   // Banner orientador quando todos os gauges são 0% (SLA crítico) ou só "n/a"
   var allZero = gaugeHTML && /sla-pct[^>]*>0%/g.test(gaugeHTML) && !/[1-9]\d*%/.test(gaugeHTML);
@@ -6368,7 +6402,7 @@ function rebuildAll(data){
         var slaOtrsEmp=calcSLAOtrs(sub);
         var pad=function(n){return n<10?'0'+n:n;};
         var filaM={};sub.forEach(function(d){if(d.fila&&d.fila!=='LIXO')filaM[d.fila]=(filaM[d.fila]||0)+1;});
-        var tks=sub.sort(function(a,b){return(b.criado||0)-(a.criado||0);}).slice(0,25).map(function(d){var dt=d.criado?pad(d.criado.getDate())+'/'+pad(d.criado.getMonth()+1)+' '+pad(d.criado.getHours())+':'+pad(d.criado.getMinutes()):'—';return{num:d.num,assunto:d.assunto,estado:d.estado,prioridade:d.prior,criado:dt,servico:d.servico,fila:d.fila||'',resp_min:d.resp_min,sol:(d.sol_h_bh!=null?d.sol_h_bh:d.sol_h),sol_bh:d.sol_h_bh,sol_raw:d.sol_h};});
+        var tks=sub.sort(function(a,b){return(b.criado||0)-(a.criado||0);}).slice(0,25).map(function(d){var dt=d.criado?pad(d.criado.getDate())+'/'+pad(d.criado.getMonth()+1)+' '+pad(d.criado.getHours())+':'+pad(d.criado.getMinutes()):'—';return{num:d.num,assunto:d.assunto,estado:d.estado,prioridade:d.prior,prior:d.prior,criado:dt,servico:d.servico,servico_full:d.servico_full,cli_id:d.cli_id,fila:d.fila||'',resp_min:d.resp_min,sol:(d.sol_h_bh!=null?d.sol_h_bh:d.sol_h),sol_bh:d.sol_h_bh,sol_raw:d.sol_h};});
         EMPRESAS[id]={
           nome:ENM2[id],id:id,
           total:sub.length,
@@ -7023,35 +7057,55 @@ function calcSLA(rows, opts){
 // SLA OTRS — regras oficiais extraídas do cadastro OTRS/Znuny
 // Métrica: PRIMEIRA RESPOSTA (resp_min_bh), não tempo de solução.
 // Fonte: AdminSLA consultado em 2026-05-06.
+// Hierarquia de aplicação: cliente → serviço (override por cliente prevalece).
 // ════════════════════════════════════════════════════════════
 var SLA_OTRS_RULES = {
-  // Serviço de Sustentação Groundwork (todas as subárvores)
-  sustentacao: {
+  // Por SERVIÇO (regra padrão quando cliente não tem override)
+  sustentacao: {                        // Serviço de Sustentação Groundwork
     'Muito Alta': 30,   // 30 min
     'Alta':       60,   // 1h
     'Normal':     120,  // 2h
     'Baixa':      null, // sem SLA cadastrado
     'Muito Baixa':null
   },
-  // Banco de Horas (todas as subárvores)
-  banco_horas: {
+  banco_horas: {                        // Banco de Horas
     'Muito Alta': 60,   // 1h
     'Alta':       240,  // 4h
     'Normal':     480,  // 8h
     'Baixa':      720,  // 12h
     'Muito Baixa':1440  // 24h
+  },
+  // Por CLIENTE (override quando o cliente tem SLA específico no OTRS).
+  // Grupo Luminae: regras IDÊNTICAS às de Banco de Horas → não precisa override.
+  // PAM/PAMPLASTICOS: SLA agrupado, prevalece sobre o serviço.
+  client_overrides: {
+    // SLA PAMPLASTICOS - ALTO + MUITO ALTO = 4h | MUITO BAIXO + BAIXO + NORMAL = 12h
+    'PAMPLASTICOS':  { 'Muito Alta':240, 'Alta':240, 'Normal':720, 'Baixa':720, 'Muito Baixa':720 },
+    'PAM PLASTICOS': { 'Muito Alta':240, 'Alta':240, 'Normal':720, 'Baixa':720, 'Muito Baixa':720 },
+    'PAM_PLASTICOS': { 'Muito Alta':240, 'Alta':240, 'Normal':720, 'Baixa':720, 'Muito Baixa':720 }
   }
   // Monitoramento & Observabilidade: sem SLA configurado → excluído
 };
 
 /**
- * Retorna o prazo de 1ª resposta em minutos para o ticket,
- * com base nas regras do OTRS. Null = sem SLA cadastrado.
- * @param {string} servico_full  — campo servico_full do row parseado
+ * Retorna o prazo de 1ª resposta em minutos. Null = sem SLA cadastrado.
+ * Ordem: override por cliente → regra do serviço.
+ * @param {string} servico_full  — caminho completo do serviço
  * @param {string} prior         — prioridade humanizada ("Muito Alta", "Alta"…)
+ * @param {string} cli_id        — código do cliente (opcional)
  */
-function getOTRSSLAThreshold(servico_full, prior) {
-  if (!servico_full || !prior) return null;
+function getOTRSSLAThreshold(servico_full, prior, cli_id) {
+  if (!prior) return null;
+  // 1) Override por cliente (Pamplásticos etc.)
+  if (cli_id && SLA_OTRS_RULES.client_overrides) {
+    var key = String(cli_id).toUpperCase().trim();
+    var clientRule = SLA_OTRS_RULES.client_overrides[key];
+    if (clientRule && clientRule[prior] !== undefined && clientRule[prior] !== null) {
+      return clientRule[prior];
+    }
+  }
+  // 2) Por serviço (padrão)
+  if (!servico_full) return null;
   var rules;
   if (servico_full.indexOf('Serviço de Sustentação Groundwork') === 0) {
     rules = SLA_OTRS_RULES.sustentacao;
@@ -7066,15 +7120,15 @@ function getOTRSSLAThreshold(servico_full, prior) {
 
 /**
  * Calcula % de 1ª resposta dentro do SLA conforme regras OTRS.
- * Usa d.resp_min (= resp_min_bh do JSON, em minutos) e d.servico_full + d.prior.
- * Exclui tickets sem SLA cadastrado (Monitoramento, prioridade Baixa na Sustentação).
+ * Usa d.resp_min (= resp_min_bh do JSON, em minutos), d.servico_full, d.prior, d.cli_id.
+ * Exclui tickets sem SLA cadastrado (Monitoramento, Baixa na Sustentação).
  */
 function calcSLAOtrs(rows) {
   var eligible = [], within = 0;
   (rows || []).forEach(function(d) {
-    var threshold = getOTRSSLAThreshold(d.servico_full, d.prior);
-    if (threshold === null) return;           // sem SLA → não conta
-    if (d.resp_min === null || d.resp_min === undefined) return; // sem dado
+    var threshold = getOTRSSLAThreshold(d.servico_full, d.prior, d.cli_id);
+    if (threshold === null) return;
+    if (d.resp_min === null || d.resp_min === undefined) return;
     eligible.push(d);
     if (d.resp_min <= threshold) within++;
   });
