@@ -92,10 +92,13 @@ def query_mysql(session: requests.Session, sql: str) -> list[dict]:
 # ─── QUERIES ────────────────────────────────────────────────────────────────
 
 def q_silenciosos(session: requests.Session) -> list[dict]:
+    # cliente: prefere o CustomerID resolvido via customer_user (cadastro OTRS)
+    # — quando ticket abre por email, t.customer_id pode vir com o email; cu.customer_id
+    # tem a empresa real conforme cadastrada no OTRS (AdminCustomerUser).
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      t.customer_id                                            AS cliente,
+      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado,
       tp.name                                                  AS prioridade,
@@ -109,6 +112,7 @@ def q_silenciosos(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
+    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id NOT IN ({SILEN_EXCLUIR_SQL})
       AND UNIX_TIMESTAMP(t.change_time) <= (UNIX_TIMESTAMP() - 86400)
       AND q.name IN ({FILAS_SQL})
@@ -124,7 +128,7 @@ def q_triagem(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      t.customer_id                                            AS cliente,
+      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado,
       tp.name                                                  AS prioridade,
@@ -137,6 +141,7 @@ def q_triagem(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
+    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id = 4
       AND q.name IN ({FILAS_SQL})
       AND NOT EXISTS(
@@ -157,7 +162,7 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      t.customer_id                                            AS cliente,
+      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado_atual,
       tp.name                                                  AS prioridade,
@@ -171,6 +176,7 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
+    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     LEFT JOIN ticket_history th ON th.ticket_id = t.id AND th.history_type_id = 27
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND q.name IN ({FILAS_SQL})
@@ -203,7 +209,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
       CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) AS atendente,
       COALESCE(u.first_name, '')                                AS primeiro_nome,
       COALESCE(u.last_name, '')                                 AS ultimo_nome,
-      t.customer_id                                             AS cli_id,
+      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)        AS cli_id,
       t.customer_user_id                                        AS cli_user,
       COALESCE(s.name, '')                                      AS servico,
       (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
@@ -222,6 +228,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     LEFT JOIN users      u  ON t.user_id            = u.id
     LEFT JOIN service    s  ON t.service_id         = s.id
+    LEFT JOIN customer_user cu ON cu.login          = t.customer_user_id
     WHERE q.name IN ({FILAS_SQL})
       AND t.create_time >= DATE_SUB(NOW(), INTERVAL 4 MONTH)
     ORDER BY t.create_time DESC
@@ -294,7 +301,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                       AS ticket,
-      t.customer_id                                              AS cliente,
+      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)         AS cliente,
       q.name                                                     AS fila,
       UPPER(ts.name)                                             AS estado,
       tp.name                                                    AS prioridade,
@@ -308,6 +315,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
+    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND q.name IN ({FILAS_SQL})
     ORDER BY t.change_time DESC
