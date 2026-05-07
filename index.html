@@ -4651,6 +4651,10 @@ function populateAtHero(data){
       if(!r.atendente) return;
       if(_hasFila && r.fila!==activeFilaOP) return;
       if(_hasCli && r.cli_id!==activeCliente) return;
+      // FIX QA: ignorar estados dormentes — atendente que só tem fec.auto/resolvido
+      // não tem carga real
+      var stU=(r.estado||'').toUpperCase();
+      if(typeof _LIVE_DORMANT_STATES!=='undefined' && _LIVE_DORMANT_STATES.indexOf(stU)!==-1) return;
       _filaAtend[r.atendente]=true;
     });
     rows=rows.filter(function(r){return _filaAtend[r.atendente];});
@@ -5137,6 +5141,11 @@ function renderTeamCapacity() {
       if(!r.atendente) return;
       if(_hasFila && r.fila!==activeFilaOP) return;
       if(_hasCli && norm(r.cliente)!==acCliN) return;
+      // FIX QA: excluir estados dormentes (fechado sem êxito auto, resolvido, cancelado).
+      // Mesmo bug que liveFilteredTickets — atendentes apareciam com 100+ tickets ativos
+      // que eram só auto-fechados antigos.
+      var stU=(r.estado||'').toUpperCase();
+      if(typeof _LIVE_DORMANT_STATES!=='undefined' && _LIVE_DORMANT_STATES.indexOf(stU)!==-1) return;
       if(!byAt[r.atendente]) byAt[r.atendente]={n:r.atendente,t:0,f:0,ab:0,tm:null,rm:null,est:{}};
       byAt[r.atendente].t++; byAt[r.atendente].ab++;
       var st=r.estado||'Aberto';
@@ -10157,6 +10166,26 @@ setInterval(fetchTicketsAtivos, 10*60*1000);
 
 // ─── LIVE KPIs — sobrescreve valores de "em aberto / bloqueados / muito alta" ──
 // Regra: XLSX para histórico/fechado, GWMS para estado atual.
+// Estados que estão tecnicamente em "tickets_ativos.json" (vêm da query SQL
+// do sync com NOT IN (2,3,5,9) — alinhamento GWMS canon) mas que NÃO são
+// operacionalmente ativos. Tickets nesses estados estão DORMENTES — não
+// demandam ação imediata da equipe.
+//
+// Bug detectado em QA 2026-05-07: filtrar SSG + Mai/26 mostrava 1112 "em
+// aberto agora" sendo que 1050 eram "Fechado sem Êxito (Auto)". AutoZone
+// mostrava 678 sendo que apenas 30 eram realmente ativos.
+//
+// Por que não excluir no sync? GWMS canon usa NOT IN (2,3,5,9). Manter
+// alinhamento com GWMS na fonte e filtrar aqui no consumo preserva os 2
+// invariantes (paridade de contagens + ativos operacionais corretos).
+var _LIVE_DORMANT_STATES = [
+  'FECHADO SEM ÊXITO (AUTO)',
+  'FECHADO SEM EXITO (AUTO)',  // sem cedilha — alguns logs do OTRS
+  'RESOLVIDO',
+  'CANCELADO',
+  'AGRUPADO'
+];
+
 function liveFilteredTickets(){
   if(!TICKETS_ATIVOS_DATA||!TICKETS_ATIVOS_DATA.rows) return null;
   var norm=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
@@ -10165,6 +10194,9 @@ function liveFilteredTickets(){
   return TICKETS_ATIVOS_DATA.rows.filter(function(r){
     if(acCli && norm(r.cliente)!==acCli) return false;
     if(acFila && r.fila!==acFila) return false;
+    // Excluir tickets em estados dormentes (auto-fechados, resolvido, cancelado)
+    var est=(r.estado||'').toUpperCase();
+    if(_LIVE_DORMANT_STATES.indexOf(est)!==-1) return false;
     return true;
   });
 }
