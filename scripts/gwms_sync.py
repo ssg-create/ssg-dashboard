@@ -55,6 +55,13 @@ FILAS = (
 #   1. dynamic_field_value.value_text (gwclientes/C_Cliente) — fonte canônica GWMS
 #   2. customer_user.customer_id — empresa cadastrada do email
 #   3. t.customer_id — fallback (pode ser email se ticket aberto ad-hoc)
+# NOTA sobre divergência intencional vs GWMS canônico:
+# O GWMS faz INNER JOIN com dynamic_field_value e PERDE tickets onde a equipe
+# de triagem esqueceu de preencher 'gwclientes'. Validado em Abr/26: AutoZone
+# tem 5 tickets de usuários @autozone.com que o GWMS não conta. Mantemos o
+# COALESCE com fallback (LEFT JOIN) — nossa contagem fica ~3-5% maior, mas
+# captura tickets legítimos que o GWMS perde. É decisão de produto: painel
+# mais inclusivo > paridade exata com GWMS.
 CLI_ID_EXPR = (
     "COALESCE(NULLIF(dfv_cli.value_text,''), "
     "NULLIF(cu.customer_id,''), t.customer_id)"
