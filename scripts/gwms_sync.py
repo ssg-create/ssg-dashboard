@@ -29,10 +29,16 @@ DATASOURCE_UID = "PIz1Yx14k"  # MySQL:otrs
 # e causava perda de ~60% dos tickets de clientes como AutoZone (118 OTRS vs 48
 # painel em Abr/26). Agora usamos REGEXP `^(FILA)(::|$)` para pegar fila raiz +
 # qualquer sub-fila.
-FILAS = ("DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELHORIAS")
-# NOTA: filas NOC, MONITORAMENTO e TECNOLOGIA foram MIGRADAS para GWMS
-# (não são filas ativas, contém apenas histórico legacy pré-migração).
-# Fila LIXO é triagem de spam — não entra no fluxo operacional.
+FILAS = (
+    "DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELHORIAS",
+    # NOC, MONITORAMENTO, TECNOLOGIA: incluídas para paridade com GWMS canônico.
+    # Apesar de migradas para GWMS (informação do CEO), o OTRS ainda recebe
+    # tickets nessas filas (alertas automáticos, sub-rotinas legacy). Sem elas,
+    # divergimos em ~9% dos clientes (TOTVS 29 vs GWMS 55, ARCO 15 vs 31, etc.).
+    "NOC", "MONITORAMENTO", "TECNOLOGIA",
+    # Fila LIXO permanece excluída — é triagem de spam/auto-classificação
+    # (CLIENTE-INTERNO concentra 381/382 tickets nela em abr/26).
+)
 
 # ─── CLIENT RESOLUTION ──────────────────────────────────────────────────────
 # Descoberta via inspeção do GWMS:
