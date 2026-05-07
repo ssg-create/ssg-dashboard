@@ -3787,34 +3787,51 @@ function populateSlHero(op){
   hero.classList.remove('sl-s-warn','sl-s-crit');
   if(ring) ring.classList.remove('sl-s-warn','sl-s-crit');
   var atend=op.atend||[];
-  var resps=atend.map(function(a){return a.rm;}).filter(function(x){return x!=null&&!isNaN(x);});
-  var respMedian=0;
-  if(resps.length){var sorted=resps.slice().sort(function(a,b){return a-b;});var m=Math.floor(sorted.length/2);respMedian=sorted.length%2?sorted[m]:(sorted[m-1]+sorted[m])/2;}
-  var META=30; // 1ª resp meta
-  var okCount=resps.filter(function(v){return v<=META;}).length;
-  var totalResp=resps.length;
-  var pctMeta=totalResp?Math.round((okCount/totalResp)*100):0;
-  // K11: rotular explicitamente como 1ª resposta — antes ficava ambíguo
-  // com o "% Dentro do SLA" de Solução (que é cálculo diferente, calcSLA).
-  // textContent não interpreta entidades, então usamos < literal.
-  var statusLbl = pctMeta+'% DOS ATENDENTES · 1ª RESP <30min';
-  var status, cls;
-  if(pctMeta>=80){status=statusLbl;cls='';}
-  else if(pctMeta>=60){status=statusLbl;cls='sl-s-warn';}
-  else {status=statusLbl;cls='sl-s-crit';}
-  hero.textContent=status;
+  // FIX QA: usar regras OTRS reais (calcSLAOtrs) por serviço/prioridade/cliente
+  // em vez de meta hardcoded de 30min. Antes mostrava "0% atendentes <30min"
+  // mesmo quando havia tickets dentro do SLA real (ex: ticket Normal/Sustentação
+  // com SLA de 120min cumprido em 45min era contado como FORA da meta).
+  // Agora mostra "% chamados dentro do SLA OTRS" — fonte canônica OTRS/Znuny.
+  var rs = (RAW_DATA||[]).filter(function(t){
+    if(!t || !t.criado) return false;
+    // escopo: cliente + fila + (range OU mês)
+    if(typeof activeCliente !== 'undefined' && activeCliente && t.cli_id !== activeCliente) return false;
+    if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return false;
+    if(activeRangeStart && activeRangeEnd){
+      return (typeof ticketInFilter==='function') ? ticketInFilter(t) : true;
+    } else if(activeMonth && activeMonth !== 'all'){
+      if(!(t.criado instanceof Date) || isNaN(t.criado)) return false;
+      return t.criado.toISOString().slice(0,7) === activeMonth;
+    }
+    return true;
+  });
+  var slaOtrs = (typeof calcSLAOtrs==='function') ? calcSLAOtrs(rs) : null;
+  var pctSla = (slaOtrs && slaOtrs.pct_within_sla != null) ? slaOtrs.pct_within_sla : 0;
+  var sampleN = (slaOtrs && slaOtrs.sample_size) || 0;
+  var violations = (slaOtrs && slaOtrs.violations) || 0;
+  // Mediana global de 1ª resposta (todos os tickets do escopo)
+  var respArr = rs.map(function(t){return t.resp_min;}).filter(function(v){return v!=null&&!isNaN(v);}).sort(function(a,b){return a-b;});
+  var respMedian = respArr.length ? respArr[Math.floor(respArr.length/2)] : 0;
+
+  var statusLbl = pctSla + '% DOS CHAMADOS · DENTRO DO SLA OTRS';
+  var cls;
+  if(pctSla>=80){cls='';}
+  else if(pctSla>=60){cls='sl-s-warn';}
+  else {cls='sl-s-crit';}
+  hero.textContent=statusLbl;
   if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
   var abertosAbr=atend.reduce(function(s,a){return s+(a.ab||0);},0);
   if(sub){
     var mediana=Math.round(respMedian);
     sub.innerHTML=
-      '<strong>'+okCount+'</strong> de <strong>'+totalResp+'</strong> atendentes dentro da meta de 30min · '
-      +'mediana <strong>'+mediana+'min</strong> · '
-      +'<strong>'+abertosAbr+'</strong> chamados em aberto atualmente';
+      '<strong>'+(sampleN-violations)+'</strong> de <strong>'+sampleN+'</strong> chamados dentro do SLA · '
+      +'mediana 1ª resp <strong>'+mediana+'min</strong> · '
+      +'<strong>'+violations+'</strong> violações · '
+      +'<strong>'+abertosAbr+'</strong> em aberto agora';
   }
-  if(meta)meta.textContent='meta: 1ª resposta <30min · solução <48h';
-  if(ringNum)ringNum.textContent=pctMeta+'%';
-  if(ringFg) ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(pctMeta/100)));
+  if(meta)meta.textContent='regras OTRS: Sustentação=30/60/120min · Banco de Horas=60/240/480/720/1440min · solução <48h';
+  if(ringNum)ringNum.textContent=pctSla+'%';
+  if(ringFg) ringFg.setAttribute('stroke-dashoffset', 565.48*(1-(pctSla/100)));
 }
 
 function populateClHero(op){
