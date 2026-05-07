@@ -9102,10 +9102,18 @@ function buildMonthFilter() {
     if(typeof window._mthExpanded === 'undefined') window._mthExpanded = {};
     var expanded = !!window._mthExpanded[mode];
 
-    // Label do trigger: "Todos os meses (N)" ou "Mar/26 (536)"
+    // Label do trigger: "Todos os meses (N)" ou "Mar/26 (536)" ou "Período custom"
+    // FIX QA: quando range customizado está ativo, mLabel(undefined) retornava
+    // 'undefined/nge 0' no trigger. Agora exibe label clara do range.
+    var rangeOn = (typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd);
     var triggerLbl, triggerCount;
-    if(allOn){ triggerLbl = 'Todos os meses'; triggerCount = total; }
-    else{
+    if(rangeOn){
+      var fmtBR = function(d){ try{return d.toLocaleDateString('pt-BR');}catch(e){return d.toISOString().slice(0,10);} };
+      triggerLbl = 'Período: ' + fmtBR(activeRangeStart) + ' → ' + fmtBR(activeRangeEnd);
+      triggerCount = (typeof OP!=='undefined' && OP) ? (OP.total||0) : 0;
+    } else if(allOn){
+      triggerLbl = 'Todos os meses'; triggerCount = total;
+    } else{
       triggerLbl = mLabel(activeMonth);
       triggerCount = usaEmp ? (activeEmpData[activeMonth] ? activeEmpData[activeMonth].total : 0) : (opTotals[activeMonth]||0);
     }
