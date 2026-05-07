@@ -9037,11 +9037,28 @@ function buildMonthFilter() {
     }
   } catch(e){ console.warn('import banner:',e); }
 
-  var keys = Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
+  var allKeys = Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
 
-  // Totais da operação (modo OP)
-  var opTotals = {};
-  keys.forEach(function(k){ opTotals[k] = OP_MESES[k] ? OP_MESES[k].total : 0; });
+  // Totais da operação (modo OP) — calcula primeiro pra todos os meses
+  var opTotalsAll = {};
+  allKeys.forEach(function(k){ opTotalsAll[k] = OP_MESES[k] ? OP_MESES[k].total : 0; });
+
+  // Filtro do sidebar: oculta meses com baixo volume (ruído de tickets antigos
+  // que ficaram ativos por meses sem atividade — vêm do sync sem janela).
+  // Mostra apenas meses com >= MIN_MONTH_TICKETS OU dentro da janela de 12 meses.
+  // Mantém o mês ativo (selecionado) sempre visível, mesmo que abaixo do threshold.
+  var MIN_MONTH_TICKETS = 10;
+  var WINDOW_MONTHS = 12;
+  var nowD = new Date();
+  var cutoff = new Date(nowD.getFullYear(), nowD.getMonth() - WINDOW_MONTHS, 1);
+  var cutoffKey = cutoff.toISOString().slice(0,7);
+  var keys = allKeys.filter(function(k){
+    if(activeMonth === k) return true; // sempre mantém o mês ativo
+    if(k < cutoffKey) return false;     // fora da janela operacional
+    return (opTotalsAll[k] || 0) >= MIN_MONTH_TICKETS;
+  });
+
+  var opTotals = opTotalsAll; // mantém referência pros totalizadores
   var opTotal = OP.total;
 
   // Totais da empresa selecionada (modo CLI) — usa EMP_MESES
