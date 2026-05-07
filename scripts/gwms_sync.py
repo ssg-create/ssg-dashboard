@@ -35,24 +35,27 @@ FILAS = ("DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELH
 # Fila LIXO é triagem de spam — não entra no fluxo operacional.
 
 # ─── CLIENT RESOLUTION ──────────────────────────────────────────────────────
-# Descoberta crítica via inspeção do GWMS Reports:
-# O OTRS Report identifica o cliente pelo dynamic field 'C_Cliente'
-# (preenchido pela equipe na triagem/atendimento), NÃO por t.customer_id.
+# Descoberta via inspeção do GWMS:
+# O cliente canônico vem do dynamic field cuja LABEL é 'C_Cliente' (display)
+# mas cujo NAME interno é 'gwclientes' (id=3). Validado via:
+#   SELECT id,name,label FROM dynamic_field WHERE name='gwclientes'
+#     → id=3, name='gwclientes', label='C_Cliente'
+#
+# Queries do GWMS usam tanto `df.name='gwclientes'` (Pesquisa - Tickets)
+# quanto `df.label='C_Cliente'` (Visão Anual/Tickets via variável Grafana).
+# Usamos df.name pois é mais estável (id único; label é display).
 #
 # Hierarquia de resolução (cli_id):
-#   1. dynamic_field_value.value_text (C_Cliente) — preenchido na triagem
-#   2. customer_user.customer_id — empresa cadastrada do email (AdminCustomerUser)
-#   3. t.customer_id — fallback (pode ser email se ticket aberto por usuário ad-hoc)
-#
-# Isso elimina o gap AutoZone (118 OTRS vs 48 painel) por capturar tickets
-# onde t.customer_id era email mas C_Cliente foi preenchido com a empresa real.
+#   1. dynamic_field_value.value_text (gwclientes/C_Cliente) — fonte canônica GWMS
+#   2. customer_user.customer_id — empresa cadastrada do email
+#   3. t.customer_id — fallback (pode ser email se ticket aberto ad-hoc)
 CLI_ID_EXPR = (
     "COALESCE(NULLIF(dfv_cli.value_text,''), "
     "NULLIF(cu.customer_id,''), t.customer_id)"
 )
 CLI_ID_JOINS = (
     "LEFT JOIN customer_user cu ON cu.login = t.customer_user_id\n"
-    "    LEFT JOIN dynamic_field df_cli ON df_cli.name = 'C_Cliente'\n"
+    "    LEFT JOIN dynamic_field df_cli ON df_cli.name = 'gwclientes'\n"
     "    LEFT JOIN dynamic_field_value dfv_cli\n"
     "      ON dfv_cli.field_id = df_cli.id AND dfv_cli.object_id = t.id"
 )
@@ -61,9 +64,12 @@ FILAS_SQL = ",".join(f"'{f}'" for f in FILAS)
 FILAS_REGEX = "^(" + "|".join(FILAS) + ")(::|$)"
 FILAS_WHERE = f"q.name REGEXP '{FILAS_REGEX}'"
 
-# Estados fechados (closed successful, unsuccessful, removed, merged,
-# fechado sem êxito auto, resolvido, cancelado)
-ESTADOS_FECHADOS = (2, 3, 5, 9, 17, 18, 19)
+# Estados fechados — alinhado com GWMS canônico:
+#   2 = closed successful, 3 = closed unsuccessful, 5 = removed, 9 = merged
+# IDs 17, 18, 19 (fechado sem êxito auto, resolvido, cancelado) são estados
+# customizados que o GWMS NÃO trata como fechados — ficam como "Outros" nas
+# views por estado. Manter alinhamento aqui evita divergir do dashboard fonte.
+ESTADOS_FECHADOS = (2, 3, 5, 9)
 # Estado "em atendimento" é id=14
 # Estado "open" (triagem inicial) é id=4
 # History type StateUpdate=27, OwnerUpdate=23, Move=16
