@@ -912,14 +912,16 @@ input[type=file]{display:none}
 /* Modal relatório */
 #rpt-modal{position:fixed;inset:0;z-index:10001;background:rgba(9,14,20,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px}
 #rpt-modal.on{display:flex}
-.rpt-dlg{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;animation:rptIn .22s ease-out}
+.rpt-dlg{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;animation:rptIn .22s ease-out;display:flex;flex-direction:column;max-height:90vh}
 @keyframes rptIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 .rpt-hd{padding:18px 22px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,rgba(255,112,36,.08),rgba(40,54,69,.04))}
 .rpt-hd-dot{width:8px;height:8px;border-radius:50%;background:#ff7024;box-shadow:0 0 10px rgba(255,112,36,.7)}
 .rpt-hd-ttl{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.01em;flex:1}
 .rpt-hd-x{width:26px;height:26px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .rpt-hd-x:hover{background:var(--bg3);color:var(--text)}
-.rpt-body{padding:18px 22px 20px}
+.rpt-body{padding:18px 22px 16px;overflow-y:auto;flex:1 1 auto;min-height:0}
+/* Chips de mês no Comparativo — mais compactos pra caber muitos meses sem inflar a altura */
+#rpt-pa-chips .rpt-chip,#rpt-pb-chips .rpt-chip{padding:4px 9px;font-size:10.5px}
 .rpt-sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:4px 0 8px}
 .rpt-types{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
 .rpt-type{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;background:var(--bg3)}
@@ -971,7 +973,8 @@ body:not(.dark) .rpt-multi-dd{background:#fff;border-color:#cbd5e1;box-shadow:0 
 .rpt-opts{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;margin-bottom:16px}
 .rpt-opt{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);cursor:pointer}
 .rpt-opt input{accent-color:#ff7024;cursor:pointer}
-.rpt-ft{display:flex;gap:10px;justify-content:flex-end}
+.rpt-ft{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px;border-top:1px solid var(--border2);background:var(--bg2);flex-shrink:0}
+body:not(.dark) .rpt-ft{background:#fff}
 .rpt-btn{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;letter-spacing:.02em}
 .rpt-btn-cancel{background:transparent;color:var(--muted);border:1px solid var(--border2)}
 .rpt-btn-cancel:hover{background:var(--bg3);color:var(--text)}
@@ -14478,10 +14481,10 @@ function renderIA(){
         </div>
       </div>
 
-      <div class="rpt-ft">
-        <button class="rpt-btn rpt-btn-cancel" onclick="closeRptModal()">Cancelar</button>
-        <button class="rpt-btn rpt-btn-go" id="rpt-btn-go" onclick="rptGenerate()">Gerar PDF</button>
-      </div>
+    </div>
+    <div class="rpt-ft">
+      <button class="rpt-btn rpt-btn-cancel" onclick="closeRptModal()">Cancelar</button>
+      <button class="rpt-btn rpt-btn-go" id="rpt-btn-go" onclick="rptGenerate()">Gerar PDF</button>
     </div>
   </div>
 </div>
