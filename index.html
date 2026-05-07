@@ -4658,9 +4658,15 @@ function populateAtHero(data){
   hero.textContent=status;
   if(cls){hero.classList.add(cls);if(ring)ring.classList.add(cls);}
   if(sub){
+    // FIX QA: copy explícito sobre o que conta como "ativo" aqui.
+    // totalAtivos = soma das cargas (tickets em fluxo: open, em atendimento,
+    // aguardando cliente/interno/externo, retorno cliente). NÃO inclui tickets
+    // fechado-auto/resolvido/cancelado que aparecem como "não fechados" em
+    // tickets_ativos.json. Antes o card diz "165 tickets ativos" e o card
+    // abaixo "Total abertos: 2400" → confundia gestor.
     sub.innerHTML=
       '<strong>'+total+'</strong> atendentes com carga · '
-      +'<strong>'+totalAtivos+'</strong> tickets ativos · '
+      +'<strong>'+totalAtivos+'</strong> tickets em atendimento · '
       +'<strong>'+sobrecarga+'</strong> em sobrecarga · '
       +'<strong>'+atencao+'</strong> em atenção · '
       +'<strong>'+folga+'</strong> com folga';
@@ -9642,6 +9648,51 @@ function getFilteredEmpresa(d) {
   // Helpers de estado canônicos (consistentes com calcSLA)
   var _isAb = function(e){return['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(e)!==-1;};
   var _isFe = function(e){return e==='Fechado'||e==='Resolvido'||e==='Fechado s/ Êxito';};
+  // FIX QA: prior (matriz de prioridades) precisa ser RECALCULADA com escopo
+  // ativo (cli + mês + fila + range). Antes ficava com o agregado histórico
+  // de EMPRESAS[k].prior, causando "Muito Alta" maior que total no painel CS
+  // (ex: AutoZone Abr/26 mostrava Muito Alta=293 mas total era 125).
+  var _buildPriorFiltered = function(cliId){
+    if(typeof RAW_DATA==='undefined' || !RAW_DATA || !RAW_DATA.length) return {};
+    var pr = {};
+    RAW_DATA.forEach(function(t){
+      if(!t || !t.criado) return;
+      if(cliId && t.cli_id !== cliId) return;
+      if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
+      if(activeRangeStart && activeRangeEnd){
+        if(!ticketInFilter(t)) return;
+      } else if(activeMonth && activeMonth !== 'all'){
+        if(!(t.criado instanceof Date) || isNaN(t.criado)) return;
+        if(t.criado.toISOString().slice(0,7) !== activeMonth) return;
+      }
+      var p = t.prior || '—';
+      pr[p] = (pr[p]||0) + 1;
+    });
+    return pr;
+  };
+  // FIX QA: resp_med (mediana de 1ª resposta em min) — recalcular pelo escopo.
+  // Antes ficava com mediana histórica de EMPRESAS[k] (ex: AutoZone resp_med=20)
+  // mesmo filtrando Abr/26 onde mediana real é 61min. Health Score mostrava 20
+  // enquanto Status da Fila mostrava 58 → painéis divergiam para mesma métrica.
+  var _buildRespMedFiltered = function(cliId){
+    if(typeof RAW_DATA==='undefined' || !RAW_DATA || !RAW_DATA.length) return null;
+    var rs = [];
+    RAW_DATA.forEach(function(t){
+      if(!t || !t.criado || t.resp_min == null) return;
+      if(cliId && t.cli_id !== cliId) return;
+      if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
+      if(activeRangeStart && activeRangeEnd){
+        if(!ticketInFilter(t)) return;
+      } else if(activeMonth && activeMonth !== 'all'){
+        if(!(t.criado instanceof Date) || isNaN(t.criado)) return;
+        if(t.criado.toISOString().slice(0,7) !== activeMonth) return;
+      }
+      rs.push(t.resp_min);
+    });
+    if(!rs.length) return null;
+    rs.sort(function(a,b){return a-b;});
+    return rs[Math.floor(rs.length/2)];
+  };
   // Range mode: filter from RAW_DATA for accurate results
   if(activeRangeStart && activeRangeEnd) {
     var rTix=(RAW_DATA||[]).filter(function(t){return t.cli_id===d.id&&ticketInFilter(t)&&(activeFilaOP==='all'||t.fila===activeFilaOP);});
@@ -9659,12 +9710,15 @@ function getFilteredEmpresa(d) {
       abertos:rTix.filter(function(t){return _isAb(t.estado);}).length,
       fechados:rTix.filter(function(t){return _isFe(t.estado);}).length,
       tickets:tixGFE, estados:estGFE, by_mes:{},
-      by_day:_bdr, byDay:_bdr
+      by_day:_bdr, byDay:_bdr,
+      prior:_buildPriorFiltered(d.id),
+      resp_med:_buildRespMedFiltered(d.id)
     }, _slaFields(d.id));
   }
   if(activeMonth==='all') {
     if(activeFilaOP === 'all') {
       // Sem filtros extras — d.tickets vem do bloco EMPRESAS (slice 25 mais recentes)
+      // prior preserva valor histórico de EMPRESAS[k] (sem filtro = agregado total)
       var _bdC = _buildByDayFiltered(d.id);
       return Object.assign({},d,{by_day:_bdC, byDay:_bdC}, _slaFields(d.id));
     }
@@ -9677,7 +9731,9 @@ function getFilteredEmpresa(d) {
       abertos: allTix.filter(function(t){return _isAb(t.estado);}).length,
       fechados: allTix.filter(function(t){return _isFe(t.estado);}).length,
       tickets: allTix, estados: estAll,
-      by_day:_bdF, byDay:_bdF
+      by_day:_bdF, byDay:_bdF,
+      prior:_buildPriorFiltered(d.id),
+      resp_med:_buildRespMedFiltered(d.id)
     }, _slaFields(d.id));
   }
 
@@ -9695,6 +9751,7 @@ function getFilteredEmpresa(d) {
   // If no data for this month, return empty
   if(total === 0 && !d.by_mes[mKey]) {
     return Object.assign({},d,{total:0,abertos:0,fechados:0,tickets:[],estados:{},by_mes:{},
+      prior:{},
       sla:null,solucao_med_h:null,solucao_median_h:null,solucao_p90_h:null,
       sol_med:null,sol_med_bh:null,sol_median:null,sol_p90:null,sla_pct:null,auto_closed:0
     });
@@ -9730,7 +9787,8 @@ function getFilteredEmpresa(d) {
     estados: estados,
     by_mes: newByMes,
     by_day: _bdMM,
-    byDay: _bdMM
+    byDay: _bdMM,
+    prior:_buildPriorFiltered(d.id)
   }, _slaFields(d.id));
 }
 
