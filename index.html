@@ -9788,7 +9788,8 @@ function getFilteredEmpresa(d) {
     by_mes: newByMes,
     by_day: _bdMM,
     byDay: _bdMM,
-    prior:_buildPriorFiltered(d.id)
+    prior:_buildPriorFiltered(d.id),
+    resp_med:_buildRespMedFiltered(d.id)
   }, _slaFields(d.id));
 }
 
