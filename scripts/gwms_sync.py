@@ -33,6 +33,29 @@ FILAS = ("DATASUL", "DBA", "GWMS", "INFRAESTUTURA", "PROTHEUS", "SSG", "SSG-MELH
 # NOTA: filas NOC, MONITORAMENTO e TECNOLOGIA foram MIGRADAS para GWMS
 # (não são filas ativas, contém apenas histórico legacy pré-migração).
 # Fila LIXO é triagem de spam — não entra no fluxo operacional.
+
+# ─── CLIENT RESOLUTION ──────────────────────────────────────────────────────
+# Descoberta crítica via inspeção do GWMS Reports:
+# O OTRS Report identifica o cliente pelo dynamic field 'C_Cliente'
+# (preenchido pela equipe na triagem/atendimento), NÃO por t.customer_id.
+#
+# Hierarquia de resolução (cli_id):
+#   1. dynamic_field_value.value_text (C_Cliente) — preenchido na triagem
+#   2. customer_user.customer_id — empresa cadastrada do email (AdminCustomerUser)
+#   3. t.customer_id — fallback (pode ser email se ticket aberto por usuário ad-hoc)
+#
+# Isso elimina o gap AutoZone (118 OTRS vs 48 painel) por capturar tickets
+# onde t.customer_id era email mas C_Cliente foi preenchido com a empresa real.
+CLI_ID_EXPR = (
+    "COALESCE(NULLIF(dfv_cli.value_text,''), "
+    "NULLIF(cu.customer_id,''), t.customer_id)"
+)
+CLI_ID_JOINS = (
+    "LEFT JOIN customer_user cu ON cu.login = t.customer_user_id\n"
+    "    LEFT JOIN dynamic_field df_cli ON df_cli.name = 'C_Cliente'\n"
+    "    LEFT JOIN dynamic_field_value dfv_cli\n"
+    "      ON dfv_cli.field_id = df_cli.id AND dfv_cli.object_id = t.id"
+)
 FILAS_SQL = ",".join(f"'{f}'" for f in FILAS)
 # REGEXP: ^(DATASUL|DBA|GWMS|...)(::|$) — casa fila raiz E qualquer sub-fila
 FILAS_REGEX = "^(" + "|".join(FILAS) + ")(::|$)"
@@ -109,7 +132,7 @@ def q_silenciosos(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
+      {CLI_ID_EXPR}                                            AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado,
       tp.name                                                  AS prioridade,
@@ -123,7 +146,7 @@ def q_silenciosos(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
-    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
+    {CLI_ID_JOINS}
     WHERE t.ticket_state_id NOT IN ({SILEN_EXCLUIR_SQL})
       AND UNIX_TIMESTAMP(t.change_time) <= (UNIX_TIMESTAMP() - 86400)
       AND {FILAS_WHERE}
@@ -139,7 +162,7 @@ def q_triagem(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
+      {CLI_ID_EXPR}                                            AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado,
       tp.name                                                  AS prioridade,
@@ -152,7 +175,7 @@ def q_triagem(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
-    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
+    {CLI_ID_JOINS}
     WHERE t.ticket_state_id = 4
       AND {FILAS_WHERE}
       AND NOT EXISTS(
@@ -173,7 +196,7 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                     AS ticket,
-      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)       AS cliente,
+      {CLI_ID_EXPR}                                            AS cliente,
       q.name                                                   AS fila,
       UPPER(ts.name)                                           AS estado_atual,
       tp.name                                                  AS prioridade,
@@ -187,7 +210,7 @@ def q_reaberturas(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
-    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
+    {CLI_ID_JOINS}
     LEFT JOIN ticket_history th ON th.ticket_id = t.id AND th.history_type_id = 27
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND {FILAS_WHERE}
@@ -220,7 +243,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
       CONCAT(COALESCE(u.first_name,''), ' ', COALESCE(u.last_name,'')) AS atendente,
       COALESCE(u.first_name, '')                                AS primeiro_nome,
       COALESCE(u.last_name, '')                                 AS ultimo_nome,
-      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)        AS cli_id,
+      {CLI_ID_EXPR}                                             AS cli_id,
       t.customer_user_id                                        AS cli_user,
       COALESCE(s.name, '')                                      AS servico,
       (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
@@ -239,7 +262,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     LEFT JOIN users      u  ON t.user_id            = u.id
     LEFT JOIN service    s  ON t.service_id         = s.id
-    LEFT JOIN customer_user cu ON cu.login          = t.customer_user_id
+    {CLI_ID_JOINS}
     WHERE {FILAS_WHERE}
       AND (
         -- Recém criado na janela
@@ -321,7 +344,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                       AS ticket,
-      COALESCE(NULLIF(cu.customer_id,''), t.customer_id)         AS cliente,
+      {CLI_ID_EXPR}                                              AS cliente,
       q.name                                                     AS fila,
       UPPER(ts.name)                                             AS estado,
       tp.name                                                    AS prioridade,
@@ -335,122 +358,11 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
-    LEFT JOIN customer_user cu ON cu.login           = t.customer_user_id
+    {CLI_ID_JOINS}
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND {FILAS_WHERE}
     ORDER BY t.change_time DESC
     LIMIT 3000
-    """
-    return query_mysql(session, sql)
-
-
-def q_diagnostic_autozone_v3(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO V3: testa hipótese FINAL — OTRS Report usa o DYNAMIC FIELD
-    'C_Cliente' (campo customizado), não t.customer_id. URL evidência:
-    .../dashboard?var-gwdynamic_field_cliente=C_Cliente&var-gwclients=AUTOZONE
-
-    Conta tickets AutoZone abr/26 cruzando com dynamic_field_value."""
-    sql = """
-    SELECT
-      t.tn AS num,
-      q.name AS fila,
-      ts.name AS estado,
-      t.customer_id AS t_customer_id,
-      cu.customer_id AS cu_customer_id,
-      dfv.value_text AS c_cliente,
-      DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s') AS criado,
-      DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s') AS modificado
-    FROM ticket t
-    JOIN queue q ON t.queue_id = q.id
-    JOIN ticket_state ts ON t.ticket_state_id = ts.id
-    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
-    LEFT JOIN dynamic_field df ON df.name = 'C_Cliente'
-    LEFT JOIN dynamic_field_value dfv ON dfv.field_id = df.id AND dfv.object_id = t.id
-    WHERE dfv.value_text = 'AUTOZONE'
-      AND t.create_time < '2026-05-01'
-      AND (
-        t.change_time >= '2026-04-01'
-        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
-      )
-    ORDER BY t.change_time DESC
-    LIMIT 500
-    """
-    return query_mysql(session, sql)
-
-
-def q_diagnostic_dynamic_fields(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO: lista todos os dynamic fields existentes no OTRS para
-    confirmar que C_Cliente existe e descobrir outros campos relevantes."""
-    sql = """
-    SELECT
-      df.id,
-      df.name,
-      df.label,
-      df.field_type,
-      df.object_type,
-      COUNT(dfv.id) AS values_count
-    FROM dynamic_field df
-    LEFT JOIN dynamic_field_value dfv ON dfv.field_id = df.id
-    GROUP BY df.id, df.name, df.label, df.field_type, df.object_type
-    ORDER BY values_count DESC
-    """
-    return query_mysql(session, sql)
-
-
-def q_diagnostic_autozone_v2(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO V2: tickets AutoZone com atividade em abril/26 — usando COALESCE
-    com customer_user JOIN (cobre tickets com t.customer_id = email mas
-    cu.customer_id = AUTOZONE). Sem filtro de fila."""
-    sql = """
-    SELECT
-      t.tn AS num,
-      q.name AS fila,
-      ts.name AS estado,
-      t.customer_id AS t_customer_id,
-      cu.customer_id AS cu_customer_id,
-      t.customer_user_id AS cli_user,
-      DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s') AS criado,
-      DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s') AS modificado,
-      (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
-       FROM ticket_history th
-       WHERE th.ticket_id = t.id
-         AND th.state_id IN (2, 3, 5, 9, 17, 18, 19)) AS fechado
-    FROM ticket t
-    JOIN queue q ON t.queue_id = q.id
-    JOIN ticket_state ts ON t.ticket_state_id = ts.id
-    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
-    WHERE COALESCE(NULLIF(cu.customer_id, ''), t.customer_id) = 'AUTOZONE'
-      AND t.create_time < '2026-05-01'
-      AND (
-        t.create_time >= '2026-04-01'
-        OR t.change_time >= '2026-04-01'
-        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
-      )
-    ORDER BY t.change_time DESC
-    LIMIT 500
-    """
-    return query_mysql(session, sql)
-
-
-def q_diagnostic_az_breakdown(session: requests.Session) -> list[dict]:
-    """DIAGNÓSTICO: contagem AutoZone abril por estado, casando com o OTRS Report."""
-    sql = """
-    SELECT
-      ts.name AS estado,
-      COUNT(*) AS total,
-      SUM(CASE WHEN t.create_time >= '2026-04-01' AND t.create_time < '2026-05-01' THEN 1 ELSE 0 END) AS criados_abr,
-      SUM(CASE WHEN t.change_time >= '2026-04-01' AND t.change_time < '2026-05-01' THEN 1 ELSE 0 END) AS mod_abr
-    FROM ticket t
-    JOIN ticket_state ts ON t.ticket_state_id = ts.id
-    LEFT JOIN customer_user cu ON cu.login = t.customer_user_id
-    WHERE COALESCE(NULLIF(cu.customer_id, ''), t.customer_id) = 'AUTOZONE'
-      AND t.create_time < '2026-05-01'
-      AND (
-        t.change_time >= '2026-04-01'
-        OR t.ticket_state_id NOT IN (2, 3, 5, 9, 17, 18, 19)
-      )
-    GROUP BY ts.name
-    ORDER BY total DESC
     """
     return query_mysql(session, sql)
 
@@ -541,8 +453,6 @@ def main() -> None:
         ("utilizacao.json",        q_utilizacao,        None),
         ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
-        ("_diag_az_v3.json",       q_diagnostic_autozone_v3, {"obs": "diag v3: AutoZone abr usando dynamic field C_Cliente"}),
-        ("_diag_dyn_fields.json",  q_diagnostic_dynamic_fields, {"obs": "diag: lista todos os dynamic fields do OTRS"}),
     ]
 
     collected = {}
