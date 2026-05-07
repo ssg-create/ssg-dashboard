@@ -646,6 +646,21 @@ input[type=file]{display:none}
 .mth-count{font-family:var(--mono);font-size:10px;opacity:.7}
 .mth-all{background:rgba(255,255,255,.03);border-color:var(--border)}
 
+/* Dropdown colapsável de meses (UX: lista longa não polui sidebar) */
+.mth-trigger{padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text);font-family:var(--font);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .15s;width:100%;text-align:left}
+.mth-trigger:hover{background:rgba(255,255,255,.06);border-color:rgba(79,142,247,.4)}
+.mth-trigger.on{background:rgba(79,142,247,.1);color:var(--blue);border-color:rgba(79,142,247,.3)}
+.mth-trigger.on.cli-m{background:rgba(0,212,168,.1);color:var(--teal);border-color:rgba(0,212,168,.3)}
+.mth-trigger.on.cs-m{background:rgba(139,92,246,.1);color:#a855f7;border-color:rgba(139,92,246,.3)}
+.mth-trigger-label{flex:1;display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mth-trigger-count{font-family:var(--mono);font-size:11px;opacity:.7}
+.mth-chevron{display:inline-block;width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .2s;opacity:.6;margin-left:4px}
+.mth-trigger.expanded .mth-chevron{transform:rotate(-135deg) translate(-2px,-2px)}
+.mth-list{display:none;flex-direction:column;gap:2px;margin-top:6px;max-height:340px;overflow-y:auto;padding:2px;border-radius:var(--r);background:rgba(0,0,0,.15);border:1px solid var(--border)}
+.mth-list.expanded{display:flex}
+.mth-list .mth-btn{padding:6px 10px;font-size:11.5px}
+.mth-list .mth-btn.on{background:rgba(79,142,247,.15)}
+
 /* Risk Matrix 2×2 */
 .risk-matrix-wrap{display:grid;grid-template-columns:22px 1fr;gap:0;height:500px;margin-top:4px}
 .risk-matrix-y-label{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:4px 2px}
@@ -9039,26 +9054,22 @@ function buildMonthFilter() {
 
   var allKeys = Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
 
-  // Totais da operação (modo OP) — calcula primeiro pra todos os meses
+  // Totais da operação (modo OP)
   var opTotalsAll = {};
   allKeys.forEach(function(k){ opTotalsAll[k] = OP_MESES[k] ? OP_MESES[k].total : 0; });
 
-  // Filtro do sidebar: oculta meses com baixo volume (ruído de tickets antigos
-  // que ficaram ativos por meses sem atividade — vêm do sync sem janela).
-  // Mostra apenas meses com >= MIN_MONTH_TICKETS OU dentro da janela de 12 meses.
-  // Mantém o mês ativo (selecionado) sempre visível, mesmo que abaixo do threshold.
-  var MIN_MONTH_TICKETS = 10;
-  var WINDOW_MONTHS = 12;
-  var nowD = new Date();
-  var cutoff = new Date(nowD.getFullYear(), nowD.getMonth() - WINDOW_MONTHS, 1);
-  var cutoffKey = cutoff.toISOString().slice(0,7);
+  // Filtro suave: ainda oculta meses muito ruidosos (1-2 tickets de meses fora
+  // da operação ativa — tickets antigos ainda ativos). Threshold baixo (>=5) e
+  // mantém o mês ativo sempre visível. UI agora é dropdown — não polui sidebar.
+  var MIN_MONTH_TICKETS = 5;
   var keys = allKeys.filter(function(k){
-    if(activeMonth === k) return true; // sempre mantém o mês ativo
-    if(k < cutoffKey) return false;     // fora da janela operacional
+    if(activeMonth === k) return true; // mês ativo sempre visível
     return (opTotalsAll[k] || 0) >= MIN_MONTH_TICKETS;
   });
+  // Ordem decrescente (mês mais recente primeiro — mais relevante operacionalmente)
+  keys.sort().reverse();
 
-  var opTotals = opTotalsAll; // mantém referência pros totalizadores
+  var opTotals = opTotalsAll;
   var opTotal = OP.total;
 
   // Totais da empresa selecionada (modo CLI) — usa EMP_MESES
@@ -9078,20 +9089,52 @@ function buildMonthFilter() {
     var activeEmpData = activeEmpKey && typeof EMP_MESES !== 'undefined' ? (EMP_MESES[activeEmpKey] || {}) : {};
     var activeEmpTotal = activeEmpKey && EMPRESAS[activeEmpKey] ? EMPRESAS[activeEmpKey].total : opTotal;
     var total = usaEmp ? activeEmpTotal : opTotal;
-    var rows = '';
     var allOn = activeMonth === 'all';
     var modCls = isCli ? ' cli-m' : (isCS ? ' cs-m' : '');
+
+    // Estado de expansão (persiste em window — reuse entre re-renders)
+    if(typeof window._mthExpanded === 'undefined') window._mthExpanded = {};
+    var expanded = !!window._mthExpanded[mode];
+
+    // Label do trigger: "Todos os meses (N)" ou "Mar/26 (536)"
+    var triggerLbl, triggerCount;
+    if(allOn){ triggerLbl = 'Todos os meses'; triggerCount = total; }
+    else{
+      triggerLbl = mLabel(activeMonth);
+      triggerCount = usaEmp ? (activeEmpData[activeMonth] ? activeEmpData[activeMonth].total : 0) : (opTotals[activeMonth]||0);
+    }
+
+    var trigCls = 'mth-trigger' + (allOn ? '' : (' on' + modCls)) + (expanded ? ' expanded' : '');
+    var listCls = 'mth-list' + (expanded ? ' expanded' : '');
+    var html = '';
+    html += '<button class="' + trigCls + '" onclick="toggleMonthDropdown(&quot;' + mode + '&quot;)" aria-expanded="' + expanded + '">';
+    html +=   '<span class="mth-trigger-label">' + triggerLbl + '</span>';
+    html +=   '<span class="mth-trigger-count">' + triggerCount + '</span>';
+    html +=   '<span class="mth-chevron"></span>';
+    html += '</button>';
+
+    html += '<div class="' + listCls + '">';
     var allCls = 'mth-btn mth-all' + (allOn ? (' on' + modCls) : '');
-    rows += '<button class="' + allCls + '" onclick="setMonth(&quot;all&quot;)">Todos os meses<span class="mth-count">' + total + '</span></button>';
+    html += '<button class="' + allCls + '" onclick="setMonth(&quot;all&quot;)">Todos os meses<span class="mth-count">' + total + '</span></button>';
     keys.forEach(function(k) {
       var isOn = activeMonth === k;
       var cls = 'mth-btn' + (isOn ? (' on' + modCls) : '');
       var count = usaEmp ? (activeEmpData[k] ? activeEmpData[k].total : 0) : (opTotals[k]||0);
-      rows += '<button class="' + cls + '" onclick="setMonth(&quot;' + k + '&quot;)">' + mLabel(k) + '<span class="mth-count">' + count + '</span></button>';
+      html += '<button class="' + cls + '" onclick="setMonth(&quot;' + k + '&quot;)">' + mLabel(k) + '<span class="mth-count">' + count + '</span></button>';
     });
-    el.innerHTML = rows;
+    html += '</div>';
+
+    el.innerHTML = html;
     buildDateRangePicker(mode);
   });
+}
+
+// Toggle expand/collapse do dropdown de meses (UX: lista longa não ocupa
+// espaço permanente no sidebar; usuário só abre quando precisa filtrar).
+function toggleMonthDropdown(mode){
+  if(typeof window._mthExpanded === 'undefined') window._mthExpanded = {};
+  window._mthExpanded[mode] = !window._mthExpanded[mode];
+  buildMonthFilter();
 }
 
 function setMonth(m) {
