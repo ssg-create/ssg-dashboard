@@ -6462,7 +6462,14 @@ function rebuildAll(data){
         Object.keys(rendered).forEach(function(k){rendered[k]=false;});
         Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});
         rendered['cli-init']=false;
-        activeMonth='all';
+        // FIX 2026-05-07: respeita default pendente do primeiro boot (autoFetchJSON).
+        // Sem isso, o reset cego pra 'all' vencia o restore externo após rebuildAll.
+        if(window._pendingDefaultMonth){
+          activeMonth = window._pendingDefaultMonth;
+          delete window._pendingDefaultMonth; // one-shot
+        } else {
+          activeMonth='all';
+        }
         buildMonthFilter();
         var sel=document.getElementById('sel-empresa');while(sel.options.length>1)sel.remove(1);
         initCli();
@@ -12498,7 +12505,13 @@ function autoFetchJSON(){
         try{
           var _datesL=(d.rows||[]).map(function(r){return r.criado;}).filter(Boolean).sort();
           var _lastMK = _datesL.length ? String(_datesL[_datesL.length-1]).slice(0,7) : null;
-          if(_lastMK && /^\d{4}-\d{2}$/.test(_lastMK)) activeMonth = _lastMK;
+          if(_lastMK && /^\d{4}-\d{2}$/.test(_lastMK)){
+            activeMonth = _lastMK;
+            // rebuildAll() reseta activeMonth='all' DENTRO de setTimeout aninhado
+            // (linha ~6465) e isso vence o restore síncrono externo. Marca pending
+            // pro reset interno consumir uma vez.
+            window._pendingDefaultMonth = _lastMK;
+          }
         }catch(e){console.warn('default month boot:',e);}
       }
       var _sm=activeMonth,_sf=activeFilaOP,_sfc=activeFilaCli,_sc=activeCliente,_srs=activeRangeStart,_sre=activeRangeEnd;
