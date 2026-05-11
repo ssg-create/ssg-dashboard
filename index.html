@@ -12490,6 +12490,17 @@ function autoFetchJSON(){
           window.HIST_RANGE_LABEL = lblFirst===lblLast ? lblFirst : (lblFirst+'–'+lblLast);
         }
       }catch(e){console.warn('HIST_RANGE_LABEL build:',e);}
+      // FIX 2026-05-07: primeiro boot — default = último mês com dados (era 'all').
+      // Evita KPIs agregando 5 meses no painel operacional. "Todos os meses" segue
+      // disponível a 1 clique no dropdown. Roda apenas uma vez por sessão.
+      if(!window._initialMonthDefaultDone){
+        window._initialMonthDefaultDone = true;
+        try{
+          var _datesL=(d.rows||[]).map(function(r){return r.criado;}).filter(Boolean).sort();
+          var _lastMK = _datesL.length ? String(_datesL[_datesL.length-1]).slice(0,7) : null;
+          if(_lastMK && /^\d{4}-\d{2}$/.test(_lastMK)) activeMonth = _lastMK;
+        }catch(e){console.warn('default month boot:',e);}
+      }
       var _sm=activeMonth,_sf=activeFilaOP,_sfc=activeFilaCli,_sc=activeCliente,_srs=activeRangeStart,_sre=activeRangeEnd;
       rebuildAll(parseR(rows));
       if(typeof _refreshAllHeroes==='function') _refreshAllHeroes();
