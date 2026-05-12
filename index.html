@@ -854,9 +854,13 @@ input[type=file]{display:none}
 .churn-score-fill.baixo{background:#22c55e}
 
 .cap-grid{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}
-.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:130px;flex:1;max-width:200px;cursor:default}
+.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-width:130px;flex:1;max-width:200px;cursor:default;transition:transform .12s ease,border-color .12s,box-shadow .12s}
 .cap-card:hover{border-color:var(--border2)}
+.cap-card-clickable{cursor:pointer}
+.cap-card-clickable:hover{border-color:var(--teal);box-shadow:0 4px 14px rgba(34,211,238,.18);transform:translateY(-1px)}
+.cap-card-clickable:hover .cap-eye{opacity:1;color:var(--teal)}
 .cap-card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.cap-eye{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);opacity:.55;transition:opacity .15s,color .15s}
 .cap-avatar-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
 .cap-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cap-count{font-size:22px;font-weight:900;font-family:var(--mono);line-height:1;margin-bottom:3px}
@@ -4344,13 +4348,17 @@ function closeAtendProfile(e) {
   if(CH['atpf-trend-chart']){ CH['atpf-trend-chart'].destroy(); CH['atpf-trend-chart']=null; }
 }
 
-function openAtendPendModal(nome){
+function openAtendPendModal(nome, mode){
+  // mode: 'pend' (default — pendentes do mês filtrado) | 'live' (carga atual da equipe, estado AGORA)
+  mode = mode || 'pend';
+  var isLive = mode === 'live';
   var PEND=['Retorno Cliente','Em Atendimento','Aberto','Aguardando Interno'];
   var PEND_COLORS={
     'Retorno Cliente':'var(--blue)','Em Atendimento':'var(--teal)',
     'Aberto':'var(--danger)','Aguardando Interno':'var(--purple)'
   };
   var pad2=function(n){return n<10?'0'+n:String(n);};
+  var normCli=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
 
   // Dados do atendente
   var atendData=(getActiveOP().atend||OP.atend).find(function(a){return a.n===nome;})||{};
@@ -4365,36 +4373,80 @@ function openAtendPendModal(nome){
   av.style.border='2px solid '+color+'55';
   av.style.color=color;
 
-  // Nome e subtítulo
+  // Nome
   document.getElementById('at-modal-name').textContent=nome;
-  var totalPendSum=PEND.reduce(function(s,e){return s+(atendData.est&&atendData.est[e]||0);},0);
-  document.getElementById('at-modal-sub').textContent=
-    totalPendSum+' chamado'+(totalPendSum!==1?'s':'')
-    +' pendente'+(totalPendSum!==1?'s':'')+' de ação'
-    +(activeMonth!=='all'?' · '+activeMonth:'');
 
-  // Chips por estado
-  var chipsEl=document.getElementById('at-modal-chips');
-  chipsEl.innerHTML=PEND.map(function(e){
-    var n=atendData.est&&atendData.est[e]||0;
-    if(!n)return'';
-    var c=PEND_COLORS[e]||'var(--muted)';
-    return'<span style="padding:4px 12px;border-radius:20px;background:'+c+'18;border:1px solid '+c+'33;color:'+c+';font-size:11px;font-weight:600;white-space:nowrap">'+e+' <strong>'+n+'</strong></span>';
-  }).join('');
+  // Chamados — fonte muda conforme o modo
+  var chamados=[], liveEst={};
+  if(isLive && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+    var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
+    var acCliN=_hasCli?normCli(activeCliente):'';
+    chamados=TICKETS_ATIVOS_DATA.rows.filter(function(r){
+      if(!r.atendente||r.atendente!==nome) return false;
+      if(_hasFila && r.fila!==activeFilaOP) return false;
+      if(_hasCli && normCli(r.cliente)!==acCliN) return false;
+      // Mesma exclusão de dormentes usada em renderTeamCapacity (consistência KPI ⇄ modal)
+      var stU=(r.estado||'').toUpperCase();
+      if(typeof _LIVE_DORMANT_STATES!=='undefined' && _LIVE_DORMANT_STATES.indexOf(stU)!==-1) return false;
+      return true;
+    }).map(function(r){
+      var criadoD = r.criado ? new Date(r.criado) : null;
+      var validD = criadoD && !isNaN(criadoD.getTime());
+      var diffDays = validD ? Math.floor((new Date()-criadoD)/(1000*60*60*24)) : null;
+      var idade=diffDays===null?'—':diffDays===0?'hoje':diffDays===1?'1 dia':diffDays+' dias';
+      var agingN=diffDays!==null?diffDays:0;
+      var dt=validD?pad2(criadoD.getDate())+'/'+pad2(criadoD.getMonth()+1)+' '+pad2(criadoD.getHours())+'h':'—';
+      // Normaliza prioridade vinda do GWMS (3 normal, 4 high, 5 very high…)
+      var p=(r.prioridade||'').toString().toLowerCase();
+      var prior = p.indexOf('very high')>-1||p.indexOf('muito alta')>-1?'Muito Alta'
+        : p.indexOf('high')>-1||p.indexOf('alta')>-1?'Alta'
+        : p.indexOf('low')>-1||p.indexOf('baixa')>-1?'Baixa'
+        : p.indexOf('normal')>-1?'Normal' : (r.prioridade||'—');
+      var est=r.estado||'—';
+      liveEst[est]=(liveEst[est]||0)+1;
+      return{num:r.ticket||r.num, assunto:r.assunto||'', estado:est, prior:prior, criado:dt, idade:idade, agingN:agingN};
+    });
+  } else {
+    chamados=(RAW_DATA||[]).filter(function(d){
+      if(!d.atend||d.atend!==nome)return false;
+      if(PEND.indexOf(d.estado)===-1)return false;
+      if(!ticketInFilter(d)) return false;
+      return true;
+    }).map(function(d){
+      var diffDays=d.criado?Math.floor((new Date()-d.criado)/(1000*60*60*24)):null;
+      var idade=diffDays===null?'—':diffDays===0?'hoje':diffDays===1?'1 dia':diffDays+' dias';
+      var agingN=diffDays!==null?diffDays:0;
+      var dt=d.criado?pad2(d.criado.getDate())+'/'+pad2(d.criado.getMonth()+1)+' '+pad2(d.criado.getHours())+'h':'—';
+      return{num:d.num,assunto:d.assunto,estado:d.estado,prior:d.prior,criado:dt,idade:idade,agingN:agingN};
+    });
+  }
 
-  // Chamados do RAW_DATA
-  var chamados=(RAW_DATA||[]).filter(function(d){
-    if(!d.atend||d.atend!==nome)return false;
-    if(PEND.indexOf(d.estado)===-1)return false;
-    if(!ticketInFilter(d)) return false;
-    return true;
-  }).map(function(d){
-    var diffDays=d.criado?Math.floor((new Date()-d.criado)/(1000*60*60*24)):null;
-    var idade=diffDays===null?'—':diffDays===0?'hoje':diffDays===1?'1 dia':diffDays+' dias';
-    var agingN=diffDays!==null?diffDays:0;
-    var dt=d.criado?pad2(d.criado.getDate())+'/'+pad2(d.criado.getMonth()+1)+' '+pad2(d.criado.getHours())+'h':'—';
-    return{num:d.num,assunto:d.assunto,estado:d.estado,prior:d.prior,criado:dt,idade:idade,agingN:agingN};
-  });
+  // Subtítulo + chips: variam conforme modo
+  var totalPendSum;
+  if(isLive){
+    totalPendSum=chamados.length;
+    document.getElementById('at-modal-sub').textContent=
+      totalPendSum+' chamado'+(totalPendSum!==1?'s':'')+' em aberto agora · estado vivo (GWMS)';
+    var chipsEl=document.getElementById('at-modal-chips');
+    chipsEl.innerHTML=Object.keys(liveEst).map(function(e){
+      var c=PEND_COLORS[e]||'var(--muted)';
+      return'<span style="padding:4px 12px;border-radius:20px;background:'+c+'18;border:1px solid '+c+'33;color:'+c+';font-size:11px;font-weight:600;white-space:nowrap">'+e+' <strong>'+liveEst[e]+'</strong></span>';
+    }).join('');
+  } else {
+    totalPendSum=PEND.reduce(function(s,e){return s+(atendData.est&&atendData.est[e]||0);},0);
+    document.getElementById('at-modal-sub').textContent=
+      totalPendSum+' chamado'+(totalPendSum!==1?'s':'')
+      +' pendente'+(totalPendSum!==1?'s':'')+' de ação'
+      +(activeMonth!=='all'?' · '+activeMonth:'');
+    var chipsEl=document.getElementById('at-modal-chips');
+    chipsEl.innerHTML=PEND.map(function(e){
+      var n=atendData.est&&atendData.est[e]||0;
+      if(!n)return'';
+      var c=PEND_COLORS[e]||'var(--muted)';
+      return'<span style="padding:4px 12px;border-radius:20px;background:'+c+'18;border:1px solid '+c+'33;color:'+c+';font-size:11px;font-weight:600;white-space:nowrap">'+e+' <strong>'+n+'</strong></span>';
+    }).join('');
+  }
 
   // Sort por aging (mais antigos primeiro)
   chamados.sort(function(a,b){return b.agingN-a.agingN;});
@@ -5167,7 +5219,9 @@ function renderTeamCapacity() {
     +'<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
     +'<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
     +'</div>';
-  // Cards
+  // Cards — clicáveis quando há dados live (abrem modal com chamados em aberto AGORA do atendente).
+  // No fallback histórico (sem TICKETS_ATIVOS_DATA) os cards continuam não-clicáveis,
+  // pra evitar abrir modal vazio.
   var cardsHtml='<div class="cap-grid">';
   list.forEach(function(a){
     var initials=a.n.split(' ').slice(0,2).map(function(w){return w[0];}).join('');
@@ -5175,10 +5229,19 @@ function renderTeamCapacity() {
     var col=PAL[colorIdx];
     var shortN=a.n.split(' ').slice(0,2).join(' ');
     var respTxt=a.rm!=null?fmtRespTxt(Math.round(a.rm)):'—';
-    cardsHtml+='<div class="cap-card" title="1ª resp: '+respTxt+' | Total: '+a.t+'">'
+    var clickable=_isLive && a.ab>0;
+    var eyeIcon = clickable
+      ? '<span class="cap-eye" title="Ver chamados em aberto" aria-label="Ver chamados em aberto">'
+        +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      +'</span>'
+      : '';
+    cardsHtml+='<div class="cap-card'+(clickable?' cap-card-clickable':'')+'" '
+      +(clickable?'data-nome="'+a.n.replace(/"/g,'&quot;')+'" ':'')
+      +'title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto · 1ª resp média: '+respTxt+' · Total mês: '+a.t+'">'
       +'<div class="cap-card-head">'
         +'<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
         +'<div class="cap-name">'+shortN+'</div>'
+        +eyeIcon
       +'</div>'
       +'<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
       +'<div class="cap-lbl">abertos</div>'
@@ -5196,6 +5259,13 @@ function renderTeamCapacity() {
   // Aviso quando há filtro de mês ativo (este card ignora o mês intencionalmente)
   var _mesAviso=(_isLive && _hasMes)?'<div style="font-size:10px;color:var(--muted);margin:4px 0 8px;padding:6px 10px;background:rgba(245,158,11,.08);border-left:2px solid rgba(245,158,11,.5);border-radius:3px"><span style="color:var(--warn)">i</span> Carga é estado <b>atual</b> — filtro de mês não se aplica aqui. Mostra quem tem ticket aberto agora'+(_hasCli?' para <b>'+activeCliente+'</b>':'')+'.</div>':'';
   el.innerHTML='<a href="'+_atHref+'" target="_blank" rel="noopener" class="card-title" style="display:flex;align-items:center;text-decoration:none;color:inherit;cursor:pointer">Carga Atual da Equipe'+_liveBadge+_atLink+'</a>'+_mesAviso+sumHtml+cardsHtml;
+  // Bind click nos cards live: reusa openAtendPendModal com mode='live' (estado AGORA).
+  el.querySelectorAll('.cap-card-clickable').forEach(function(card){
+    card.addEventListener('click',function(){
+      var nome=this.getAttribute('data-nome');
+      if(nome && typeof openAtendPendModal==='function') openAtendPendModal(nome,'live');
+    });
+  });
 }
 
 function renderAt(){
