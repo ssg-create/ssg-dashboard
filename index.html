@@ -12838,6 +12838,9 @@ var SSG_CONTRATOS = [
 // "Ticket conta" = criado no mês. Considera APENAS tickets criados a
 // partir de 2026-01-01 (corte combinado — não traz histórico antigo).
 var SSG_CTR_START = new Date('2026-01-01T00:00:00');
+// Trimestre selecionado pelo usuário no hero (default: trim atual).
+// Formato: {ano: 2026, q: 2}
+var _ctrSelQ = null;
 
 function _ctrParseDate(s){
   if(!s) return null;
@@ -12895,18 +12898,31 @@ function _ctrGetTickets(alias){
     return dt >= SSG_CTR_START;
   });
 }
+window._ctrSetQuarter = function(ano, q){
+  _ctrSelQ = {ano: ano, q: q};
+  renderContratosSSG();
+};
 function renderContratosSSG(){
   var heroEl = document.getElementById('ctr-hero');
   var listEl = document.getElementById('ctr-list');
   if(!heroEl || !listEl) return;
 
   var now = new Date();
-  var anoAtual = now.getFullYear();
-  var qAtual = _ctrQuarterOf(now);
-  var mesAtualKey = _ctrMonthKey(now);
+  var anoNow = now.getFullYear();
+  var qNow = _ctrQuarterOf(now);
+  var mesNowKey = _ctrMonthKey(now);
+  // Default: trim atual (selecionado pela 1ª vez)
+  if(!_ctrSelQ) _ctrSelQ = {ano: anoNow, q: qNow};
+  var anoSel = _ctrSelQ.ano;
+  var qSel = _ctrSelQ.q;
+  var trimMeses = _ctrQuarterMonths(anoSel, qSel);
+  var isTrimAtual = (anoSel === anoNow && qSel === qNow);
+  var isTrimPassado = (anoSel < anoNow) || (anoSel === anoNow && qSel < qNow);
+  var isTrimFuturo = (anoSel > anoNow) || (anoSel === anoNow && qSel > qNow);
+  // Pra projeção / cálculos parciais (só faz sentido no trim atual)
   var diasNoMes = _ctrDaysInMonth(now.getFullYear(), now.getMonth());
   var diaHoje = now.getDate();
-  var trimMeses = _ctrQuarterMonths(anoAtual, qAtual);
+  var mesAtualKey = mesNowKey;
 
   // Pra cada contrato, calcula:
   //   - usoMes (mes corrente)
@@ -12929,17 +12945,22 @@ function renderContratosSSG(){
     var limiteMes  = c.limite_mes;
     var limiteTrim = c.limite_mes * 3;
 
-    // Projeção linear: quantos meses do trim já passaram completos + parcial do atual
-    var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey); // 0/1/2 ou -1
-    var fatorProj = 1;
-    if(idxMesAtualNoTrim !== -1 && diaHoje > 0){
-      // meses completos antes do atual + fração do atual
-      var fracMesAtual = diaHoje / diasNoMes;
-      var totalProgresso = idxMesAtualNoTrim + fracMesAtual; // ex: 1.5 = meio do 2º mês
-      var totalMesesTrim = 3;
-      if(totalProgresso > 0) fatorProj = totalMesesTrim / totalProgresso;
+    // Projeção linear só faz sentido no trim em andamento.
+    // Trim passado: projeção = uso real (já fechou). Trim futuro: 0.
+    var projTrim;
+    if(isTrimAtual){
+      var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey); // 0/1/2 ou -1
+      var fatorProj = 1;
+      if(idxMesAtualNoTrim !== -1 && diaHoje > 0){
+        var fracMesAtual = diaHoje / diasNoMes;
+        var totalProgresso = idxMesAtualNoTrim + fracMesAtual;
+        if(totalProgresso > 0) fatorProj = 3 / totalProgresso;
+      }
+      projTrim = Math.round(usoTrim * fatorProj);
+    } else {
+      // Passado ou futuro: projeção é o uso real (passado) ou 0 (futuro).
+      projTrim = usoTrim;
     }
-    var projTrim = Math.round(usoTrim * fatorProj);
 
     // Status: baseado em projTrim vs limiteTrim
     var pctProj = limiteTrim > 0 ? (projTrim / limiteTrim) : 0;
@@ -12968,18 +12989,49 @@ function renderContratosSSG(){
 
   // ── Hero ──
   var totalContratado = SSG_CONTRATOS.filter(function(c){return c.ativo;}).reduce(function(s,c){return s + c.limite_mes;}, 0);
+  // Botões de trimestre: ano atual (4Q) + ano anterior se relevante
+  var qBtnsHtml = '';
+  var anosBtns = [anoNow];
+  if(anoNow > 2026) anosBtns.unshift(anoNow - 1); // adiciona ano anterior se aplicável
+  // (a partir de 2026 — corte combinado)
+  anosBtns.forEach(function(ano){
+    [1,2,3,4].forEach(function(q){
+      // Pular Q futuro do ano atual
+      if(ano === anoNow && q > qNow + 1) return;
+      // Pular Q antes de 2026
+      if(ano < 2026) return;
+      if(ano === 2026 && q < 1) return;
+      var ativo = (ano === anoSel && q === qSel);
+      var isAtualBtn = (ano === anoNow && q === qNow);
+      var isFuturoBtn = (ano > anoNow) || (ano === anoNow && q > qNow);
+      var corBtn = ativo
+        ? 'background:var(--blue);color:#fff;border-color:var(--blue)'
+        : (isFuturoBtn ? 'opacity:.5;cursor:not-allowed;color:var(--muted)' : 'color:var(--sub)');
+      var disabled = isFuturoBtn ? 'disabled' : '';
+      var click = isFuturoBtn ? '' : 'onclick="_ctrSetQuarter('+ano+','+q+')"';
+      var marker = isAtualBtn ? ' ●' : '';
+      qBtnsHtml += '<button '+disabled+' '+click+' style="'+corBtn+';background:'+(ativo?'var(--blue)':'var(--bg3)')+';border:1px solid '+(ativo?'var(--blue)':'var(--border)')+';border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.04em">Q'+q+'/'+String(ano).slice(-2)+marker+'</button>';
+    });
+  });
+  var trimSubLbl = isTrimAtual ? 'trimestre ativo · em andamento'
+                : isTrimPassado ? 'trimestre fechado · valores definitivos'
+                : 'trimestre futuro · sem dados';
   heroEl.innerHTML =
-      '<div class="ctr-hero-grid">'
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);align-items:center">'
+    +   '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-right:4px">Trimestre:</span>'
+    +   qBtnsHtml
+    + '</div>'
+    + '<div class="ctr-hero-grid">'
     +   '<div>'
-    +     '<div class="ctr-hero-q">Q'+qAtual+'/'+String(anoAtual).slice(-2)+'</div>'
-    +     '<div class="ctr-hero-q-lbl">trimestre ativo</div>'
+    +     '<div class="ctr-hero-q">Q'+qSel+'/'+String(anoSel).slice(-2)+'</div>'
+    +     '<div class="ctr-hero-q-lbl">'+trimSubLbl+'</div>'
     +     '<div class="ctr-hero-q-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+'</div>'
     +   '</div>'
     +   '<div class="ctr-hero-kpis">'
     +     '<div class="ctr-hero-kpi"><div class="ctr-hero-kpi-num">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+'</div><div class="ctr-hero-kpi-lbl">clientes ativos</div></div>'
     +     '<div class="ctr-hero-kpi" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"><div class="ctr-hero-kpi-num" style="color:var(--ok)">'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
     +     '<div class="ctr-hero-kpi" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"><div class="ctr-hero-kpi-num" style="color:var(--warn)">'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
-    +     '<div class="ctr-hero-kpi" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"><div class="ctr-hero-kpi-num" style="color:var(--danger)">'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">estourados</div></div>'
+    +     '<div class="ctr-hero-kpi" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"><div class="ctr-hero-kpi-num" style="color:var(--danger)">'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">'+(isTrimPassado?'estourou':'estourados')+'</div></div>'
     +   '</div>'
     + '</div>'
     + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)">'
