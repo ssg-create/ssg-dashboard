@@ -1765,7 +1765,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="fe24ab087a86793cde55b1f48ddffbc1ecc5b23c2831d6d75c70ba0bd8e358c7";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","ssg-protheus");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","ssg-protheus");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -15946,52 +15946,106 @@ function renderBlock4Backlog(meus){
 function renderBlock5Squad(allSquadTickets){
   var el = document.getElementById('sq-block-5');
   if(!el) return;
-  var byAtend = {};
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   var excl = cfg ? (cfg.exclude_atendentes||[]).map(_norm) : [];
+  // Estados dormentes que NÃO devem contar como "aberto agora"
+  // (alinhado com renderTeamCapacity da gestão pra consistência)
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+
+  var byAt = {};
   allSquadTickets.forEach(function(r){
     var a = (r.atendente||'').trim();
     if(!a) return;
     if(excl.indexOf(_norm(a))!==-1) return;
-    if(!byAtend[a]) byAtend[a] = { nome:a, total:0, comigo:0, oldest:null };
-    byAtend[a].total++;
-    var st = (r.estado||'').toUpperCase();
-    if(['EM ATENDIMENTO','OPEN','NEW','RETORNO CLIENTE'].indexOf(st)!==-1) byAtend[a].comigo++;
-    var c = _parseDate(r.criado);
-    if(c && (!byAtend[a].oldest || c < byAtend[a].oldest)) byAtend[a].oldest = c;
+    var stU = (r.estado||'').toUpperCase();
+    if(DORMENT.indexOf(stU)!==-1) return;
+    if(!byAt[a]) byAt[a] = { n:a, t:0, f:0, ab:0, tm:null, rm:null, est:{} };
+    byAt[a].t++; byAt[a].ab++;
+    byAt[a].est[r.estado||'Aberto'] = (byAt[a].est[r.estado||'Aberto']||0)+1;
   });
-  var rows = Object.keys(byAtend).map(function(k){return byAtend[k];})
-    .sort(function(a,b){ return b.total - a.total; });
+  var atendList = Object.keys(byAt).map(function(k){return byAt[k];})
+    .sort(function(a,b){ return b.ab - a.ab; });
+
+  // Reusa a função de capacidade da gestão pra cálculo idêntico de status (sob/nor/dis)
+  var list = (typeof computeTeamCapacity === 'function')
+    ? computeTeamCapacity(atendList)
+    : atendList.map(function(a){return {n:a.n,t:a.t,f:0,ab:a.ab,status:'nor',barW:50};});
+
+  var totalOpen = list.reduce(function(s,a){return s+a.ab;},0);
+  var nSob = list.filter(function(a){return a.status==='sob';}).length;
+  var nDis = list.filter(function(a){return a.status==='dis';}).length;
+  var STATUS_LABEL = {sob:'Sobrecarr.', nor:'Normal', dis:'Disponível'};
+  var barColors = {sob:'#f43f5e', nor:'var(--blue)', dis:'var(--ok)'};
+  // Mesma paleta de cores do dash de gestão pros avatares
+  var PAL_LOCAL = (typeof PAL !== 'undefined') ? PAL : ['#FF6400','#4F8EF7','#10b981','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+
+  var otrsAll = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;StateType=Open';
   var head = '<div class="sq-block-hd">'
     + '<div class="sq-block-icon" style="background:rgba(79,142,247,.15);color:var(--blue)">👥</div>'
     + '<div style="flex:1;min-width:0">'
-      + '<div class="sq-block-title">Squad — transparência total</div>'
-      + '<div class="sq-block-sub">Clique no nome pra ver os chamados abertos daquele colega (todos clicam pro OTRS).</div>'
+      + '<a href="'+otrsAll+'" target="_blank" rel="noopener" class="sq-block-title" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit">'
+        + 'Carga Atual da Squad'
+        + '<span style="font-size:9px;background:rgba(16,185,129,.15);color:var(--ok);padding:2px 7px;border-radius:4px;font-weight:700;letter-spacing:.5px">AGORA</span>'
+        + '<span style="font-size:10px;color:var(--teal);font-family:var(--mono);opacity:.8">↗ OTRS</span>'
+      + '</a>'
+      + '<div class="sq-block-sub">Clique no card pra ver os chamados em aberto daquele colega (números abrem OTRS).</div>'
     + '</div>'
-    + '<div class="sq-block-count">'+rows.length+' atendente'+(rows.length!==1?'s':'')+'</div>'
+    + '<div class="sq-block-count">'+list.length+' atendente'+(list.length!==1?'s':'')+'</div>'
     + '</div>';
-  var body;
-  if(!rows.length){
-    body = '<div class="sq-empty">Aguardando dados do GWMS…</div>';
-  } else {
-    body = '<table class="sq-tbl"><thead><tr>'
-      + '<th>Atendente</th>'
-      + '<th style="text-align:right">Total</th>'
-      + '<th style="text-align:right">Bola comigo</th>'
-      + '<th style="text-align:right">Mais antigo</th>'
-      + '</tr></thead><tbody>'
-      + rows.map(function(r){
-        var oldAge = r.oldest ? _daysSince(r.oldest) : null;
-        var agCl = _agingClass(oldAge);
-        return '<tr style="cursor:pointer" onclick="openAtendPendModalSafe(' + JSON.stringify(r.nome).replace(/"/g,'&quot;') + ')">'
-          + '<td style="font-size:12.5px;color:var(--text)"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--blue);font-size:10px;font-weight:700;text-align:center;line-height:22px;margin-right:8px">'+_initials(r.nome)+'</span>'+r.nome+'</td>'
-          + '<td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700">'+r.total+'</td>'
-          + '<td style="text-align:right;font-family:var(--mono);font-size:12px;color:var(--blue)">'+r.comigo+'</td>'
-          + '<td style="text-align:right"><span class="sq-aging '+agCl+'">'+_fmtAgeShort(oldAge)+'</span></td>'
-          + '</tr>';
-      }).join('') + '</tbody></table>';
+
+  if(!list.length){
+    el.innerHTML = head + '<div class="sq-empty">Aguardando dados do GWMS…</div>';
+    return;
   }
-  el.innerHTML = head + body;
+
+  // Linha de KPIs (idêntica ao "Carga Atual da Equipe" da gestão)
+  var sum = '<div class="cap-summary">'
+    + '<span class="cap-sum-item">Total abertos: <strong>'+totalOpen+'</strong></span>'
+    + '<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
+    + '<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
+    + '</div>';
+
+  // Grid de cards (reusa CSS .cap-card do dash gerencial)
+  var cards = '<div class="cap-grid">'
+    + list.map(function(a){
+      var initials = a.n.split(' ').slice(0,2).map(function(w){return w[0]||'';}).join('').toUpperCase();
+      var colorIdx = Math.abs(a.n.split('').reduce(function(s,ch){return s+ch.charCodeAt(0);},0))%PAL_LOCAL.length;
+      var col = PAL_LOCAL[colorIdx];
+      var shortN = a.n.split(' ').slice(0,2).join(' ');
+      var clickable = a.ab > 0;
+      var eyeIcon = clickable
+        ? '<span class="cap-eye" title="Ver chamados em aberto" style="margin-left:auto;opacity:.55;color:var(--muted);display:inline-flex;align-items:center">'
+          + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+        + '</span>'
+        : '';
+      return '<div class="cap-card'+(clickable?' cap-card-clickable':'')+'"'
+        + (clickable?' data-nome="'+a.n.replace(/"/g,'&quot;')+'"':'')
+        + ' title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto">'
+          + '<div class="cap-card-head">'
+            + '<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
+            + '<div class="cap-name" style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+shortN+'</div>'
+            + eyeIcon
+          + '</div>'
+          + '<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
+          + '<div class="cap-lbl" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">abertos</div>'
+          + '<div class="cap-bar-track"><div class="cap-bar-fill" style="width:'+a.barW+'%;background:'+barColors[a.status]+'"></div></div>'
+          + '<span class="cap-status '+a.status+'">'+STATUS_LABEL[a.status]+'</span>'
+        + '</div>';
+    }).join('')
+    + '</div>';
+
+  el.innerHTML = head + sum + cards;
+
+  // Bind dos cards clicáveis → abre modal do atendente (números clicáveis OTRS)
+  el.querySelectorAll('.cap-card-clickable').forEach(function(card){
+    card.addEventListener('click', function(){
+      var nome = this.getAttribute('data-nome');
+      if(nome && typeof openAtendPendModal === 'function'){
+        try { openAtendPendModal(nome, 'live'); }
+        catch(e){ console.warn('openAtendPendModal:', e); }
+      }
+    });
+  });
 }
 window.openAtendPendModalSafe = function(nome){
   if(typeof openAtendPendModal === 'function'){
