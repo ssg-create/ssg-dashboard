@@ -3261,12 +3261,13 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
   <div class="sq-shell">
     <div id="sq-greeting" class="sq-greeting"></div>
-    <div id="sq-hero-sla" class="sq-block"></div>
+    <div id="sq-hero-pilha" class="sq-block"></div>
     <div id="sq-attention" class="sq-attention"></div>
     <div id="sq-block-1" class="sq-block danger"></div>
     <div id="sq-block-2" class="sq-block"></div>
     <div id="sq-block-3" class="sq-block warn"></div>
     <div id="sq-block-4" class="sq-block muted"></div>
+    <div id="sq-hero-sla" class="sq-block"></div>
     <div id="sq-block-6" class="sq-block warn"></div>
   </div>
 </div><!-- /view-sq -->
@@ -16233,14 +16234,6 @@ function renderSLAHero(meus){
     + '</div>'
   + '</div>';
 
-  // Chips de filtro
-  hero += '<div class="sq-hero-filters">'
-    + '<div class="sq-chip f-all'+(_sqFilter==='all'?' on':'')+'" data-f="all" onclick="setSquadFilter(\'all\')">Todos <span class="sq-chip-num">'+totalAll+'</span></div>'
-    + '<div class="sq-chip f-vencido'+(_sqFilter==='vencido'?' on':'')+'" data-f="vencido" onclick="setSquadFilter(\'vencido\')">✗ Vencidos <span class="sq-chip-num">'+statsAll.vencido+'</span></div>'
-    + '<div class="sq-chip f-risco'+(_sqFilter==='risco'?' on':'')+'" data-f="risco" onclick="setSquadFilter(\'risco\')">⚠ Em risco <span class="sq-chip-num">'+statsAll.risco+'</span></div>'
-    + '<div class="sq-chip f-ok'+(_sqFilter==='ok'?' on':'')+'" data-f="ok" onclick="setSquadFilter(\'ok\')">✓ No SLA <span class="sq-chip-num">'+statsAll.ok+'</span></div>'
-    + '</div>';
-
   el.innerHTML = hero;
 }
 function _prioClass(p){
@@ -16773,6 +16766,68 @@ function renderSquadGreeting(meus){
     + '</div>';
 }
 
+// Hero da Pilha — primeiro card grande do dia. Total à esquerda,
+// 4 categorias clicáveis à direita (Sua vez / No radar / Esperando / Backlog).
+function renderHeroPilha(meus){
+  var el = document.getElementById('sq-hero-pilha');
+  if(!el) return;
+  meus = meus || [];
+  var counts = {sua_vez:0, ativas:0, esperando:0, backlog:0};
+  meus.forEach(function(t){
+    var st = (t.estado||'').toUpperCase();
+    if(st === 'RETORNO CLIENTE') counts.sua_vez++;
+    else if(['EM ATENDIMENTO','OPEN','NEW'].indexOf(st)!==-1) counts.ativas++;
+    else if(['AGUARDANDO CLIENTE','AGUARDANDO ATENDENTE (INTERNO)'].indexOf(st)!==-1) counts.esperando++;
+    else if(['GMUD','MELHORIA'].indexOf(st)!==-1) counts.backlog++;
+  });
+  var total = meus.length;
+
+  var head = '<div class="sq-block-hd" style="margin-bottom:8px">'
+    + '<div class="sq-block-icon" style="background:rgba(45,212,191,.15);color:var(--teal)">📋</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">Sua pilha agora</div>'
+      + '<div class="sq-block-sub">Total de chamados ativos e distribuição por categoria. Clique pra pular pro bloco correspondente.</div>'
+    + '</div>'
+    + '</div>';
+
+  var body = '<div class="sq-hero">'
+    // Total grande à esquerda (sem ring — é só número)
+    + '<div style="flex-shrink:0;text-align:center;min-width:140px">'
+      + '<div style="font-family:var(--display);font-size:64px;font-weight:800;line-height:1;color:var(--text);letter-spacing:-.04em">'+total+'</div>'
+      + '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:6px;font-weight:700">chamado'+(total!==1?'s':'')+' seu'+(total!==1?'s':'')+'</div>'
+    + '</div>'
+    // KPIs à direita (clicáveis → scroll pro bloco)
+    + '<div class="sq-hero-kpis">'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="scrollToBlock(\'sq-block-1\')" title="Ir para Sua vez de jogar">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(244,63,94,.18);color:#f43f5e">⚡</div>'
+        + '<div class="sq-hero-kpi-lbl">Sua vez de jogar <span style="font-size:10px;color:var(--muted);font-weight:400">(cliente já respondeu)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:#f43f5e">'+counts.sua_vez+'</div>'
+      + '</div>'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="scrollToBlock(\'sq-block-2\')" title="Ir para No seu radar">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(45,212,191,.15);color:var(--teal)">🛠</div>'
+        + '<div class="sq-hero-kpi-lbl">No seu radar <span style="font-size:10px;color:var(--muted);font-weight:400">(em atendimento / abertos)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--teal)">'+counts.ativas+'</div>'
+      + '</div>'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="scrollToBlock(\'sq-block-3\')" title="Ir para Bola com eles">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(245,158,11,.18);color:var(--warn)">⏳</div>'
+        + '<div class="sq-hero-kpi-lbl">Bola com eles <span style="font-size:10px;color:var(--muted);font-weight:400">(aguardando terceiros)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--warn)">'+counts.esperando+'</div>'
+      + '</div>'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="scrollToBlock(\'sq-block-4\')" title="Ir para Pra mais tarde">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(139,92,246,.18);color:#a78bfa">📅</div>'
+        + '<div class="sq-hero-kpi-lbl">Pra mais tarde <span style="font-size:10px;color:var(--muted);font-weight:400">(GMUD / backlog)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:#a78bfa">'+counts.backlog+'</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  el.innerHTML = head + body;
+}
+window.scrollToBlock = function(id){
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+};
+
 // Painel de atenção — agrega sinais críticos da pilha pessoal
 // em cards quick-glance. Vazio se nada urgente (não polui).
 function renderAttention(meus){
@@ -16916,6 +16971,7 @@ window.renderSquadView = function(){
     renderSquadGreeting(null);
     renderBlock6Alertas();
     document.getElementById('sq-attention').innerHTML = '';
+    document.getElementById('sq-hero-pilha').innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver sua pilha.</div>';
     document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seu SLA.</div>';
     ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
       document.getElementById(id).innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seus chamados.</div>';
@@ -16932,12 +16988,13 @@ window.renderSquadView = function(){
     .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 
   renderSquadGreeting(meus);
-  renderSLAHero(meus);
+  renderHeroPilha(meus);
   renderAttention(meus);
   renderBlock1AtaqueAgora(meus);
   renderBlock2Ativas(meus);
   renderBlock3Esperando(meus);
   renderBlock4Backlog(meus);
+  renderSLAHero(meus);
   renderBlock6Alertas();
 };
 
