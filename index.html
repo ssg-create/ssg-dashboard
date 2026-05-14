@@ -10838,8 +10838,10 @@ function fetchTicketsAtivos(){
     .catch(function(){});
 }
 // Busca no load e em intervalo adaptativo:
-// - Squad/Triagem/Diretor: 60s (operacional, precisa ver mudança rápido)
+// - Squad/Triagem/Diretor: 30s (operacional, precisa ver mudança rápido)
 // - Gestão: 10min (sync GWMS é a cada 10min mesmo, sem ganho refetchar antes)
+// Nota: sync GWMS continua sendo o gargalo (10min via cron-job.org). Reduzir
+// poll abaixo de 30s não traz ganho prático até o sync rodar mais rápido.
 fetchTicketsAtivos();
 setInterval(function(){
   var isSq = (typeof isSquadMode==='function') && isSquadMode();
@@ -10847,7 +10849,7 @@ setInterval(function(){
   // Pula refetch curto se estiver em gestão (intervalo de 10min cobre)
   if(!isSq && !isDir) return;
   fetchTicketsAtivos();
-}, 60*1000);
+}, 30*1000);
 setInterval(fetchTicketsAtivos, 10*60*1000);
 
 // ─── LIVE KPIs — sobrescreve valores de "em aberto / bloqueados / muito alta" ──
