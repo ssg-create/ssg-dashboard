@@ -1000,6 +1000,43 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-sla-badge.unknown{background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
 .sq-tbl tr.sla-vencido td{background:rgba(244,63,94,.04)}
 .sq-tbl tr.sla-risco td{background:rgba(245,158,11,.04)}
+/* Cards de ticket pessoal */
+.sq-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.sq-card{position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:14px 16px 14px 18px;cursor:pointer;transition:all .18s ease;overflow:hidden}
+.sq-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue);transition:width .18s,background .18s}
+.sq-card.sla-ok::before{background:var(--ok)}
+.sq-card.sla-risco::before{background:var(--warn)}
+.sq-card.sla-vencido::before{background:var(--danger)}
+.sq-card.sla-unknown::before{background:var(--muted)}
+.sq-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.sq-card:hover::before{width:6px}
+.sq-card-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.sq-card-num{font-family:var(--mono);font-size:11.5px;font-weight:800;color:var(--teal);letter-spacing:.02em}
+.sq-card-num:hover{text-decoration:underline}
+.sq-card-num .sq-num-arrow{color:var(--muted);font-size:9px;margin-left:4px;opacity:.6}
+.sq-card-spacer{flex:1}
+.sq-card-assunto{font-size:13.5px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sq-card-meta{font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sq-card-meta-sep{opacity:.4}
+.sq-card-cliente{color:var(--sub);font-weight:600}
+.sq-card-fala{margin:8px 0;padding:8px 11px;border-radius:7px;font-style:italic;font-size:11.5px;line-height:1.35}
+.sq-card-fala.lvl1{color:#fbbf24;background:rgba(251,191,36,.07);border-left:2px solid rgba(251,191,36,.5)}
+.sq-card-fala.lvl2{color:#fb923c;background:rgba(251,146,60,.08);border-left:2px solid rgba(251,146,60,.55)}
+.sq-card-fala.lvl3{color:#ef4444;background:rgba(239,68,68,.08);border-left:2px solid rgba(239,68,68,.6)}
+.sq-card-foot{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px dashed var(--border);margin-top:6px;flex-wrap:wrap}
+.sq-card-aging{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.sq-card-aging strong{font-weight:800}
+.sq-card-aging.danger strong{color:var(--danger)}
+.sq-card-aging.warn strong{color:var(--warn)}
+.sq-card-aging.ok strong{color:var(--ok)}
+.sq-card-prio{font-size:9px;font-weight:800;font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:11px}
+.sq-card-prio.muitoAlta{background:rgba(244,63,94,.15);color:#f43f5e;border:1px solid rgba(244,63,94,.3)}
+.sq-card-prio.alta{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.sq-card-prio.normal{background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.25)}
+.sq-card-prio.baixa{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.22)}
+.sq-card-prio.muitoBaixa{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.sq-card-otrs{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--teal);text-decoration:none;opacity:.85;padding:3px 8px;border-radius:6px;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.25);transition:all .15s}
+.sq-card-otrs:hover{opacity:1;background:rgba(45,212,191,.15);border-color:rgba(45,212,191,.5)}
 /* ── Botão fullscreen flutuante ────────────────────────────── */
 #fs-btn{position:fixed;bottom:22px;right:22px;z-index:9999;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.35)}
 #fs-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.1);transform:scale(1.08)}
@@ -16023,6 +16060,94 @@ function renderSLAHero(meus){
 
   el.innerHTML = hero;
 }
+function _prioClass(p){
+  var n = (p||'').toLowerCase();
+  if(n.indexOf('muito alta')!==-1||n.indexOf('very high')!==-1) return 'muitoAlta';
+  if(n.indexOf('alta')!==-1||n.indexOf('high')!==-1) return 'alta';
+  if(n.indexOf('muito baixa')!==-1||n.indexOf('very low')!==-1) return 'muitoBaixa';
+  if(n.indexOf('baixa')!==-1||n.indexOf('low')!==-1) return 'baixa';
+  if(n.indexOf('normal')!==-1) return 'normal';
+  return '';
+}
+function _prioLabel(p){
+  var n = (p||'').toLowerCase();
+  if(n.indexOf('muito alta')!==-1||n.indexOf('very high')!==-1) return 'Muito Alta';
+  if(n.indexOf('alta')!==-1||n.indexOf('high')!==-1) return 'Alta';
+  if(n.indexOf('muito baixa')!==-1||n.indexOf('very low')!==-1) return 'Muito Baixa';
+  if(n.indexOf('baixa')!==-1||n.indexOf('low')!==-1) return 'Baixa';
+  if(n.indexOf('normal')!==-1) return 'Normal';
+  return p||'—';
+}
+
+// Card visual de ticket pessoal (substitui linha de tabela)
+function _ticketCard(t){
+  var num = t.ticket || t.num;
+  var assunto = (t.assunto||'—').replace(/</g,'&lt;');
+  var cli = (t.cliente||'—').replace(/</g,'&lt;');
+  var estado = (t.estado||'—').replace(/</g,'&lt;');
+  var criado = _parseDate(t.criado);
+  var ageDays = criado ? _daysSince(criado) : (t.idade_dias!=null?t.idade_dias:null);
+  var agCl = _agingClass(ageDays);
+  var ageLbl = _fmtAgeShort(ageDays);
+  var modDate = _parseDate(t.modificado);
+  var modAge = modDate ? _daysSince(modDate) : null;
+  var modTxt = modAge==null?'—':modAge===0?'hoje':modAge===1?'1d':modAge+'d';
+  var sla = _calcSLA(t);
+  var fala = window.frasePersonificada(t, new Date());
+  var pc = _prioClass(t.prioridade);
+  var pl = _prioLabel(t.prioridade);
+
+  var slaBadge = sla.status==='unknown'
+    ? ''
+    : '<span class="sq-sla-badge '+sla.status+'" title="'+sla.label+'">'
+        + (sla.status==='vencido'?'⚠ '+_fmtH(sla.remH):sla.status==='risco'?'⏱ '+_fmtH(sla.remH):'✓ '+_fmtH(sla.remH))
+      + '</span>';
+  var falaHtml = fala
+    ? '<div class="sq-card-fala lvl'+fala.lvl+'">'+fala.texto.replace(/</g,'&lt;')+'</div>'
+    : '';
+
+  return '<div class="sq-card sla-'+sla.status+'" onclick="openTicketOTRS(\''+(num||'')+'\',event)" title="Clique para abrir '+num+' no OTRS">'
+    + '<div class="sq-card-top">'
+      + '<span class="sq-card-num">#' + (num||'—') + '<span class="sq-num-arrow">↗</span></span>'
+      + '<div class="sq-card-spacer"></div>'
+      + slaBadge
+    + '</div>'
+    + '<div class="sq-card-assunto" title="' + assunto + '">' + assunto + '</div>'
+    + '<div class="sq-card-meta">'
+      + '<span class="sq-card-cliente">' + cli + '</span>'
+      + '<span class="sq-card-meta-sep">·</span>'
+      + '<span>' + estado + '</span>'
+    + '</div>'
+    + falaHtml
+    + '<div class="sq-card-foot">'
+      + '<span class="sq-card-aging ' + agCl + '"><strong>' + ageLbl + '</strong> aberto · última há ' + modTxt + '</span>'
+      + (pc ? '<span class="sq-card-prio '+pc+'">'+pl+'</span>' : '')
+      + '<a class="sq-card-otrs" href="https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(num||'')+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ OTRS</a>'
+    + '</div>'
+  + '</div>';
+}
+
+// Renderer especializado pros blocos pessoais (cards em grid)
+function _renderBlockCards(elId, opts){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  var head = '<div class="sq-block-hd">'
+    + '<div class="sq-block-icon" style="background:'+(opts.iconBg||'rgba(255,255,255,.06)')+';color:'+(opts.iconCol||'var(--text)')+'">'+(opts.icon||'⚑')+'</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">'+opts.title+'</div>'
+      + '<div class="sq-block-sub">'+(opts.subtitle||'')+'</div>'
+    + '</div>'
+    + '<div class="sq-block-count">'+(opts.count!=null?opts.count:'')+'</div>'
+    + '</div>';
+  var body;
+  if(!opts.tickets || !opts.tickets.length){
+    body = '<div class="sq-empty">'+(opts.emptyText||'Nada por aqui agora.')+'</div>';
+  } else {
+    body = '<div class="sq-cards">' + opts.tickets.map(_ticketCard).join('') + '</div>';
+  }
+  el.innerHTML = head + body;
+}
+
 function _tableHead(hideEstado){
   return '<table class="sq-tbl"><thead><tr>'
     + '<th>Número</th>'
@@ -16064,13 +16189,12 @@ function renderBlock1AtaqueAgora(meus){
     var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
     return (da?da.getTime():0) - (db?db.getTime():0); // mais antigo primeiro
   });
-  _renderBlock('sq-block-1', {
+  _renderBlockCards('sq-block-1', {
     icon:'⚠', iconBg:'rgba(244,63,94,.15)', iconCol:'#f43f5e',
     title:'Ataque agora — cliente já respondeu',
-    subtitle:'Tickets em RETORNO CLIENTE. A bola está com você.',
+    subtitle:'Tickets em RETORNO CLIENTE. A bola está com você. Clique no card para abrir no OTRS.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
-    hideEstado: true,
     emptyText:'Nenhum cliente esperando sua resposta agora. 👍'
   });
 }
@@ -16081,10 +16205,10 @@ function renderBlock2Ativas(meus){
     var ca = _parseDate(a.criado), cb = _parseDate(b.criado);
     return (ca?ca.getTime():0) - (cb?cb.getTime():0);
   });
-  _renderBlock('sq-block-2', {
+  _renderBlockCards('sq-block-2', {
     icon:'⚙', iconBg:'rgba(45,212,191,.15)', iconCol:'var(--teal)',
     title:'Minhas ativas',
-    subtitle:'Em atendimento, abertos ou novos — o que você está trabalhando ou ainda não começou.',
+    subtitle:'Em atendimento, abertos ou novos — o que você está trabalhando ou ainda não começou. Clique no card para abrir no OTRS.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
     emptyText:'Sem tickets ativos no momento.'
@@ -16097,7 +16221,7 @@ function renderBlock3Esperando(meus){
     var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
     return (da?da.getTime():0) - (db?db.getTime():0);
   });
-  _renderBlock('sq-block-3', {
+  _renderBlockCards('sq-block-3', {
     icon:'⏳', iconBg:'rgba(245,158,11,.15)', iconCol:'var(--warn)',
     title:'Esperando terceiros',
     subtitle:'Bola com cliente ou time interno. Cobrar quando ficar muito tempo parado.',
@@ -16109,7 +16233,7 @@ function renderBlock3Esperando(meus){
 function renderBlock4Backlog(meus){
   var BL = ['GMUD','MELHORIA'];
   var t = meus.filter(function(r){ return BL.indexOf((r.estado||'').toUpperCase())!==-1; }).filter(_passFilter);
-  _renderBlock('sq-block-4', {
+  _renderBlockCards('sq-block-4', {
     icon:'🗓', iconBg:'rgba(139,92,246,.15)', iconCol:'#a78bfa',
     title:'Agendadas / backlog',
     subtitle:'GMUD aguardando janela e MELHORIA no backlog — sem urgência operacional.',
