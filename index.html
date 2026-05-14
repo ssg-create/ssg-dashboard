@@ -969,6 +969,37 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-who-item{padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:12.5px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s}
 .sq-who-item:hover{border-color:var(--blue);background:rgba(79,142,247,.06);transform:translateY(-1px)}
 .sq-who-item .sq-who-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg2);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+/* Hero SLA */
+.sq-hero{display:flex;align-items:center;gap:24px;padding:6px 4px}
+.sq-hero-ring{position:relative;width:120px;height:120px;flex-shrink:0}
+.sq-hero-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.sq-hero-ring-track{fill:none;stroke:var(--bg3);stroke-width:10}
+.sq-hero-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease-out, stroke .4s}
+.sq-hero-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sq-hero-ring-pct{font-family:var(--display);font-size:30px;font-weight:800;line-height:1}
+.sq-hero-ring-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;font-weight:600}
+.sq-hero-kpis{display:flex;flex-direction:column;gap:8px;flex:1}
+.sq-hero-kpi{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;transition:all .15s}
+.sq-hero-kpi-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.sq-hero-kpi-lbl{flex:1;font-size:12px;color:var(--text);font-weight:600}
+.sq-hero-kpi-val{font-family:var(--mono);font-size:18px;font-weight:800}
+.sq-hero-filters{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.sq-chip{padding:7px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:var(--font);letter-spacing:.03em}
+.sq-chip:hover{border-color:var(--blue);color:var(--text)}
+.sq-chip.on{color:#fff;border-color:transparent}
+.sq-chip.on.f-all{background:var(--blue)}
+.sq-chip.on.f-risco{background:var(--warn)}
+.sq-chip.on.f-vencido{background:var(--danger)}
+.sq-chip.on.f-ok{background:var(--ok)}
+.sq-chip-num{font-family:var(--mono);background:rgba(0,0,0,.18);padding:1px 7px;border-radius:10px;font-size:10px}
+/* SLA badge nos tickets */
+.sq-sla-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:11px;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;margin-left:6px}
+.sq-sla-badge.ok{background:rgba(16,185,129,.12);color:#10b981;border:1px solid rgba(16,185,129,.28)}
+.sq-sla-badge.risco{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.32)}
+.sq-sla-badge.vencido{background:rgba(244,63,94,.15);color:#f43f5e;border:1px solid rgba(244,63,94,.35)}
+.sq-sla-badge.unknown{background:var(--bg3);color:var(--muted);border:1px solid var(--border)}
+.sq-tbl tr.sla-vencido td{background:rgba(244,63,94,.04)}
+.sq-tbl tr.sla-risco td{background:rgba(245,158,11,.04)}
 /* ── Botão fullscreen flutuante ────────────────────────────── */
 #fs-btn{position:fixed;bottom:22px;right:22px;z-index:9999;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.35)}
 #fs-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.1);transform:scale(1.08)}
@@ -3132,6 +3163,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
   </div>
   <div class="sq-shell">
+    <div id="sq-hero-sla" class="sq-block"></div>
     <div id="sq-block-1" class="sq-block danger"></div>
     <div id="sq-block-2" class="sq-block"></div>
     <div id="sq-block-3" class="sq-block warn"></div>
@@ -15694,6 +15726,65 @@ function _agingClass(days){
 }
 function _norm(s){ return (s||'').toString().trim().toLowerCase(); }
 
+// ── SLA helpers ───────────────────────────────────────────────
+function _fmtH(h){
+  if(h==null) return '—';
+  var abs = Math.abs(h);
+  if(abs < 1) return Math.round(abs*60) + 'min';
+  var hi = Math.floor(abs), m = Math.round((abs-hi)*60);
+  if(m === 60){ hi++; m = 0; }
+  if(hi >= 24){
+    var d = Math.floor(hi/24), rh = hi%24;
+    return d + 'd' + (rh>0?' '+rh+'h':'');
+  }
+  return hi + 'h' + (m>0?' '+m+'min':'');
+}
+// Calcula status SLA do ticket usando a infra do dash gerencial
+// (calcBusinessHoursH + SLA_LIMIT_BH_H — horas úteis Seg-Sex 8h-18h).
+function _calcSLA(ticket){
+  var criado = _parseDate(ticket.criado);
+  if(!criado) return {status:'unknown', remH:null, label:'—'};
+  var limit = (typeof SLA_LIMIT_BH_H !== 'undefined' && SLA_LIMIT_BH_H) ? SLA_LIMIT_BH_H : 16;
+  var elapsed = (typeof calcBusinessHoursH === 'function')
+    ? calcBusinessHoursH(criado, new Date())
+    : 0;
+  var rem = limit - elapsed;
+  if(rem <= 0){
+    return {status:'vencido', remH:rem, label:'Vencido há ' + _fmtH(rem)};
+  }
+  if(rem <= 4){
+    return {status:'risco', remH:rem, label:'Vence em ' + _fmtH(rem)};
+  }
+  return {status:'ok', remH:rem, label:'OK · ' + _fmtH(rem) + ' restantes'};
+}
+window._calcSLA = _calcSLA;
+
+// Filtro ativo dos blocos pessoais (1-4): 'all' | 'vencido' | 'risco' | 'ok'
+var _sqFilter = 'all';
+function _passFilter(t){
+  if(_sqFilter === 'all') return true;
+  var s = _calcSLA(t).status;
+  return s === _sqFilter;
+}
+window.setSquadFilter = function(f){
+  _sqFilter = f;
+  // re-render só os blocos pessoais (não recalcula hero nem squad geral)
+  var meus = _getMeusTickets();
+  renderBlock1AtaqueAgora(meus);
+  renderBlock2Ativas(meus);
+  renderBlock3Esperando(meus);
+  renderBlock4Backlog(meus);
+  // atualiza pill ativo
+  document.querySelectorAll('.sq-chip').forEach(function(c){
+    c.classList.toggle('on', c.getAttribute('data-f') === f);
+  });
+};
+function _getMeusTickets(){
+  var atend = getCurrentAtendente();
+  if(!atend) return [];
+  return _getSquadTickets().filter(function(r){ return _norm(r.atendente)===_norm(atend); });
+}
+
 // ── Frase personificada do ticket ─────────────────────────────
 // Recebe ticket + agora. Retorna {texto, lvl} ou null.
 // lvl: 1 (amarelo, > 1d), 2 (laranja, > 3d), 3 (vermelho, > 7d)
@@ -15835,9 +15926,17 @@ function _ticketRow(t, opts){
   var modDate = _parseDate(t.modificado);
   var modAge = modDate ? _daysSince(modDate) : null;
   var modTxt = modAge==null?'—':modAge===0?'hoje':modAge===1?'1d':modAge+'d';
+  var sla = _calcSLA(t);
+  var slaBadge = sla.status==='unknown'
+    ? ''
+    : '<span class="sq-sla-badge '+sla.status+'" title="'+sla.label+'">'
+        + (sla.status==='vencido'?'⚠ '+_fmtH(sla.remH):sla.status==='risco'?'⏱ '+_fmtH(sla.remH):'✓ '+_fmtH(sla.remH))
+      + '</span>';
+  var rowCls = (sla.status==='vencido'||sla.status==='risco') ? ' class="sla-'+sla.status+'"' : '';
 
-  return '<tr>'
+  return '<tr'+rowCls+'>'
     + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(num||'')+'\',event)" title="Abrir '+num+' no OTRS">' + (num||'—') + '<span class="sq-num-arrow">↗</span></span>'
+    + slaBadge
     + (falaHtml ? '<div>'+falaHtml+'</div>' : '')
     + '</td>'
     + '<td><div class="sq-assunto" title="' + assunto + '">' + assunto + '</div></td>'
@@ -15847,6 +15946,82 @@ function _ticketRow(t, opts){
     + '<td style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap">há ' + modTxt + '</td>'
     + '<td style="text-align:right"><span class="sq-aging ' + agClass + '">' + _fmtAgeShort(ageDays) + '</span></td>'
     + '</tr>';
+}
+
+// Render do Hero SLA — ring + KPIs + chips de filtro
+function renderSLAHero(meus){
+  var el = document.getElementById('sq-hero-sla');
+  if(!el) return;
+  // Considera apenas tickets onde a bola está com o atendente (ações dele influenciam SLA)
+  // Inclui estados ATIVOS, NÃO inclui aguardando cliente/interno/agendado.
+  var ACT_STATES = ['EM ATENDIMENTO','OPEN','NEW','RETORNO CLIENTE'];
+  var consider = meus.filter(function(r){ return ACT_STATES.indexOf((r.estado||'').toUpperCase())!==-1; });
+  var stats = {ok:0, risco:0, vencido:0, unknown:0};
+  consider.forEach(function(t){ stats[_calcSLA(t).status]++; });
+  var total = consider.length;
+  var pct = total>0 ? Math.round((stats.ok / total) * 100) : 100;
+
+  // Ring SVG
+  var R = 50, C = 2*Math.PI*R; // raio 50
+  var dash = (pct/100) * C;
+  var ringColor = pct>=85 ? 'var(--ok)' : pct>=60 ? 'var(--warn)' : 'var(--danger)';
+
+  // KPIs por status (em tickets, considerando todos meus chamados não só os ativos)
+  var statsAll = {ok:0, risco:0, vencido:0, unknown:0};
+  meus.forEach(function(t){ statsAll[_calcSLA(t).status]++; });
+  var totalAll = meus.length;
+
+  var hero = '<div class="sq-block-hd" style="margin-bottom:8px">'
+    + '<div class="sq-block-icon" style="background:rgba(16,185,129,.15);color:var(--ok)">⏱</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">Seu SLA agora</div>'
+      + '<div class="sq-block-sub">Cálculo em horas úteis (Seg-Sex 8h-18h). Limite: '
+        + ((typeof SLA_LIMIT_BH_H!=='undefined')?SLA_LIMIT_BH_H:16) + 'h. Considera tickets onde a bola está com você.</div>'
+    + '</div>'
+    + '</div>';
+
+  hero += '<div class="sq-hero">'
+    // Ring
+    + '<div class="sq-hero-ring">'
+      + '<svg viewBox="0 0 120 120">'
+        + '<circle class="sq-hero-ring-track" cx="60" cy="60" r="'+R+'"/>'
+        + '<circle class="sq-hero-ring-fill" cx="60" cy="60" r="'+R+'" stroke="'+ringColor+'" '
+          + 'stroke-dasharray="'+C.toFixed(2)+'" stroke-dashoffset="'+(C-dash).toFixed(2)+'"/>'
+      + '</svg>'
+      + '<div class="sq-hero-ring-center">'
+        + '<div class="sq-hero-ring-pct" style="color:'+ringColor+'">'+pct+'%</div>'
+        + '<div class="sq-hero-ring-lbl">no SLA</div>'
+      + '</div>'
+    + '</div>'
+    // KPIs
+    + '<div class="sq-hero-kpis">'
+      + '<div class="sq-hero-kpi">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(16,185,129,.18);color:var(--ok)">✓</div>'
+        + '<div class="sq-hero-kpi-lbl">No SLA</div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--ok)">'+stats.ok+'</div>'
+      + '</div>'
+      + '<div class="sq-hero-kpi">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(245,158,11,.18);color:var(--warn)">⚠</div>'
+        + '<div class="sq-hero-kpi-lbl">Em risco <span style="font-size:10px;color:var(--muted);font-weight:400">(vence em ≤ 4h)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--warn)">'+stats.risco+'</div>'
+      + '</div>'
+      + '<div class="sq-hero-kpi">'
+        + '<div class="sq-hero-kpi-icon" style="background:rgba(244,63,94,.18);color:var(--danger)">✗</div>'
+        + '<div class="sq-hero-kpi-lbl">Vencidos</div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--danger)">'+stats.vencido+'</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  // Chips de filtro
+  hero += '<div class="sq-hero-filters">'
+    + '<div class="sq-chip f-all'+(_sqFilter==='all'?' on':'')+'" data-f="all" onclick="setSquadFilter(\'all\')">Todos <span class="sq-chip-num">'+totalAll+'</span></div>'
+    + '<div class="sq-chip f-vencido'+(_sqFilter==='vencido'?' on':'')+'" data-f="vencido" onclick="setSquadFilter(\'vencido\')">✗ Vencidos <span class="sq-chip-num">'+statsAll.vencido+'</span></div>'
+    + '<div class="sq-chip f-risco'+(_sqFilter==='risco'?' on':'')+'" data-f="risco" onclick="setSquadFilter(\'risco\')">⚠ Em risco <span class="sq-chip-num">'+statsAll.risco+'</span></div>'
+    + '<div class="sq-chip f-ok'+(_sqFilter==='ok'?' on':'')+'" data-f="ok" onclick="setSquadFilter(\'ok\')">✓ No SLA <span class="sq-chip-num">'+statsAll.ok+'</span></div>'
+    + '</div>';
+
+  el.innerHTML = hero;
 }
 function _tableHead(hideEstado){
   return '<table class="sq-tbl"><thead><tr>'
@@ -15884,7 +16059,7 @@ function _renderBlock(elId, opts){
 }
 
 function renderBlock1AtaqueAgora(meus){
-  var t = meus.filter(function(r){ return (r.estado||'').toUpperCase()==='RETORNO CLIENTE'; });
+  var t = meus.filter(function(r){ return (r.estado||'').toUpperCase()==='RETORNO CLIENTE'; }).filter(_passFilter);
   t.sort(function(a,b){
     var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
     return (da?da.getTime():0) - (db?db.getTime():0); // mais antigo primeiro
@@ -15901,7 +16076,7 @@ function renderBlock1AtaqueAgora(meus){
 }
 function renderBlock2Ativas(meus){
   var ATIVOS = ['EM ATENDIMENTO','OPEN','NEW'];
-  var t = meus.filter(function(r){ return ATIVOS.indexOf((r.estado||'').toUpperCase())!==-1; });
+  var t = meus.filter(function(r){ return ATIVOS.indexOf((r.estado||'').toUpperCase())!==-1; }).filter(_passFilter);
   t.sort(function(a,b){
     var ca = _parseDate(a.criado), cb = _parseDate(b.criado);
     return (ca?ca.getTime():0) - (cb?cb.getTime():0);
@@ -15917,7 +16092,7 @@ function renderBlock2Ativas(meus){
 }
 function renderBlock3Esperando(meus){
   var ESP = ['AGUARDANDO CLIENTE','AGUARDANDO ATENDENTE (INTERNO)'];
-  var t = meus.filter(function(r){ return ESP.indexOf((r.estado||'').toUpperCase())!==-1; });
+  var t = meus.filter(function(r){ return ESP.indexOf((r.estado||'').toUpperCase())!==-1; }).filter(_passFilter);
   t.sort(function(a,b){
     var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
     return (da?da.getTime():0) - (db?db.getTime():0);
@@ -15933,7 +16108,7 @@ function renderBlock3Esperando(meus){
 }
 function renderBlock4Backlog(meus){
   var BL = ['GMUD','MELHORIA'];
-  var t = meus.filter(function(r){ return BL.indexOf((r.estado||'').toUpperCase())!==-1; });
+  var t = meus.filter(function(r){ return BL.indexOf((r.estado||'').toUpperCase())!==-1; }).filter(_passFilter);
   _renderBlock('sq-block-4', {
     icon:'🗓', iconBg:'rgba(139,92,246,.15)', iconCol:'#a78bfa',
     title:'Agendadas / backlog',
@@ -16164,7 +16339,8 @@ window.renderSquadView = function(){
     var allTickets = _getSquadTickets();
     renderBlock5Squad(allTickets);
     renderBlock6Alertas();
-    // Blocos pessoais ficam vazios até escolher
+    // Hero e blocos pessoais ficam vazios até escolher
+    document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty">Selecione seu nome no topo para ver seu SLA.</div>';
     ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
       document.getElementById(id).innerHTML = '<div class="sq-empty">Selecione seu nome no topo para ver seus chamados.</div>';
     });
@@ -16174,6 +16350,7 @@ window.renderSquadView = function(){
   var allTickets = _getSquadTickets();
   var meus = allTickets.filter(function(r){ return _norm(r.atendente)===_norm(atend); });
 
+  renderSLAHero(meus);
   renderBlock1AtaqueAgora(meus);
   renderBlock2Ativas(meus);
   renderBlock3Esperando(meus);
