@@ -3354,6 +3354,22 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
 </div>
 
+<!-- Modal "Lista de chamados" (cards de atenção do squad-view) -->
+<div id="sq-list-overlay" class="tri-pick-overlay" onclick="if(event.target===this)_sqCloseList()">
+  <div class="tri-pick-modal" style="width:560px;max-height:78vh">
+    <div class="tri-pick-hd">
+      <div class="tri-pick-title" id="sq-list-title">Chamados</div>
+      <div class="tri-pick-sub" id="sq-list-sub">—</div>
+    </div>
+    <div class="tri-pick-body">
+      <div class="tri-pick-list" id="sq-list-body"></div>
+    </div>
+    <div class="tri-pick-foot">
+      <button class="tri-pick-cancel" onclick="_sqCloseList()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal "Escolher atendente da squad" (modo Triagem) -->
 <div id="tri-pick-overlay" class="tri-pick-overlay" onclick="if(event.target===this)_triClosePick()">
   <div class="tri-pick-modal">
@@ -16327,8 +16343,9 @@ function _getMeusTickets(){
   var atend = getCurrentAtendente();
   if(!atend) return [];
   var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
-  return _getSquadTickets()
-    .filter(function(r){ return _norm(r.atendente)===_norm(atend); })
+  // Usa _getAtendenteTickets (união de filas das squads em que tá cadastrado)
+  // — mesmo princípio do renderSquadView. Antes filtrava só pela squad da senha.
+  return _getAtendenteTickets(atend)
     .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 }
 
@@ -17383,7 +17400,7 @@ function renderAttention(meus){
       cls:'danger', icon:'🔥', n:retornoCli.length,
       title:'Te devolveram a bola',
       fala:'O cliente já respondeu — agora é com você.',
-      cta:'Filtrar vencidos →', filter:'vencido', scrollTo:'sq-block-1'
+      cta:'Ver chamados →', tipo:'retorno_cli'
     });
   }
   if(vencidos.length){
@@ -17391,7 +17408,7 @@ function renderAttention(meus){
       cls:'danger', icon:'⚠', n:vencidos.length,
       title:'SLA estourado',
       fala:'Tem cliente esperando além do prazo contratado.',
-      cta:'Ver os vencidos →', filter:'vencido', scrollTo:'sq-block-1'
+      cta:'Ver os vencidos →', tipo:'vencidos'
     });
   }
   if(semMexer.length){
@@ -17399,7 +17416,7 @@ function renderAttention(meus){
       cls:'warn', icon:'😴', n:semMexer.length,
       title:'Esquecidos no seu prato',
       fala:'Sem mexer há 3+ dias. Lembra de mim?',
-      cta:'Conferir →', filter:'all', scrollTo:'sq-block-2'
+      cta:'Ver chamados →', tipo:'sem_mexer'
     });
   }
   if(cliSumido.length){
@@ -17407,7 +17424,7 @@ function renderAttention(meus){
       cls:'purple', icon:'👻', n:cliSumido.length,
       title:'Cliente sumiu',
       fala:'Sem retorno há 7+ dias. Cobrar um follow-up?',
-      cta:'Ver lista →', filter:'all', scrollTo:'sq-block-3'
+      cta:'Ver lista →', tipo:'cli_sumido'
     });
   }
   if(internoTravado.length){
@@ -17415,7 +17432,7 @@ function renderAttention(meus){
       cls:'warn', icon:'🆘', n:internoTravado.length,
       title:'Time interno segurando',
       fala:'3+ dias travado em outro time. Subir?',
-      cta:'Ver lista →', filter:'all', scrollTo:'sq-block-3'
+      cta:'Ver lista →', tipo:'interno_travado'
     });
   }
 
@@ -17433,7 +17450,7 @@ function renderAttention(meus){
   }
 
   el.innerHTML = cards.map(function(c){
-    return '<div class="sq-att-card '+c.cls+'" onclick="onAttentionClick(\''+c.filter+'\',\''+c.scrollTo+'\')">'
+    return '<div class="sq-att-card '+c.cls+'" onclick="openAttentionList(\''+c.tipo+'\')">'
       + '<div class="sq-att-top">'
         + '<div class="sq-att-icon">'+c.icon+'</div>'
         + '<div style="flex:1;min-width:0">'
@@ -17446,7 +17463,100 @@ function renderAttention(meus){
     + '</div>';
   }).join('');
 }
-window.onAttentionClick = function(filter, scrollTo){
+// Click nos cards de atenção: abre lista direta dos chamados do tipo
+// (vencidos, retorno cliente, sem mexer, cli sumido, time interno).
+// Resolve o caso "vencido fora de RETORNO CLIENTE" — antes scrollava
+// pro bloco 1 que ficava vazio porque o bloco filtra só RETORNO CLIENTE.
+window.openAttentionList = function(tipo){
+  var meus = _getMeusTickets();
+  var now = new Date();
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+  var lista=[], titulo='', sub='';
+  if(tipo === 'vencidos'){
+    lista = meus.filter(function(t){ return _calcSLA(t).status === 'vencido'; });
+    titulo = '⚠ SLA estourado';
+    sub = 'Esses '+lista.length+' chamado'+(lista.length!==1?'s':'')+' '+(lista.length!==1?'estão':'está')+' além do prazo contratado.';
+  } else if(tipo === 'retorno_cli'){
+    lista = meus.filter(function(t){ return (t.estado||'').toUpperCase()==='RETORNO CLIENTE'; });
+    titulo = '🔥 Te devolveram a bola';
+    sub = 'O cliente respondeu — agora é com você.';
+  } else if(tipo === 'sem_mexer'){
+    var AT2=['EM ATENDIMENTO','OPEN','NEW'];
+    lista = meus.filter(function(t){
+      if(AT2.indexOf((t.estado||'').toUpperCase())===-1) return false;
+      var mod=_parseDate(t.modificado);
+      return mod && _daysSince(mod, now) >= 3;
+    });
+    titulo = '😴 Esquecidos no seu prato';
+    sub = 'Sem mexer há 3+ dias.';
+  } else if(tipo === 'cli_sumido'){
+    lista = meus.filter(function(t){
+      if((t.estado||'').toUpperCase()!=='AGUARDANDO CLIENTE') return false;
+      var mod=_parseDate(t.modificado);
+      return mod && _daysSince(mod, now) >= 7;
+    });
+    titulo = '👻 Cliente sumiu';
+    sub = 'Sem retorno há 7+ dias — vale um follow-up.';
+  } else if(tipo === 'interno_travado'){
+    lista = meus.filter(function(t){
+      if((t.estado||'').toUpperCase()!=='AGUARDANDO ATENDENTE (INTERNO)') return false;
+      var mod=_parseDate(t.modificado);
+      return mod && _daysSince(mod, now) >= 3;
+    });
+    titulo = '🆘 Time interno segurando';
+    sub = '3+ dias travado em outro time.';
+  } else {
+    return;
+  }
+  // Sort: mais antigo primeiro
+  lista.sort(function(a,b){
+    var da=_parseDate(a.modificado), db=_parseDate(b.modificado);
+    return (da?da.getTime():0) - (db?db.getTime():0);
+  });
+  var ov = document.getElementById('sq-list-overlay');
+  var tEl = document.getElementById('sq-list-title');
+  var sEl = document.getElementById('sq-list-sub');
+  var bEl = document.getElementById('sq-list-body');
+  if(!ov||!bEl) return;
+  tEl.textContent = titulo + ' · ' + lista.length;
+  sEl.textContent = sub;
+  if(!lista.length){
+    bEl.innerHTML = '<div style="padding:30px 20px;text-align:center;color:var(--muted);font-size:13px">Sem chamados nessa categoria agora ✨</div>';
+  } else {
+    bEl.innerHTML = lista.map(function(t){
+      var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
+      var mod = _parseDate(t.modificado);
+      var diasMod = mod ? _daysSince(mod, now) : 0;
+      var sla = _calcSLA(t);
+      var slaTxt = '';
+      if(sla.status === 'vencido') slaTxt = '<span style="color:var(--danger);font-weight:700">SLA vencido</span>';
+      else if(sla.status === 'risco') slaTxt = '<span style="color:var(--warn);font-weight:600">SLA em risco</span>';
+      var idadeMod = diasMod === 0 ? 'hoje' : (diasMod === 1 ? '1 dia' : diasMod+' dias');
+      return '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="tri-pick-item" style="text-decoration:none;flex-direction:column;align-items:flex-start;gap:6px;padding:13px 14px">'
+        + '<div style="display:flex;align-items:center;gap:10px;width:100%">'
+          + '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal);background:rgba(0,212,168,.1);padding:3px 8px;border-radius:5px;border:1px solid rgba(0,212,168,.25)">#'+t.ticket+'</span>'
+          + '<span style="font-weight:700;font-size:13px;color:var(--text);flex:1;min-width:0">'+(t.cliente||'—')+'</span>'
+          + '<span style="font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--bg3);padding:3px 8px;border-radius:5px">'+idadeMod+' s/ mexer</span>'
+        + '</div>'
+        + '<div style="font-size:12px;color:var(--sub);line-height:1.4">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
+        + '<div style="display:flex;gap:10px;font-size:10.5px;color:var(--muted)">'
+          + '<span>Estado: <strong>'+(t.estado||'—')+'</strong></span>'
+          + '<span>Fila: <strong>'+(t.fila||'—')+'</strong></span>'
+          + (slaTxt ? '<span>· '+slaTxt+'</span>' : '')
+        + '</div>'
+      + '</a>';
+    }).join('');
+  }
+  ov.classList.add('on');
+};
+window._sqCloseList = function(){
+  var ov = document.getElementById('sq-list-overlay');
+  if(ov) ov.classList.remove('on');
+};
+// Mantido por compat com qualquer call antigo, mas redireciona pro modal
+window.onAttentionClick = function(filter, scrollTo, tipo){
+  if(tipo){ openAttentionList(tipo); return; }
+  // fallback antigo (filtro + scroll)
   if(filter && typeof setSquadFilter==='function') setSquadFilter(filter);
   if(scrollTo){
     var el = document.getElementById(scrollTo);
