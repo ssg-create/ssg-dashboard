@@ -917,8 +917,22 @@ body.squad-mode #view-ia{display:none!important}
 body.squad-mode #view-sq{display:block!important}
 body.squad-mode #fs-btn,
 body.squad-mode #rpt-btn{display:none!important}
-#view-sq{display:none}
-.sq-shell{max-width:1280px;margin:0 auto;padding:24px}
+#view-sq{display:none;position:relative;min-height:100vh;background:
+  radial-gradient(ellipse at 70% 0%, rgba(255,100,0,.05) 0%, transparent 50%),
+  radial-gradient(ellipse at 0% 70%, rgba(79,142,247,.04) 0%, transparent 55%),
+  var(--bg)}
+.sq-shell{max-width:1280px;margin:0 auto;padding:24px;position:relative;z-index:1}
+.sq-greeting{padding:6px 4px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.sq-greeting-msg{flex:1;min-width:280px}
+.sq-greeting-hi{font-family:var(--display);font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1.1;margin-bottom:6px}
+.sq-greeting-hi .sq-greeting-name{background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.sq-greeting-sub{font-size:13px;color:var(--sub);line-height:1.4}
+.sq-greeting-sub strong{color:var(--text);font-weight:700}
+.sq-greeting-side{display:flex;align-items:center;gap:14px}
+.sq-clock{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--text);letter-spacing:.02em;line-height:1}
+.sq-clock-date{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;text-align:right}
+.sq-filas-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sq-fila-chip{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:12px;letter-spacing:.05em;background:rgba(79,142,247,.1);color:var(--blue);border:1px solid rgba(79,142,247,.25)}
 .sq-topbar{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,rgba(255,100,0,.08),rgba(79,142,247,.06));border-bottom:1px solid var(--border);margin-bottom:24px}
 .sq-topbar .sq-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .sq-topbar .sq-brand-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#FF6400,#f59e0b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
@@ -938,7 +952,20 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-block-hd .sq-block-title{flex:1;min-width:0;font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.01em}
 .sq-block-hd .sq-block-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .sq-block-hd .sq-block-count{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
-.sq-block .sq-empty{padding:18px;text-align:center;font-size:12px;color:var(--muted);background:var(--bg3);border-radius:8px;border:1px dashed var(--border)}
+.sq-block .sq-empty{padding:30px 20px;text-align:center;font-size:13px;color:var(--muted);background:linear-gradient(180deg,var(--bg3),rgba(255,255,255,.01));border-radius:10px;border:1px dashed var(--border);display:flex;flex-direction:column;align-items:center;gap:10px}
+.sq-empty-icon{width:48px;height:48px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--blue);opacity:.7}
+.sq-empty-msg{font-weight:600;color:var(--sub)}
+.sq-empty-sub{font-size:11.5px;color:var(--muted);font-style:italic}
+@keyframes sqRingDraw{from{stroke-dashoffset:var(--ring-empty)}to{stroke-dashoffset:var(--ring-target)}}
+.sq-hero-ring-fill{animation:sqRingDraw 1.1s cubic-bezier(.16,1,.3,1) both}
+@keyframes sqFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sq-block,.sq-greeting{animation:sqFadeUp .4s ease-out both}
+.sq-block:nth-of-type(1){animation-delay:.04s}
+.sq-block:nth-of-type(2){animation-delay:.08s}
+.sq-block:nth-of-type(3){animation-delay:.12s}
+.sq-block:nth-of-type(4){animation-delay:.16s}
+.sq-block:nth-of-type(5){animation-delay:.20s}
+.sq-card{animation:sqFadeUp .35s ease-out both}
 .sq-tbl{width:100%;border-collapse:collapse;font-size:12px}
 .sq-tbl th{text-align:left;padding:8px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);background:var(--bg3)}
 .sq-tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
@@ -3200,12 +3227,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
   </div>
   <div class="sq-shell">
+    <div id="sq-greeting" class="sq-greeting"></div>
     <div id="sq-hero-sla" class="sq-block"></div>
     <div id="sq-block-1" class="sq-block danger"></div>
     <div id="sq-block-2" class="sq-block"></div>
     <div id="sq-block-3" class="sq-block warn"></div>
     <div id="sq-block-4" class="sq-block muted"></div>
-    <div id="sq-block-5" class="sq-block"></div>
     <div id="sq-block-6" class="sq-block warn"></div>
   </div>
 </div><!-- /view-sq -->
@@ -16023,7 +16050,8 @@ function renderSLAHero(meus){
       + '<svg viewBox="0 0 120 120">'
         + '<circle class="sq-hero-ring-track" cx="60" cy="60" r="'+R+'"/>'
         + '<circle class="sq-hero-ring-fill" cx="60" cy="60" r="'+R+'" stroke="'+ringColor+'" '
-          + 'stroke-dasharray="'+C.toFixed(2)+'" stroke-dashoffset="'+(C-dash).toFixed(2)+'"/>'
+          + 'stroke-dasharray="'+C.toFixed(2)+'" stroke-dashoffset="'+(C-dash).toFixed(2)+'" '
+          + 'style="--ring-empty:'+C.toFixed(2)+';--ring-target:'+(C-dash).toFixed(2)+'"/>'
       + '</svg>'
       + '<div class="sq-hero-ring-center">'
         + '<div class="sq-hero-ring-pct" style="color:'+ringColor+'">'+pct+'%</div>'
@@ -16141,7 +16169,14 @@ function _renderBlockCards(elId, opts){
     + '</div>';
   var body;
   if(!opts.tickets || !opts.tickets.length){
-    body = '<div class="sq-empty">'+(opts.emptyText||'Nada por aqui agora.')+'</div>';
+    var msg = opts.emptyText || 'Nada por aqui agora.';
+    var sub = opts.emptySub || '';
+    var ico = opts.emptyIcon || '✓';
+    body = '<div class="sq-empty">'
+      + '<div class="sq-empty-icon">'+ico+'</div>'
+      + '<div class="sq-empty-msg">'+msg+'</div>'
+      + (sub?'<div class="sq-empty-sub">'+sub+'</div>':'')
+      + '</div>';
   } else {
     body = '<div class="sq-cards">' + opts.tickets.map(_ticketCard).join('') + '</div>';
   }
@@ -16195,7 +16230,9 @@ function renderBlock1AtaqueAgora(meus){
     subtitle:'Tickets em RETORNO CLIENTE. A bola está com você. Clique no card para abrir no OTRS.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
-    emptyText:'Nenhum cliente esperando sua resposta agora. 👍'
+    emptyIcon:'✓',
+    emptyText:'Tudo em dia por aqui',
+    emptySub:'Nenhum cliente esperando sua resposta agora.'
   });
 }
 function renderBlock2Ativas(meus){
@@ -16211,7 +16248,9 @@ function renderBlock2Ativas(meus){
     subtitle:'Em atendimento, abertos ou novos — o que você está trabalhando ou ainda não começou. Clique no card para abrir no OTRS.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
-    emptyText:'Sem tickets ativos no momento.'
+    emptyIcon:'☕',
+    emptyText:'Sem tickets ativos',
+    emptySub:'Boa hora pra revisar pendências ou tomar um café.'
   });
 }
 function renderBlock3Esperando(meus){
@@ -16227,7 +16266,9 @@ function renderBlock3Esperando(meus){
     subtitle:'Bola com cliente ou time interno. Cobrar quando ficar muito tempo parado.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
-    emptyText:'Nada parado com terceiros.'
+    emptyIcon:'✓',
+    emptyText:'Nada esperando terceiros',
+    emptySub:'Nenhum ticket parado aguardando cliente ou time interno.'
   });
 }
 function renderBlock4Backlog(meus){
@@ -16239,7 +16280,9 @@ function renderBlock4Backlog(meus){
     subtitle:'GMUD aguardando janela e MELHORIA no backlog — sem urgência operacional.',
     count: t.length+' ticket'+(t.length!==1?'s':''),
     tickets: t,
-    emptyText:'Nada agendado ou no backlog.'
+    emptyIcon:'∅',
+    emptyText:'Sem agendados ou backlog',
+    emptySub:'Nada de GMUD ou MELHORIA na sua pilha agora.'
   });
 }
 function renderBlock5Squad(allSquadTickets){
@@ -16437,12 +16480,71 @@ function renderBlock6Alertas(){
   document.getElementById('sq-block-6').innerHTML = html;
 }
 
+function _saudacao(){
+  var h = new Date().getHours();
+  if(h < 6)  return 'Boa madrugada';
+  if(h < 12) return 'Bom dia';
+  if(h < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+function _fmtClock(){
+  var d = new Date();
+  return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+}
+function _fmtDateBR(){
+  var DIAS = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  var MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var d = new Date();
+  return DIAS[d.getDay()] + ', ' + d.getDate() + ' ' + MES[d.getMonth()];
+}
+function renderSquadGreeting(meus){
+  var cfg = getSquadCfg();
+  var atend = getCurrentAtendente();
+  var el = document.getElementById('sq-greeting');
+  if(!el || !cfg) return;
+  var primeiroNome = atend ? atend.split(' ')[0] : 'colega';
+  var total = meus ? meus.length : 0;
+  // "Precisa de ação agora" = RETORNO CLIENTE + vencidos
+  var precisa = 0;
+  if(meus){
+    meus.forEach(function(t){
+      if((t.estado||'').toUpperCase()==='RETORNO CLIENTE') { precisa++; return; }
+      var sla = _calcSLA(t);
+      if(sla.status==='vencido') precisa++;
+    });
+  }
+  var subMsg;
+  if(!atend){
+    subMsg = 'Selecione seu nome no topo para ver seus chamados.';
+  } else if(total === 0){
+    subMsg = 'Sua pilha está zerada agora.';
+  } else if(precisa === 0){
+    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — nada urgente no momento.';
+  } else {
+    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <strong style="color:var(--danger)">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</strong>.';
+  }
+  el.innerHTML =
+    '<div class="sq-greeting-msg">'
+      + '<div class="sq-greeting-hi">' + _saudacao() + ', <span class="sq-greeting-name">' + primeiroNome + '</span></div>'
+      + '<div class="sq-greeting-sub">' + subMsg + '</div>'
+      + '<div class="sq-filas-chips">'
+        + cfg.filas.map(function(f){ return '<span class="sq-fila-chip">'+f+'</span>'; }).join('')
+      + '</div>'
+    + '</div>'
+    + '<div class="sq-greeting-side">'
+      + '<div>'
+        + '<div class="sq-clock" id="sq-clock-tick">'+_fmtClock()+'</div>'
+        + '<div class="sq-clock-date">'+_fmtDateBR()+'</div>'
+      + '</div>'
+    + '</div>';
+}
+
 window.renderSquadView = function(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   if(!cfg) return;
   var atend = getCurrentAtendente();
 
-  // Header
+  // Header da topbar
   document.getElementById('sq-squad-name').textContent = cfg.nome;
   document.getElementById('sq-squad-sub').textContent = 'Filas: ' + cfg.filas.join(' · ');
   var now = new Date();
@@ -16459,14 +16561,11 @@ window.renderSquadView = function(){
   // Se não tem atendente escolhido, força modal
   if(!atend){
     openWhoAreYouModal(false);
-    // Renderiza Squad (bloco 5) e Alertas mesmo sem atendente — agregados não dependem do "eu"
-    var allTickets = _getSquadTickets();
-    renderBlock5Squad(allTickets);
+    renderSquadGreeting(null);
     renderBlock6Alertas();
-    // Hero e blocos pessoais ficam vazios até escolher
-    document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty">Selecione seu nome no topo para ver seu SLA.</div>';
+    document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seu SLA.</div>';
     ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
-      document.getElementById(id).innerHTML = '<div class="sq-empty">Selecione seu nome no topo para ver seus chamados.</div>';
+      document.getElementById(id).innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seus chamados.</div>';
     });
     return;
   }
@@ -16474,12 +16573,12 @@ window.renderSquadView = function(){
   var allTickets = _getSquadTickets();
   var meus = allTickets.filter(function(r){ return _norm(r.atendente)===_norm(atend); });
 
+  renderSquadGreeting(meus);
   renderSLAHero(meus);
   renderBlock1AtaqueAgora(meus);
   renderBlock2Ativas(meus);
   renderBlock3Esperando(meus);
   renderBlock4Backlog(meus);
-  renderBlock5Squad(allTickets);
   renderBlock6Alertas();
 };
 
@@ -16503,6 +16602,11 @@ function bootSquadMode(){
   setInterval(function(){
     if(isSquadMode()) renderSquadView();
   }, 60*1000); // refresh visual a cada 1min (dados refrescam a cada 10min)
+  // Clock leve a cada 30s (sem re-renderizar a view inteira)
+  setInterval(function(){
+    var c = document.getElementById('sq-clock-tick');
+    if(c) c.textContent = ('0'+new Date().getHours()).slice(-2)+':'+('0'+new Date().getMinutes()).slice(-2);
+  }, 30*1000);
 }
 
 // Inicializa após DOM pronto
