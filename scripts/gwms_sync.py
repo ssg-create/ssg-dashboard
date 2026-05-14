@@ -373,7 +373,11 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
       DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s')            AS criado,
       DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s')            AS modificado,
       TIMESTAMPDIFF(DAY, t.create_time, NOW())                   AS idade_dias,
-      t.title                                                    AS assunto
+      t.title                                                    AS assunto,
+      t.escalation_time                                          AS escalation_time,
+      t.escalation_response_time                                 AS escalation_response_time,
+      t.escalation_update_time                                   AS escalation_update_time,
+      t.escalation_solution_time                                 AS escalation_solution_time
     FROM ticket t
     JOIN queue           q  ON t.queue_id           = q.id
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id

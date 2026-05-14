@@ -16287,13 +16287,32 @@ var _SLA_FALLBACK_BY_PRIO = {'Muito Alta':30,'Alta':60,'Normal':120,'Baixa':null
 var _SLA_AWAITING_FIRST_RESPONSE = ['NEW','OPEN','ABERTO'];
 
 function _calcSLA(ticket){
+  // FIX 2026-05-14: usa escalation_time do OTRS quando disponível.
+  // OTRS já calcula: para na 1ª resposta, restart por customer reply,
+  // business hours, etc. Espelha exato o que aparece no AgentTicketZoom.
+  // Campos: 0 = sem SLA ativo / cumprido; >0 = Unix timestamp do prazo.
+  if(typeof ticket.escalation_time === 'number'){
+    if(ticket.escalation_time === 0){
+      return {status:'ok', remMin:null, threshold:null, label:'Sem escalação ativa (OTRS)'};
+    }
+    var nowSec = Math.floor(Date.now()/1000);
+    var remMinO = Math.floor((ticket.escalation_time - nowSec) / 60);
+    if(remMinO <= 0){
+      return {status:'vencido', remMin:remMinO, threshold:null, label:'Vencido há ' + _fmtMin(remMinO)};
+    }
+    if(remMinO <= 30){
+      return {status:'risco', remMin:remMinO, threshold:null, label:'Vence em ' + _fmtMin(remMinO)};
+    }
+    return {status:'ok', remMin:remMinO, threshold:null, label:'OK · ' + _fmtMin(remMinO) + ' restantes'};
+  }
+
+  // Fallback: lógica reconstruída (usada antes do sync rolar com escalation_time).
+  // Mantida pra não quebrar nada na transição.
   var criado = _parseDate(ticket.criado);
   if(!criado) return {status:'unknown', remMin:null, label:'—', threshold:null};
 
-  // FIX 2026-05-14: SLA é de 1ª RESPOSTA. Se o ticket já saiu dos estados
-  // que esperam 1ª resposta (NEW/OPEN), assume cumprido — relógio parou.
-  // Antes: tickets em EM ATENDIMENTO/AGUARDANDO CLIENTE/EXTERNO há dias
-  // apareciam "vencidos" mesmo já tendo sido respondidos.
+  // SLA é de 1ª RESPOSTA. Se o ticket já saiu dos estados que esperam 1ª
+  // resposta (NEW/OPEN), assume cumprido — relógio parou.
   var estU = (ticket.estado||'').toUpperCase();
   if(estU && _SLA_AWAITING_FIRST_RESPONSE.indexOf(estU) === -1){
     return {status:'ok', remMin:null, threshold:null, label:'1ª resposta cumprida'};
