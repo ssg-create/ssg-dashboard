@@ -11686,6 +11686,35 @@ function closeAtModal(e){
 
 function closeAtModalBtn(){ _closeAtModal(); }
 
+// Abre ticket no OTRS. Robusto contra popup blockers e contextos
+// sandbox (preview panels): tenta window.open primeiro; se bloqueado,
+// usa um <a> sintético + click() na top-window; último fallback,
+// copia o número e avisa o usuário.
+function openTicketOTRS(num,ev){
+  if(!num) return;
+  if(ev && ev.stopPropagation) ev.stopPropagation();
+  var url='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(num);
+  var w=null;
+  try{ w=window.open(url,'_blank','noopener'); }catch(e){}
+  if(w) return;
+  // Fallback 1: <a> sintético (driblar alguns sandboxes)
+  try{
+    var a=document.createElement('a');
+    a.href=url; a.target='_blank'; a.rel='noopener';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    return;
+  }catch(e){}
+  // Fallback 2: copia número + avisa
+  try{
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(num);
+      alert('Popup bloqueado neste contexto.\nNúmero '+num+' copiado — cole no OTRS.');
+    } else {
+      prompt('Popup bloqueado. Copie o número:',num);
+    }
+  }catch(e){}
+}
+
 function filterAtModal(){
   var q=document.getElementById('at-modal-search').value.toLowerCase().trim();
   var rows=q?_atModalRows.filter(function(r){
@@ -11756,8 +11785,21 @@ function renderAtModalTable(chamados,totalPend){
     var agingColor=agingN===0?'var(--ok)':agingN<=2?'var(--warn)':agingN<=7?'var(--orange)':'var(--danger)';
     var agingLabel=agingN===0?'hoje':agingN===1?'1 dia':agingN+' dias';
 
+    var numDisp=(c.num||'').slice(-10);
+    var tdNum;
+    if(c.num){
+      var otrsUrl='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(c.num);
+      tdNum='<td style="padding:10px;font-family:var(--mono);font-size:10.5px;color:var(--teal);font-weight:600;white-space:nowrap;cursor:pointer" '
+        +'title="Abrir '+c.num+' no OTRS (clique) · Ctrl/Cmd+clique p/ nova aba" '
+        +'onclick="openTicketOTRS(\''+c.num+'\',event)">'
+        +'<span style="border-bottom:1px dashed rgba(45,212,191,.45)">'+numDisp+'</span>'
+        +'<span style="color:var(--muted);font-size:9px;margin-left:6px;opacity:.6">↗</span>'
+        +'</td>';
+    } else {
+      tdNum='<td style="padding:10px;font-family:var(--mono);font-size:10.5px;color:var(--teal);font-weight:600;white-space:nowrap">'+numDisp+'</td>';
+    }
     html+='<tr style="border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s" onmouseenter="this.style.background=\'rgba(255,255,255,.025)\'" onmouseleave="this.style.background=\'\'"> '
-      +'<td style="padding:10px;font-family:var(--mono);font-size:10.5px;color:var(--teal);font-weight:600;white-space:nowrap">'+(c.num||'').slice(-10)+'</td>'
+      +tdNum
       +'<td style="padding:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(c.assunto||'')+'">'+(c.assunto||'—')+'</td>'
       +'<td style="padding:10px;white-space:nowrap"><span style="font-size:10.5px;padding:3px 9px;border-radius:12px;background:'+ec+'18;border:1px solid '+ec+'30;color:'+ec+'">'+c.estado+'</span></td>'
       +'<td style="padding:10px;white-space:nowrap">'+pPill(c.prior||'')+'</td>'
