@@ -12841,8 +12841,16 @@ var SSG_CTR_START = new Date('2026-01-01T00:00:00');
 
 function _ctrParseDate(s){
   if(!s) return null;
+  // RAW_DATA tem `criado` como Date object (parseado no rebuildAll).
+  // historico_completo.json tem string ISO. Tolerância pra ambos.
+  if(s instanceof Date) return isNaN(s.getTime()) ? null : s;
   var d = new Date(String(s).replace(' ','T'));
   return isNaN(d.getTime()) ? null : d;
+}
+// Normaliza alias de cliente — tolera espaços e underscores misturados.
+// Ex: 'ALMEIDA JR' === 'ALMEIDA_JR' === 'almeida jr'
+function _ctrNormAlias(s){
+  return String(s||'').toUpperCase().replace(/[\s_]+/g,'_').replace(/^_|_$/g,'').trim();
 }
 function _ctrMonthKey(d){
   return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2);
@@ -12869,20 +12877,19 @@ function _ctrFmtMes(key){
   var p = key.split('-');
   return MESES[parseInt(p[1],10)-1] + '/' + p[0].slice(-2);
 }
-// Fonte: historico_completo.json (RAW_DATA quando parseado, ou direto).
+// Fonte: RAW_DATA (parseado do XLSX/historico) ou historico_completo.json direto.
 function _ctrGetTickets(alias){
   var data = null;
-  // Tenta RAW_DATA (parseado do JSON pra estrutura interna do painel)
   if(typeof RAW_DATA !== 'undefined' && Array.isArray(RAW_DATA) && RAW_DATA.length){
     data = RAW_DATA;
   } else if(typeof HISTORICO_DATA !== 'undefined' && HISTORICO_DATA && HISTORICO_DATA.rows){
     data = HISTORICO_DATA.rows;
   }
   if(!data) return [];
-  var aliasU = alias.toUpperCase();
+  var aliasN = _ctrNormAlias(alias);
   return data.filter(function(r){
-    var cli = String(r.cli_id || r.cliente || '').toUpperCase().trim();
-    if(cli !== aliasU) return false;
+    var cli = _ctrNormAlias(r.cli_id || r.cliente || '');
+    if(cli !== aliasN) return false;
     var dt = _ctrParseDate(r.criado);
     if(!dt) return false;
     return dt >= SSG_CTR_START;
