@@ -957,6 +957,51 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-empty-icon{width:48px;height:48px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--blue);opacity:.7}
 .sq-empty-msg{font-weight:600;color:var(--sub)}
 .sq-empty-sub{font-size:11.5px;color:var(--muted);font-style:italic}
+/* ─── Modo Triagem ────────────────────────────────────────── */
+.tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
+.tri-head-title{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tri-head-sub{font-size:13.5px;color:var(--sub);margin-top:8px;line-height:1.5;font-weight:500}
+.tri-head-meta{display:flex;flex-direction:column;align-items:center;padding:10px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+.tri-head-meta-num{font-family:var(--display);font-size:34px;font-weight:800;color:var(--text);line-height:1}
+.tri-head-meta-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;font-weight:600}
+.tri-list{display:flex;flex-direction:column;gap:14px}
+.tri-loading{padding:40px 20px;text-align:center;font-size:13px;color:var(--muted)}
+.tri-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color .2s}
+.tri-card:hover{border-color:var(--border2)}
+.tri-card.urgent{border-color:rgba(244,63,94,.4);background:linear-gradient(135deg,rgba(244,63,94,.04),var(--bg2))}
+.tri-card-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.tri-card-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal);background:rgba(0,212,168,.1);padding:4px 9px;border-radius:6px;text-decoration:none;border:1px solid rgba(0,212,168,.25)}
+.tri-card-num:hover{background:rgba(0,212,168,.18)}
+.tri-card-cli{font-size:13.5px;font-weight:700;color:var(--text);flex:1;min-width:0;line-height:1.4}
+.tri-card-age{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--bg3);padding:4px 9px;border-radius:6px;border:1px solid var(--border);white-space:nowrap}
+.tri-card-age.warn{color:var(--warn);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08)}
+.tri-card-age.danger{color:var(--danger);border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.08)}
+.tri-card-assunto{font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.5;padding:10px 12px;background:var(--bg3);border-left:3px solid var(--border);border-radius:0 6px 6px 0;font-style:italic}
+.tri-card-sugestao{font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tri-card-sugestao strong{color:var(--teal);font-weight:700}
+.tri-card-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tri-card-actions-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:4px}
+.tri-squad-btn{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.02em}
+.tri-squad-btn:hover{border-color:var(--blue);background:rgba(79,142,247,.08);color:var(--blue);transform:translateY(-1px)}
+.tri-squad-btn.sugerido{background:linear-gradient(135deg,rgba(0,212,168,.18),rgba(0,212,168,.06));border-color:rgba(0,212,168,.45);color:var(--teal)}
+.tri-squad-btn.sugerido:hover{border-color:var(--teal);background:rgba(0,212,168,.22);color:var(--teal)}
+.tri-squad-btn .tri-sug-pct{font-size:9px;opacity:.7;margin-left:4px;font-family:var(--mono)}
+.tri-card-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;background:var(--bg2);border:1px dashed var(--border);border-radius:12px}
+.tri-card-empty-icon{font-size:48px;margin-bottom:14px;opacity:.5}
+/* Modal — escolher atendente da squad escolhida */
+.tri-pick-overlay{position:fixed;inset:0;z-index:9000;background:rgba(8,11,16,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center}
+.tri-pick-overlay.on{display:flex}
+.tri-pick-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:440px;max-width:94vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+.tri-pick-hd{padding:18px 22px;border-bottom:1px solid var(--border)}
+.tri-pick-title{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.tri-pick-sub{font-size:11.5px;color:var(--muted);margin-top:4px}
+.tri-pick-body{padding:14px 18px;overflow-y:auto;flex:1}
+.tri-pick-list{display:flex;flex-direction:column;gap:6px}
+.tri-pick-item{padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;transition:all .15s}
+.tri-pick-item:hover{border-color:var(--blue);background:rgba(79,142,247,.06)}
+.tri-pick-item-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg2);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tri-pick-foot{padding:12px 18px;border-top:1px solid var(--border);text-align:right}
+.tri-pick-cancel{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer}
 @keyframes sqRingDraw{from{stroke-dashoffset:var(--ring-empty)}to{stroke-dashoffset:var(--ring-target)}}
 .sq-hero-ring-fill{animation:sqRingDraw 1.1s cubic-bezier(.16,1,.3,1) both}
 @keyframes sqFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -1893,7 +1938,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_DIRETOR="1ba1e4fe727a4f5b23aec4bb275ba3cb5bb8c14c3e414da6ce3d39b77f3f17ac";var _DIRETOR_LOGINS=["gestor.operacoes"];function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("atendLogin",login);}else{sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterDiretor(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","diretor");sessionStorage.removeItem("squadId");sessionStorage.removeItem("sq.atendente");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var loginRaw=(_u&&_u.value||"").trim().toLowerCase();var loginN=_normLogin(loginRaw);if(h===_H_GEST){_enterGestao();}else if(h===_H_DIRETOR&&_DIRETOR_LOGINS.indexOf(loginN)!==-1){_enterDiretor(loginN);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_DIRETOR="1ba1e4fe727a4f5b23aec4bb275ba3cb5bb8c14c3e414da6ce3d39b77f3f17ac";var _DIRETOR_LOGINS=["gestor.operacoes"];var _H_TRIAGEM="23c020a6381df65cbfd5570f08c0d61e05929e81718b41083ed2bf290d289f44";var _TRIAGEM_LOGINS=["triagem.gw"];function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("atendLogin",login);}else{sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterDiretor(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","diretor");sessionStorage.removeItem("squadId");sessionStorage.removeItem("sq.atendente");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var loginRaw=(_u&&_u.value||"").trim().toLowerCase();var loginN=_normLogin(loginRaw);if(h===_H_GEST){_enterGestao();}else if(h===_H_DIRETOR&&_DIRETOR_LOGINS.indexOf(loginN)!==-1){_enterDiretor(loginN);}else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -3264,7 +3309,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <svg id="sq-user-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
   </div>
-  <div class="sq-shell">
+  <div class="sq-shell" id="sq-shell">
     <div id="sq-greeting" class="sq-greeting"></div>
     <div id="sq-hero-pilha" class="sq-block"></div>
     <div id="sq-attention" class="sq-attention"></div>
@@ -3274,6 +3319,23 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div id="sq-block-4" class="sq-block muted"></div>
     <div id="sq-hero-sla" class="sq-block"></div>
     <div id="sq-block-6" class="sq-block warn"></div>
+  </div>
+  <!-- Shell alternativa: modo Triagem (squadId='triagem'). Mais simples — lista
+       vertical de tickets sem atendente pra a pessoa de triagem distribuir. -->
+  <div class="sq-shell" id="sq-triagem-shell" style="display:none">
+    <div class="tri-head">
+      <div>
+        <div class="tri-head-title">Pra onde vai?</div>
+        <div class="tri-head-sub" id="tri-head-sub">—</div>
+      </div>
+      <div class="tri-head-meta">
+        <div class="tri-head-meta-num" id="tri-meta-num">—</div>
+        <div class="tri-head-meta-lbl">aguardando</div>
+      </div>
+    </div>
+    <div id="tri-list" class="tri-list">
+      <div class="tri-loading">Carregando fila de triagem…</div>
+    </div>
   </div>
 </div><!-- /view-sq -->
 
@@ -3288,6 +3350,22 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <div class="sq-who-grid" id="sq-who-grid">
         <div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px">Carregando atendentes…</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal "Escolher atendente da squad" (modo Triagem) -->
+<div id="tri-pick-overlay" class="tri-pick-overlay" onclick="if(event.target===this)_triClosePick()">
+  <div class="tri-pick-modal">
+    <div class="tri-pick-hd">
+      <div class="tri-pick-title" id="tri-pick-title">Escolher atendente</div>
+      <div class="tri-pick-sub" id="tri-pick-sub">—</div>
+    </div>
+    <div class="tri-pick-body">
+      <div class="tri-pick-list" id="tri-pick-list"></div>
+    </div>
+    <div class="tri-pick-foot">
+      <button class="tri-pick-cancel" onclick="_triClosePick()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -3704,6 +3782,16 @@ var SQUADS = {
     allowed_logins: [
       'fabiano.souza','gilberto.sousa','sergio.jr','vinicius.vedove','wiglas.reis'
     ]
+  },
+  // Squad especial — não é uma equipe, é a pessoa que distribui tickets
+  // que entraram sem atendente (fila NOC + Admin OTRS + NEW). View dedicada
+  // (renderTriagemView) em vez de squad-view padrão.
+  'triagem': {
+    nome: 'Triagem',
+    tipo: 'triagem',
+    filas: ['NOC'],
+    exclude_atendentes: [],
+    allowed_logins: ['triagem.gw']
   }
 };
 function getAppMode(){
@@ -17302,6 +17390,17 @@ window.onAttentionClick = function(filter, scrollTo){
 window.renderSquadView = function(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   if(!cfg) return;
+  // Modo Triagem: view dedicada (lista de tickets pra distribuir).
+  // Pula todo o fluxo de atendente/pilha/SLA do squad-view normal.
+  if(cfg.tipo === 'triagem'){
+    if(typeof renderTriagemView === 'function') renderTriagemView();
+    return;
+  }
+  // Garante que a shell padrão está visível (no caso de ter alternado triagem→squad)
+  var _shellP = document.getElementById('sq-shell');
+  var _shellT = document.getElementById('sq-triagem-shell');
+  if(_shellP) _shellP.style.display = '';
+  if(_shellT) _shellT.style.display = 'none';
   // Auto-identifica via login digitado no gate (fallback: modal "Quem é você?")
   _tryAutoIdentify();
   var atend = getCurrentAtendente();
@@ -17386,6 +17485,240 @@ window.renderSquadView = function(){
 };
 
 // ── Boot do modo squad ────────────────────────────────────────
+// ── Modo Triagem ─────────────────────────────────────────────
+// Filtro: tickets em FILA_TRIAGEM + atendente Admin OTRS + estado NEW.
+// Sugestão de squad: olha histórico (TICKETS_ATIVOS_DATA) de tickets
+// com mesmo cliente (extraído do assunto se cliente=monitoramento@...)
+// e conta pra qual fila normalmente vão.
+var FILA_TRIAGEM = 'NOC';
+var TRIAGEM_ATENDENTE_PLACEHOLDER = 'Admin OTRS';
+var TRIAGEM_ESTADO_NOVO = 'NEW';
+// Map fila OTRS → squadId. Usado pra agregar histórico por squad e
+// distribuir pra fila correta. Mantido aqui em vez de no SQUADS pra
+// não acoplar o config (filas múltiplas → 1 squad).
+var FILA_TO_SQUAD = {
+  'SSG':'ssg-protheus', 'SSG-MELHORIAS':'ssg-protheus', 'PROTHEUS':'ssg-protheus',
+  'DBA':'dba',
+  'NOC':'gwms','MONITORAMENTO':'gwms','GWMS':'gwms','TECNOLOGIA':'gwms',
+  'DATASUL':'datasul',
+  'INFRAESTUTURA':'infra'
+};
+// Extrai "nome do cliente" do assunto quando o cliente é o e-mail de
+// monitoramento. Ex: "AUTOZONE - SVR-MASTER..." → "AUTOZONE"
+function _triExtractCliente(t){
+  var cli = (t.cliente||'').trim();
+  if(cli && cli.indexOf('@') === -1) return cli; // já é nome
+  var ass = (t.assunto||'').trim();
+  var m = ass.match(/^([A-Z][A-Z0-9 \-]{1,30})\s*[-–·]/);
+  if(m) return m[1].trim();
+  return cli || 'desconhecido';
+}
+// Sugestão de squad: conta fila destino de tickets parecidos.
+// Parecidos = mesmo cliente (nome extraído) — histórico em
+// TICKETS_ATIVOS_DATA com atendente atribuído (já triados).
+function _triSugerirSquad(t){
+  if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return null;
+  var alvoCli = _triExtractCliente(t).toUpperCase();
+  if(!alvoCli || alvoCli === 'DESCONHECIDO') return null;
+  var bySquad = {};
+  TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+    if(!r.atendente || r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER) return;
+    if(r.fila === FILA_TRIAGEM) return; // ignora outros NOC ainda em triagem
+    var rCli = (r.cliente||'').toUpperCase();
+    var rAss = (r.assunto||'').toUpperCase();
+    if(rCli.indexOf(alvoCli)===-1 && rAss.indexOf(alvoCli)===-1) return;
+    var sq = FILA_TO_SQUAD[r.fila];
+    if(!sq) return;
+    bySquad[sq] = (bySquad[sq]||0) + 1;
+  });
+  var keys = Object.keys(bySquad);
+  if(!keys.length) return null;
+  var total = keys.reduce(function(s,k){return s+bySquad[k];},0);
+  keys.sort(function(a,b){return bySquad[b]-bySquad[a];});
+  var top = keys[0];
+  return { squadId: top, pct: Math.round(bySquad[top]/total*100), total: total };
+}
+function _triMinutosDesde(iso){
+  if(!iso) return 0;
+  var d = new Date(iso.replace(' ','T'));
+  if(isNaN(d.getTime())) return 0;
+  return Math.max(0, Math.floor((Date.now() - d.getTime())/60000));
+}
+function _triFmtIdade(min){
+  if(min < 60) return min + 'min';
+  if(min < 1440) return Math.floor(min/60) + 'h ' + (min%60) + 'min';
+  return Math.floor(min/1440) + 'd ' + Math.floor((min%1440)/60) + 'h';
+}
+window.renderTriagemView = function(){
+  var listEl = document.getElementById('tri-list');
+  var subEl  = document.getElementById('tri-head-sub');
+  var numEl  = document.getElementById('tri-meta-num');
+  if(!listEl) return;
+
+  // Pill do diretor (badge não — tem badge próprio implícito no título)
+  var dSwitch = document.getElementById('sq-diretor-switch');
+  var dBadge  = document.getElementById('sq-diretor-badge');
+  if(dSwitch) dSwitch.style.display = (isDiretorMode() ? 'inline-flex' : 'none');
+  if(dBadge)  dBadge.style.display  = (isDiretorMode() ? 'inline-block' : 'none');
+
+  // Header da topbar
+  var cfg = getSquadCfg();
+  document.getElementById('sq-squad-name').textContent = 'Triagem · Groundwork';
+  document.getElementById('sq-squad-sub').textContent  = 'Distribuição de chamados sem atendente';
+  var now = new Date();
+  document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+
+  // Pill: mostra "triagem.gw"
+  document.getElementById('sq-user-avatar').textContent = 'T';
+  document.getElementById('sq-user-name').textContent   = 'triagem.gw';
+  var pill = document.getElementById('sq-user-pill');
+  if(pill) pill.title = 'Sair (limpa sessão e volta ao login)';
+  var pillIcon = document.getElementById('sq-user-icon');
+  if(pillIcon) pillIcon.innerHTML = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>';
+
+  // Esconde a sq-shell padrão, mostra a triagem-shell
+  var shellPadrao = document.getElementById('sq-shell');
+  var shellTri    = document.getElementById('sq-triagem-shell');
+  if(shellPadrao) shellPadrao.style.display = 'none';
+  if(shellTri)    shellTri.style.display    = 'block';
+
+  // Sem dados ainda? Placeholder.
+  if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA){
+    listEl.innerHTML = '<div class="tri-loading">Aguardando dados do GWMS…</div>';
+    if(numEl) numEl.textContent = '—';
+    if(subEl) subEl.textContent = 'Carregando…';
+    return;
+  }
+
+  // Filtra triagem
+  var tickets = (TICKETS_ATIVOS_DATA.rows||[]).filter(function(r){
+    return r.fila === FILA_TRIAGEM
+        && r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER
+        && (r.estado||'').toUpperCase() === TRIAGEM_ESTADO_NOVO;
+  });
+  // Ordena por mais antigo primeiro (quem tá esperando mais)
+  tickets.sort(function(a,b){
+    return (a.criado||'').localeCompare(b.criado||'');
+  });
+
+  if(numEl) numEl.textContent = tickets.length;
+
+  if(!tickets.length){
+    if(subEl) subEl.textContent = 'Tudo distribuído. Hora do café ☕';
+    listEl.innerHTML = '<div class="tri-card-empty">'
+      + '<div class="tri-card-empty-icon">✨</div>'
+      + '<div style="font-weight:600;color:var(--text);font-size:16px">Sem chamados pra triar agora</div>'
+      + '<div style="margin-top:6px;font-size:12px;color:var(--muted)">Quando entrarem novos, eles aparecem aqui automaticamente.</div>'
+      + '</div>';
+    return;
+  }
+
+  if(subEl){
+    var antigos = tickets.filter(function(t){ return _triMinutosDesde(t.criado) >= 30; }).length;
+    subEl.innerHTML = tickets.length + ' chamado' + (tickets.length!==1?'s':'') + ' aguardando você definir pra onde vão'
+      + (antigos ? ' · <strong style="color:var(--warn)">' + antigos + ' há mais de 30min</strong>' : '');
+  }
+
+  var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
+  listEl.innerHTML = tickets.map(function(t,idx){
+    var cli = _triExtractCliente(t);
+    var minutos = _triMinutosDesde(t.criado);
+    var ageClass = minutos >= 60 ? 'danger' : (minutos >= 30 ? 'warn' : '');
+    var urgentClass = minutos >= 60 ? ' urgent' : '';
+    var sug = _triSugerirSquad(t);
+    var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
+
+    var sugLine = '';
+    if(sug){
+      var sugCfg = SQUADS[sug.squadId];
+      var sugNome = sugCfg ? sugCfg.nome : sug.squadId;
+      sugLine = '<div class="tri-card-sugestao">💡 Histórico diz: <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' parecido'+(sug.total!==1?'s':'')+')</div>';
+    } else {
+      sugLine = '<div class="tri-card-sugestao">💡 Sem histórico desse cliente — você decide.</div>';
+    }
+
+    var btns = squadIds.map(function(sid){
+      var sCfg = SQUADS[sid];
+      var sugClass = (sug && sug.squadId === sid) ? ' sugerido' : '';
+      var ticketEsc = String(t.ticket).replace(/"/g,'&quot;');
+      var sNomeEsc  = sCfg.nome.replace(/"/g,'&quot;');
+      var pctTxt = (sug && sug.squadId===sid) ? '<span class="tri-sug-pct">'+sug.pct+'%</span>' : '';
+      return '<button class="tri-squad-btn'+sugClass+'" onclick="_triPickSquad(\''+ticketEsc+'\',\''+sid+'\')">'+sCfg.nome.replace('· Protheus','').replace(/^Infraestrutura$/,'Infra')+pctTxt+'</button>';
+    }).join('');
+
+    return '<div class="tri-card'+urgentClass+'">'
+      + '<div class="tri-card-hd">'
+        + '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="tri-card-num" title="Abrir no OTRS">#'+t.ticket+'</a>'
+        + '<div class="tri-card-cli">'+cli+'</div>'
+        + '<div class="tri-card-age '+ageClass+'">há '+_triFmtIdade(minutos)+'</div>'
+      + '</div>'
+      + '<div class="tri-card-assunto">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
+      + sugLine
+      + '<div class="tri-card-actions">'
+        + '<span class="tri-card-actions-lbl">Mandar pra:</span>'
+        + btns
+      + '</div>'
+    + '</div>';
+  }).join('');
+};
+// Click numa squad → abre modal de atendentes daquela squad
+window._triPickSquad = function(ticket, squadId){
+  var cfg = SQUADS[squadId];
+  if(!cfg) return;
+  var overlay = document.getElementById('tri-pick-overlay');
+  var title   = document.getElementById('tri-pick-title');
+  var sub     = document.getElementById('tri-pick-sub');
+  var list    = document.getElementById('tri-pick-list');
+  if(!overlay||!list) return;
+  title.textContent = 'Atendente de ' + cfg.nome;
+  sub.textContent   = 'Chamado #' + ticket + ' — escolha quem vai atender';
+  // Lista atendentes da squad (deriva do allowed_logins → nome)
+  var logins = cfg.allowed_logins || [];
+  if(!logins.length){
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atendentes cadastrados nessa squad.</div>';
+  } else {
+    var nomes = logins.map(function(l){
+      // login "primeiro.ultimo" → "Primeiro Ultimo" (capitalize)
+      return l.split('.').map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ');
+    }).sort();
+    list.innerHTML = nomes.map(function(n){
+      var ini = n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
+      var nEsc = n.replace(/"/g,'&quot;');
+      return '<div class="tri-pick-item" onclick="_triAssign(\''+ticket+'\',\''+squadId+'\',\''+nEsc+'\')">'
+        + '<div class="tri-pick-item-avatar">'+ini+'</div>'
+        + '<span>'+n+'</span>'
+      + '</div>';
+    }).join('');
+  }
+  overlay.classList.add('on');
+};
+window._triClosePick = function(){
+  var ov = document.getElementById('tri-pick-overlay');
+  if(ov) ov.classList.remove('on');
+};
+// Confirma: abre OTRS na tela do ticket pra ela fazer o move com o
+// destino já em mente. Painel ainda não tem write-access ao OTRS — fase 2.
+window._triAssign = function(ticket, squadId, atendente){
+  var cfg = SQUADS[squadId];
+  var sNome = cfg ? cfg.nome : squadId;
+  // Copia decisão pro clipboard pra ela colar/usar
+  var decisao = 'Mover #' + ticket + ' → ' + sNome + ' / Atendente: ' + atendente;
+  try {
+    if(navigator.clipboard) navigator.clipboard.writeText(decisao);
+  } catch(e){}
+  // Abre OTRS no ticket
+  var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(ticket);
+  window.open(tkUrl, '_blank', 'noopener');
+  _triClosePick();
+  // Feedback visual rápido (não bloqueia)
+  var msg = '✓ Decisão copiada · ' + sNome + ' → ' + atendente + '\n\nO OTRS abriu numa nova aba — faça o "Move/Atribuir" lá pra concluir.';
+  setTimeout(function(){ alert(msg); }, 100);
+};
+function _isTriagemMode(){
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  return cfg && cfg.tipo === 'triagem';
+}
+
 // ── Boot do modo Diretor (sem squad escolhida) ────────────────
 // Renderiza o picker de squads. Click → setSquadId + reload → cai em
 // bootSquadMode normal porque isSquadMode() passa a ser true.
