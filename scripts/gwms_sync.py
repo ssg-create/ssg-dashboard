@@ -265,6 +265,10 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
       {CLI_ID_EXPR}                                             AS cli_id,
       t.customer_user_id                                        AS cli_user,
       COALESCE(s.name, '')                                      AS servico,
+      t.sla_id                                                  AS sla_id,
+      sl.name                                                   AS sla_name,
+      sl.first_response_time                                    AS sla_first_response_min,
+      sl.solution_time                                          AS sla_solution_min,
       (SELECT DATE_FORMAT(MAX(th.create_time), '%Y-%m-%dT%H:%i:%s')
        FROM ticket_history th
        WHERE th.ticket_id = t.id
@@ -281,6 +285,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     LEFT JOIN users      u  ON t.user_id            = u.id
     LEFT JOIN service    s  ON t.service_id         = s.id
+    LEFT JOIN sla        sl ON t.sla_id             = sl.id
     {CLI_ID_JOINS}
     WHERE {FILAS_WHERE}
       AND (
@@ -377,13 +382,19 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
       t.escalation_time                                          AS escalation_time,
       t.escalation_response_time                                 AS escalation_response_time,
       t.escalation_update_time                                   AS escalation_update_time,
-      t.escalation_solution_time                                 AS escalation_solution_time
+      t.escalation_solution_time                                 AS escalation_solution_time,
+      t.sla_id                                                   AS sla_id,
+      sl.name                                                    AS sla_name,
+      sl.first_response_time                                     AS sla_first_response_min,
+      sl.update_time                                             AS sla_update_min,
+      sl.solution_time                                           AS sla_solution_min
     FROM ticket t
     JOIN queue           q  ON t.queue_id           = q.id
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
     LEFT JOIN service    s  ON t.service_id         = s.id
+    LEFT JOIN sla        sl ON t.sla_id             = sl.id
     {CLI_ID_JOINS}
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND {FILAS_WHERE}

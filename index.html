@@ -7681,7 +7681,14 @@ function getOTRSSLAThreshold(servico_full, prior, cli_id) {
 function calcSLAOtrs(rows) {
   var eligible = [], within = 0;
   (rows || []).forEach(function(d) {
-    var threshold = getOTRSSLAThreshold(d.servico_full, d.prior, d.cli_id);
+    // Prefere SLA por-ticket (live do OTRS via sync) — fallback pras
+    // regras hardcoded (snapshot 2026-05-06) quando ticket não tem sla_id.
+    var threshold = null;
+    if (typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0) {
+      threshold = d.sla_first_response_min;
+    } else {
+      threshold = getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+    }
     if (threshold === null) return;
     if (d.resp_min === null || d.resp_min === undefined) return;
     eligible.push(d);
