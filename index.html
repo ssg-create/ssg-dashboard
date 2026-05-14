@@ -16016,10 +16016,12 @@ function _ticketRow(t, opts){
 function renderSLAHero(meus){
   var el = document.getElementById('sq-hero-sla');
   if(!el) return;
-  // Considera apenas tickets onde a bola está com o atendente (ações dele influenciam SLA)
-  // Inclui estados ATIVOS, NÃO inclui aguardando cliente/interno/agendado.
-  var ACT_STATES = ['EM ATENDIMENTO','OPEN','NEW','RETORNO CLIENTE'];
-  var consider = meus.filter(function(r){ return ACT_STATES.indexOf((r.estado||'').toUpperCase())!==-1; });
+  // Considera TODOS os tickets ativos do atendente (SLA é do ticket, não do estado).
+  // Exclui só estados dormentes (fechado-sem-êxito-auto, resolvido, cancelado).
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+  var consider = meus.filter(function(r){
+    return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1;
+  });
   var stats = {ok:0, risco:0, vencido:0, unknown:0};
   consider.forEach(function(t){ stats[_calcSLA(t).status]++; });
   var total = consider.length;
@@ -16030,17 +16032,16 @@ function renderSLAHero(meus){
   var dash = (pct/100) * C;
   var ringColor = pct>=85 ? 'var(--ok)' : pct>=60 ? 'var(--warn)' : 'var(--danger)';
 
-  // KPIs por status (em tickets, considerando todos meus chamados não só os ativos)
-  var statsAll = {ok:0, risco:0, vencido:0, unknown:0};
-  meus.forEach(function(t){ statsAll[_calcSLA(t).status]++; });
-  var totalAll = meus.length;
+  // Estatísticas que aparecem nos chips de filtro (todos os meus tickets, mesma base)
+  var statsAll = stats;
+  var totalAll = total;
 
   var hero = '<div class="sq-block-hd" style="margin-bottom:8px">'
     + '<div class="sq-block-icon" style="background:rgba(16,185,129,.15);color:var(--ok)">⏱</div>'
     + '<div style="flex:1;min-width:0">'
       + '<div class="sq-block-title">Seu SLA agora</div>'
       + '<div class="sq-block-sub">Cálculo em horas úteis (Seg-Sex 8h-18h). Limite: '
-        + ((typeof SLA_LIMIT_BH_H!=='undefined')?SLA_LIMIT_BH_H:16) + 'h. Considera tickets onde a bola está com você.</div>'
+        + ((typeof SLA_LIMIT_BH_H!=='undefined')?SLA_LIMIT_BH_H:16) + 'h. Considera todos os seus tickets ativos.</div>'
     + '</div>'
     + '</div>';
 
