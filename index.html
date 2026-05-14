@@ -16280,9 +16280,25 @@ var _SLA_FALLBACK_BY_PRIO = {'Muito Alta':30,'Alta':60,'Normal':120,'Baixa':null
 // Calcula status SLA do ticket usando as regras OTRS reais (SLA_OTRS_RULES).
 // Threshold em minutos · tempo decorrido em horas úteis (Seg-Sex 8h-18h).
 // Fallback p/ heurística por prioridade quando servico não disponível ainda.
+// Estados em que o ticket AINDA aguarda 1ª resposta do atendente.
+// SLA do OTRS é cronômetro de 1ª resposta — só conta enquanto ninguém tocou.
+// Tudo fora dessa lista significa "1ª resposta já foi dada" (mesmo que tenha
+// virado AGUARDANDO CLIENTE/EXTERNO depois), portanto SLA-1ª-resposta cumprido.
+var _SLA_AWAITING_FIRST_RESPONSE = ['NEW','OPEN','ABERTO'];
+
 function _calcSLA(ticket){
   var criado = _parseDate(ticket.criado);
   if(!criado) return {status:'unknown', remMin:null, label:'—', threshold:null};
+
+  // FIX 2026-05-14: SLA é de 1ª RESPOSTA. Se o ticket já saiu dos estados
+  // que esperam 1ª resposta (NEW/OPEN), assume cumprido — relógio parou.
+  // Antes: tickets em EM ATENDIMENTO/AGUARDANDO CLIENTE/EXTERNO há dias
+  // apareciam "vencidos" mesmo já tendo sido respondidos.
+  var estU = (ticket.estado||'').toUpperCase();
+  if(estU && _SLA_AWAITING_FIRST_RESPONSE.indexOf(estU) === -1){
+    return {status:'ok', remMin:null, threshold:null, label:'1ª resposta cumprida'};
+  }
+
   var prio = _normalizePriority(ticket.prioridade);
   if(!prio) return {status:'unknown', remMin:null, label:'sem prioridade', threshold:null};
 
