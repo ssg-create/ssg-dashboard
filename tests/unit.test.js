@@ -206,6 +206,112 @@ test('Carlos → C',          () => assertEqual(_initials('Carlos'), 'C'));
 test('vazio → ?',           () => assertEqual(_initials(''), '?'));
 test('null → ?',            () => assertEqual(_initials(null), '?'));
 
+// ─── PDF: regras determinísticas do detalhamento de chamados em aberto ──────
+// Cópias das funções do index.html (mesma lógica, mesmos thresholds).
+
+function _pdfInferRisco(agingDias, prioridade){
+  var p = String(prioridade||'').toLowerCase();
+  var isAlta  = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
+  var isMedia = p === 'alta';
+  if(agingDias==null) return 'BAIXO';
+  if(isAlta){
+    if(agingDias > 30) return 'ALTO';
+    if(agingDias > 7)  return 'MÉDIO';
+    return 'BAIXO';
+  }
+  if(isMedia){
+    if(agingDias > 60) return 'ALTO';
+    if(agingDias > 30) return 'MÉDIO';
+    return 'BAIXO';
+  }
+  if(agingDias > 90) return 'ALTO';
+  if(agingDias > 60) return 'MÉDIO';
+  return 'BAIXO';
+}
+function _pdfInferBloqueio(estado){
+  var e = String(estado||'').toLowerCase();
+  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0) return 'Aguarda cliente';
+  if(e.indexOf('aguardando externo')>=0) return 'Aguarda terceiro';
+  if(e.indexOf('aguardando interno')>=0) return 'Aguarda interno GroundWork';
+  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0) return 'Agendado';
+  if(e.indexOf('em atendimento')>=0) return 'GroundWork executando';
+  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0) return 'Em triagem';
+  return 'Sem classificação';
+}
+function _pdfInferOwner(estado){
+  var b = _pdfInferBloqueio(estado);
+  if(b==='Aguarda cliente')    return 'Cliente';
+  if(b==='Aguarda terceiro')   return 'Terceiro';
+  if(b==='Agendado')           return 'GroundWork (agendado)';
+  return 'GroundWork';
+}
+function _pdfGenProximaAcaoAuto(estado, agingDias, prioridade){
+  var e = String(estado||'').toLowerCase();
+  var p = String(prioridade||'').toLowerCase();
+  var isAlta = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
+  if(e.indexOf('em atendimento')>=0){
+    if(agingDias!=null && agingDias>60) return 'Acelerar tratativa — chamado fora da janela esperada. Definir prazo de entrega.';
+    if(isAlta) return 'Manter prioridade alta e reportar avanço diário.';
+    return 'Dar continuidade à tratativa.';
+  }
+  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0){
+    if(agingDias!=null && agingDias>14) return 'Reforçar acionamento ao cliente. Considerar fechamento por inatividade se persistir.';
+    return 'Acompanhar retorno do cliente nos próximos dias úteis.';
+  }
+  if(e.indexOf('aguardando externo')>=0) return 'Follow-up formal com o terceiro. Avaliar alternativa se não houver retorno em 15 dias.';
+  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0) return 'Executar conforme cronograma agendado.';
+  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0) return 'Realizar triagem inicial e atribuir atendente responsável.';
+  if(e.indexOf('aguardando interno')>=0) return 'Alocar ou escalar para a área responsável.';
+  return 'Acompanhar evolução no ticket.';
+}
+
+console.log('\n📋 _pdfInferRisco() — risco por aging × prioridade');
+test('Muito Alta + 94d → ALTO',     () => assertEqual(_pdfInferRisco(94, 'Muito Alta'), 'ALTO'));
+test('Muito Alta + 10d → MÉDIO',    () => assertEqual(_pdfInferRisco(10, 'Muito Alta'), 'MÉDIO'));
+test('Muito Alta + 3d → BAIXO',     () => assertEqual(_pdfInferRisco(3,  'Muito Alta'), 'BAIXO'));
+test('Alta + 83d → ALTO',           () => assertEqual(_pdfInferRisco(83, 'Alta'), 'ALTO'));
+test('Alta + 51d → MÉDIO',          () => assertEqual(_pdfInferRisco(51, 'Alta'), 'MÉDIO'));
+test('Alta + 15d → BAIXO',          () => assertEqual(_pdfInferRisco(15, 'Alta'), 'BAIXO'));
+test('Normal + 50d → BAIXO',        () => assertEqual(_pdfInferRisco(50, 'Normal'), 'BAIXO'));
+test('Normal + 70d → MÉDIO',        () => assertEqual(_pdfInferRisco(70, 'Normal'), 'MÉDIO'));
+test('Normal + 100d → ALTO',        () => assertEqual(_pdfInferRisco(100,'Normal'), 'ALTO'));
+test('URGENTE igual Muito Alta',    () => assertEqual(_pdfInferRisco(40, 'URGENTE'), 'ALTO'));
+test('aging null → BAIXO',          () => assertEqual(_pdfInferRisco(null,'Alta'), 'BAIXO'));
+
+console.log('\n📋 _pdfInferBloqueio() — bloqueio por estado');
+test('Retorno Cliente',     () => assertEqual(_pdfInferBloqueio('Retorno Cliente'),    'Aguarda cliente'));
+test('Aguardando Cliente',  () => assertEqual(_pdfInferBloqueio('Aguardando Cliente'), 'Aguarda cliente'));
+test('Aguardando Externo',  () => assertEqual(_pdfInferBloqueio('Aguardando Externo'), 'Aguarda terceiro'));
+test('Aguardando Interno',  () => assertEqual(_pdfInferBloqueio('Aguardando Interno'), 'Aguarda interno GroundWork'));
+test('Em Atendimento',      () => assertEqual(_pdfInferBloqueio('Em Atendimento'),     'GroundWork executando'));
+test('Pendente Auto-Lib',   () => assertEqual(_pdfInferBloqueio('Pendente Auto-Lib'),  'Agendado'));
+test('Aberto',              () => assertEqual(_pdfInferBloqueio('Aberto'),             'Em triagem'));
+test('estado desconhecido', () => assertEqual(_pdfInferBloqueio('Foo'),                'Sem classificação'));
+
+console.log('\n📋 _pdfInferOwner() — owner por estado');
+test('Retorno Cliente → Cliente',         () => assertEqual(_pdfInferOwner('Retorno Cliente'),    'Cliente'));
+test('Aguardando Externo → Terceiro',     () => assertEqual(_pdfInferOwner('Aguardando Externo'), 'Terceiro'));
+test('Em Atendimento → GroundWork',       () => assertEqual(_pdfInferOwner('Em Atendimento'),     'GroundWork'));
+test('Pendente Auto → GroundWork (ag.)',  () => assertEqual(_pdfInferOwner('Pendente Auto-Lib'),  'GroundWork (agendado)'));
+
+console.log('\n📋 _pdfGenProximaAcaoAuto() — próxima ação por contexto');
+test('Em Atendimento + aging 80d → acelerar', () => {
+  var t = _pdfGenProximaAcaoAuto('Em Atendimento', 80, 'Alta');
+  assert(t.indexOf('Acelerar')>=0, 'esperava "Acelerar" em: '+t);
+});
+test('Em Atendimento + Muito Alta + 5d → reportar', () => {
+  var t = _pdfGenProximaAcaoAuto('Em Atendimento', 5, 'Muito Alta');
+  assert(t.indexOf('Manter')>=0, 'esperava "Manter" em: '+t);
+});
+test('Retorno Cliente + 20d → reforçar', () => {
+  var t = _pdfGenProximaAcaoAuto('Retorno Cliente', 20, 'Alta');
+  assert(t.indexOf('Reforçar')>=0, 'esperava "Reforçar" em: '+t);
+});
+test('Aguardando Externo → follow-up', () => {
+  var t = _pdfGenProximaAcaoAuto('Aguardando Externo', 60, 'Normal');
+  assert(t.indexOf('Follow-up')>=0, 'esperava "Follow-up" em: '+t);
+});
+
 // ─── Resultado ───────────────────────────────────────────────────────────────
 console.log('\n' + '─'.repeat(40));
 console.log(`  ${passed} passaram · ${failed} falharam`);

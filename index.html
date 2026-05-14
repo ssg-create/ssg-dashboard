@@ -8324,6 +8324,120 @@ function exportComparativePDF(scope){
 }
 
 // ════════════════════════════════════════════════════════════
+// PDF EXPORT — Helpers de detalhamento de chamados em aberto
+// ════════════════════════════════════════════════════════════
+// Regras determinísticas (sem IA, sem edição manual). Tudo que aparece
+// nos cards de "Detalhamento dos chamados em aberto" vem do sistema:
+//  • Aging em dias corridos desde a abertura
+//  • Risco: combinação aging × prioridade
+//  • Bloqueio/Owner: inferidos do estado do ticket
+//  • Status atual: template por estado + aging + atendente
+//  • Próxima ação: template por estado + aging + prioridade
+function _pdfAgingDias(criado){
+  if(criado==null) return null;
+  var dt = (criado instanceof Date) ? criado : new Date(criado);
+  if(isNaN(dt.getTime())) return null;
+  return Math.floor((Date.now() - dt.getTime()) / 86400000);
+}
+function _pdfFmtDataPtBr(criado){
+  if(!criado) return '—';
+  var dt = (criado instanceof Date) ? criado : new Date(criado);
+  if(isNaN(dt.getTime())) return String(criado);
+  var p2=function(n){return n<10?'0'+n:''+n;};
+  return p2(dt.getDate())+'/'+p2(dt.getMonth()+1)+'/'+dt.getFullYear();
+}
+function _pdfInferRisco(agingDias, prioridade){
+  var p = String(prioridade||'').toLowerCase();
+  var isAlta  = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
+  var isMedia = p === 'alta';
+  if(agingDias==null) return 'BAIXO';
+  if(isAlta){
+    if(agingDias > 30) return 'ALTO';
+    if(agingDias > 7)  return 'MÉDIO';
+    return 'BAIXO';
+  }
+  if(isMedia){
+    if(agingDias > 60) return 'ALTO';
+    if(agingDias > 30) return 'MÉDIO';
+    return 'BAIXO';
+  }
+  if(agingDias > 90) return 'ALTO';
+  if(agingDias > 60) return 'MÉDIO';
+  return 'BAIXO';
+}
+function _pdfInferBloqueio(estado){
+  var e = String(estado||'').toLowerCase();
+  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0) return 'Aguarda cliente';
+  if(e.indexOf('aguardando externo')>=0) return 'Aguarda terceiro';
+  if(e.indexOf('aguardando interno')>=0) return 'Aguarda interno GroundWork';
+  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0) return 'Agendado';
+  if(e.indexOf('em atendimento')>=0) return 'GroundWork executando';
+  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0) return 'Em triagem';
+  return 'Sem classificação';
+}
+function _pdfInferOwner(estado){
+  var b = _pdfInferBloqueio(estado);
+  if(b==='Aguarda cliente')    return 'Cliente';
+  if(b==='Aguarda terceiro')   return 'Terceiro';
+  if(b==='Agendado')           return 'GroundWork (agendado)';
+  return 'GroundWork';
+}
+function _pdfGenStatusAuto(estado, criadoDate, agingDias, atendente){
+  var e = String(estado||'').toLowerCase();
+  var ag = agingDias!=null ? agingDias : '—';
+  var data = _pdfFmtDataPtBr(criadoDate);
+  var at = (atendente && atendente !== '—' && atendente !== 'Admin OTRS') ? atendente : null;
+  if(e.indexOf('em atendimento')>=0){
+    var base = 'Em atendimento'+(at?' por '+at:'')+' desde '+data+' ('+ag+' dias em aberto).';
+    if(agingDias!=null && agingDias>60) base += ' Aging acima da janela esperada.';
+    return base;
+  }
+  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0){
+    return 'Aguardando retorno do cliente desde '+data+' ('+ag+' dias). Cliente sem manifestação no canal.';
+  }
+  if(e.indexOf('aguardando externo')>=0){
+    return 'Aguardando retorno externo desde '+data+' ('+ag+' dias). Bloqueio em terceiro — fora da governança Groundwork.';
+  }
+  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0){
+    return 'Em janela de auto-liberação / agendamento. Ação programada conforme cronograma do ticket.';
+  }
+  if(e.indexOf('aguardando interno')>=0){
+    return 'Em fila interna Groundwork desde '+data+' ('+ag+' dias). Aguarda alocação ou retorno de área especializada.';
+  }
+  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0){
+    return 'Chamado aberto em '+data+' ('+ag+' dias) aguardando triagem inicial.';
+  }
+  return 'Estado: '+(estado||'—')+' desde '+data+' ('+ag+' dias).';
+}
+function _pdfGenProximaAcaoAuto(estado, agingDias, prioridade){
+  var e = String(estado||'').toLowerCase();
+  var p = String(prioridade||'').toLowerCase();
+  var isAlta = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
+  if(e.indexOf('em atendimento')>=0){
+    if(agingDias!=null && agingDias>60) return 'Acelerar tratativa — chamado fora da janela esperada. Definir prazo de entrega.';
+    if(isAlta) return 'Manter prioridade alta e reportar avanço diário.';
+    return 'Dar continuidade à tratativa.';
+  }
+  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0){
+    if(agingDias!=null && agingDias>14) return 'Reforçar acionamento ao cliente. Considerar fechamento por inatividade se persistir.';
+    return 'Acompanhar retorno do cliente nos próximos dias úteis.';
+  }
+  if(e.indexOf('aguardando externo')>=0){
+    return 'Follow-up formal com o terceiro. Avaliar alternativa se não houver retorno em 15 dias.';
+  }
+  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0){
+    return 'Executar conforme cronograma agendado.';
+  }
+  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0){
+    return 'Realizar triagem inicial e atribuir atendente responsável.';
+  }
+  if(e.indexOf('aguardando interno')>=0){
+    return 'Alocar ou escalar para a área responsável.';
+  }
+  return 'Acompanhar evolução no ticket.';
+}
+
+// ════════════════════════════════════════════════════════════
 // PDF EXPORT
 // ════════════════════════════════════════════════════════════
 function exportPDF(){
@@ -8704,6 +8818,31 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
 .delta-neutral{background:#f3f4f6;color:#6b7280}
 .consider{background:#f8fafc;border-left:4px solid #E8622A;border-radius:0 8px 8px 0;padding:18px 20px;font-size:13px;line-height:1.8;color:#374151}
 
+/* DETALHAMENTO DE CHAMADOS EM ABERTO (estilo Status Report) */
+.det-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:18px;overflow:hidden;page-break-inside:avoid;box-shadow:0 1px 2px rgba(40,54,69,.04)}
+.det-hd{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:14px 18px;background:linear-gradient(to right,#f8fafc,#fff);border-bottom:1px solid #f1f5f9}
+.det-tk{font-family:monospace;font-size:11.5px;color:#1a2744;font-weight:700}
+.det-meta{font-size:10.5px;color:#6b7280;margin-top:3px}
+.det-aging{text-align:center;padding:4px 12px;border-radius:8px;background:#f1f5f9}
+.det-aging-num{font-size:18px;font-weight:900;color:#1a2744;line-height:1}
+.det-aging-lbl{font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;font-weight:700;margin-top:2px}
+.det-risk{display:inline-block;padding:5px 14px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.det-risk-ALTO{background:#fee2e2;color:#991b1b}
+.det-risk-MÉDIO{background:#fef3c7;color:#854d0e}
+.det-risk-BAIXO{background:#dcfce7;color:#166534}
+.det-ttl{padding:12px 18px 0;font-size:14px;font-weight:800;color:#1a2744;letter-spacing:-.01em}
+.det-body{padding:6px 18px 16px}
+.det-row{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:11.5px;line-height:1.5}
+.det-row:last-child{border-bottom:none}
+.det-lbl{font-size:9.5px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.det-val{color:#374151}
+.det-val strong{color:#1a2744}
+.det-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:#f8fafc;border-top:1px solid #f1f5f9}
+.det-grid-cell{padding:10px 18px;border-right:1px solid #f1f5f9}
+.det-grid-cell:last-child{border-right:none}
+.det-grid-lbl{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.det-grid-val{font-size:11.5px;font-weight:700;color:#1a2744}
+
 /* FOOTER */
 .footer{background:#1a2744;padding:18px 40px;display:flex;align-items:center;justify-content:space-between}
 .footer-txt{font-size:10px;color:rgba(255,255,255,.5)}
@@ -8713,6 +8852,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   .no-print{display:none!important}
   .cover{height:100vh;page-break-after:always}
   .section{page-break-inside:avoid}
+  .det-card{page-break-inside:avoid}
 }
 `.replace(/\$\{scoreBg\}/g,scoreBg).replace(/\$\{scoreColor\}/g,scoreColor);
 
@@ -9141,18 +9281,63 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
 
   H+='</div>';
 
-  // ── SE\u00c7\u00c3O 7: INSIGHTS
+  // ── SEÇÃO 7: DETALHAMENTO DOS CHAMADOS EM ABERTO (1 card por ticket)
+  // Tudo derivado do sistema por regras determinísticas (estado, aging,
+  // prioridade, atendente). Zero edição manual.
+  var _tixAbertos = d.tickets.filter(function(t){return isAberto(t.estado);});
+  if(_tixAbertos.length){
+    var _criadoMap = {};
+    rowsScope.forEach(function(r){ if(r && r.num) _criadoMap[r.num] = r.criado; });
+    var _tixOrd = _tixAbertos.slice().sort(function(a,b){
+      var da = _criadoMap[a.num], db = _criadoMap[b.num];
+      var ta = (da instanceof Date) ? da.getTime() : 0;
+      var tb = (db instanceof Date) ? db.getTime() : 0;
+      return ta - tb;
+    });
+    H+='<div class="section">';
+    H+='<div class="sec-header"><div class="sec-num">7</div><div class="sec-title">Detalhamento dos chamados em aberto</div><div class="sec-sub">'+_tixOrd.length+' chamado(s) \u2014 1 card por ticket</div></div>';
+    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Status e pr\u00f3xima a\u00e7\u00e3o derivados de regras determin\u00edsticas sobre os dados do sistema (estado, aging, prioridade, atendente). Sem edi\u00e7\u00e3o manual.</p>';
+    _tixOrd.forEach(function(t){
+      var criadoDate = _criadoMap[t.num] || null;
+      var aging      = _pdfAgingDias(criadoDate);
+      var risco      = _pdfInferRisco(aging, t.prioridade);
+      var bloqueio   = _pdfInferBloqueio(t.estado);
+      var owner      = _pdfInferOwner(t.estado);
+      var statusTxt  = _pdfGenStatusAuto(t.estado, criadoDate, aging, t.atend || t.atendente);
+      var proxAcao   = _pdfGenProximaAcaoAuto(t.estado, aging, t.prioridade);
+      var fila       = t.servico || t.fila || '\u2014';
+      H+='<div class="det-card">';
+      H+='<div class="det-hd">';
+      H+='<div><div class="det-tk">#'+t.num+'</div><div class="det-meta">Aberto em '+_pdfFmtDataPtBr(criadoDate)+' \u00b7 '+fila+'</div></div>';
+      H+='<div class="det-aging"><div class="det-aging-num">'+(aging!=null?aging+'d':'\u2014')+'</div><div class="det-aging-lbl">Aging</div></div>';
+      H+='<div><span class="det-risk det-risk-'+risco+'">Risco '+risco+'</span></div>';
+      H+='</div>';
+      H+='<div class="det-ttl">'+(t.assunto||'\u2014')+'</div>';
+      H+='<div class="det-body">';
+      H+='<div class="det-row"><div class="det-lbl">Status</div><div class="det-val">'+statusTxt+'</div></div>';
+      H+='<div class="det-row"><div class="det-lbl">Pr\u00f3xima a\u00e7\u00e3o</div><div class="det-val">'+proxAcao+'</div></div>';
+      H+='</div>';
+      H+='<div class="det-grid">';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Bloqueio</div><div class="det-grid-val">'+bloqueio+'</div></div>';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Owner</div><div class="det-grid-val">'+owner+'</div></div>';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Prioridade</div><div class="det-grid-val">'+(t.prioridade||'\u2014')+'</div></div>';
+      H+='</div>';
+      H+='</div>';
+    });
+    H+='</div>';
+  }
+
+  // \u2500\u2500 SE\u00c7\u00c3O 8: INSIGHTS
   H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">7</div><div class="sec-title">Destaques do Per\u00edodo</div></div>';
+  H+='<div class="sec-header"><div class="sec-num">8</div><div class="sec-title">Destaques do Per\u00edodo</div></div>';
   H+='<div class="insight-box"><div class="insight-title">\ud83d\udcca An\u00e1lise autom\u00e1tica</div>';
   insights.forEach(function(ins){H+='<div class="insight-item">'+ins.icon+' '+ins.txt+'</div>';});
   H+='</div>';
   H+='</div>';
 
-  // ── 
-  // ── SEÇÃO 8: COMPARATIVO MÊS ANTERIOR
+  // ── SEÇÃO 9: COMPARATIVO MÊS ANTERIOR
   if(curData && prevData) {
-    var compSec8rows = [
+    var compSec9rows = [
       {label:'Volume total',      cur:curData.total,    prev:prevData.total,    unit:'',    lower:false},
       {label:'Fechados',          cur:curData.fechados, prev:prevData.fechados, unit:'',    lower:false},
       {label:'Em aberto',         cur:curData.abertos,  prev:prevData.abertos,  unit:'',    lower:true},
@@ -9161,7 +9346,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       {label:'Solução (med.)',    cur:curData.sol_med,  prev:prevData.sol_med,  unit:'h',   lower:true}
     ];
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num" style="background:#E8622A">8</div><div class="sec-title">Comparativo — '+(mNamesFull[prevMk2]||prevMk2)+' vs '+(mNamesFull[curMk2]||curMk2)+'</div></div>';
+    H+='<div class="sec-header"><div class="sec-num" style="background:#E8622A">9</div><div class="sec-title">Comparativo — '+(mNamesFull[prevMk2]||prevMk2)+' vs '+(mNamesFull[curMk2]||curMk2)+'</div></div>';
     H+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
     H+='<thead><tr style="border-bottom:2px solid #e5e7eb">';
     H+='<th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Métrica</th>';
@@ -9169,7 +9354,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='<th style="padding:7px 10px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">'+(mNamesFull[curMk2]||curMk2)+'</th>';
     H+='<th style="padding:7px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Variação</th>';
     H+='</tr></thead><tbody>';
-    compSec8rows.forEach(function(row){
+    compSec9rows.forEach(function(row){
       var dlt=pctDelta(row.cur,row.prev,row.lower);
       var cf=(row.cur!==null&&row.cur!==undefined)?row.cur+row.unit:'—';
       var pf=(row.prev!==null&&row.prev!==undefined)?row.prev+row.unit:'—';
@@ -9184,9 +9369,9 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='</div>';
   }
 
-  // SE\u00c7\u00c3O 8: CONSIDERA\u00c7\u00d5ES FINAIS
+  // SEÇÃO 10: CONSIDERAÇÕES FINAIS
   H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">9</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
+  H+='<div class="sec-header"><div class="sec-num">10</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
   H+='<div class="consider">Com base nas informa\u00e7\u00f5es demonstradas acima, nosso objetivo \u00e9 produzir dados e indicadores que permitam avaliar de maneira simples, segura e confi\u00e1vel o atendimento prestado. Contamos com o retorno de todos para continuar aprimorando a qualidade dos servi\u00e7os.<br><br>Contamos com voc\u00eas.<br><br><strong>EQUIPE ERP</strong><br>GROUNDWORK</div>';
   H+='</div>';
 
