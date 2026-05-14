@@ -1889,7 +1889,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);_o.style.display="none";}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);_o.style.display="none";}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -3637,11 +3637,21 @@ var SQUADS = {
     exclude_atendentes: ['Admin OTRS']
   },
   'gwms': {
+    // Squad GWMS reúne NOC + Monitoramento + GWMS + Tecnologia
     nome: 'GWMS',
-    filas: ['GWMS'],
+    filas: ['NOC','MONITORAMENTO','GWMS','TECNOLOGIA'],
+    exclude_atendentes: ['Admin OTRS']
+  },
+  'datasul': {
+    nome: 'Datasul',
+    filas: ['DATASUL'],
+    exclude_atendentes: ['Admin OTRS']
+  },
+  'infra': {
+    nome: 'Infraestrutura',
+    filas: ['INFRAESTUTURA'],
     exclude_atendentes: ['Admin OTRS']
   }
-  // futuras squads: 'datasul', 'infra'
 };
 function getAppMode(){
   // gestao | squad
@@ -16488,11 +16498,17 @@ function renderBlock6Alertas(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   if(!cfg) return;
   var filas = cfg.filas.map(function(f){ return f.toUpperCase(); });
+  var atend = getCurrentAtendente();
+  var atendN = _norm(atend);
   var inFilas = function(r){ return filas.indexOf((r.fila||'').toUpperCase())!==-1; };
+  // Filtro pessoal: só mostra alertas do atendente logado (evita confusão
+  // com tickets de colegas — pediu o user em 14/05).
+  var meuOnly = function(r){ return atendN && _norm(r.atendente) === atendN; };
+  var personalFilter = function(r){ return inFilas(r) && meuOnly(r); };
 
-  var sil = (typeof SILENC_DATA !== 'undefined' && SILENC_DATA && SILENC_DATA.rows) ? SILENC_DATA.rows.filter(inFilas) : [];
-  var tri = (typeof TRI_DATA   !== 'undefined' && TRI_DATA   && TRI_DATA.rows)   ? TRI_DATA.rows.filter(inFilas)   : [];
-  var reb = (typeof REAB_DATA  !== 'undefined' && REAB_DATA  && REAB_DATA.rows)  ? REAB_DATA.rows.filter(inFilas)  : [];
+  var sil = (typeof SILENC_DATA !== 'undefined' && SILENC_DATA && SILENC_DATA.rows) ? SILENC_DATA.rows.filter(personalFilter) : [];
+  var tri = (typeof TRI_DATA   !== 'undefined' && TRI_DATA   && TRI_DATA.rows)   ? TRI_DATA.rows.filter(personalFilter)   : [];
+  var reb = (typeof REAB_DATA  !== 'undefined' && REAB_DATA  && REAB_DATA.rows)  ? REAB_DATA.rows.filter(personalFilter)  : [];
 
   // Top 5 de cada
   sil.sort(function(a,b){return (b.silent_sec||0)-(a.silent_sec||0);});
@@ -16501,8 +16517,8 @@ function renderBlock6Alertas(){
   var head = '<div class="sq-block-hd">'
     + '<div class="sq-block-icon" style="background:rgba(245,158,11,.15);color:var(--warn)">🚨</div>'
     + '<div style="flex:1;min-width:0">'
-      + '<div class="sq-block-title">Radar do squad</div>'
-      + '<div class="sq-block-sub">Sinais que merecem atenção — silenciosos demais, em triagem há muito tempo ou que voltaram do túnel.</div>'
+      + '<div class="sq-block-title">Seu radar pessoal</div>'
+      + '<div class="sq-block-sub">Seus tickets que merecem atenção — silenciosos demais, em triagem há muito tempo ou que voltaram do túnel.</div>'
     + '</div>'
     + '<div class="sq-block-count">'+ (sil.length+tri.length+reb.length) +' no radar</div>'
     + '</div>';
@@ -16517,20 +16533,9 @@ function renderBlock6Alertas(){
   }
 
   var html = head;
-  var meEu = getCurrentAtendente();
-  var meEuN = _norm(meEu);
-  function _atendCell(nome){
-    var isMe = meEuN && _norm(nome) === meEuN;
-    var short = (nome||'—').split(' ').slice(0,2).join(' ');
-    if(isMe){
-      return '<td style="font-size:11px;font-weight:700;color:#FF6400" title="É seu!">'+short+' <span style="font-size:9px;background:rgba(255,100,0,.18);padding:2px 6px;border-radius:8px;margin-left:3px;letter-spacing:.04em">VOCÊ</span></td>';
-    }
-    return '<td style="font-size:11px;color:var(--sub)">'+short+'</td>';
-  }
-
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🤫 Esquecidos · sem mexer há tempos · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🤫 Esquecidos · seus tickets sem mexer há tempos · top 8</div>';
   html += _miniTable(sil,
-    [{label:'Número'},{label:'Cliente'},{label:'Atendente'},{label:'Estado'},{label:'Silêncio',align:'right'}],
+    [{label:'Número'},{label:'Cliente'},{label:'Estado'},{label:'Silêncio',align:'right'}],
     function(r){
       var dSec = r.silent_sec||0;
       var d = Math.floor(dSec/86400), h = Math.floor((dSec%86400)/3600);
@@ -16539,17 +16544,16 @@ function renderBlock6Alertas(){
       return '<tr>'
         + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
         + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
-        + _atendCell(r.atendente)
         + '<td><span class="sq-pill-est">'+(r.estado||'—')+'</span></td>'
         + '<td style="text-align:right;color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px">'+lbl+'</td>'
         + '</tr>';
     },
-    'Nenhum silencioso na squad agora.'
+    'Nenhum silencioso seu agora. 👌'
   );
 
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🐢 Travados na porta · triagem demorada · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🐢 Travados na porta · seus em triagem demorada · top 8</div>';
   html += _miniTable(tri,
-    [{label:'Número'},{label:'Cliente'},{label:'Atendente'},{label:'Tempo em triagem',align:'right'}],
+    [{label:'Número'},{label:'Cliente'},{label:'Tempo em triagem',align:'right'}],
     function(r){
       var m = r.triagem_min||0;
       var d = Math.floor(m/1440), h = Math.floor((m%1440)/60);
@@ -16558,26 +16562,24 @@ function renderBlock6Alertas(){
       return '<tr>'
         + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
         + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
-        + _atendCell(r.atendente)
         + '<td style="text-align:right;color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px">'+lbl+'</td>'
         + '</tr>';
     },
-    'Nenhum ticket em triagem demorada.'
+    'Nenhum ticket seu em triagem demorada.'
   );
 
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">↩ Voltaram do túnel · reaberturas · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">↩ Voltaram do túnel · suas reaberturas · top 8</div>';
   html += _miniTable(reb,
-    [{label:'Número'},{label:'Cliente'},{label:'Atendente'},{label:'Reabriu em',align:'right'}],
+    [{label:'Número'},{label:'Cliente'},{label:'Reabriu em',align:'right'}],
     function(r){
       var dt = (r.reaberto_em||r.data||r.modificado||'').toString().replace('T',' ').slice(0,16);
       return '<tr>'
         + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
         + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
-        + _atendCell(r.atendente)
         + '<td style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted)">'+dt+'</td>'
         + '</tr>';
     },
-    'Sem reaberturas na squad recentemente.'
+    'Sem reaberturas suas recentemente.'
   );
 
   document.getElementById('sq-block-6').innerHTML = html;
