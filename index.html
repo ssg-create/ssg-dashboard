@@ -289,6 +289,39 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .page-header p{font-size:12px;color:var(--muted);margin-top:3px}
 .page-body{padding:0 24px 32px}
 
+/* ═══ CONTRATOS SSG ═══════════════════════════════════════════ */
+.ctr-hero-grid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.ctr-hero-q{font-family:var(--display);font-size:36px;font-weight:800;letter-spacing:-.025em;color:var(--text);line-height:1}
+.ctr-hero-q-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:6px;font-weight:600}
+.ctr-hero-q-sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+.ctr-hero-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ctr-hero-kpi{padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;text-align:center}
+.ctr-hero-kpi-num{font-family:var(--display);font-size:24px;font-weight:800;line-height:1}
+.ctr-hero-kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:5px;font-weight:600}
+.ctr-list{display:flex;flex-direction:column;gap:12px}
+.ctr-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1.5fr 1fr 1.5fr auto;gap:18px;align-items:center;transition:border-color .15s}
+.ctr-card:hover{border-color:var(--border2)}
+.ctr-card.s-ok{border-left:4px solid var(--ok)}
+.ctr-card.s-warn{border-left:4px solid var(--warn)}
+.ctr-card.s-crit{border-left:4px solid var(--danger);background:linear-gradient(135deg,rgba(244,63,94,.03),var(--bg2))}
+.ctr-card.s-info{border-left:4px solid var(--muted);opacity:.7}
+.ctr-c-name{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
+.ctr-c-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
+.ctr-c-obs{font-size:10px;color:var(--warn);margin-top:3px;font-style:italic}
+.ctr-c-mes{display:flex;flex-direction:column;gap:2px}
+.ctr-c-mes-num{font-family:var(--mono);font-size:18px;font-weight:700}
+.ctr-c-mes-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.ctr-c-trim{display:flex;flex-direction:column;gap:5px}
+.ctr-c-trim-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--sub)}
+.ctr-c-trim-bar{position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.ctr-c-trim-fill{position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .5s}
+.ctr-c-trim-line{position:absolute;left:100%;top:-3px;width:2px;height:14px;background:rgba(255,255,255,.4);border-radius:1px}
+.ctr-c-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;text-transform:uppercase;letter-spacing:.06em;text-align:center;min-width:88px}
+.ctr-c-status.s-ok{color:var(--ok);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3)}
+.ctr-c-status.s-warn{color:var(--warn);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3)}
+.ctr-c-status.s-crit{color:var(--danger);background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.35)}
+.ctr-c-status.s-info{color:var(--muted);background:var(--bg3);border:1px solid var(--border)}
+
 /* ═══ VIEWS & SECTIONS ════════════════════════════════════════ */
 .view{display:none}.view.on{display:block}
 .sec{display:none}.sec.on{display:block}
@@ -2091,6 +2124,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="nav" onclick="goSec('op','s-wh',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><rect x="7" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="11" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="15" y="14" width="2" height="2" rx=".5" fill="currentColor" stroke="none"/></svg>Heatmap por Analista</div>
     <div class="sb-head">Gestão</div>
     <div class="nav" onclick="goSec('op','s-sl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>SLA & Tempos</div>
+    <div class="nav" onclick="goSec('op','s-ctr',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>Contratos SSG</div>
     <div class="nav" onclick="goSec('op','s-bl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Em Espera</div>
     <div class="nav" onclick="goSec('op','s-fv',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="18" y1="2" x2="22" y2="6"/><line x1="22" y1="2" x2="18" y2="6"/></svg>Previsão de Volume</div>
     <div class="nav" onclick="goSec('op','s-bk',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Backlog</div>
@@ -2652,6 +2686,18 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
         <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
+    </div>
+  </div>
+
+  <!-- CONTRATOS SSG · controle volume mensal + gatilho de cobrança trimestral -->
+  <div id="s-ctr" class="sec">
+    <div class="page-header">
+      <h1>Contratos SSG</h1>
+      <p>Volume contratado vs. aberto · acompanhamento mensal · gatilho de cobrança trimestral</p>
+    </div>
+    <div class="page-body">
+      <div id="ctr-hero" class="card card-mb"></div>
+      <div id="ctr-list"></div>
     </div>
   </div>
 
@@ -3918,6 +3964,7 @@ function renderSec(id){
   else if(id==='s-bl')renderBl();
   else if(id==='s-bk')renderBacklog();
   else if(id==='s-fv')renderForecast();
+  else if(id==='s-ctr')renderContratosSSG();
   else if(id==='c-inf')renderInf();
 }
 
@@ -12771,6 +12818,208 @@ function renderForecast() {
     wHtml += '</tbody></table>';
     weeksEl.innerHTML = wHtml;
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// CONTRATOS SSG — controle mensal + gatilho de cobrança trimestral
+// Roster: contratos comerciais SSG (pacotes mensais de chamados).
+// Lógica: mês a mês = informativo · trimestre fechado = gatilho cobrança.
+// Edite SSG_CONTRATOS pra adicionar/remover/ajustar pacote do cliente.
+// ════════════════════════════════════════════════════════════
+var SSG_CONTRATOS = [
+  { alias:'AUTOZONE',       nome:'Autozone',           limite_mes:170, ativo:true },
+  { alias:'ALMEIDA JR',     nome:'Almeida Junior',     limite_mes:55,  ativo:true },
+  { alias:'PAMPLASTICOS',   nome:'PAM Plásticos',      limite_mes:20,  ativo:true },
+  { alias:'GRUPO_METALNOX', nome:'Metalnox',           limite_mes:100, ativo:true, obs:'contrato cancelado — sai do OTRS em breve' },
+  { alias:'CNN',            nome:'Cal Norte Nordeste', limite_mes:5,   ativo:true },
+  { alias:'CONTINENTAL',    nome:'Aumovio',            limite_mes:16,  ativo:true, obs:'no OTRS aparece como CONTINENTAL (Aumovio é spin-off)' },
+  { alias:'FINPEC',         nome:'Finpec',             limite_mes:6,   ativo:true }
+];
+// "Ticket conta" = criado no mês. Considera APENAS tickets criados a
+// partir de 2026-01-01 (corte combinado — não traz histórico antigo).
+var SSG_CTR_START = new Date('2026-01-01T00:00:00');
+
+function _ctrParseDate(s){
+  if(!s) return null;
+  var d = new Date(String(s).replace(' ','T'));
+  return isNaN(d.getTime()) ? null : d;
+}
+function _ctrMonthKey(d){
+  return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2);
+}
+function _ctrQuarterOf(d){
+  // Q1=jan-mar(meses 0-2), Q2=abr-jun(3-5), Q3=jul-set(6-8), Q4=out-dez(9-11)
+  return Math.floor(d.getMonth() / 3) + 1;
+}
+function _ctrQuarterMonths(year, q){
+  // retorna array de YYYY-MM dos 3 meses do trimestre
+  var startMonth = (q - 1) * 3; // 0, 3, 6, 9
+  var out = [];
+  for(var i=0;i<3;i++){
+    var m = startMonth + i + 1; // 1-12
+    out.push(year + '-' + ('0'+m).slice(-2));
+  }
+  return out;
+}
+function _ctrDaysInMonth(year, month0){ // month0 = 0-11
+  return new Date(year, month0 + 1, 0).getDate();
+}
+function _ctrFmtMes(key){
+  var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  var p = key.split('-');
+  return MESES[parseInt(p[1],10)-1] + '/' + p[0].slice(-2);
+}
+// Fonte: historico_completo.json (RAW_DATA quando parseado, ou direto).
+function _ctrGetTickets(alias){
+  var data = null;
+  // Tenta RAW_DATA (parseado do JSON pra estrutura interna do painel)
+  if(typeof RAW_DATA !== 'undefined' && Array.isArray(RAW_DATA) && RAW_DATA.length){
+    data = RAW_DATA;
+  } else if(typeof HISTORICO_DATA !== 'undefined' && HISTORICO_DATA && HISTORICO_DATA.rows){
+    data = HISTORICO_DATA.rows;
+  }
+  if(!data) return [];
+  var aliasU = alias.toUpperCase();
+  return data.filter(function(r){
+    var cli = String(r.cli_id || r.cliente || '').toUpperCase().trim();
+    if(cli !== aliasU) return false;
+    var dt = _ctrParseDate(r.criado);
+    if(!dt) return false;
+    return dt >= SSG_CTR_START;
+  });
+}
+function renderContratosSSG(){
+  var heroEl = document.getElementById('ctr-hero');
+  var listEl = document.getElementById('ctr-list');
+  if(!heroEl || !listEl) return;
+
+  var now = new Date();
+  var anoAtual = now.getFullYear();
+  var qAtual = _ctrQuarterOf(now);
+  var mesAtualKey = _ctrMonthKey(now);
+  var diasNoMes = _ctrDaysInMonth(now.getFullYear(), now.getMonth());
+  var diaHoje = now.getDate();
+  var trimMeses = _ctrQuarterMonths(anoAtual, qAtual);
+
+  // Pra cada contrato, calcula:
+  //   - usoMes (mes corrente)
+  //   - usoTrim (acumulado dos 3 meses do Q)
+  //   - limiteTrim = limite_mes × 3
+  //   - projTrim = projeção linear pro fim do trimestre
+  //   - status: ok/warn/crit
+  var resumo = {ok:0, warn:0, crit:0, info:0};
+  var clientes = SSG_CONTRATOS.filter(function(c){return c.ativo;}).map(function(c){
+    var tickets = _ctrGetTickets(c.alias);
+    var byMonth = {};
+    tickets.forEach(function(t){
+      var dt = _ctrParseDate(t.criado);
+      if(!dt) return;
+      var k = _ctrMonthKey(dt);
+      byMonth[k] = (byMonth[k] || 0) + 1;
+    });
+    var usoMes  = byMonth[mesAtualKey] || 0;
+    var usoTrim = trimMeses.reduce(function(s,mk){ return s + (byMonth[mk]||0); }, 0);
+    var limiteMes  = c.limite_mes;
+    var limiteTrim = c.limite_mes * 3;
+
+    // Projeção linear: quantos meses do trim já passaram completos + parcial do atual
+    var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey); // 0/1/2 ou -1
+    var fatorProj = 1;
+    if(idxMesAtualNoTrim !== -1 && diaHoje > 0){
+      // meses completos antes do atual + fração do atual
+      var fracMesAtual = diaHoje / diasNoMes;
+      var totalProgresso = idxMesAtualNoTrim + fracMesAtual; // ex: 1.5 = meio do 2º mês
+      var totalMesesTrim = 3;
+      if(totalProgresso > 0) fatorProj = totalMesesTrim / totalProgresso;
+    }
+    var projTrim = Math.round(usoTrim * fatorProj);
+
+    // Status: baseado em projTrim vs limiteTrim
+    var pctProj = limiteTrim > 0 ? (projTrim / limiteTrim) : 0;
+    var status = 'ok', statusLbl = 'em dia';
+    if(pctProj >= 1){
+      status = 'crit'; statusLbl = 'estourado';
+    } else if(pctProj >= 0.8){
+      status = 'warn'; statusLbl = 'risco';
+    }
+    // Casos especiais: sem dados ainda (cliente novo, contrato cancelado, etc.)
+    if(usoTrim === 0 && usoMes === 0){
+      status = 'info'; statusLbl = 'sem chamados';
+    }
+    resumo[status]++;
+    var excedente = Math.max(0, projTrim - limiteTrim);
+
+    return {
+      cfg:c,
+      usoMes:usoMes, limiteMes:limiteMes,
+      usoTrim:usoTrim, limiteTrim:limiteTrim,
+      projTrim:projTrim, excedente:excedente,
+      pctProj:pctProj, status:status, statusLbl:statusLbl,
+      byMonth:byMonth
+    };
+  });
+
+  // ── Hero ──
+  var totalContratado = SSG_CONTRATOS.filter(function(c){return c.ativo;}).reduce(function(s,c){return s + c.limite_mes;}, 0);
+  heroEl.innerHTML =
+      '<div class="ctr-hero-grid">'
+    +   '<div>'
+    +     '<div class="ctr-hero-q">Q'+qAtual+'/'+String(anoAtual).slice(-2)+'</div>'
+    +     '<div class="ctr-hero-q-lbl">trimestre ativo</div>'
+    +     '<div class="ctr-hero-q-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+'</div>'
+    +   '</div>'
+    +   '<div class="ctr-hero-kpis">'
+    +     '<div class="ctr-hero-kpi"><div class="ctr-hero-kpi-num">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+'</div><div class="ctr-hero-kpi-lbl">clientes ativos</div></div>'
+    +     '<div class="ctr-hero-kpi" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"><div class="ctr-hero-kpi-num" style="color:var(--ok)">'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
+    +     '<div class="ctr-hero-kpi" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"><div class="ctr-hero-kpi-num" style="color:var(--warn)">'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
+    +     '<div class="ctr-hero-kpi" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"><div class="ctr-hero-kpi-num" style="color:var(--danger)">'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">estourados</div></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)">'
+    +   'Total contratado: <strong style="color:var(--text)">'+totalContratado+' chamados/mês</strong> · '+(totalContratado*3)+' chamados/trimestre. Gatilho de cobrança fecha no último dia do trimestre.'
+    + '</div>';
+
+  // ── Lista por cliente ──
+  listEl.className = 'ctr-list';
+  listEl.innerHTML = clientes.map(function(c){
+    var pctBar = Math.min(c.pctProj * 100, 200); // até 2× cap visual
+    var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
+    var statusTxt = c.statusLbl.toUpperCase();
+    var pctTxt = Math.round(c.pctProj * 100);
+    var excedenteTxt = c.excedente > 0 ? ('<span style="color:var(--danger);font-weight:700">+'+c.excedente+' chamados</span> excedente projetado') : '';
+    var obsTxt = c.cfg.obs ? '<div class="ctr-c-obs">⚠ '+c.cfg.obs+'</div>' : '';
+
+    // Lista mes-a-mes do trimestre
+    var mesesHtml = trimMeses.map(function(mk){
+      var n = c.byMonth[mk] || 0;
+      var ehAtual = (mk === mesAtualKey);
+      var fechado = !ehAtual && new Date(mk + '-01') < new Date(anoAtual, now.getMonth(), 1);
+      var pctMes = c.limiteMes > 0 ? Math.round(n/c.limiteMes*100) : 0;
+      var corMes = pctMes >= 100 ? 'var(--danger)' : (pctMes >= 80 ? 'var(--warn)' : 'var(--text)');
+      var lbl = _ctrFmtMes(mk);
+      if(ehAtual) lbl += ' (parcial · dia '+diaHoje+'/'+diasNoMes+')';
+      return '<span style="font-size:10px;color:var(--muted)">'+lbl+': <strong style="color:'+corMes+';font-family:var(--mono);font-size:12px">'+n+'</strong></span>';
+    }).join(' · ');
+
+    return '<div class="ctr-card s-'+c.status+'">'
+      + '<div>'
+        + '<div class="ctr-c-name">'+c.cfg.nome+'</div>'
+        + '<div class="ctr-c-sub">'+c.cfg.limite_mes+'/mês · '+c.limiteTrim+'/trim · alias OTRS: '+c.cfg.alias+'</div>'
+        + obsTxt
+      + '</div>'
+      + '<div class="ctr-c-mes">'
+        + '<div class="ctr-c-mes-num" style="color:'+(c.usoMes >= c.limiteMes ? 'var(--danger)' : (c.usoMes >= c.limiteMes*0.8 ? 'var(--warn)' : 'var(--text)'))+'">'+c.usoMes+' <span style="font-size:11px;color:var(--muted);font-weight:400">/ '+c.limiteMes+'</span></div>'
+        + '<div class="ctr-c-mes-lbl">mês atual ('+_ctrFmtMes(mesAtualKey)+')</div>'
+      + '</div>'
+      + '<div class="ctr-c-trim">'
+        + '<div class="ctr-c-trim-row"><span>Q'+qAtual+': <strong style="color:var(--text);font-family:var(--mono);font-size:13px">'+c.usoTrim+'</strong> / '+c.limiteTrim+' · projeção: <strong style="color:'+barColor+';font-family:var(--mono)">'+c.projTrim+'</strong> ('+pctTxt+'%)</span></div>'
+        + '<div class="ctr-c-trim-bar"><div class="ctr-c-trim-fill" style="width:'+Math.min(pctBar,100)+'%;background:'+barColor+'"></div></div>'
+        + '<div style="font-size:10px;color:var(--muted)">'+mesesHtml+'</div>'
+        + (excedenteTxt ? '<div style="font-size:11px;margin-top:4px">'+excedenteTxt+'</div>' : '')
+      + '</div>'
+      + '<div class="ctr-c-status s-'+c.status+'">'+statusTxt+'</div>'
+    + '</div>';
+  }).join('');
 }
 
 function renderBacklog() {
