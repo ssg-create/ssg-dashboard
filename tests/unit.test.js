@@ -87,6 +87,125 @@ test('INFRA-ESTRUTURA → INFRAESTRUTURA',() => assertEqual(normalizaFila('INFRA
 test('SSG sem alteração',                () => assertEqual(normalizaFila('SSG'), 'SSG'));
 test('DBA sem alteração',                () => assertEqual(normalizaFila('DBA'), 'DBA'));
 
+// ─── MODO SQUAD — testes da lógica nova ─────────────────────────────────────
+// Cópia mínima da lógica de frasePersonificada e helpers (escopo isolado p/ teste)
+
+function _parseDate(s){
+  if(!s) return null;
+  try {
+    if(s instanceof Date) return isNaN(s.getTime())?null:s;
+    var str = String(s);
+    if(/^\d{4}-\d{2}-\d{2}/.test(str)){
+      var d = new Date(str.replace(' ','T'));
+      return isNaN(d.getTime())?null:d;
+    }
+    if(/^\d{2}\/\d{2}\/\d{4}/.test(str)){
+      var p = str.split(/[\/ :]/);
+      return new Date(+p[2], +p[1]-1, +p[0], +(p[3]||0), +(p[4]||0));
+    }
+    var d3 = new Date(str);
+    return isNaN(d3.getTime())?null:d3;
+  } catch(e){ return null; }
+}
+function _daysSince(d, now){
+  if(!d) return null;
+  return Math.floor(((now||new Date()) - d) / 86400000);
+}
+function _initials(nome){
+  if(!nome) return '?';
+  var p = nome.trim().split(/\s+/);
+  return ((p[0]||'')[0]||'?').toUpperCase() + ((p[1]||'')[0]||'').toUpperCase();
+}
+var SQUADS_TEST = {
+  'ssg-protheus': {
+    nome: 'SSG · Protheus',
+    filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
+    exclude_atendentes: ['Admin OTRS']
+  }
+};
+var _SQ_FRASES = {
+  retorno_cliente: ['Ei, o cliente já me devolveu — você esqueceu de mim?'],
+  sem_interacao:   ['Ei, sumiu? {X} dias sem ninguém mexer em mim.'],
+  cliente_silencioso:['Acho que o cliente sumiu — bora cobrar?'],
+  interno_atrasado:  ['{X} dias esperando o time interno — bora subir?']
+};
+function _pickFrase(arr, num, x){
+  var seed = 0, s = String(num||'');
+  for(var i=0;i<s.length;i++) seed = (seed*31 + s.charCodeAt(i))|0;
+  return arr[Math.abs(seed) % arr.length].replace('{X}', x);
+}
+function frasePersonificada(ticket, now){
+  if(!ticket) return null;
+  now = now || new Date();
+  var estado = (ticket.estado||'').toUpperCase();
+  var mod = _parseDate(ticket.modificado);
+  var d = _daysSince(mod, now);
+  var num = ticket.ticket || ticket.num;
+  if(estado === 'RETORNO CLIENTE' && d != null && d >= 1){
+    var lvl = d>7?3:d>3?2:1;
+    return { texto:_pickFrase(_SQ_FRASES.retorno_cliente,num,d), lvl:lvl };
+  }
+  if((estado === 'EM ATENDIMENTO'||estado==='OPEN'||estado==='NEW') && d != null && d >= 3){
+    var lvl2 = d>14?3:d>7?2:1;
+    return { texto:_pickFrase(_SQ_FRASES.sem_interacao,num,d), lvl:lvl2 };
+  }
+  if(estado === 'AGUARDANDO CLIENTE' && d != null && d >= 7){
+    var lvl3 = d>21?3:d>14?2:1;
+    return { texto:_pickFrase(_SQ_FRASES.cliente_silencioso,num,d), lvl:lvl3 };
+  }
+  if(estado === 'AGUARDANDO ATENDENTE (INTERNO)' && d != null && d >= 3){
+    var lvl4 = d>14?3:d>7?2:1;
+    return { texto:_pickFrase(_SQ_FRASES.interno_atrasado,num,d), lvl:lvl4 };
+  }
+  return null;
+}
+
+const NOW = new Date('2026-05-14T12:00:00');
+function daysAgo(n){ return new Date(NOW.getTime() - n*86400000).toISOString().replace('T',' ').slice(0,19); }
+
+console.log('\n📋 frasePersonificada() — RETORNO CLIENTE');
+test('hoje (0d) → null',     () => assertEqual(frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(0),ticket:'1'},NOW), null));
+test('2 dias → lvl 1',       () => assertEqual(frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(2),ticket:'1'},NOW).lvl, 1));
+test('5 dias → lvl 2',       () => assertEqual(frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(5),ticket:'1'},NOW).lvl, 2));
+test('10 dias → lvl 3',      () => assertEqual(frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(10),ticket:'1'},NOW).lvl, 3));
+
+console.log('\n📋 frasePersonificada() — EM ATENDIMENTO / OPEN / NEW');
+test('1 dia → null (limiar 3d)', () => assertEqual(frasePersonificada({estado:'EM ATENDIMENTO',modificado:daysAgo(1),ticket:'1'},NOW), null));
+test('5 dias → lvl 1',           () => assertEqual(frasePersonificada({estado:'OPEN',modificado:daysAgo(5),ticket:'1'},NOW).lvl, 1));
+test('10 dias → lvl 2',          () => assertEqual(frasePersonificada({estado:'NEW',modificado:daysAgo(10),ticket:'1'},NOW).lvl, 2));
+test('20 dias → lvl 3',          () => assertEqual(frasePersonificada({estado:'EM ATENDIMENTO',modificado:daysAgo(20),ticket:'1'},NOW).lvl, 3));
+
+console.log('\n📋 frasePersonificada() — AGUARDANDO CLIENTE');
+test('3 dias → null (limiar 7d)', () => assertEqual(frasePersonificada({estado:'AGUARDANDO CLIENTE',modificado:daysAgo(3),ticket:'1'},NOW), null));
+test('10 dias → lvl 1',           () => assertEqual(frasePersonificada({estado:'AGUARDANDO CLIENTE',modificado:daysAgo(10),ticket:'1'},NOW).lvl, 1));
+test('17 dias → lvl 2',           () => assertEqual(frasePersonificada({estado:'AGUARDANDO CLIENTE',modificado:daysAgo(17),ticket:'1'},NOW).lvl, 2));
+test('30 dias → lvl 3',           () => assertEqual(frasePersonificada({estado:'AGUARDANDO CLIENTE',modificado:daysAgo(30),ticket:'1'},NOW).lvl, 3));
+
+console.log('\n📋 frasePersonificada() — edge cases');
+test('ticket null → null',        () => assertEqual(frasePersonificada(null, NOW), null));
+test('estado vazio → null',       () => assertEqual(frasePersonificada({estado:'',modificado:daysAgo(10),ticket:'1'},NOW), null));
+test('modificado vazio → null',   () => assertEqual(frasePersonificada({estado:'RETORNO CLIENTE',modificado:'',ticket:'1'},NOW), null));
+test('estado desconhecido → null',() => assertEqual(frasePersonificada({estado:'FECHADO',modificado:daysAgo(50),ticket:'1'},NOW), null));
+test('estabilidade: mesmo ticket → mesma frase', () => {
+  var a = frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(2),ticket:'1526000207'},NOW);
+  var b = frasePersonificada({estado:'RETORNO CLIENTE',modificado:daysAgo(2),ticket:'1526000207'},NOW);
+  assertEqual(a.texto, b.texto);
+});
+
+console.log('\n📋 SQUADS — config');
+test('squad ssg-protheus existe',          () => assert(SQUADS_TEST['ssg-protheus']));
+test('filas SSG/SSG-MELHORIAS/PROTHEUS',   () => {
+  var f = SQUADS_TEST['ssg-protheus'].filas;
+  assert(f.indexOf('SSG')!==-1 && f.indexOf('SSG-MELHORIAS')!==-1 && f.indexOf('PROTHEUS')!==-1);
+});
+test('Admin OTRS excluído',                () => assert(SQUADS_TEST['ssg-protheus'].exclude_atendentes.indexOf('Admin OTRS')!==-1));
+
+console.log('\n📋 _initials() — avatar');
+test('Geyson Albano → GA',  () => assertEqual(_initials('Geyson Albano'), 'GA'));
+test('Carlos → C',          () => assertEqual(_initials('Carlos'), 'C'));
+test('vazio → ?',           () => assertEqual(_initials(''), '?'));
+test('null → ?',            () => assertEqual(_initials(null), '?'));
+
 // ─── Resultado ───────────────────────────────────────────────────────────────
 console.log('\n' + '─'.repeat(40));
 console.log(`  ${passed} passaram · ${failed} falharam`);

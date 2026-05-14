@@ -902,6 +902,73 @@ input[type=file]{display:none}
 .fs-mode .app{padding-top:0!important}
 .fs-mode .main{margin-left:0!important}
 .fs-mode .sec.on{min-height:100vh}
+
+/* ── Squad mode (modo operacional, sem UI gerencial) ───────── */
+body.squad-mode .topbar{display:none!important}
+body.squad-mode .sidebar{display:none!important}
+body.squad-mode .app{padding-top:0!important}
+body.squad-mode .main{margin-left:0!important}
+body.squad-mode #view-op,
+body.squad-mode #view-cli,
+body.squad-mode #view-cs,
+body.squad-mode #view-acoes,
+body.squad-mode #view-rg,
+body.squad-mode #view-ia{display:none!important}
+body.squad-mode #view-sq{display:block!important}
+body.squad-mode #fs-btn,
+body.squad-mode #rpt-btn{display:none!important}
+#view-sq{display:none}
+.sq-shell{max-width:1280px;margin:0 auto;padding:24px}
+.sq-topbar{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,rgba(255,100,0,.08),rgba(79,142,247,.06));border-bottom:1px solid var(--border);margin-bottom:24px}
+.sq-topbar .sq-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.sq-topbar .sq-brand-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#FF6400,#f59e0b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.sq-topbar .sq-info{flex:1;min-width:0}
+.sq-topbar .sq-info-name{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);line-height:1.2}
+.sq-topbar .sq-info-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sq-topbar .sq-user{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text);cursor:pointer;transition:all .2s}
+.sq-topbar .sq-user:hover{border-color:var(--blue);color:var(--blue)}
+.sq-topbar .sq-user .sq-user-avatar{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.sq-topbar .sq-meta{font-size:10px;color:var(--muted);font-family:var(--mono);padding:4px 8px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)}
+.sq-block{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;transition:border-color .2s}
+.sq-block.danger{border-color:rgba(244,63,94,.3)}
+.sq-block.warn{border-color:rgba(245,158,11,.3)}
+.sq-block.muted{opacity:.85}
+.sq-block-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sq-block-hd .sq-block-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sq-block-hd .sq-block-title{flex:1;min-width:0;font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.sq-block-hd .sq-block-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sq-block-hd .sq-block-count{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.sq-block .sq-empty{padding:18px;text-align:center;font-size:12px;color:var(--muted);background:var(--bg3);border-radius:8px;border:1px dashed var(--border)}
+.sq-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.sq-tbl th{text-align:left;padding:8px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);background:var(--bg3)}
+.sq-tbl td{padding:10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.sq-tbl tr:hover td{background:rgba(255,255,255,.025)}
+.sq-num{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--teal);cursor:pointer;white-space:nowrap}
+.sq-num:hover{text-decoration:underline}
+.sq-num .sq-num-arrow{color:var(--muted);font-size:9px;margin-left:5px;opacity:.6}
+.sq-assunto{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.sq-fala{font-style:italic;font-size:11px;margin-top:4px;padding:4px 8px;border-radius:6px;display:inline-block;max-width:100%}
+.sq-fala.lvl1{color:#fbbf24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)}
+.sq-fala.lvl2{color:#fb923c;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.22)}
+.sq-fala.lvl3{color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)}
+.sq-pill-est{font-size:10px;padding:3px 9px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);white-space:nowrap;font-weight:600}
+.sq-aging{font-family:var(--mono);font-size:11.5px;font-weight:700;white-space:nowrap}
+.sq-aging.ok{color:var(--ok)}
+.sq-aging.warn{color:var(--warn)}
+.sq-aging.danger{color:var(--danger)}
+/* Modal "Quem é você?" */
+.sq-who-overlay{position:fixed;inset:0;z-index:8000;background:rgba(8,11,16,.94);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.sq-who-overlay.on{opacity:1;pointer-events:all}
+.sq-who-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:520px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;overflow:hidden;transform:scale(.95);transition:transform .25s}
+.sq-who-overlay.on .sq-who-modal{transform:scale(1)}
+.sq-who-hd{padding:22px 26px;border-bottom:1px solid var(--border)}
+.sq-who-hd-title{font-family:var(--display);font-size:18px;font-weight:700;color:var(--text)}
+.sq-who-hd-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.sq-who-body{padding:18px 22px;overflow-y:auto;flex:1}
+.sq-who-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sq-who-item{padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:12.5px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s}
+.sq-who-item:hover{border-color:var(--blue);background:rgba(79,142,247,.06);transform:translateY(-1px)}
+.sq-who-item .sq-who-avatar{width:28px;height:28px;border-radius:50%;background:var(--bg2);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 /* ── Botão fullscreen flutuante ────────────────────────────── */
 #fs-btn{position:fixed;bottom:22px;right:22px;z-index:9999;width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.35)}
 #fs-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.1);transform:scale(1.08)}
@@ -1698,7 +1765,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h==="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee"){sessionStorage.setItem("k","1");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="fe24ab087a86793cde55b1f48ddffbc1ecc5b23c2831d6d75c70ba0bd8e358c7";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","ssg-protheus");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -3046,6 +3113,49 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
 </div><!-- /view-ia -->
 
+<!-- ════════════════ VIEW · SQUAD (modo operacional) ════════════════ -->
+<div id="view-sq" class="view">
+  <div class="sq-topbar">
+    <div class="sq-brand">
+      <div class="sq-brand-logo">GW</div>
+      <div class="sq-info">
+        <div class="sq-info-name" id="sq-squad-name">Squad</div>
+        <div class="sq-info-sub" id="sq-squad-sub">—</div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="sq-meta" id="sq-meta">—</div>
+    <div class="sq-user" onclick="openWhoAreYouModal(true)" title="Trocar atendente">
+      <div class="sq-user-avatar" id="sq-user-avatar">?</div>
+      <span id="sq-user-name">—</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </div>
+  <div class="sq-shell">
+    <div id="sq-block-1" class="sq-block danger"></div>
+    <div id="sq-block-2" class="sq-block"></div>
+    <div id="sq-block-3" class="sq-block warn"></div>
+    <div id="sq-block-4" class="sq-block muted"></div>
+    <div id="sq-block-5" class="sq-block"></div>
+    <div id="sq-block-6" class="sq-block warn"></div>
+  </div>
+</div><!-- /view-sq -->
+
+<!-- Modal "Quem é você?" -->
+<div id="sq-who-overlay" class="sq-who-overlay" onclick="closeWhoAreYouOnBackdrop(event)">
+  <div class="sq-who-modal">
+    <div class="sq-who-hd">
+      <div class="sq-who-hd-title">Quem é você?</div>
+      <div class="sq-who-hd-sub">Selecione seu nome — fica salvo neste navegador. Você pode trocar depois clicando no avatar no topo.</div>
+    </div>
+    <div class="sq-who-body">
+      <div class="sq-who-grid" id="sq-who-grid">
+        <div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px">Carregando atendentes…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ════════════════ DRAWER · SINAIS AO VIVO (GLOBAL) ════════════════ -->
 <div id="ial-drawer-overlay" onclick="closeIALive()"></div>
 <div id="ial-drawer" role="dialog" aria-label="Sinais ao Vivo">
@@ -3384,6 +3494,27 @@ function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr
     if(THEMES.indexOf(mode)!==-1)applyMode(mode);
   };
 })();
+
+// ════════════════════════════════════════════════════════════
+// SQUADS — config + helpers de modo
+// ════════════════════════════════════════════════════════════
+var SQUADS = {
+  'ssg-protheus': {
+    nome: 'SSG · Protheus',
+    filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
+    // atendentes que devem ser excluídos do seletor (bots, contas genéricas)
+    exclude_atendentes: ['Admin OTRS']
+  }
+  // futuras squads: 'dba', 'gwms', 'datasul', 'infra'
+};
+function getAppMode(){
+  // gestao | squad
+  if(sessionStorage.getItem('k')!=='1') return null;
+  return sessionStorage.getItem('mode') || 'gestao'; // legado: sessão sem mode = gestão
+}
+function getSquadId(){ return sessionStorage.getItem('squadId') || null; }
+function getSquadCfg(){ var id=getSquadId(); return id?SQUADS[id]||null:null; }
+function isSquadMode(){ return getAppMode()==='squad' && !!getSquadCfg(); }
 
 // ════════════════════════════════════════════════════════════
 // CLOCK
@@ -15507,5 +15638,526 @@ function changeGWUser() {
 // Inicializa identificação do usuário
 initGWUser();
 </script>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODO SQUAD — view operacional para a squad SSG / Protheus
+     (e futuras squads via SQUADS config no topo do script)
+     ════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+'use strict';
+
+// ── Helpers genéricos ─────────────────────────────────────────
+function _initials(nome){
+  if(!nome) return '?';
+  var p = nome.trim().split(/\s+/);
+  return ((p[0]||'')[0]||'?').toUpperCase() + ((p[1]||'')[0]||'').toUpperCase();
+}
+function _parseDate(s){
+  if(!s) return null;
+  // Aceita "YYYY-MM-DD HH:MM:SS", "YYYY-MM-DDTHH:MM:SS", "DD/MM/YYYY HH:MM"
+  try {
+    if(s instanceof Date) return isNaN(s.getTime())?null:s;
+    var str = String(s);
+    if(/^\d{4}-\d{2}-\d{2}/.test(str)){
+      var d = new Date(str.replace(' ','T'));
+      return isNaN(d.getTime())?null:d;
+    }
+    if(/^\d{2}\/\d{2}\/\d{4}/.test(str)){
+      var parts = str.split(/[\/ :]/);
+      var d2 = new Date(+parts[2], +parts[1]-1, +parts[0], +(parts[3]||0), +(parts[4]||0));
+      return isNaN(d2.getTime())?null:d2;
+    }
+    var d3 = new Date(str);
+    return isNaN(d3.getTime())?null:d3;
+  } catch(e){ return null; }
+}
+function _daysSince(d, now){
+  if(!d) return null;
+  return Math.floor(((now||new Date()) - d) / 86400000);
+}
+function _hoursSince(d, now){
+  if(!d) return null;
+  return Math.floor(((now||new Date()) - d) / 3600000);
+}
+function _fmtAgeShort(days){
+  if(days==null) return '—';
+  if(days===0) return 'hoje';
+  if(days===1) return '1 dia';
+  return days+' dias';
+}
+function _agingClass(days){
+  if(days==null||days===0) return 'ok';
+  if(days<=2) return 'ok';
+  if(days<=7) return 'warn';
+  return 'danger';
+}
+function _norm(s){ return (s||'').toString().trim().toLowerCase(); }
+
+// ── Frase personificada do ticket ─────────────────────────────
+// Recebe ticket + agora. Retorna {texto, lvl} ou null.
+// lvl: 1 (amarelo, > 1d), 2 (laranja, > 3d), 3 (vermelho, > 7d)
+window._SQ_FRASES = {
+  retorno_cliente: [
+    'Ei, o cliente já me devolveu — você esqueceu de mim?',
+    'Cliente fez a parte dele, agora é com você.',
+    'Tô esperando sua resposta há {X} dias…',
+    'O cliente respondeu há {X} dias e eu tô parado aqui.'
+  ],
+  sem_interacao: [
+    'Ei, sumiu? {X} dias sem ninguém mexer em mim.',
+    'Tô parado aqui há {X} dias, não vai abrir?',
+    'Lembra que eu existo? Faz {X} dias…',
+    '{X} dias quietinho. Nada de novidade?'
+  ],
+  cliente_silencioso: [
+    'Acho que o cliente sumiu — bora cobrar?',
+    '{X} dias sem resposta do cliente. Puxar?',
+    'Cliente em silêncio há {X} dias. Follow-up?'
+  ],
+  interno_atrasado: [
+    '{X} dias esperando o time interno — bora subir?',
+    'Time interno tá segurando há {X} dias.',
+    'Travado no interno há {X} dias.'
+  ]
+};
+function _pickFrase(arr, ticketNum, x){
+  // Seleção estável baseada no número do ticket (não muda a cada render)
+  var seed = 0;
+  var s = String(ticketNum||'');
+  for(var i=0;i<s.length;i++) seed = (seed*31 + s.charCodeAt(i))|0;
+  var idx = Math.abs(seed) % arr.length;
+  return arr[idx].replace('{X}', x);
+}
+window.frasePersonificada = function(ticket, now){
+  if(!ticket) return null;
+  now = now || new Date();
+  var estado = (ticket.estado||'').toUpperCase();
+  var mod = _parseDate(ticket.modificado);
+  var dSinceMod = _daysSince(mod, now);
+  var num = ticket.ticket || ticket.num;
+
+  if(estado === 'RETORNO CLIENTE' && dSinceMod != null && dSinceMod >= 1){
+    var lvl = dSinceMod > 7 ? 3 : dSinceMod > 3 ? 2 : 1;
+    return { texto: _pickFrase(_SQ_FRASES.retorno_cliente, num, dSinceMod), lvl: lvl };
+  }
+  if((estado === 'EM ATENDIMENTO' || estado === 'OPEN' || estado === 'NEW') && dSinceMod != null && dSinceMod >= 3){
+    var lvl2 = dSinceMod > 14 ? 3 : dSinceMod > 7 ? 2 : 1;
+    return { texto: _pickFrase(_SQ_FRASES.sem_interacao, num, dSinceMod), lvl: lvl2 };
+  }
+  if(estado === 'AGUARDANDO CLIENTE' && dSinceMod != null && dSinceMod >= 7){
+    var lvl3 = dSinceMod > 21 ? 3 : dSinceMod > 14 ? 2 : 1;
+    return { texto: _pickFrase(_SQ_FRASES.cliente_silencioso, num, dSinceMod), lvl: lvl3 };
+  }
+  if(estado === 'AGUARDANDO ATENDENTE (INTERNO)' && dSinceMod != null && dSinceMod >= 3){
+    var lvl4 = dSinceMod > 14 ? 3 : dSinceMod > 7 ? 2 : 1;
+    return { texto: _pickFrase(_SQ_FRASES.interno_atrasado, num, dSinceMod), lvl: lvl4 };
+  }
+  return null;
+};
+
+// ── Dados / filtros ───────────────────────────────────────────
+function _getSquadTickets(){
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  if(!cfg) return [];
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows) return [];
+  var filas = cfg.filas.map(function(f){ return f.toUpperCase(); });
+  return data.rows.filter(function(r){
+    return filas.indexOf((r.fila||'').toUpperCase()) !== -1;
+  });
+}
+function _getSquadAtendentes(){
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  if(!cfg) return [];
+  var excl = (cfg.exclude_atendentes||[]).map(_norm);
+  var tickets = _getSquadTickets();
+  var set = {};
+  tickets.forEach(function(r){
+    var a = (r.atendente||'').trim();
+    if(a && excl.indexOf(_norm(a)) === -1) set[a] = true;
+  });
+  return Object.keys(set).sort();
+}
+
+// ── Identificação do atendente ────────────────────────────────
+var LS_KEY = 'sq.atendente';
+function getCurrentAtendente(){
+  try { return localStorage.getItem(LS_KEY) || null; } catch(e){ return null; }
+}
+function setCurrentAtendente(nome){
+  try { localStorage.setItem(LS_KEY, nome); } catch(e){}
+}
+
+// ── Modal "Quem é você?" ──────────────────────────────────────
+window.openWhoAreYouModal = function(canCancel){
+  var ats = _getSquadAtendentes();
+  var grid = document.getElementById('sq-who-grid');
+  if(!grid) return;
+  if(!ats.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados do GWMS…</div>';
+  } else {
+    grid.innerHTML = ats.map(function(nome){
+      var ini = _initials(nome);
+      return '<div class="sq-who-item" onclick="pickAtendente(' + JSON.stringify(nome).replace(/"/g,'&quot;') + ')">'
+        + '<div class="sq-who-avatar">' + ini + '</div>'
+        + '<span>' + nome + '</span>'
+        + '</div>';
+    }).join('');
+  }
+  document.getElementById('sq-who-overlay').classList.add('on');
+  document.getElementById('sq-who-overlay').setAttribute('data-cancelable', canCancel?'1':'0');
+};
+window.closeWhoAreYouOnBackdrop = function(e){
+  var ov = document.getElementById('sq-who-overlay');
+  if(e && e.target !== ov) return;
+  if(ov.getAttribute('data-cancelable')==='1') ov.classList.remove('on');
+};
+window.pickAtendente = function(nome){
+  setCurrentAtendente(nome);
+  document.getElementById('sq-who-overlay').classList.remove('on');
+  renderSquadView();
+};
+
+// ── Renderers ─────────────────────────────────────────────────
+function _ticketRow(t, opts){
+  opts = opts || {};
+  var num = t.ticket || t.num;
+  var assunto = (t.assunto||'—').replace(/</g,'&lt;');
+  var cli = (t.cliente||'—').replace(/</g,'&lt;');
+  var criado = _parseDate(t.criado);
+  var ageDays = criado ? _daysSince(criado) : (t.idade_dias!=null?t.idade_dias:null);
+  var agClass = _agingClass(ageDays);
+  var fala = window.frasePersonificada(t, new Date());
+  var falaHtml = fala ? '<div class="sq-fala lvl'+fala.lvl+'">' + fala.texto.replace(/</g,'&lt;') + '</div>' : '';
+  var estPill = '<span class="sq-pill-est">' + (t.estado||'—').replace(/</g,'&lt;') + '</span>';
+  var prior = (t.prioridade||'').replace(/</g,'&lt;');
+  var modDate = _parseDate(t.modificado);
+  var modAge = modDate ? _daysSince(modDate) : null;
+  var modTxt = modAge==null?'—':modAge===0?'hoje':modAge===1?'1d':modAge+'d';
+
+  return '<tr>'
+    + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(num||'')+'\',event)" title="Abrir '+num+' no OTRS">' + (num||'—') + '<span class="sq-num-arrow">↗</span></span>'
+    + (falaHtml ? '<div>'+falaHtml+'</div>' : '')
+    + '</td>'
+    + '<td><div class="sq-assunto" title="' + assunto + '">' + assunto + '</div></td>'
+    + '<td style="font-size:11px;color:var(--muted)">' + cli + '</td>'
+    + (opts.hideEstado?'':'<td>' + estPill + '</td>')
+    + '<td style="font-size:11px;color:var(--muted)">' + prior + '</td>'
+    + '<td style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap">há ' + modTxt + '</td>'
+    + '<td style="text-align:right"><span class="sq-aging ' + agClass + '">' + _fmtAgeShort(ageDays) + '</span></td>'
+    + '</tr>';
+}
+function _tableHead(hideEstado){
+  return '<table class="sq-tbl"><thead><tr>'
+    + '<th>Número</th>'
+    + '<th>Assunto</th>'
+    + '<th>Cliente</th>'
+    + (hideEstado?'':'<th>Estado</th>')
+    + '<th>Prior.</th>'
+    + '<th style="text-align:right">Última<br>atuação</th>'
+    + '<th style="text-align:right">Aging</th>'
+    + '</tr></thead><tbody>';
+}
+
+function _renderBlock(elId, opts){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  var icon = opts.icon || '⚑';
+  var iconBg = opts.iconBg || 'rgba(255,255,255,.06)';
+  var iconCol = opts.iconCol || 'var(--text)';
+  var head = '<div class="sq-block-hd">'
+    + '<div class="sq-block-icon" style="background:'+iconBg+';color:'+iconCol+'">'+icon+'</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">'+opts.title+'</div>'
+      + '<div class="sq-block-sub">'+(opts.subtitle||'')+'</div>'
+    + '</div>'
+    + '<div class="sq-block-count">'+(opts.count!=null?opts.count:'')+'</div>'
+    + '</div>';
+  var body;
+  if(!opts.tickets || !opts.tickets.length){
+    body = '<div class="sq-empty">' + (opts.emptyText||'Nada por aqui agora.') + '</div>';
+  } else {
+    body = _tableHead(opts.hideEstado) + opts.tickets.map(function(t){return _ticketRow(t,opts);}).join('') + '</tbody></table>';
+  }
+  el.innerHTML = head + body;
+}
+
+function renderBlock1AtaqueAgora(meus){
+  var t = meus.filter(function(r){ return (r.estado||'').toUpperCase()==='RETORNO CLIENTE'; });
+  t.sort(function(a,b){
+    var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
+    return (da?da.getTime():0) - (db?db.getTime():0); // mais antigo primeiro
+  });
+  _renderBlock('sq-block-1', {
+    icon:'⚠', iconBg:'rgba(244,63,94,.15)', iconCol:'#f43f5e',
+    title:'Ataque agora — cliente já respondeu',
+    subtitle:'Tickets em RETORNO CLIENTE. A bola está com você.',
+    count: t.length+' ticket'+(t.length!==1?'s':''),
+    tickets: t,
+    hideEstado: true,
+    emptyText:'Nenhum cliente esperando sua resposta agora. 👍'
+  });
+}
+function renderBlock2Ativas(meus){
+  var ATIVOS = ['EM ATENDIMENTO','OPEN','NEW'];
+  var t = meus.filter(function(r){ return ATIVOS.indexOf((r.estado||'').toUpperCase())!==-1; });
+  t.sort(function(a,b){
+    var ca = _parseDate(a.criado), cb = _parseDate(b.criado);
+    return (ca?ca.getTime():0) - (cb?cb.getTime():0);
+  });
+  _renderBlock('sq-block-2', {
+    icon:'⚙', iconBg:'rgba(45,212,191,.15)', iconCol:'var(--teal)',
+    title:'Minhas ativas',
+    subtitle:'Em atendimento, abertos ou novos — o que você está trabalhando ou ainda não começou.',
+    count: t.length+' ticket'+(t.length!==1?'s':''),
+    tickets: t,
+    emptyText:'Sem tickets ativos no momento.'
+  });
+}
+function renderBlock3Esperando(meus){
+  var ESP = ['AGUARDANDO CLIENTE','AGUARDANDO ATENDENTE (INTERNO)'];
+  var t = meus.filter(function(r){ return ESP.indexOf((r.estado||'').toUpperCase())!==-1; });
+  t.sort(function(a,b){
+    var da = _parseDate(a.modificado), db = _parseDate(b.modificado);
+    return (da?da.getTime():0) - (db?db.getTime():0);
+  });
+  _renderBlock('sq-block-3', {
+    icon:'⏳', iconBg:'rgba(245,158,11,.15)', iconCol:'var(--warn)',
+    title:'Esperando terceiros',
+    subtitle:'Bola com cliente ou time interno. Cobrar quando ficar muito tempo parado.',
+    count: t.length+' ticket'+(t.length!==1?'s':''),
+    tickets: t,
+    emptyText:'Nada parado com terceiros.'
+  });
+}
+function renderBlock4Backlog(meus){
+  var BL = ['GMUD','MELHORIA'];
+  var t = meus.filter(function(r){ return BL.indexOf((r.estado||'').toUpperCase())!==-1; });
+  _renderBlock('sq-block-4', {
+    icon:'🗓', iconBg:'rgba(139,92,246,.15)', iconCol:'#a78bfa',
+    title:'Agendadas / backlog',
+    subtitle:'GMUD aguardando janela e MELHORIA no backlog — sem urgência operacional.',
+    count: t.length+' ticket'+(t.length!==1?'s':''),
+    tickets: t,
+    emptyText:'Nada agendado ou no backlog.'
+  });
+}
+function renderBlock5Squad(allSquadTickets){
+  var el = document.getElementById('sq-block-5');
+  if(!el) return;
+  var byAtend = {};
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  var excl = cfg ? (cfg.exclude_atendentes||[]).map(_norm) : [];
+  allSquadTickets.forEach(function(r){
+    var a = (r.atendente||'').trim();
+    if(!a) return;
+    if(excl.indexOf(_norm(a))!==-1) return;
+    if(!byAtend[a]) byAtend[a] = { nome:a, total:0, comigo:0, oldest:null };
+    byAtend[a].total++;
+    var st = (r.estado||'').toUpperCase();
+    if(['EM ATENDIMENTO','OPEN','NEW','RETORNO CLIENTE'].indexOf(st)!==-1) byAtend[a].comigo++;
+    var c = _parseDate(r.criado);
+    if(c && (!byAtend[a].oldest || c < byAtend[a].oldest)) byAtend[a].oldest = c;
+  });
+  var rows = Object.keys(byAtend).map(function(k){return byAtend[k];})
+    .sort(function(a,b){ return b.total - a.total; });
+  var head = '<div class="sq-block-hd">'
+    + '<div class="sq-block-icon" style="background:rgba(79,142,247,.15);color:var(--blue)">👥</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">Squad — transparência total</div>'
+      + '<div class="sq-block-sub">Clique no nome pra ver os chamados abertos daquele colega (todos clicam pro OTRS).</div>'
+    + '</div>'
+    + '<div class="sq-block-count">'+rows.length+' atendente'+(rows.length!==1?'s':'')+'</div>'
+    + '</div>';
+  var body;
+  if(!rows.length){
+    body = '<div class="sq-empty">Aguardando dados do GWMS…</div>';
+  } else {
+    body = '<table class="sq-tbl"><thead><tr>'
+      + '<th>Atendente</th>'
+      + '<th style="text-align:right">Total</th>'
+      + '<th style="text-align:right">Bola comigo</th>'
+      + '<th style="text-align:right">Mais antigo</th>'
+      + '</tr></thead><tbody>'
+      + rows.map(function(r){
+        var oldAge = r.oldest ? _daysSince(r.oldest) : null;
+        var agCl = _agingClass(oldAge);
+        return '<tr style="cursor:pointer" onclick="openAtendPendModalSafe(' + JSON.stringify(r.nome).replace(/"/g,'&quot;') + ')">'
+          + '<td style="font-size:12.5px;color:var(--text)"><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--blue);font-size:10px;font-weight:700;text-align:center;line-height:22px;margin-right:8px">'+_initials(r.nome)+'</span>'+r.nome+'</td>'
+          + '<td style="text-align:right;font-family:var(--mono);font-size:12px;font-weight:700">'+r.total+'</td>'
+          + '<td style="text-align:right;font-family:var(--mono);font-size:12px;color:var(--blue)">'+r.comigo+'</td>'
+          + '<td style="text-align:right"><span class="sq-aging '+agCl+'">'+_fmtAgeShort(oldAge)+'</span></td>'
+          + '</tr>';
+      }).join('') + '</tbody></table>';
+  }
+  el.innerHTML = head + body;
+}
+window.openAtendPendModalSafe = function(nome){
+  if(typeof openAtendPendModal === 'function'){
+    try { openAtendPendModal(nome); } catch(e){ console.warn('openAtendPendModal:', e); }
+  }
+};
+
+function renderBlock6Alertas(){
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  if(!cfg) return;
+  var filas = cfg.filas.map(function(f){ return f.toUpperCase(); });
+  var inFilas = function(r){ return filas.indexOf((r.fila||'').toUpperCase())!==-1; };
+
+  var sil = (typeof SILENC_DATA !== 'undefined' && SILENC_DATA && SILENC_DATA.rows) ? SILENC_DATA.rows.filter(inFilas) : [];
+  var tri = (typeof TRI_DATA   !== 'undefined' && TRI_DATA   && TRI_DATA.rows)   ? TRI_DATA.rows.filter(inFilas)   : [];
+  var reb = (typeof REAB_DATA  !== 'undefined' && REAB_DATA  && REAB_DATA.rows)  ? REAB_DATA.rows.filter(inFilas)  : [];
+
+  // Top 5 de cada
+  sil.sort(function(a,b){return (b.silent_sec||0)-(a.silent_sec||0);});
+  tri.sort(function(a,b){return (b.triagem_min||0)-(a.triagem_min||0);});
+
+  var head = '<div class="sq-block-hd">'
+    + '<div class="sq-block-icon" style="background:rgba(245,158,11,.15);color:var(--warn)">🔔</div>'
+    + '<div style="flex:1;min-width:0">'
+      + '<div class="sq-block-title">Alertas da squad</div>'
+      + '<div class="sq-block-sub">Tickets que merecem atenção — silenciosos, em triagem demorada ou reabertos.</div>'
+    + '</div>'
+    + '<div class="sq-block-count">'+ (sil.length+tri.length+reb.length) +' total</div>'
+    + '</div>';
+
+  function _miniTable(rows, cols, mapper, empty){
+    if(!rows.length) return '<div class="sq-empty" style="margin-bottom:12px">'+empty+'</div>';
+    return '<table class="sq-tbl" style="margin-bottom:12px"><thead><tr>'
+      + cols.map(function(c){return '<th'+(c.align?' style="text-align:'+c.align+'"':'')+'>'+c.label+'</th>';}).join('')
+      + '</tr></thead><tbody>'
+      + rows.slice(0,8).map(mapper).join('')
+      + '</tbody></table>';
+  }
+
+  var html = head;
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Silenciosos · top 8</div>';
+  html += _miniTable(sil,
+    [{label:'Número'},{label:'Cliente'},{label:'Estado'},{label:'Silêncio',align:'right'}],
+    function(r){
+      var dSec = r.silent_sec||0;
+      var d = Math.floor(dSec/86400), h = Math.floor((dSec%86400)/3600);
+      var lbl = d>=1?(d+'d'+(h>0?' '+h+'h':'')):(h+'h');
+      var col = d>30?'var(--danger)':d>7?'var(--warn)':'var(--blue)';
+      return '<tr>'
+        + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
+        + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
+        + '<td><span class="sq-pill-est">'+(r.estado||'—')+'</span></td>'
+        + '<td style="text-align:right;color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px">'+lbl+'</td>'
+        + '</tr>';
+    },
+    'Nenhum silencioso na squad agora.'
+  );
+
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Triagem demorada · top 8</div>';
+  html += _miniTable(tri,
+    [{label:'Número'},{label:'Cliente'},{label:'Tempo em triagem',align:'right'}],
+    function(r){
+      var m = r.triagem_min||0;
+      var d = Math.floor(m/1440), h = Math.floor((m%1440)/60);
+      var lbl = d>=1?(d+'d'+(h>0?' '+h+'h':'')):(h>=1?(h+'h'):(m+'min'));
+      var col = m>10080?'var(--danger)':m>1440?'var(--warn)':'var(--blue)';
+      return '<tr>'
+        + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
+        + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
+        + '<td style="text-align:right;color:'+col+';font-weight:700;font-family:var(--mono);font-size:11px">'+lbl+'</td>'
+        + '</tr>';
+    },
+    'Nenhum ticket em triagem demorada.'
+  );
+
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Reaberturas · top 8</div>';
+  html += _miniTable(reb,
+    [{label:'Número'},{label:'Cliente'},{label:'Reabriu em',align:'right'}],
+    function(r){
+      var dt = (r.reaberto_em||r.data||r.modificado||'').toString().replace('T',' ').slice(0,16);
+      return '<tr>'
+        + '<td><span class="sq-num" onclick="openTicketOTRS(\''+(r.ticket||'')+'\',event)">'+r.ticket+'<span class="sq-num-arrow">↗</span></span></td>'
+        + '<td style="font-size:11px">'+(r.cliente||'—')+'</td>'
+        + '<td style="text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted)">'+dt+'</td>'
+        + '</tr>';
+    },
+    'Sem reaberturas na squad recentemente.'
+  );
+
+  document.getElementById('sq-block-6').innerHTML = html;
+}
+
+window.renderSquadView = function(){
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  if(!cfg) return;
+  var atend = getCurrentAtendente();
+
+  // Header
+  document.getElementById('sq-squad-name').textContent = cfg.nome;
+  document.getElementById('sq-squad-sub').textContent = 'Filas: ' + cfg.filas.join(' · ');
+  var now = new Date();
+  document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+
+  if(atend){
+    document.getElementById('sq-user-avatar').textContent = _initials(atend);
+    document.getElementById('sq-user-name').textContent = atend;
+  } else {
+    document.getElementById('sq-user-avatar').textContent = '?';
+    document.getElementById('sq-user-name').textContent = 'selecionar';
+  }
+
+  // Se não tem atendente escolhido, força modal
+  if(!atend){
+    openWhoAreYouModal(false);
+    // Renderiza Squad (bloco 5) e Alertas mesmo sem atendente — agregados não dependem do "eu"
+    var allTickets = _getSquadTickets();
+    renderBlock5Squad(allTickets);
+    renderBlock6Alertas();
+    // Blocos pessoais ficam vazios até escolher
+    ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
+      document.getElementById(id).innerHTML = '<div class="sq-empty">Selecione seu nome no topo para ver seus chamados.</div>';
+    });
+    return;
+  }
+
+  var allTickets = _getSquadTickets();
+  var meus = allTickets.filter(function(r){ return _norm(r.atendente)===_norm(atend); });
+
+  renderBlock1AtaqueAgora(meus);
+  renderBlock2Ativas(meus);
+  renderBlock3Esperando(meus);
+  renderBlock4Backlog(meus);
+  renderBlock5Squad(allTickets);
+  renderBlock6Alertas();
+};
+
+// ── Boot do modo squad ────────────────────────────────────────
+function bootSquadMode(){
+  if(typeof isSquadMode !== 'function' || !isSquadMode()) return;
+  document.body.classList.add('squad-mode');
+  // Aguarda dados; se já carregaram, renderiza agora
+  var tryRender = function(retries){
+    if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA){
+      renderSquadView();
+    } else if(retries > 0){
+      setTimeout(function(){ tryRender(retries-1); }, 300);
+    } else {
+      // Sem dados ainda — renderiza com placeholders
+      renderSquadView();
+    }
+  };
+  tryRender(20); // ~6s
+  // Re-render quando dados refrescarem (a cada 10min o fetch atualiza)
+  setInterval(function(){
+    if(isSquadMode()) renderSquadView();
+  }, 60*1000); // refresh visual a cada 1min (dados refrescam a cada 10min)
+}
+
+// Inicializa após DOM pronto
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', bootSquadMode);
+} else {
+  bootSquadMode();
+}
+})();
+</script>
+
 </body>
 </html>
