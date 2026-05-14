@@ -1007,6 +1007,8 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-hero-ring-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:4px;font-weight:600}
 .sq-hero-kpis{display:flex;flex-direction:column;gap:8px;flex:1}
 .sq-hero-kpi{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;transition:all .15s}
+.sq-hero-kpi-clk{cursor:pointer}
+.sq-hero-kpi-clk:hover{border-color:var(--border2);transform:translateX(2px);box-shadow:0 4px 12px rgba(0,0,0,.18)}
 .sq-hero-kpi-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
 .sq-hero-kpi-lbl{flex:1;font-size:12px;color:var(--text);font-weight:600}
 .sq-hero-kpi-val{font-family:var(--mono);font-size:18px;font-weight:800}
@@ -16128,23 +16130,28 @@ function renderSLAHero(meus){
         + '<div class="sq-hero-ring-lbl">no SLA</div>'
       + '</div>'
     + '</div>'
-    // KPIs
+    // KPIs (clicáveis — filtram os blocos abaixo)
     + '<div class="sq-hero-kpis">'
-      + '<div class="sq-hero-kpi">'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="setSquadFilter(\'ok\')" title="Filtrar tickets no SLA">'
         + '<div class="sq-hero-kpi-icon" style="background:rgba(16,185,129,.18);color:var(--ok)">✓</div>'
         + '<div class="sq-hero-kpi-lbl">No SLA</div>'
         + '<div class="sq-hero-kpi-val" style="color:var(--ok)">'+stats.ok+'</div>'
       + '</div>'
-      + '<div class="sq-hero-kpi">'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="setSquadFilter(\'risco\')" title="Filtrar tickets em risco">'
         + '<div class="sq-hero-kpi-icon" style="background:rgba(245,158,11,.18);color:var(--warn)">⚠</div>'
         + '<div class="sq-hero-kpi-lbl">Em risco <span style="font-size:10px;color:var(--muted);font-weight:400">(vence em ≤ 4h)</span></div>'
         + '<div class="sq-hero-kpi-val" style="color:var(--warn)">'+stats.risco+'</div>'
       + '</div>'
-      + '<div class="sq-hero-kpi">'
+      + '<div class="sq-hero-kpi sq-hero-kpi-clk" onclick="setSquadFilter(\'vencido\')" title="Filtrar tickets vencidos">'
         + '<div class="sq-hero-kpi-icon" style="background:rgba(244,63,94,.18);color:var(--danger)">✗</div>'
         + '<div class="sq-hero-kpi-lbl">Vencidos</div>'
         + '<div class="sq-hero-kpi-val" style="color:var(--danger)">'+stats.vencido+'</div>'
       + '</div>'
+      + (stats.unknown ? '<div class="sq-hero-kpi" style="opacity:.65" title="Tickets de prioridade Baixa/Muito Baixa em Sustentação não têm SLA cadastrado no OTRS — não entram no cálculo do ring.">'
+        + '<div class="sq-hero-kpi-icon" style="background:var(--bg3);color:var(--muted)">∅</div>'
+        + '<div class="sq-hero-kpi-lbl">Sem SLA <span style="font-size:10px;color:var(--muted);font-weight:400">(não elegíveis)</span></div>'
+        + '<div class="sq-hero-kpi-val" style="color:var(--muted)">'+stats.unknown+'</div>'
+      + '</div>' : '')
     + '</div>'
   + '</div>';
 
@@ -16571,6 +16578,78 @@ function _saudacao(){
   if(h < 18) return 'Boa tarde';
   return 'Boa noite';
 }
+// Pool de frases por período do dia. Seleção estável por dia
+// (dia + atendente como seed) — não muda a cada F5, varia entre dias.
+var _SQ_VIBE = {
+  // 00-06
+  madrugada: [
+    'Trabalhando essa hora? 🦉 Você merece dormir um pouco.',
+    'Madrugada produtiva, hein. Não esquece do café da manhã.',
+    'Coruja noturna ativa. Cuidado com o cansaço.',
+    'Essa hora? Pelo menos o servidor agradece a dedicação.'
+  ],
+  // 06-09 — começo
+  manha_inicio: [
+    'Bora começar dando uma olhada no radar.',
+    'Café fumegando, mente fresca — bom dia de produtividade.',
+    'Primeiro o café, depois a fila. Bom dia!',
+    'Acordou cedo, hein? Quem chega cedo, despacha mais.'
+  ],
+  // 09-12 — meio
+  manha_meio: [
+    'Já passou os olhos em tudo? Bora atacar os mais críticos.',
+    'Manhã rendendo. Foco nos vencidos primeiro.',
+    'Hora boa pra resolver as pendências. Mente clara, fila limpa.',
+    'Manhã produtiva é manhã que limpa o radar.'
+  ],
+  // 12-14 — almoço
+  almoco: [
+    'Voltando do almoço? 🍝 Modo pós-comida ativado.',
+    'Que preguiça pós-almoço, hein… mas o time conta com você.',
+    'Recém-comido. Hora de digerir e despachar uns 2-3 tickets.',
+    'Café forte agora pra espantar o sono. Bora!'
+  ],
+  // 14-18 — tarde
+  tarde: [
+    'Reta final do expediente. 🚀 Foco no que importa.',
+    'Bora fechar pendências antes do fim do dia.',
+    'Pra fechar o dia bem: 2-3 chamados a menos na pilha.',
+    'Tarde produtiva é tarde que entrega.'
+  ],
+  // 18-22 — fim do dia
+  noite: [
+    'Quase no fim — amanhã tem mais. 🌙',
+    'Hora extra, dedicação. Não esquece de descansar.',
+    'Estamos no encerramento. Despacha 1 e fecha o dia.',
+    'Trabalhando depois do horário? Olho no burnout, viu.'
+  ],
+  // 22-00
+  noite_tarde: [
+    'Tá tarde. Marca o dia como completo e descansa.',
+    'Última checagem do dia? Vê só os críticos e dorme.',
+    'Hora de fechar. Amanhã o time conta com você renovado.'
+  ]
+};
+function _periodoDoDia(){
+  var h = new Date().getHours();
+  if(h < 6)  return 'madrugada';
+  if(h < 9)  return 'manha_inicio';
+  if(h < 12) return 'manha_meio';
+  if(h < 14) return 'almoco';
+  if(h < 18) return 'tarde';
+  if(h < 22) return 'noite';
+  return 'noite_tarde';
+}
+function _vibeFrase(atend){
+  var periodo = _periodoDoDia();
+  var pool = _SQ_VIBE[periodo] || [];
+  if(!pool.length) return '';
+  // Seed = dia + atendente — frase estável por dia, varia entre dias
+  var hoje = new Date(); var dia = hoje.getFullYear()+'-'+hoje.getMonth()+'-'+hoje.getDate();
+  var seed = 0; var s = dia + '|' + (atend||'');
+  for(var i=0;i<s.length;i++) seed = (seed*31 + s.charCodeAt(i))|0;
+  return pool[Math.abs(seed) % pool.length];
+}
 function _fmtClock(){
   var d = new Date();
   return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
@@ -16601,11 +16680,11 @@ function renderSquadGreeting(meus){
   if(!atend){
     subMsg = 'Selecione seu nome no topo para ver seus chamados.';
   } else if(total === 0){
-    subMsg = 'Sua pilha está zerada agora.';
+    subMsg = '✨ Sua pilha está zerada agora. ' + _vibeFrase(atend);
   } else if(precisa === 0){
-    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — nada urgente no momento.';
+    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — nada urgente no momento. ' + _vibeFrase(atend);
   } else {
-    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <strong style="color:var(--danger)">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</strong>.';
+    subMsg = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <strong style="color:var(--danger)">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</strong>. ' + _vibeFrase(atend);
   }
   el.innerHTML =
     '<div class="sq-greeting-msg">'
