@@ -10823,11 +10823,31 @@ var TICKETS_ATIVOS_DATA=null;
 function fetchTicketsAtivos(){
   fetch('/tickets_ativos.json?v='+Date.now())
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){TICKETS_ATIVOS_DATA=d;try{applyLiveKPIs();}catch(e){console.warn('live kpis:',e);}})
+    .then(function(d){
+      if(!d) return;
+      TICKETS_ATIVOS_DATA=d;
+      try{applyLiveKPIs();}catch(e){console.warn('live kpis:',e);}
+      // Re-renderiza squad/triagem view assim que dado novo chega.
+      // Sem isso, mover ticket no OTRS → mudança só aparecia após F5.
+      try{
+        if(typeof isSquadMode==='function' && isSquadMode() && typeof renderSquadView==='function'){
+          renderSquadView();
+        }
+      }catch(e){console.warn('sq re-render:',e);}
+    })
     .catch(function(){});
 }
-// Busca no load e a cada 10min
+// Busca no load e em intervalo adaptativo:
+// - Squad/Triagem/Diretor: 60s (operacional, precisa ver mudança rápido)
+// - Gestão: 10min (sync GWMS é a cada 10min mesmo, sem ganho refetchar antes)
 fetchTicketsAtivos();
+setInterval(function(){
+  var isSq = (typeof isSquadMode==='function') && isSquadMode();
+  var isDir = (typeof isDiretorMode==='function') && isDiretorMode();
+  // Pula refetch curto se estiver em gestão (intervalo de 10min cobre)
+  if(!isSq && !isDir) return;
+  fetchTicketsAtivos();
+}, 60*1000);
 setInterval(fetchTicketsAtivos, 10*60*1000);
 
 // ─── LIVE KPIs — sobrescreve valores de "em aberto / bloqueados / muito alta" ──
