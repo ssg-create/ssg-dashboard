@@ -2422,7 +2422,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
         </div>
         <div class="tbl-scroll" style="max-height:380px;overflow-y:auto"><table class="tbl" id="at-util-tbl"></table></div>
       </div>
-      <div class="card"><div class="card-title">Ranking detalhado</div><div class="tbl-scroll"><table class="tbl" id="atend-tbl"></table></div></div>
+      <div class="card" id="atend-tbl-card"><div class="card-title">Ranking detalhado</div><div class="tbl-scroll"><table class="tbl" id="atend-tbl"></table></div></div>
     </div>
   </div>
 
@@ -4930,9 +4930,27 @@ function renderUtilizacao(data){
     var m=g('at-util-meta');if(m)m.textContent='sem dados';
     return;
   }
-  // Utilização é por atendente (não filtra por cliente — dataset não tem cliente)
-  // mas pode filtrar por fila se fosse necessário; por ora mostra agregado
+  // Carga atual (estado vivo, GWMS): respeita escopo fila+cliente.
+  // utilizacao.json não tem campo cliente/fila por linha — intersecta via
+  // TICKETS_ATIVOS_DATA (que tem fila + cli_id por ticket vivo) para descobrir
+  // quem tem carga no escopo ativo. Mês NÃO se aplica (é estado agora).
   var rows=data.rows;
+  var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+  var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
+  var _scoped=false;
+  if((_hasFila||_hasCli) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    var _atSet={};
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+      if(!r.atendente) return;
+      if(_hasFila && r.fila!==activeFilaOP) return;
+      if(_hasCli && r.cli_id!==activeCliente) return;
+      var stU=(r.estado||'').toUpperCase();
+      if(typeof _LIVE_DORMANT_STATES!=='undefined' && _LIVE_DORMANT_STATES.indexOf(stU)!==-1) return;
+      _atSet[r.atendente]=true;
+    });
+    rows=rows.filter(function(r){return _atSet[r.atendente];});
+    _scoped=true;
+  }
   var over=rows.filter(function(r){return r.ativos_total>=8;}).length;
   var tot=rows.reduce(function(s,r){return s+(r.ativos_total||0);},0);
   var setv=function(id,v){var e=g(id);if(e)e.textContent=v;};
@@ -4940,7 +4958,14 @@ function renderUtilizacao(data){
   setv('at-util-kpi-over',over);
   setv('at-util-kpi-tot',tot);
   var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
-  setv('at-util-meta',rows.length+' atendentes · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
+  var _scopeTxt='';
+  if(_scoped){
+    var _bits=[];
+    if(_hasFila) _bits.push(activeFilaOP);
+    if(_hasCli) _bits.push(activeCliente);
+    _scopeTxt=' (escopo: '+_bits.join(' · ')+')';
+  }
+  setv('at-util-meta',rows.length+' atendentes'+_scopeTxt+' · atualizado há '+(tsMin<1?'agora':tsMin+' min'));
   var trs=rows.map(function(r){
     var ativos=r.ativos_total||0;
     var cargaReal=(r.em_atendimento||0)+(r.abertos||0);
@@ -5553,6 +5578,13 @@ function renderTeamCapacity() {
 function renderAt(){
   if(!UTIL_DATA||(Date.now()/1000-UTIL_DATA.generated_at)>300) fetchUtilizacao();
   else renderUtilizacao(UTIL_DATA);
+  // Ranking detalhado é por fila inteira — quando uma fila específica está ativa,
+  // a Carga Atual da Equipe + Carga atual (GWMS) já cobrem o recorte. Esconde o card
+  // pra evitar ruído visual, mas ainda roda renderTeamCapacity (Carga Atual da Equipe).
+  var _filaActive=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+  var _rankCard=document.getElementById('atend-tbl-card');
+  if(_rankCard) _rankCard.style.display=_filaActive?'none':'';
+  if(_filaActive){ try{renderTeamCapacity();}catch(e){console.warn('cap:',e);} return; }
   var atendFiltrado=(getActiveOP().atend||OP.atend);
   var top=atendFiltrado.slice(0,10);
   var N=top.map(function(a){return a.n.split(' ')[0];});
