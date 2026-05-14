@@ -1893,7 +1893,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("atendLogin",login);}else{sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){_enterGestao();}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_DIRETOR="1ba1e4fe727a4f5b23aec4bb275ba3cb5bb8c14c3e414da6ce3d39b77f3f17ac";var _DIRETOR_LOGINS=["fabio.tavares"];if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("atendLogin",login);}else{sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterDiretor(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","diretor");sessionStorage.removeItem("squadId");sessionStorage.removeItem("sq.atendente");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var login=(_u&&_u.value||"").trim().toLowerCase();if(h===_H_GEST){_enterGestao();}else if(h===_H_DIRETOR&&_DIRETOR_LOGINS.indexOf(login)!==-1){_enterDiretor(login);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -3253,6 +3253,11 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
     <div style="flex:1"></div>
     <div class="sq-meta" id="sq-meta">—</div>
+    <button id="sq-diretor-switch" onclick="_diretorTrocarSquad()" title="Voltar para o seletor de squads" style="display:none;background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.3);border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;align-items:center;gap:6px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Trocar squad</span>
+    </button>
+    <div id="sq-diretor-badge" style="display:none;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">DIRETOR</div>
     <div class="sq-user" id="sq-user-pill" onclick="onUserPillClick()">
       <div class="sq-user-avatar" id="sq-user-avatar">?</div>
       <span id="sq-user-name">—</span>
@@ -3282,6 +3287,22 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="sq-who-body">
       <div class="sq-who-grid" id="sq-who-grid">
         <div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px">Carregando atendentes…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal "Escolha squad" (modo Diretor) — reusa classes .sq-who-* -->
+<div id="sq-diretor-overlay" class="sq-who-overlay">
+  <div class="sq-who-modal">
+    <div class="sq-who-hd">
+      <div class="sq-who-hd-title">Modo Diretor — qual squad você quer visualizar?</div>
+      <div class="sq-who-hd-sub">Você verá a tela como o atendente vê. Pode trocar de squad a qualquer momento pelo botão no topo.</div>
+    </div>
+    <div class="sq-who-body">
+      <div class="sq-who-grid" id="sq-diretor-grid"></div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+        <button onclick="_logoutSquad()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer">Sair</button>
       </div>
     </div>
   </div>
@@ -3686,13 +3707,22 @@ var SQUADS = {
   }
 };
 function getAppMode(){
-  // gestao | squad
+  // gestao | squad | diretor
   if(sessionStorage.getItem('k')!=='1') return null;
   return sessionStorage.getItem('mode') || 'gestao'; // legado: sessão sem mode = gestão
 }
 function getSquadId(){ return sessionStorage.getItem('squadId') || null; }
 function getSquadCfg(){ var id=getSquadId(); return id?SQUADS[id]||null:null; }
-function isSquadMode(){ return getAppMode()==='squad' && !!getSquadCfg(); }
+// Squad mode OU diretor com squad já escolhida — ambos renderizam a squad view.
+function isSquadMode(){
+  var m=getAppMode();
+  if(m!=='squad' && m!=='diretor') return false;
+  return !!getSquadCfg();
+}
+// Diretor: master que pode ver qualquer squad como se fosse atendente dela.
+// Bypassa allowed_logins (ele não é da squad) — usa _DIRETOR_LOGINS no gate.
+function isDiretorMode(){ return getAppMode()==='diretor'; }
+function getDiretorLogin(){ return isDiretorMode() ? (sessionStorage.getItem('atendLogin')||'') : ''; }
 
 // ════════════════════════════════════════════════════════════
 // CLOCK
@@ -16279,7 +16309,10 @@ function _getSquadAtendentes(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   if(!cfg) return [];
   var excl = (cfg.exclude_atendentes||[]).map(_norm);
-  var allow = cfg.allowed_logins||null;
+  // Diretor bypassa allowlist — vê qualquer atendente da squad (incluindo
+  // cross-squad e ex-funcionários com histórico) pra poder auditar.
+  var bypass = (typeof isDiretorMode === 'function') && isDiretorMode();
+  var allow = bypass ? null : (cfg.allowed_logins||null);
   var tickets = _getSquadTickets();
   var set = {};
   tickets.forEach(function(r){
@@ -16368,9 +16401,16 @@ window._logoutSquad = function(){
   location.reload();
 };
 // Decide a ação do click no pill do usuário.
+// - Diretor → abre modal de troca de atendente (visualização)
 // - Veio via login (atendLogin salvo) → Sair (logout)
 // - Sessão legada sem login → modal "Quem é você?" pra trocar
 window.onUserPillClick = function(){
+  if(typeof isDiretorMode === 'function' && isDiretorMode()){
+    // Modo diretor: limpa atendente atual e reabre picker
+    try { localStorage.removeItem('sq.atendente'); } catch(e){}
+    openWhoAreYouModal(true);
+    return;
+  }
   if(sessionStorage.getItem('atendLogin')){
     _logoutSquad();
   } else {
@@ -16392,8 +16432,17 @@ window.openWhoAreYouModal = function(canCancel, ctx){
   var squadNome = cfg ? cfg.nome : 'sua squad';
 
   // Header dinâmico
+  var _isDir = (typeof isDiretorMode === 'function') && isDiretorMode();
   if(hd){
-    if(ctx === 'login-not-found' && login){
+    if(_isDir){
+      // Modo Diretor: copy específico — está VISUALIZANDO, não escolhendo si mesmo
+      hd.innerHTML = '<div class="sq-who-hd-title">Modo Diretor — qual atendente você quer visualizar?</div>'
+        + '<div class="sq-who-hd-sub">Selecione um atendente em <strong>'+String(squadNome).replace(/</g,'&lt;')+'</strong> pra ver a tela como ele vê. Inclui ex-funcionários e cross-squad pra auditoria.</div>'
+        + '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">'
+          + '<button onclick="_diretorTrocarSquad()" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">‹ Trocar squad</button>'
+          + '<button onclick="_logoutSquad()" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:12px;cursor:pointer">Sair</button>'
+        + '</div>';
+    } else if(ctx === 'login-not-found' && login){
       hd.innerHTML = '<div class="sq-who-hd-title" style="color:var(--danger)">Login não encontrado</div>'
         + '<div class="sq-who-hd-sub">O login <strong>'+String(login).replace(/</g,'&lt;')+'</strong> não bate com nenhum atendente em <strong>'+String(squadNome).replace(/</g,'&lt;')+'</strong>. Verifique se digitou certo e clique em <strong>Sair</strong> para tentar com outro login.</div>'
         + '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">'
@@ -17263,40 +17312,52 @@ window.renderSquadView = function(){
   var now = new Date();
   document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
 
+  // Diretor: badge + botão "Trocar squad" visíveis. Pill funciona como switcher
+  // de atendente (não logout, pra deixar trocar de quem está visualizando rápido).
+  var _isDir = (typeof isDiretorMode === 'function') && isDiretorMode();
+  var dSwitch = document.getElementById('sq-diretor-switch');
+  var dBadge  = document.getElementById('sq-diretor-badge');
+  if(dSwitch) dSwitch.style.display = _isDir ? 'inline-flex' : 'none';
+  if(dBadge)  dBadge.style.display  = _isDir ? 'inline-block' : 'none';
+
   // Pill: ação muda conforme veio do login (Sair) ou sessão legada (Trocar)
   var hasLogin = !!sessionStorage.getItem('atendLogin');
   var pill = document.getElementById('sq-user-pill');
-  if(pill) pill.title = hasLogin ? 'Sair (limpa sessão e volta ao login)' : 'Trocar atendente';
+  // Em modo diretor o pill troca de atendente (não desloga) — atalho útil.
+  if(pill) pill.title = _isDir ? 'Trocar atendente (visualização)' : (hasLogin ? 'Sair (limpa sessão e volta ao login)' : 'Trocar atendente');
   var pillIcon = document.getElementById('sq-user-icon');
   if(pillIcon){
-    pillIcon.innerHTML = hasLogin
+    pillIcon.innerHTML = (hasLogin && !_isDir)
       // log-out icon (porta + seta saindo)
       ? '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
-      // chevron-down (legado)
+      // chevron-down (legado / diretor — sugere "trocar de atendente")
       : '<polyline points="6 9 12 15 18 9"/>';
   }
 
   if(atend){
     document.getElementById('sq-user-avatar').textContent = _initials(atend);
-    document.getElementById('sq-user-name').textContent = atend;
+    document.getElementById('sq-user-name').textContent = _isDir ? ('vendo: '+atend) : atend;
   } else {
     document.getElementById('sq-user-avatar').textContent = '?';
-    document.getElementById('sq-user-name').textContent = hasLogin ? 'login não encontrado' : 'selecionar';
+    document.getElementById('sq-user-name').textContent = _isDir ? 'escolher atendente' : (hasLogin ? 'login não encontrado' : 'selecionar');
   }
 
   // Se não tem atendente escolhido, força modal.
-  // - Com login + lista carregada e sem match → erro "login não encontrado"
+  // - Diretor → modal de seleção (ctx=null bypass "login não encontrado")
+  // - Atendente com login + lista carregada e sem match → erro "login não encontrado"
   // - Sem login (legado) ou dados ainda carregando → modal padrão "Quem é você?"
   if(!atend){
     var loaded = _getSquadAtendentes().length > 0;
-    var ctx = (hasLogin && loaded) ? 'login-not-found' : null;
+    var ctx = (!_isDir && hasLogin && loaded) ? 'login-not-found' : null;
     openWhoAreYouModal(false, ctx);
     renderSquadGreeting(null);
     renderBlock6Alertas();
     document.getElementById('sq-attention').innerHTML = '';
-    var emptyMsg = hasLogin
-      ? 'Login não encontrado — clique em Sair no topo para tentar outro.'
-      : 'Selecione seu nome no topo para ver sua pilha.';
+    var emptyMsg = _isDir
+      ? 'Selecione no topo qual atendente você quer visualizar.'
+      : (hasLogin
+        ? 'Login não encontrado — clique em Sair no topo para tentar outro.'
+        : 'Selecione seu nome no topo para ver sua pilha.');
     document.getElementById('sq-hero-pilha').innerHTML = '<div class="sq-empty" style="padding:40px 20px">'+emptyMsg+'</div>';
     document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty" style="padding:40px 20px">'+emptyMsg+'</div>';
     ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
@@ -17325,8 +17386,50 @@ window.renderSquadView = function(){
 };
 
 // ── Boot do modo squad ────────────────────────────────────────
+// ── Boot do modo Diretor (sem squad escolhida) ────────────────
+// Renderiza o picker de squads. Click → setSquadId + reload → cai em
+// bootSquadMode normal porque isSquadMode() passa a ser true.
+function bootDiretorPicker(){
+  if(!isDiretorMode() || getSquadId()) return false;
+  document.body.classList.add('squad-mode');
+  var ov = document.getElementById('sq-diretor-overlay');
+  var grid = document.getElementById('sq-diretor-grid');
+  if(!ov||!grid) return false;
+  var ids = Object.keys(SQUADS);
+  grid.innerHTML = ids.map(function(id){
+    var s = SQUADS[id];
+    var nAtend = (s.allowed_logins||[]).length;
+    return '<div class="sq-who-item" onclick="_pickDiretorSquad(\''+id+'\')" style="flex-direction:column;align-items:flex-start;padding:14px 16px;gap:4px">'
+      +'<div style="display:flex;align-items:center;gap:10px;width:100%">'
+        +'<div class="sq-who-avatar" style="color:var(--teal);background:rgba(0,212,168,.12)">'+(s.nome.charAt(0))+'</div>'
+        +'<span style="font-weight:600;font-size:13px">'+s.nome+'</span>'
+        +'<span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--muted)">'+nAtend+' atend.</span>'
+      +'</div>'
+      +'<div style="font-size:10px;color:var(--muted);padding-left:38px;line-height:1.4">'+s.filas.join(' · ')+'</div>'
+    +'</div>';
+  }).join('');
+  ov.classList.add('on');
+  return true;
+}
+window._pickDiretorSquad = function(id){
+  if(!SQUADS[id]) return;
+  sessionStorage.setItem('squadId', id);
+  try { localStorage.removeItem('sq.atendente'); } catch(e){}
+  location.reload();
+};
+window._diretorTrocarSquad = function(){
+  sessionStorage.removeItem('squadId');
+  try { localStorage.removeItem('sq.atendente'); } catch(e){}
+  location.reload();
+};
 function bootSquadMode(){
-  if(typeof isSquadMode !== 'function' || !isSquadMode()) return;
+  if(typeof isSquadMode !== 'function' || !isSquadMode()){
+    // Pode ser diretor sem squad escolhida ainda → abre picker
+    if(typeof isDiretorMode === 'function' && isDiretorMode() && !getSquadId()){
+      bootDiretorPicker();
+    }
+    return;
+  }
   document.body.classList.add('squad-mode');
   // Dispara fetches dos datasets de alertas (no dash gerencial são lazy via nav).
   // Re-renderiza quando cada um chega.
