@@ -3253,10 +3253,10 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
     <div style="flex:1"></div>
     <div class="sq-meta" id="sq-meta">—</div>
-    <div class="sq-user" onclick="openWhoAreYouModal(true)" title="Trocar atendente">
+    <div class="sq-user" id="sq-user-pill" onclick="onUserPillClick()">
       <div class="sq-user-avatar" id="sq-user-avatar">?</div>
       <span id="sq-user-name">—</span>
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      <svg id="sq-user-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
   </div>
   <div class="sq-shell">
@@ -3275,9 +3275,9 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 <!-- Modal "Quem é você?" -->
 <div id="sq-who-overlay" class="sq-who-overlay" onclick="closeWhoAreYouOnBackdrop(event)">
   <div class="sq-who-modal">
-    <div class="sq-who-hd">
+    <div class="sq-who-hd" id="sq-who-hd">
       <div class="sq-who-hd-title">Quem é você?</div>
-      <div class="sq-who-hd-sub">Selecione seu nome — fica salvo neste navegador. Você pode trocar depois clicando no avatar no topo.</div>
+      <div class="sq-who-hd-sub">Selecione seu nome — fica salvo neste navegador.</div>
     </div>
     <div class="sq-who-body">
       <div class="sq-who-grid" id="sq-who-grid">
@@ -16280,11 +16280,57 @@ function _tryAutoIdentify(){
   return false;
 }
 
+// ── Logout / pill click ───────────────────────────────────────
+// Limpa sessão e volta pra tela de login. Usado pelo pill no topo
+// quando o usuário veio via login (atendLogin presente).
+window._logoutSquad = function(){
+  if(!confirm('Sair e voltar para a tela de login?')) return;
+  try { sessionStorage.removeItem('k'); } catch(e){}
+  try { sessionStorage.removeItem('mode'); } catch(e){}
+  try { sessionStorage.removeItem('squadId'); } catch(e){}
+  try { sessionStorage.removeItem('atendLogin'); } catch(e){}
+  try { localStorage.removeItem('sq.atendente'); } catch(e){}
+  location.reload();
+};
+// Decide a ação do click no pill do usuário.
+// - Veio via login (atendLogin salvo) → Sair (logout)
+// - Sessão legada sem login → modal "Quem é você?" pra trocar
+window.onUserPillClick = function(){
+  if(sessionStorage.getItem('atendLogin')){
+    _logoutSquad();
+  } else {
+    openWhoAreYouModal(true);
+  }
+};
+
 // ── Modal "Quem é você?" ──────────────────────────────────────
-window.openWhoAreYouModal = function(canCancel){
+// ctx (opcional):
+//   'login-not-found' → mostra erro + botão Sair (login não bate
+//                       com ninguém na squad atual)
+window.openWhoAreYouModal = function(canCancel, ctx){
   var ats = _getSquadAtendentes();
   var grid = document.getElementById('sq-who-grid');
+  var hd   = document.getElementById('sq-who-hd');
   if(!grid) return;
+  var login = sessionStorage.getItem('atendLogin');
+  var cfg   = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  var squadNome = cfg ? cfg.nome : 'sua squad';
+
+  // Header dinâmico
+  if(hd){
+    if(ctx === 'login-not-found' && login){
+      hd.innerHTML = '<div class="sq-who-hd-title" style="color:var(--danger)">Login não encontrado</div>'
+        + '<div class="sq-who-hd-sub">O login <strong>'+String(login).replace(/</g,'&lt;')+'</strong> não bate com nenhum atendente em <strong>'+String(squadNome).replace(/</g,'&lt;')+'</strong>. Verifique se digitou certo e clique em <strong>Sair</strong> para tentar com outro login.</div>'
+        + '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">'
+          + '<button onclick="_logoutSquad()" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">Sair</button>'
+          + '<button onclick="document.getElementById(\'sq-who-overlay\').classList.remove(\'on\')" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:12px;cursor:pointer">Escolher nome manualmente abaixo</button>'
+        + '</div>';
+    } else {
+      hd.innerHTML = '<div class="sq-who-hd-title">Quem é você?</div>'
+        + '<div class="sq-who-hd-sub">Selecione seu nome — fica salvo neste navegador.</div>';
+    }
+  }
+
   if(!ats.length){
     grid.innerHTML = '<div style="grid-column:1/-1;padding:18px;text-align:center;color:var(--muted);font-size:12px">Aguardando dados do GWMS…</div>';
   } else {
@@ -17142,24 +17188,44 @@ window.renderSquadView = function(){
   var now = new Date();
   document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
 
+  // Pill: ação muda conforme veio do login (Sair) ou sessão legada (Trocar)
+  var hasLogin = !!sessionStorage.getItem('atendLogin');
+  var pill = document.getElementById('sq-user-pill');
+  if(pill) pill.title = hasLogin ? 'Sair (limpa sessão e volta ao login)' : 'Trocar atendente';
+  var pillIcon = document.getElementById('sq-user-icon');
+  if(pillIcon){
+    pillIcon.innerHTML = hasLogin
+      // log-out icon (porta + seta saindo)
+      ? '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
+      // chevron-down (legado)
+      : '<polyline points="6 9 12 15 18 9"/>';
+  }
+
   if(atend){
     document.getElementById('sq-user-avatar').textContent = _initials(atend);
     document.getElementById('sq-user-name').textContent = atend;
   } else {
     document.getElementById('sq-user-avatar').textContent = '?';
-    document.getElementById('sq-user-name').textContent = 'selecionar';
+    document.getElementById('sq-user-name').textContent = hasLogin ? 'login não encontrado' : 'selecionar';
   }
 
-  // Se não tem atendente escolhido, força modal
+  // Se não tem atendente escolhido, força modal.
+  // - Com login + lista carregada e sem match → erro "login não encontrado"
+  // - Sem login (legado) ou dados ainda carregando → modal padrão "Quem é você?"
   if(!atend){
-    openWhoAreYouModal(false);
+    var loaded = _getSquadAtendentes().length > 0;
+    var ctx = (hasLogin && loaded) ? 'login-not-found' : null;
+    openWhoAreYouModal(false, ctx);
     renderSquadGreeting(null);
     renderBlock6Alertas();
     document.getElementById('sq-attention').innerHTML = '';
-    document.getElementById('sq-hero-pilha').innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver sua pilha.</div>';
-    document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seu SLA.</div>';
+    var emptyMsg = hasLogin
+      ? 'Login não encontrado — clique em Sair no topo para tentar outro.'
+      : 'Selecione seu nome no topo para ver sua pilha.';
+    document.getElementById('sq-hero-pilha').innerHTML = '<div class="sq-empty" style="padding:40px 20px">'+emptyMsg+'</div>';
+    document.getElementById('sq-hero-sla').innerHTML = '<div class="sq-empty" style="padding:40px 20px">'+emptyMsg+'</div>';
     ['sq-block-1','sq-block-2','sq-block-3','sq-block-4'].forEach(function(id){
-      document.getElementById(id).innerHTML = '<div class="sq-empty" style="padding:40px 20px">Selecione seu nome no topo para ver seus chamados.</div>';
+      document.getElementById(id).innerHTML = '<div class="sq-empty" style="padding:40px 20px">'+emptyMsg+'</div>';
     });
     return;
   }
