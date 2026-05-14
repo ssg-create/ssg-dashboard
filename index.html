@@ -16405,6 +16405,49 @@ function _getSquadTickets(){
     return filas.indexOf((r.fila||'').toUpperCase()) !== -1;
   });
 }
+// Squads em que o atendente está cadastrado (allowed_logins inclui o login dele).
+// Atendente pode estar em múltiplas squads (ex: Vinicius Vedove em GWMS + Infra).
+function _getAtendenteSquads(atendNome){
+  if(!atendNome) return [];
+  var login = _nameToLogin(atendNome);
+  if(!login) return [];
+  var out = [];
+  Object.keys(SQUADS).forEach(function(id){
+    var s = SQUADS[id];
+    if(s.tipo === 'triagem') return; // ignora squad transversal
+    var allow = s.allowed_logins || [];
+    if(allow.indexOf(login) !== -1) out.push(id);
+  });
+  return out;
+}
+// União das filas de todas as squads em que o atendente está cadastrado.
+// Se não estiver em nenhuma squad (caso raro — login não bate), retorna
+// filas da squad atual como fallback pra não quebrar a view.
+function _getAtendenteAllFilas(atendNome){
+  var sqIds = _getAtendenteSquads(atendNome);
+  if(!sqIds.length){
+    var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+    return cfg ? cfg.filas.slice() : [];
+  }
+  var set = {};
+  sqIds.forEach(function(id){
+    (SQUADS[id].filas||[]).forEach(function(f){ set[f.toUpperCase()] = true; });
+  });
+  return Object.keys(set).sort();
+}
+// Tickets do atendente em TODAS as suas filas (union), não só na squad atual.
+// Resolve o caso "Vinicius logado em Infra só via Infra-tickets, mas tem
+// 7 em MONITORAMENTO que também são dele".
+function _getAtendenteTickets(atendNome){
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows || !atendNome) return [];
+  var filas = _getAtendenteAllFilas(atendNome).map(function(f){return f.toUpperCase();});
+  var atendN = _norm(atendNome);
+  return data.rows.filter(function(r){
+    if(_norm(r.atendente) !== atendN) return false;
+    return filas.indexOf((r.fila||'').toUpperCase()) !== -1;
+  });
+}
 // Deriva login (primeiro.último) a partir do nome completo do atendente.
 // Convenção do roster: primeiro + último, em minúsculas, sem acentos.
 // Ex: "Robert Rodrigues dos Santos" → "robert.santos"
@@ -17215,12 +17258,14 @@ function renderSquadGreeting(meus){
     subMain = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <strong style="color:var(--danger)">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</strong>.';
   }
   var subMsg = subMain + (vibe ? '<span class="sq-greeting-vibe">'+vibe+'</span>' : '');
+  // Chips = filas REAIS do atendente (union de squads onde ele está cadastrado).
+  var _chipFilas = atend ? _getAtendenteAllFilas(atend) : cfg.filas;
   el.innerHTML =
     '<div class="sq-greeting-msg">'
       + '<div class="sq-greeting-hi">' + _saudacao() + ', <span class="sq-greeting-name">' + primeiroNome + '</span></div>'
       + '<div class="sq-greeting-sub">' + subMsg + '</div>'
       + '<div class="sq-filas-chips">'
-        + cfg.filas.map(function(f){ return '<span class="sq-fila-chip">'+f+'</span>'; }).join('')
+        + _chipFilas.map(function(f){ return '<span class="sq-fila-chip">'+f+'</span>'; }).join('')
       + '</div>'
     + '</div>'
     + '<div class="sq-greeting-side">'
@@ -17427,9 +17472,12 @@ window.renderSquadView = function(){
   _tryAutoIdentify();
   var atend = getCurrentAtendente();
 
-  // Header da topbar
+  // Header da topbar — squad da senha + filas REAIS do atendente.
+  // Se o atendente está cadastrado em mais de uma squad, mostra a união
+  // (ex: Vinicius Vedove → INFRAESTUTURA · MONITORAMENTO · NOC · etc).
   document.getElementById('sq-squad-name').textContent = cfg.nome;
-  document.getElementById('sq-squad-sub').textContent = 'Filas: ' + cfg.filas.join(' · ');
+  var _filasMostra = atend ? _getAtendenteAllFilas(atend) : cfg.filas;
+  document.getElementById('sq-squad-sub').textContent = 'Filas: ' + _filasMostra.join(' · ');
   var now = new Date();
   document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
 
@@ -17487,12 +17535,11 @@ window.renderSquadView = function(){
     return;
   }
 
-  var allTickets = _getSquadTickets();
+  // Pilha do atendente: TODAS as filas em que ele tá cadastrado (union de
+  // squads). Antes era só fila da squad da senha — Vinicius (GWMS+Infra)
+  // logava com Infra e via só 4 tickets; tinha 7 em MONITORAMENTO que sumiam.
   var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
-  // Exclui dormentes (FECHADO SEM ÊXITO AUTO, RESOLVIDO, CANCELADO, AGRUPADO) —
-  // mesma lógica que o dash de gestão usa em renderTeamCapacity.
-  var meus = allTickets
-    .filter(function(r){ return _norm(r.atendente)===_norm(atend); })
+  var meus = _getAtendenteTickets(atend)
     .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 
   renderSquadGreeting(meus);
