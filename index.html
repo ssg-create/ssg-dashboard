@@ -1889,7 +1889,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","ssg-protheus");_o.style.display="none";}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);_o.style.display="none";}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);if(h===_H_GEST){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");_o.style.display="none";}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else{_e.style.display="block";_i.value="";}});_i.addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("lb").click();});</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -3630,8 +3630,18 @@ var SQUADS = {
     filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
     // atendentes que devem ser excluídos do seletor (bots, contas genéricas)
     exclude_atendentes: ['Admin OTRS']
+  },
+  'dba': {
+    nome: 'DBA',
+    filas: ['DBA'],
+    exclude_atendentes: ['Admin OTRS']
+  },
+  'gwms': {
+    nome: 'GWMS',
+    filas: ['GWMS'],
+    exclude_atendentes: ['Admin OTRS']
   }
-  // futuras squads: 'dba', 'gwms', 'datasul', 'infra'
+  // futuras squads: 'datasul', 'infra'
 };
 function getAppMode(){
   // gestao | squad
