@@ -363,10 +363,12 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     sql = f"""
     SELECT
       t.tn                                                       AS ticket,
+      {CLI_ID_EXPR}                                              AS cli_id,
       {CLI_ID_EXPR}                                              AS cliente,
       q.name                                                     AS fila,
       UPPER(ts.name)                                             AS estado,
       tp.name                                                    AS prioridade,
+      COALESCE(s.name, '')                                       AS servico,
       CONCAT(u.first_name, ' ', u.last_name)                     AS atendente,
       DATE_FORMAT(t.create_time, '%Y-%m-%dT%H:%i:%s')            AS criado,
       DATE_FORMAT(t.change_time, '%Y-%m-%dT%H:%i:%s')            AS modificado,
@@ -377,6 +379,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
     JOIN ticket_priority tp ON t.ticket_priority_id = tp.id
     JOIN users           u  ON t.user_id            = u.id
+    LEFT JOIN service    s  ON t.service_id         = s.id
     {CLI_ID_JOINS}
     WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
       AND {FILAS_WHERE}

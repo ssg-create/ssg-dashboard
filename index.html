@@ -15792,34 +15792,75 @@ function _norm(s){ return (s||'').toString().trim().toLowerCase(); }
 
 // ── SLA helpers ───────────────────────────────────────────────
 function _fmtH(h){
+  // Mantido por compatibilidade — _fmtMin é o canônico agora
   if(h==null) return '—';
-  var abs = Math.abs(h);
-  if(abs < 1) return Math.round(abs*60) + 'min';
-  var hi = Math.floor(abs), m = Math.round((abs-hi)*60);
-  if(m === 60){ hi++; m = 0; }
-  if(hi >= 24){
-    var d = Math.floor(hi/24), rh = hi%24;
+  return _fmtMin(h*60);
+}
+function _fmtMin(m){
+  if(m==null) return '—';
+  var abs = Math.abs(m);
+  if(abs < 1) return '<1min';
+  if(abs < 60) return Math.round(abs) + 'min';
+  var h = Math.floor(abs/60), rm = Math.round(abs%60);
+  if(rm === 60){ h++; rm = 0; }
+  if(h >= 24){
+    var d = Math.floor(h/24), rh = h%24;
     return d + 'd' + (rh>0?' '+rh+'h':'');
   }
-  return hi + 'h' + (m>0?' '+m+'min':'');
+  return h + 'h' + (rm>0?' '+rm+'min':'');
 }
-// Calcula status SLA do ticket usando a infra do dash gerencial
-// (calcBusinessHoursH + SLA_LIMIT_BH_H — horas úteis Seg-Sex 8h-18h).
+function _normalizePriority(p){
+  if(!p) return null;
+  var s = String(p).toLowerCase();
+  if(s.indexOf('muito alta')!==-1||s.indexOf('very high')!==-1) return 'Muito Alta';
+  if(s.indexOf('muito baixa')!==-1||s.indexOf('very low')!==-1) return 'Muito Baixa';
+  if(s.indexOf('alta')!==-1||s.indexOf('high')!==-1) return 'Alta';
+  if(s.indexOf('baixa')!==-1||s.indexOf('low')!==-1) return 'Baixa';
+  if(s.indexOf('normal')!==-1) return 'Normal';
+  return null;
+}
+// Fallback quando o sync ainda não trouxe `servico` no JSON.
+// Usa SUSTENTACAO (mais rigoroso) por padrão. Idêntico à SLA_OTRS_RULES.sustentacao.
+var _SLA_FALLBACK_BY_PRIO = {'Muito Alta':30,'Alta':60,'Normal':120,'Baixa':null,'Muito Baixa':null};
+// Calcula status SLA do ticket usando as regras OTRS reais (SLA_OTRS_RULES).
+// Threshold em minutos · tempo decorrido em horas úteis (Seg-Sex 8h-18h).
+// Fallback p/ heurística por prioridade quando servico não disponível ainda.
 function _calcSLA(ticket){
   var criado = _parseDate(ticket.criado);
-  if(!criado) return {status:'unknown', remH:null, label:'—'};
-  var limit = (typeof SLA_LIMIT_BH_H !== 'undefined' && SLA_LIMIT_BH_H) ? SLA_LIMIT_BH_H : 16;
-  var elapsed = (typeof calcBusinessHoursH === 'function')
+  if(!criado) return {status:'unknown', remMin:null, label:'—', threshold:null};
+  var prio = _normalizePriority(ticket.prioridade);
+  if(!prio) return {status:'unknown', remMin:null, label:'sem prioridade', threshold:null};
+
+  // 1) Regra OTRS oficial — requer servico + prioridade + cli_id
+  var threshold = null;
+  var serviceForRule = ticket.servico || '';
+  var cliForRule = ticket.cli_id || ticket.cliente || '';
+  if(typeof getOTRSSLAThreshold === 'function' && serviceForRule){
+    threshold = getOTRSSLAThreshold(serviceForRule, prio, cliForRule);
+  }
+  // 2) Fallback: heurística por prioridade (sustentacao) quando servico ausente
+  if(threshold === null || threshold === undefined){
+    threshold = _SLA_FALLBACK_BY_PRIO[prio];
+  }
+  if(threshold === null || threshold === undefined){
+    return {status:'unknown', remMin:null, label:'Sem SLA cadastrado', threshold:null};
+  }
+
+  // Tempo decorrido em horas úteis (Seg-Sex 8h-18h) → minutos úteis
+  var elapsedH = (typeof calcBusinessHoursH === 'function')
     ? calcBusinessHoursH(criado, new Date())
     : 0;
-  var rem = limit - elapsed;
-  if(rem <= 0){
-    return {status:'vencido', remH:rem, label:'Vencido há ' + _fmtH(rem)};
+  var elapsedMin = elapsedH * 60;
+  var remMin = threshold - elapsedMin;
+
+  if(remMin <= 0){
+    return {status:'vencido', remMin:remMin, threshold:threshold, label:'Vencido há ' + _fmtMin(remMin)};
   }
-  if(rem <= 4){
-    return {status:'risco', remH:rem, label:'Vence em ' + _fmtH(rem)};
+  // Risco = restam ≤ 20% do prazo OU ≤ 30 minutos absolutos
+  if(remMin <= threshold * 0.2 || remMin <= 30){
+    return {status:'risco', remMin:remMin, threshold:threshold, label:'Vence em ' + _fmtMin(remMin)};
   }
-  return {status:'ok', remH:rem, label:'OK · ' + _fmtH(rem) + ' restantes'};
+  return {status:'ok', remMin:remMin, threshold:threshold, label:'OK · ' + _fmtMin(remMin) + ' restantes'};
 }
 window._calcSLA = _calcSLA;
 
@@ -15994,7 +16035,7 @@ function _ticketRow(t, opts){
   var slaBadge = sla.status==='unknown'
     ? ''
     : '<span class="sq-sla-badge '+sla.status+'" title="'+sla.label+'">'
-        + (sla.status==='vencido'?'⚠ '+_fmtH(sla.remH):sla.status==='risco'?'⏱ '+_fmtH(sla.remH):'✓ '+_fmtH(sla.remH))
+        + (sla.status==='vencido'?'⚠ '+_fmtMin(sla.remMin):sla.status==='risco'?'⏱ '+_fmtMin(sla.remMin):'✓ '+_fmtMin(sla.remMin))
       + '</span>';
   var rowCls = (sla.status==='vencido'||sla.status==='risco') ? ' class="sla-'+sla.status+'"' : '';
 
@@ -16040,8 +16081,7 @@ function renderSLAHero(meus){
     + '<div class="sq-block-icon" style="background:rgba(16,185,129,.15);color:var(--ok)">⏱</div>'
     + '<div style="flex:1;min-width:0">'
       + '<div class="sq-block-title">Seu SLA agora</div>'
-      + '<div class="sq-block-sub">Cálculo em horas úteis (Seg-Sex 8h-18h). Limite: '
-        + ((typeof SLA_LIMIT_BH_H!=='undefined')?SLA_LIMIT_BH_H:16) + 'h. Considera todos os seus tickets ativos.</div>'
+      + '<div class="sq-block-sub">Regras OTRS por <strong>prioridade + serviço</strong> (Sustentação ou Banco de Horas) + overrides por cliente. Tempo em horas úteis (Seg-Sex 8h-18h).</div>'
     + '</div>'
     + '</div>';
 
@@ -16129,7 +16169,7 @@ function _ticketCard(t){
   var slaBadge = sla.status==='unknown'
     ? ''
     : '<span class="sq-sla-badge '+sla.status+'" title="'+sla.label+'">'
-        + (sla.status==='vencido'?'⚠ '+_fmtH(sla.remH):sla.status==='risco'?'⏱ '+_fmtH(sla.remH):'✓ '+_fmtH(sla.remH))
+        + (sla.status==='vencido'?'⚠ '+_fmtMin(sla.remMin):sla.status==='risco'?'⏱ '+_fmtMin(sla.remMin):'✓ '+_fmtMin(sla.remMin))
       + '</span>';
   var falaHtml = fala
     ? '<div class="sq-card-fala lvl'+fala.lvl+'">'+fala.texto.replace(/</g,'&lt;')+'</div>'
