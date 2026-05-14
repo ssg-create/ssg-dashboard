@@ -15887,7 +15887,10 @@ window.setSquadFilter = function(f){
 function _getMeusTickets(){
   var atend = getCurrentAtendente();
   if(!atend) return [];
-  return _getSquadTickets().filter(function(r){ return _norm(r.atendente)===_norm(atend); });
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+  return _getSquadTickets()
+    .filter(function(r){ return _norm(r.atendente)===_norm(atend); })
+    .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 }
 
 // ── Frase personificada do ticket ─────────────────────────────
@@ -16080,8 +16083,8 @@ function renderSLAHero(meus){
   var hero = '<div class="sq-block-hd" style="margin-bottom:8px">'
     + '<div class="sq-block-icon" style="background:rgba(16,185,129,.15);color:var(--ok)">⏱</div>'
     + '<div style="flex:1;min-width:0">'
-      + '<div class="sq-block-title">Seu SLA agora</div>'
-      + '<div class="sq-block-sub">Regras OTRS por <strong>prioridade + serviço</strong> (Sustentação ou Banco de Horas) + overrides por cliente. Tempo em horas úteis (Seg-Sex 8h-18h).</div>'
+      + '<div class="sq-block-title">Cronômetro do contrato</div>'
+      + '<div class="sq-block-sub">Regras de SLA do OTRS por <strong>prioridade + serviço</strong> (Sustentação ou Banco de Horas) + overrides por cliente. Tempo em horas úteis (Seg-Sex 8h-18h).</div>'
     + '</div>'
     + '</div>';
 
@@ -16266,14 +16269,14 @@ function renderBlock1AtaqueAgora(meus){
     return (da?da.getTime():0) - (db?db.getTime():0); // mais antigo primeiro
   });
   _renderBlockCards('sq-block-1', {
-    icon:'⚠', iconBg:'rgba(244,63,94,.15)', iconCol:'#f43f5e',
-    title:'Ataque agora — cliente já respondeu',
-    subtitle:'Tickets em RETORNO CLIENTE. A bola está com você. Clique no card para abrir no OTRS.',
-    count: t.length+' ticket'+(t.length!==1?'s':''),
+    icon:'⚡', iconBg:'rgba(244,63,94,.15)', iconCol:'#f43f5e',
+    title:'Sua vez de jogar',
+    subtitle:'O cliente já respondeu — a bola voltou pra você. Clique no card para abrir no OTRS.',
+    count: t.length+' aguardando você',
     tickets: t,
-    emptyIcon:'✓',
-    emptyText:'Tudo em dia por aqui',
-    emptySub:'Nenhum cliente esperando sua resposta agora.'
+    emptyIcon:'🎯',
+    emptyText:'Zero clientes esperando você',
+    emptySub:'Ninguém na fila aguardando resposta sua agora. Mantenha o ritmo.'
   });
 }
 function renderBlock2Ativas(meus){
@@ -16284,14 +16287,14 @@ function renderBlock2Ativas(meus){
     return (ca?ca.getTime():0) - (cb?cb.getTime():0);
   });
   _renderBlockCards('sq-block-2', {
-    icon:'⚙', iconBg:'rgba(45,212,191,.15)', iconCol:'var(--teal)',
-    title:'Minhas ativas',
-    subtitle:'Em atendimento, abertos ou novos — o que você está trabalhando ou ainda não começou. Clique no card para abrir no OTRS.',
-    count: t.length+' ticket'+(t.length!==1?'s':''),
+    icon:'🛠', iconBg:'rgba(45,212,191,.15)', iconCol:'var(--teal)',
+    title:'No seu radar',
+    subtitle:'Em atendimento, abertos ou novos — o que está no seu prato agora. Clique no card para abrir no OTRS.',
+    count: t.length+' no prato',
     tickets: t,
     emptyIcon:'☕',
-    emptyText:'Sem tickets ativos',
-    emptySub:'Boa hora pra revisar pendências ou tomar um café.'
+    emptyText:'Bandeja limpa',
+    emptySub:'Sem trabalho ativo no momento. Bom momento pra revisar pendências ou tomar um café.'
   });
 }
 function renderBlock3Esperando(meus){
@@ -16303,26 +16306,26 @@ function renderBlock3Esperando(meus){
   });
   _renderBlockCards('sq-block-3', {
     icon:'⏳', iconBg:'rgba(245,158,11,.15)', iconCol:'var(--warn)',
-    title:'Esperando terceiros',
-    subtitle:'Bola com cliente ou time interno. Cobrar quando ficar muito tempo parado.',
-    count: t.length+' ticket'+(t.length!==1?'s':''),
+    title:'Bola com eles',
+    subtitle:'Aguardando cliente ou time interno. Se ficar muito tempo parado, vale cobrar.',
+    count: t.length+' aguardando retorno',
     tickets: t,
-    emptyIcon:'✓',
-    emptyText:'Nada esperando terceiros',
-    emptySub:'Nenhum ticket parado aguardando cliente ou time interno.'
+    emptyIcon:'🤝',
+    emptyText:'Ninguém te devendo nada',
+    emptySub:'Nenhum ticket parado com cliente ou time interno.'
   });
 }
 function renderBlock4Backlog(meus){
   var BL = ['GMUD','MELHORIA'];
   var t = meus.filter(function(r){ return BL.indexOf((r.estado||'').toUpperCase())!==-1; }).filter(_passFilter);
   _renderBlockCards('sq-block-4', {
-    icon:'🗓', iconBg:'rgba(139,92,246,.15)', iconCol:'#a78bfa',
-    title:'Agendadas / backlog',
-    subtitle:'GMUD aguardando janela e MELHORIA no backlog — sem urgência operacional.',
-    count: t.length+' ticket'+(t.length!==1?'s':''),
+    icon:'📅', iconBg:'rgba(139,92,246,.15)', iconCol:'#a78bfa',
+    title:'Pra mais tarde',
+    subtitle:'GMUDs aguardando janela e melhorias no backlog — sem pressa operacional, mas não esquece.',
+    count: t.length+' na agenda',
     tickets: t,
-    emptyIcon:'∅',
-    emptyText:'Sem agendados ou backlog',
+    emptyIcon:'🍃',
+    emptyText:'Agenda leve',
     emptySub:'Nada de GMUD ou MELHORIA na sua pilha agora.'
   });
 }
@@ -16451,12 +16454,12 @@ function renderBlock6Alertas(){
   tri.sort(function(a,b){return (b.triagem_min||0)-(a.triagem_min||0);});
 
   var head = '<div class="sq-block-hd">'
-    + '<div class="sq-block-icon" style="background:rgba(245,158,11,.15);color:var(--warn)">🔔</div>'
+    + '<div class="sq-block-icon" style="background:rgba(245,158,11,.15);color:var(--warn)">🚨</div>'
     + '<div style="flex:1;min-width:0">'
-      + '<div class="sq-block-title">Alertas da squad</div>'
-      + '<div class="sq-block-sub">Tickets que merecem atenção — silenciosos, em triagem demorada ou reabertos.</div>'
+      + '<div class="sq-block-title">Radar do squad</div>'
+      + '<div class="sq-block-sub">Sinais que merecem atenção — silenciosos demais, em triagem há muito tempo ou que voltaram do túnel.</div>'
     + '</div>'
-    + '<div class="sq-block-count">'+ (sil.length+tri.length+reb.length) +' total</div>'
+    + '<div class="sq-block-count">'+ (sil.length+tri.length+reb.length) +' no radar</div>'
     + '</div>';
 
   function _miniTable(rows, cols, mapper, empty){
@@ -16469,7 +16472,7 @@ function renderBlock6Alertas(){
   }
 
   var html = head;
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Silenciosos · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🤫 Esquecidos · sem mexer há tempos · top 8</div>';
   html += _miniTable(sil,
     [{label:'Número'},{label:'Cliente'},{label:'Estado'},{label:'Silêncio',align:'right'}],
     function(r){
@@ -16487,7 +16490,7 @@ function renderBlock6Alertas(){
     'Nenhum silencioso na squad agora.'
   );
 
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Triagem demorada · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">🐢 Travados na porta · triagem demorada · top 8</div>';
   html += _miniTable(tri,
     [{label:'Número'},{label:'Cliente'},{label:'Tempo em triagem',align:'right'}],
     function(r){
@@ -16504,7 +16507,7 @@ function renderBlock6Alertas(){
     'Nenhum ticket em triagem demorada.'
   );
 
-  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">Reaberturas · top 8</div>';
+  html += '<div style="font-size:11px;color:var(--muted);margin:8px 0 6px;text-transform:uppercase;letter-spacing:.08em">↩ Voltaram do túnel · reaberturas · top 8</div>';
   html += _miniTable(reb,
     [{label:'Número'},{label:'Cliente'},{label:'Reabriu em',align:'right'}],
     function(r){
@@ -16612,7 +16615,12 @@ window.renderSquadView = function(){
   }
 
   var allTickets = _getSquadTickets();
-  var meus = allTickets.filter(function(r){ return _norm(r.atendente)===_norm(atend); });
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+  // Exclui dormentes (FECHADO SEM ÊXITO AUTO, RESOLVIDO, CANCELADO, AGRUPADO) —
+  // mesma lógica que o dash de gestão usa em renderTeamCapacity.
+  var meus = allTickets
+    .filter(function(r){ return _norm(r.atendente)===_norm(atend); })
+    .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 
   renderSquadGreeting(meus);
   renderSLAHero(meus);
@@ -16627,6 +16635,30 @@ window.renderSquadView = function(){
 function bootSquadMode(){
   if(typeof isSquadMode !== 'function' || !isSquadMode()) return;
   document.body.classList.add('squad-mode');
+  // Dispara fetches dos datasets de alertas (no dash gerencial são lazy via nav).
+  // Re-renderiza quando cada um chega.
+  function _onArrive(){ if(isSquadMode()) renderBlock6Alertas(); }
+  if(typeof fetchSilenciosos === 'function'){
+    fetchSilenciosos();
+    var _origSil = window.renderSilenciosos;
+    if(typeof _origSil === 'function'){
+      window.renderSilenciosos = function(d){ _origSil(d); _onArrive(); };
+    }
+  }
+  if(typeof fetchTriagem === 'function'){
+    fetchTriagem();
+    var _origTri = window.renderTriagem;
+    if(typeof _origTri === 'function'){
+      window.renderTriagem = function(d){ _origTri(d); _onArrive(); };
+    }
+  }
+  if(typeof fetchReaberturas === 'function'){
+    fetchReaberturas();
+    var _origReb = window.renderReaberturas;
+    if(typeof _origReb === 'function'){
+      window.renderReaberturas = function(d){ _origReb(d); _onArrive(); };
+    }
+  }
   // Aguarda dados; se já carregaram, renderiza agora
   var tryRender = function(retries){
     if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA){
