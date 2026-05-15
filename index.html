@@ -13016,6 +13016,15 @@ function renderContratosSSG(){
     };
   });
 
+  // Ordena por urgência: estourados → risco → em dia → sem chamados/cancelados.
+  // Dentro do mesmo grupo, maior % primeiro (mais crítico no topo da seção).
+  var _statusRank = { crit:0, warn:1, ok:2, info:3 };
+  clientes.sort(function(a,b){
+    var ra = _statusRank[a.status]||9, rb = _statusRank[b.status]||9;
+    if(ra !== rb) return ra - rb;
+    return (b.pctProj||0) - (a.pctProj||0);
+  });
+
   // ── Hero ──
   var totalContratado = SSG_CONTRATOS.filter(function(c){return c.ativo;}).reduce(function(s,c){return s + c.limite_mes;}, 0);
   // Botões de trimestre: ano atual (4Q) + ano anterior se relevante
@@ -13058,11 +13067,39 @@ function renderContratosSSG(){
     +   '</div>'
     +   '<div class="ctr-hero-kpis">'
     +     '<div class="ctr-hero-kpi"><div class="ctr-hero-kpi-num">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+'</div><div class="ctr-hero-kpi-lbl">clientes ativos</div></div>'
-    +     '<div class="ctr-hero-kpi" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"><div class="ctr-hero-kpi-num" style="color:var(--ok)">'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
-    +     '<div class="ctr-hero-kpi" style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"><div class="ctr-hero-kpi-num" style="color:var(--warn)">'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
-    +     '<div class="ctr-hero-kpi" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"><div class="ctr-hero-kpi-num" style="color:var(--danger)">'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">'+(isTrimPassado?'estourou':'estourados')+'</div></div>'
+    // Cor semântica só quando há valor; zero fica neutro (cinza) pra não criar
+    // alerta falso ("EM RISCO: 0" em laranja confunde).
+    +     '<div class="ctr-hero-kpi"' + (resumo.ok>0 ? ' style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.ok>0 ? ' style="color:var(--ok)"' : ' style="color:var(--muted)"') + '>'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
+    +     '<div class="ctr-hero-kpi"' + (resumo.warn>0 ? ' style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.warn>0 ? ' style="color:var(--warn)"' : ' style="color:var(--muted)"') + '>'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
+    +     '<div class="ctr-hero-kpi"' + (resumo.crit>0 ? ' style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.crit>0 ? ' style="color:var(--danger)"' : ' style="color:var(--muted)"') + '>'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">'+(isTrimPassado?'estourou':'estourados')+'</div></div>'
     +   '</div>'
     + '</div>'
+    // Linha acionável — diz O QUE FAZER, não só o que existe.
+    // Prioriza alertas: estourados (cobrar) → risco (atenção) → tudo ok (✓)
+    + (function(){
+        var estourou = clientes.filter(function(c){return c.status==='crit';});
+        var emRisco  = clientes.filter(function(c){return c.status==='warn';});
+        var fechouTrim = trimMeses[2] + '-' + _ctrDaysInMonth(parseInt(trimMeses[2].split('-')[0],10), parseInt(trimMeses[2].split('-')[1],10)-1);
+        var msg = '', cor = 'var(--ok)', bg = 'rgba(16,185,129,.06)', borda = 'rgba(16,185,129,.25)', icon = '✓';
+        if(estourou.length){
+          var totalExcedente = estourou.reduce(function(s,c){return s + c.excedente;}, 0);
+          var nomes = estourou.map(function(c){return c.cfg.nome;}).join(', ');
+          msg = (isTrimPassado ? 'Trimestre fechou estourado: ' : 'Para fechar Q'+qSel+': cobrar ') + nomes + ' (+'+totalExcedente+' chamado'+(totalExcedente!==1?'s':'')+' excedente'+(totalExcedente!==1?'s':'')+')';
+          cor = 'var(--danger)'; bg = 'rgba(244,63,94,.08)'; borda = 'rgba(244,63,94,.3)'; icon = '🔴';
+        } else if(emRisco.length){
+          var nomesR = emRisco.map(function(c){return c.cfg.nome;}).join(', ');
+          msg = 'Atenção: ' + nomesR + ' próximo'+(emRisco.length!==1?'s':'')+' do limite. Acompanhar nas próximas semanas.';
+          cor = 'var(--warn)'; bg = 'rgba(245,158,11,.06)'; borda = 'rgba(245,158,11,.25)'; icon = '🟡';
+        } else if(isTrimPassado){
+          msg = 'Trimestre fechado sem cobrança extra. Todos os clientes dentro do contrato.';
+        } else {
+          msg = 'Trimestre tranquilo até agora. Nenhum cliente projetado pra estourar.';
+        }
+        return '<div style="margin-top:14px;padding:10px 14px;background:'+bg+';border:1px solid '+borda+';border-radius:8px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);font-weight:500">'
+          + '<span style="font-size:16px;line-height:1">'+icon+'</span>'
+          + '<span><strong style="color:'+cor+';font-weight:700">'+(estourou.length?'AÇÃO:':'STATUS:')+'</strong> '+msg+'</span>'
+        + '</div>';
+      })()
     + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)">'
     +   'Total contratado: <strong style="color:var(--text)">'+totalContratado+' chamados/mês</strong> · '+(totalContratado*3)+' chamados/trimestre. Gatilho de cobrança fecha no último dia do trimestre.'
     + '</div>';
