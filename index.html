@@ -298,29 +298,47 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .ctr-hero-kpi{padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;text-align:center}
 .ctr-hero-kpi-num{font-family:var(--display);font-size:24px;font-weight:800;line-height:1}
 .ctr-hero-kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:5px;font-weight:600}
-.ctr-list{display:flex;flex-direction:column;gap:12px}
-.ctr-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:grid;grid-template-columns:1.5fr 1fr 1.5fr auto;gap:18px;align-items:center;transition:border-color .15s}
+.ctr-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px}
+.ctr-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:border-color .15s;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
 .ctr-card:hover{border-color:var(--border2)}
-.ctr-card.s-ok{border-left:4px solid var(--ok)}
-.ctr-card.s-warn{border-left:4px solid var(--warn)}
-.ctr-card.s-crit{border-left:4px solid var(--danger);background:linear-gradient(135deg,rgba(244,63,94,.03),var(--bg2))}
-.ctr-card.s-info{border-left:4px solid var(--muted);opacity:.7}
-.ctr-c-name{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text)}
-.ctr-c-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
-.ctr-c-obs{font-size:10px;color:var(--warn);margin-top:3px;font-style:italic}
-.ctr-c-mes{display:flex;flex-direction:column;gap:2px}
-.ctr-c-mes-num{font-family:var(--mono);font-size:18px;font-weight:700}
-.ctr-c-mes-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-.ctr-c-trim{display:flex;flex-direction:column;gap:5px}
-.ctr-c-trim-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--sub)}
-.ctr-c-trim-bar{position:relative;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
-.ctr-c-trim-fill{position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .5s}
-.ctr-c-trim-line{position:absolute;left:100%;top:-3px;width:2px;height:14px;background:rgba(255,255,255,.4);border-radius:1px}
-.ctr-c-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;text-transform:uppercase;letter-spacing:.06em;text-align:center;min-width:88px}
-.ctr-c-status.s-ok{color:var(--ok);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3)}
-.ctr-c-status.s-warn{color:var(--warn);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3)}
-.ctr-c-status.s-crit{color:var(--danger);background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.35)}
+.ctr-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px}
+.ctr-card.s-ok::before{background:var(--ok)}
+.ctr-card.s-warn::before{background:var(--warn)}
+.ctr-card.s-crit::before{background:var(--danger)}
+.ctr-card.s-info::before{background:var(--muted)}
+.ctr-card.s-crit{background:linear-gradient(135deg,rgba(244,63,94,.04),var(--bg2))}
+.ctr-card.s-info{opacity:.65}
+/* Header do card: nome + badge status */
+.ctr-c-hd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ctr-c-hd-left{flex:1;min-width:0}
+.ctr-c-name{font-family:var(--display);font-size:15px;font-weight:700;color:var(--text);line-height:1.2}
+.ctr-c-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono);letter-spacing:.02em}
+.ctr-c-obs{font-size:10px;color:var(--warn);margin-top:4px;font-style:italic;display:flex;align-items:center;gap:4px}
+.ctr-c-status{font-family:var(--mono);font-size:10px;font-weight:700;padding:5px 10px;border-radius:5px;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;white-space:nowrap}
+.ctr-c-status.s-ok{color:var(--ok);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3)}
+.ctr-c-status.s-warn{color:var(--warn);background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3)}
+.ctr-c-status.s-crit{color:var(--danger);background:rgba(244,63,94,.14);border:1px solid rgba(244,63,94,.35)}
 .ctr-c-status.s-info{color:var(--muted);background:var(--bg3);border:1px solid var(--border)}
+/* Bloco principal: número grande do trimestre */
+.ctr-c-trim-block{padding:10px 14px;background:var(--bg3);border-radius:9px;border:1px solid var(--border)}
+.ctr-c-trim-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.ctr-c-trim-label-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.ctr-c-trim-label-r{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.ctr-c-trim-num{font-family:var(--display);font-size:26px;font-weight:800;color:var(--text);line-height:1}
+.ctr-c-trim-num-slash{font-size:14px;color:var(--muted);font-weight:400;margin-left:4px}
+.ctr-c-trim-bar{position:relative;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-top:8px;border:1px solid var(--border)}
+.ctr-c-trim-fill{position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .5s}
+.ctr-c-trim-proj{font-size:11px;color:var(--sub);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+.ctr-c-trim-excedente{color:var(--danger);font-weight:700;font-family:var(--mono);font-size:11px}
+/* Mês a mês (informativo, no rodapé do card) */
+.ctr-c-meses{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ctr-c-mes-cell{padding:7px 9px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);text-align:center}
+.ctr-c-mes-cell.is-atual{border-color:var(--blue);background:rgba(79,142,247,.06)}
+.ctr-c-mes-cell.is-warn{border-color:rgba(245,158,11,.3)}
+.ctr-c-mes-cell.is-crit{border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.05)}
+.ctr-c-mes-cell-num{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);line-height:1}
+.ctr-c-mes-cell-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;font-weight:600}
+.ctr-c-mes-cell-pct{font-size:9px;color:var(--muted);margin-top:2px;font-family:var(--mono)}
 
 /* ═══ VIEWS & SECTIONS ════════════════════════════════════════ */
 .view{display:none}.view.on{display:block}
@@ -13038,45 +13056,68 @@ function renderContratosSSG(){
     +   'Total contratado: <strong style="color:var(--text)">'+totalContratado+' chamados/mês</strong> · '+(totalContratado*3)+' chamados/trimestre. Gatilho de cobrança fecha no último dia do trimestre.'
     + '</div>';
 
-  // ── Lista por cliente ──
+  // ── Lista por cliente (grid 2-por-linha, foco no trimestre) ──
   listEl.className = 'ctr-list';
   listEl.innerHTML = clientes.map(function(c){
-    var pctBar = Math.min(c.pctProj * 100, 200); // até 2× cap visual
+    var pctBar = Math.min(c.pctProj * 100, 100);
     var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
     var statusTxt = c.statusLbl.toUpperCase();
     var pctTxt = Math.round(c.pctProj * 100);
-    var excedenteTxt = c.excedente > 0 ? ('<span style="color:var(--danger);font-weight:700">+'+c.excedente+' chamados</span> excedente projetado') : '';
     var obsTxt = c.cfg.obs ? '<div class="ctr-c-obs">⚠ '+c.cfg.obs+'</div>' : '';
 
-    // Lista mes-a-mes do trimestre
+    // Projeção / status linha
+    var projLine;
+    if(isTrimAtual){
+      projLine = '<span>Projeção fim Q'+qSel+': <strong style="color:'+barColor+';font-family:var(--mono)">'+c.projTrim+'</strong> ('+pctTxt+'%)</span>';
+      if(c.excedente > 0) projLine += '<span class="ctr-c-trim-excedente">+'+c.excedente+' a cobrar</span>';
+    } else if(isTrimPassado){
+      projLine = '<span>Fechado: <strong style="color:'+barColor+';font-family:var(--mono)">'+c.usoTrim+'</strong> ('+pctTxt+'%)</span>';
+      if(c.excedente > 0) projLine += '<span class="ctr-c-trim-excedente">+'+c.excedente+' cobrar</span>';
+    } else {
+      projLine = '<span style="color:var(--muted)">Trimestre futuro · sem dados</span>';
+    }
+
+    // Mês a mês — 3 mini-células no rodapé do card
     var mesesHtml = trimMeses.map(function(mk){
       var n = c.byMonth[mk] || 0;
-      var ehAtual = (mk === mesAtualKey);
-      var fechado = !ehAtual && new Date(mk + '-01') < new Date(anoAtual, now.getMonth(), 1);
+      var ehAtual = (mk === mesNowKey);
       var pctMes = c.limiteMes > 0 ? Math.round(n/c.limiteMes*100) : 0;
-      var corMes = pctMes >= 100 ? 'var(--danger)' : (pctMes >= 80 ? 'var(--warn)' : 'var(--text)');
-      var lbl = _ctrFmtMes(mk);
-      if(ehAtual) lbl += ' (parcial · dia '+diaHoje+'/'+diasNoMes+')';
-      return '<span style="font-size:10px;color:var(--muted)">'+lbl+': <strong style="color:'+corMes+';font-family:var(--mono);font-size:12px">'+n+'</strong></span>';
-    }).join(' · ');
+      var clsCell = 'ctr-c-mes-cell';
+      if(ehAtual) clsCell += ' is-atual';
+      else if(pctMes >= 100) clsCell += ' is-crit';
+      else if(pctMes >= 80) clsCell += ' is-warn';
+      var lblMes = _ctrFmtMes(mk);
+      if(ehAtual) lblMes += ' (parcial)';
+      var pctTxtCell = c.limiteMes > 0 ? pctMes+'%' : '—';
+      return '<div class="'+clsCell+'">'
+        + '<div class="ctr-c-mes-cell-num">'+n+'</div>'
+        + '<div class="ctr-c-mes-cell-lbl">'+lblMes+'</div>'
+        + '<div class="ctr-c-mes-cell-pct">'+pctTxtCell+' do mês</div>'
+      + '</div>';
+    }).join('');
 
     return '<div class="ctr-card s-'+c.status+'">'
-      + '<div>'
-        + '<div class="ctr-c-name">'+c.cfg.nome+'</div>'
-        + '<div class="ctr-c-sub">'+c.cfg.limite_mes+'/mês · '+c.limiteTrim+'/trim · alias OTRS: '+c.cfg.alias+'</div>'
-        + obsTxt
+      // Header: nome + status
+      + '<div class="ctr-c-hd">'
+        + '<div class="ctr-c-hd-left">'
+          + '<div class="ctr-c-name">'+c.cfg.nome+'</div>'
+          + '<div class="ctr-c-sub">'+c.cfg.limite_mes+'/mês · '+c.limiteTrim+'/trim · '+c.cfg.alias+'</div>'
+          + obsTxt
+        + '</div>'
+        + '<div class="ctr-c-status s-'+c.status+'">'+statusTxt+'</div>'
       + '</div>'
-      + '<div class="ctr-c-mes">'
-        + '<div class="ctr-c-mes-num" style="color:'+(c.usoMes >= c.limiteMes ? 'var(--danger)' : (c.usoMes >= c.limiteMes*0.8 ? 'var(--warn)' : 'var(--text)'))+'">'+c.usoMes+' <span style="font-size:11px;color:var(--muted);font-weight:400">/ '+c.limiteMes+'</span></div>'
-        + '<div class="ctr-c-mes-lbl">mês atual ('+_ctrFmtMes(mesAtualKey)+')</div>'
+      // Bloco grande: trimestre
+      + '<div class="ctr-c-trim-block">'
+        + '<div class="ctr-c-trim-label">'
+          + '<span class="ctr-c-trim-label-l">Acumulado Q'+qSel+'/'+String(anoSel).slice(-2)+'</span>'
+          + '<span class="ctr-c-trim-label-r">limite: '+c.limiteTrim+'</span>'
+        + '</div>'
+        + '<div class="ctr-c-trim-num">'+c.usoTrim+'<span class="ctr-c-trim-num-slash">/ '+c.limiteTrim+'</span></div>'
+        + '<div class="ctr-c-trim-bar"><div class="ctr-c-trim-fill" style="width:'+pctBar+'%;background:'+barColor+'"></div></div>'
+        + '<div class="ctr-c-trim-proj">'+projLine+'</div>'
       + '</div>'
-      + '<div class="ctr-c-trim">'
-        + '<div class="ctr-c-trim-row"><span>Q'+qAtual+': <strong style="color:var(--text);font-family:var(--mono);font-size:13px">'+c.usoTrim+'</strong> / '+c.limiteTrim+' · projeção: <strong style="color:'+barColor+';font-family:var(--mono)">'+c.projTrim+'</strong> ('+pctTxt+'%)</span></div>'
-        + '<div class="ctr-c-trim-bar"><div class="ctr-c-trim-fill" style="width:'+Math.min(pctBar,100)+'%;background:'+barColor+'"></div></div>'
-        + '<div style="font-size:10px;color:var(--muted)">'+mesesHtml+'</div>'
-        + (excedenteTxt ? '<div style="font-size:11px;margin-top:4px">'+excedenteTxt+'</div>' : '')
-      + '</div>'
-      + '<div class="ctr-c-status s-'+c.status+'">'+statusTxt+'</div>'
+      // Rodapé: mês a mês
+      + '<div class="ctr-c-meses">'+mesesHtml+'</div>'
     + '</div>';
   }).join('');
 }
