@@ -1008,6 +1008,38 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-empty-icon{width:48px;height:48px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--blue);opacity:.7}
 .sq-empty-msg{font-weight:600;color:var(--sub)}
 .sq-empty-sub{font-size:11.5px;color:var(--muted);font-style:italic}
+/* ─── Holofote rotativo (squad-view) ──────────────────────── */
+.sq-spot{position:relative;display:flex;align-items:center;gap:16px;padding:14px 18px;margin:0 4px 18px;background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(255,100,0,.05));border:2px solid rgba(244,63,94,.35);border-radius:14px;cursor:pointer;transition:opacity .35s ease,transform .2s;animation:spotPulse 2.2s ease-in-out infinite;text-decoration:none;overflow:hidden}
+.sq-spot:hover{transform:translateY(-2px);border-color:var(--danger);text-decoration:none}
+.sq-spot::before{content:'';position:absolute;left:-30px;top:-30px;width:80px;height:80px;background:radial-gradient(circle,rgba(244,63,94,.25),transparent 70%);border-radius:50%;pointer-events:none;animation:spotGlow 3s ease-in-out infinite}
+.sq-spot.warn-tone{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(255,150,50,.05));border-color:rgba(245,158,11,.35)}
+.sq-spot.warn-tone::before{background:radial-gradient(circle,rgba(245,158,11,.22),transparent 70%)}
+.sq-spot.warn-tone:hover{border-color:var(--warn)}
+.sq-spot.calm-tone{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(45,212,191,.04));border-color:rgba(16,185,129,.25);animation:none;cursor:default}
+.sq-spot.calm-tone::before{display:none}
+.sq-spot.calm-tone:hover{transform:none;border-color:rgba(16,185,129,.25)}
+.sq-spot-emoji{font-size:32px;line-height:1;flex-shrink:0;animation:spotBounce 1.4s ease-in-out infinite}
+.sq-spot.calm-tone .sq-spot-emoji{animation:none}
+.sq-spot-content{flex:1;min-width:0;position:relative;z-index:1}
+.sq-spot-eyebrow{display:inline-block;font-family:var(--display);font-size:13px;font-weight:900;color:var(--danger);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;animation:spotSway 1.8s ease-in-out infinite;transform-origin:left center}
+.sq-spot.warn-tone .sq-spot-eyebrow{color:var(--warn)}
+.sq-spot.calm-tone .sq-spot-eyebrow{color:var(--ok);animation:none}
+.sq-spot-msg{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;margin-top:2px}
+.sq-spot-meta{font-size:11px;color:var(--muted);margin-top:5px;font-family:var(--mono)}
+.sq-spot-meta strong{color:var(--text);font-family:var(--font)}
+.sq-spot-cta{margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:var(--text);font-size:12px;font-weight:600;flex-shrink:0;transition:all .15s}
+.sq-spot:hover .sq-spot-cta{background:rgba(255,255,255,.12);border-color:var(--danger);color:var(--text)}
+.sq-spot.warn-tone:hover .sq-spot-cta{border-color:var(--warn)}
+.sq-spot-dots{position:absolute;bottom:6px;right:14px;display:flex;gap:4px;z-index:1}
+.sq-spot-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15)}
+.sq-spot-dot.on{background:var(--danger);box-shadow:0 0 6px rgba(244,63,94,.6)}
+.sq-spot.warn-tone .sq-spot-dot.on{background:var(--warn);box-shadow:0 0 6px rgba(245,158,11,.6)}
+@keyframes spotPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,.5)}50%{box-shadow:0 0 0 10px rgba(244,63,94,0)}}
+@keyframes spotGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.15)}}
+@keyframes spotBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(8deg)}}
+@keyframes spotSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.sq-spot-fading{opacity:0}
+
 /* ─── Modo Triagem ────────────────────────────────────────── */
 .tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
 .tri-head-title{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -3375,6 +3407,9 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   </div>
   <div class="sq-shell" id="sq-shell">
     <div id="sq-greeting" class="sq-greeting"></div>
+    <!-- Holofote rotativo: lembra o atendente do chamado mais urgente
+         (cliente devolveu / esquecido). Tom brincalhão, pulsa, troca a cada 5s. -->
+    <div id="sq-spotlight"></div>
     <div id="sq-hero-pilha" class="sq-block"></div>
     <div id="sq-attention" class="sq-attention"></div>
     <div id="sq-block-1" class="sq-block danger"></div>
@@ -17734,6 +17769,149 @@ function renderSquadGreeting(meus){
 
 // Hero da Pilha — primeiro card grande do dia. Total à esquerda,
 // 4 categorias clicáveis à direita (Sua vez / No radar / Esperando / Backlog).
+// ── Holofote rotativo ────────────────────────────────────────
+// Mostra UM chamado de cada vez (rotacionando) entre os "pra fazer agora":
+//   - cliente devolveu a bola (RETORNO CLIENTE)
+//   - esquecido (estados ativos sem mexer há 3+ dias)
+//   - SLA vencido (qualquer estado aguardando 1ª resposta)
+// Tom brincalhão. Click → abre o ticket no OTRS.
+var _spotState = { interval: null, idx: 0, candidatos: [] };
+var _SPOT_FRASES_RETORNO = [
+  'PSST...',
+  'Ó AÍ',
+  'BORA?',
+  'É TUA AGORA',
+  'OLHA ELE AÍ',
+  'TÁ ESPERANDO TE',
+  'ELE RESPONDEU!',
+  'EI, LEMBRA?'
+];
+var _SPOT_FRASES_ESQUECIDO = [
+  'TÁ ESQUECIDO',
+  'LEMBRA DE MIM?',
+  'FAZ TEMPO HEIN',
+  'PSST... AINDA AQUI',
+  'NÃO ME ABANDONA',
+  'Ô!'
+];
+var _SPOT_FRASES_VENCIDO = [
+  'SLA ESTOUROU',
+  'ATENÇÃO!',
+  'CORRE QUE DÁ',
+  'BORA BORA'
+];
+var _SPOT_MSG_RETORNO = [
+  'O cliente respondeu — a bola é tua.',
+  'Ele já te devolveu. Próxima jogada?',
+  'Cliente esperando você de volta.',
+  'A vez é tua agora.'
+];
+var _SPOT_MSG_ESQUECIDO = [
+  'Esse aqui tá quietinho no canto.',
+  'Sem mexer faz dias. Bora dar um tapa?',
+  'Tá te chamando lá no fundo da pilha.',
+  'Olha quem voltou pra superfície.'
+];
+var _SPOT_MSG_VENCIDO = [
+  'Tá além do prazo. Vamos fechar?',
+  'Cliente esperando além do contratado.',
+  'SLA passou — prioridade alta.'
+];
+
+function _spotPickCandidatos(meus){
+  var now = new Date();
+  var candidatos = [];
+  (meus||[]).forEach(function(t){
+    var st = (t.estado||'').toUpperCase();
+    var mod = _parseDate(t.modificado);
+    var dias = mod ? _daysSince(mod, now) : 0;
+    // Tipo 1: cliente devolveu
+    if(st === 'RETORNO CLIENTE'){
+      candidatos.push({ t:t, tipo:'retorno', peso: 200 + dias });
+      return;
+    }
+    // Tipo 2: SLA vencido
+    var sla = (typeof _calcSLA === 'function') ? _calcSLA(t) : null;
+    if(sla && sla.status === 'vencido'){
+      candidatos.push({ t:t, tipo:'vencido', peso: 150 + dias });
+      return;
+    }
+    // Tipo 3: esquecido (ativo sem mexer 3+ dias)
+    if(['EM ATENDIMENTO','OPEN','NEW'].indexOf(st) !== -1 && dias >= 3){
+      candidatos.push({ t:t, tipo:'esquecido', peso: 50 + dias });
+    }
+  });
+  candidatos.sort(function(a,b){ return b.peso - a.peso; });
+  // Limita a 5 pra não virar feed infinito
+  return candidatos.slice(0, 5);
+}
+function _spotPickFrase(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function _spotRender(el, candidatos, idx){
+  if(!candidatos.length){
+    // Estado calmo — pilha sob controle
+    el.innerHTML = '<div class="sq-spot calm-tone">'
+      + '<div class="sq-spot-emoji">✨</div>'
+      + '<div class="sq-spot-content">'
+        + '<div class="sq-spot-eyebrow">TUDO TRANQUILO</div>'
+        + '<div class="sq-spot-msg">Nada urgente esperando. Bom trabalho!</div>'
+        + '<div class="sq-spot-meta">A pilha tá sob controle agora.</div>'
+      + '</div>'
+    + '</div>';
+    return;
+  }
+  var c = candidatos[idx % candidatos.length];
+  var t = c.t;
+  var emoji, eyebrow, msg, tone='';
+  if(c.tipo === 'retorno'){
+    emoji = '🔥'; eyebrow = _spotPickFrase(_SPOT_FRASES_RETORNO); msg = _spotPickFrase(_SPOT_MSG_RETORNO);
+  } else if(c.tipo === 'vencido'){
+    emoji = '⚠'; eyebrow = _spotPickFrase(_SPOT_FRASES_VENCIDO); msg = _spotPickFrase(_SPOT_MSG_VENCIDO);
+  } else {
+    emoji = '😴'; eyebrow = _spotPickFrase(_SPOT_FRASES_ESQUECIDO); msg = _spotPickFrase(_SPOT_MSG_ESQUECIDO);
+    tone = ' warn-tone';
+  }
+  var dias = _daysSince(_parseDate(t.modificado), new Date());
+  var idadeTxt = dias === 0 ? 'hoje' : (dias === 1 ? 'ontem' : 'há '+dias+' dias');
+  var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
+  var dotsHtml = candidatos.length > 1
+    ? '<div class="sq-spot-dots">' + candidatos.map(function(_,i){
+        return '<div class="sq-spot-dot'+(i === (idx % candidatos.length) ? ' on' : '')+'"></div>';
+      }).join('') + '</div>'
+    : '';
+  el.innerHTML = '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="sq-spot'+tone+'">'
+    + '<div class="sq-spot-emoji">'+emoji+'</div>'
+    + '<div class="sq-spot-content">'
+      + '<div class="sq-spot-eyebrow">'+eyebrow+'</div>'
+      + '<div class="sq-spot-msg">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
+      + '<div class="sq-spot-meta"><strong>'+(t.cliente||'—')+'</strong> · #'+t.ticket+' · '+idadeTxt+'</div>'
+    + '</div>'
+    + '<div class="sq-spot-cta">Abrir no OTRS →</div>'
+    + dotsHtml
+  + '</a>';
+}
+function renderSpotlight(meus){
+  var el = document.getElementById('sq-spotlight');
+  if(!el) return;
+  // Para loop anterior
+  if(_spotState.interval){ clearInterval(_spotState.interval); _spotState.interval = null; }
+  _spotState.candidatos = _spotPickCandidatos(meus);
+  _spotState.idx = 0;
+  _spotRender(el, _spotState.candidatos, 0);
+  // Só roda loop se tem 2+ candidatos
+  if(_spotState.candidatos.length > 1){
+    _spotState.interval = setInterval(function(){
+      if(!isSquadMode()) return;
+      _spotState.idx++;
+      // Fade out → swap → fade in
+      var inner = el.firstElementChild;
+      if(inner) inner.classList.add('sq-spot-fading');
+      setTimeout(function(){
+        _spotRender(el, _spotState.candidatos, _spotState.idx);
+      }, 320);
+    }, 5000);
+  }
+}
+
 function renderHeroPilha(meus){
   var el = document.getElementById('sq-hero-pilha');
   if(!el) return;
@@ -18070,6 +18248,10 @@ window.renderSquadView = function(){
     openWhoAreYouModal(false, ctx);
     renderSquadGreeting(null);
     renderBlock6Alertas();
+    // Limpa o holofote e o painel de atenção quando não tem atendente
+    var _spotEl = document.getElementById('sq-spotlight');
+    if(_spotEl) _spotEl.innerHTML = '';
+    if(_spotState.interval){ clearInterval(_spotState.interval); _spotState.interval = null; }
     document.getElementById('sq-attention').innerHTML = '';
     var emptyMsg = _isDir
       ? 'Selecione no topo qual atendente você quer visualizar.'
@@ -18092,6 +18274,7 @@ window.renderSquadView = function(){
     .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
 
   renderSquadGreeting(meus);
+  renderSpotlight(meus);
   renderHeroPilha(meus);
   renderAttention(meus);
   renderBlock1AtaqueAgora(meus);
