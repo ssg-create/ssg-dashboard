@@ -12963,20 +12963,31 @@ function renderContratosSSG(){
     var limiteMes  = c.limite_mes;
     var limiteTrim = c.limite_mes * 3;
 
-    // Projeção linear só faz sentido no trim em andamento.
-    // Trim passado: projeção = uso real (já fechou). Trim futuro: 0.
+    // Projeção mês-a-mês (conservadora — futuros = 0):
+    //   - meses fechados antes do atual: valor REAL (não mexe)
+    //   - mês atual (parcial): extrapola só esse mês baseado nos dias
+    //   - meses futuros do trim: 0 (não inventa)
+    // Pra trim passado: tudo fechado → projeção = uso real.
+    // Pra trim futuro: 0.
     var projTrim;
     if(isTrimAtual){
-      var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey); // 0/1/2 ou -1
-      var fatorProj = 1;
-      if(idxMesAtualNoTrim !== -1 && diaHoje > 0){
-        var fracMesAtual = diaHoje / diasNoMes;
-        var totalProgresso = idxMesAtualNoTrim + fracMesAtual;
-        if(totalProgresso > 0) fatorProj = 3 / totalProgresso;
-      }
-      projTrim = Math.round(usoTrim * fatorProj);
+      var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey);
+      projTrim = 0;
+      trimMeses.forEach(function(mk, idx){
+        var nMes = byMonth[mk] || 0;
+        if(idx < idxMesAtualNoTrim){
+          // Mês fechado — usa real
+          projTrim += nMes;
+        } else if(idx === idxMesAtualNoTrim){
+          // Mês atual — extrapola pelo dia
+          var fator = diasNoMes > 0 ? (diasNoMes / Math.max(1, diaHoje)) : 1;
+          projTrim += Math.round(nMes * fator);
+        }
+        // futuros: soma 0
+      });
     } else {
-      // Passado ou futuro: projeção é o uso real (passado) ou 0 (futuro).
+      // Trim passado: tudo fechado, projeção = real.
+      // Trim futuro: real é 0, projeção 0.
       projTrim = usoTrim;
     }
 
