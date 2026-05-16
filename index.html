@@ -17963,6 +17963,12 @@ function _onboardMarcarFeito(){
 function _onboardStart(){
   if(_onboardJaFeito()) return;
   if(typeof isSquadMode !== 'function' || !isSquadMode()) return;
+  // Evita re-disparo: marca como visto IMEDIATAMENTE (não espera o usuário
+  // clicar "Pular"/"Vamos lá!"). Se ele fechar aba ou ignorar, não volta.
+  // Pra rever, usa Shift+O.
+  _onboardMarcarFeito();
+  // Evita render concorrente se chamado em paralelo
+  if(document.getElementById('sq-onboard-overlay')) return;
   // Espera 2s pro layout renderizar completamente
   setTimeout(function(){ _onboardStep(0); }, 2000);
 }
