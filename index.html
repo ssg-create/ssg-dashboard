@@ -1069,8 +1069,32 @@ body.squad-mode #rpt-btn{display:none!important}
 .tri-squad-btn.sugerido{background:linear-gradient(135deg,rgba(0,212,168,.18),rgba(0,212,168,.06));border-color:rgba(0,212,168,.45);color:var(--teal)}
 .tri-squad-btn.sugerido:hover{border-color:var(--teal);background:rgba(0,212,168,.22);color:var(--teal)}
 .tri-squad-btn .tri-sug-pct{font-size:9px;opacity:.7;margin-left:4px;font-family:var(--mono)}
-.tri-card-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;background:var(--bg2);border:1px dashed var(--border);border-radius:12px}
-.tri-card-empty-icon{font-size:48px;margin-bottom:14px;opacity:.5}
+.tri-card-empty{text-align:center;padding:50px 24px;color:var(--muted);font-size:14px;background:linear-gradient(180deg,rgba(16,185,129,.04),var(--bg2));border:1px dashed rgba(16,185,129,.2);border-radius:14px}
+.tri-card-empty-icon{font-size:56px;margin-bottom:16px;animation:triEmptyPulse 3s ease-in-out infinite}
+@keyframes triEmptyPulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.08);opacity:1}}
+/* Stats do dia no empty state */
+.tri-empty-stats{display:flex;gap:14px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+.tri-empty-stat{padding:12px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;min-width:110px}
+.tri-empty-stat-num{font-family:var(--display);font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.tri-empty-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:5px;font-weight:600}
+/* SLA badge (ampulheta) */
+.tri-sla-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;font-family:var(--mono);transition:all .3s;white-space:nowrap}
+.tri-sla-badge .tri-sla-icon{font-size:13px;line-height:1}
+.tri-sla-ok{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.25)}
+.tri-sla-warn{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.tri-sla-crit{background:rgba(244,63,94,.15);color:var(--danger);border:1px solid rgba(244,63,94,.4);animation:triSlaPulse 1.4s ease-in-out infinite}
+.tri-sla-vencido{background:rgba(244,63,94,.25);color:#fff;border:1px solid var(--danger);animation:triSlaPulse 1s ease-in-out infinite}
+.tri-sla-none{background:var(--bg3);color:var(--muted);border:1px solid var(--border);opacity:.7}
+@keyframes triSlaPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,.5)}50%{box-shadow:0 0 0 6px rgba(244,63,94,0)}}
+/* Recém triado — aparência fantasma */
+.tri-card-done{opacity:.6;background:linear-gradient(135deg,rgba(16,185,129,.06),var(--bg2));border-color:rgba(16,185,129,.25);border-left:3px solid var(--ok);transition:opacity .3s}
+.tri-card-done:hover{opacity:.85}
+.tri-recent-confirmed{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(16,185,129,.15);color:var(--ok);border:1px solid rgba(16,185,129,.3);border-radius:5px;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+.tri-recent-pending{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.25);border-radius:5px;font-weight:600;font-size:10.5px;font-style:italic}
+.tri-undo-btn{padding:3px 9px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:5px;font-size:10.5px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tri-undo-btn:hover{color:var(--danger);border-color:var(--danger)}
+.tri-section-divider{margin:18px 4px 10px;padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.tri-section-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
 /* Modal — escolher atendente da squad escolhida */
 .tri-pick-overlay{position:fixed;inset:0;z-index:9000;background:rgba(8,11,16,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center}
 .tri-pick-overlay.on{display:flex}
@@ -18350,6 +18374,97 @@ function _triFmtIdade(min){
   if(min < 1440) return Math.floor(min/60) + 'h ' + (min%60) + 'min';
   return Math.floor(min/1440) + 'd ' + Math.floor((min%1440)/60) + 'h';
 }
+
+// ── Ampulheta de SLA (Feature 1) ──────────────────────────────
+// Usa escalation_time direto do OTRS (Unix timestamp). Atualiza local
+// a cada 30s sem refetch — só recalcula delta com Date.now().
+function _triFmtSLA(escalationTime){
+  if(!escalationTime || typeof escalationTime !== 'number' || escalationTime <= 0){
+    return { txt:'sem SLA', status:'none', minRest:null };
+  }
+  var nowSec = Math.floor(Date.now()/1000);
+  var rem = escalationTime - nowSec;
+  var remMin = Math.round(rem/60);
+  if(remMin <= 0){
+    // Vencido: mostra "vencido há X" (positivo)
+    var venc = Math.abs(remMin);
+    return { txt:'venceu há '+_triFmtIdade(venc), status:'vencido', minRest:remMin };
+  }
+  var status = remMin <= 10 ? 'crit' : (remMin <= 30 ? 'warn' : 'ok');
+  return { txt:_triFmtIdade(remMin), status:status, minRest:remMin };
+}
+
+// ── Recém triados em localStorage (Feature 2) ─────────────────
+// Cada item: {ticket, squadId, squadNome, atendente, ts (ms), confirmado?}
+// Persiste por 5 minutos. Próximo sync confirma se saiu de NOC.
+var TRI_RECENT_KEY = 'tri.recent';
+var TRI_RECENT_TTL_MS = 5 * 60 * 1000;
+function _triLoadRecent(){
+  try {
+    var raw = localStorage.getItem(TRI_RECENT_KEY);
+    if(!raw) return [];
+    var arr = JSON.parse(raw);
+    var cutoff = Date.now() - TRI_RECENT_TTL_MS;
+    return arr.filter(function(r){ return r && r.ts && r.ts >= cutoff; });
+  } catch(e){ return []; }
+}
+function _triSaveRecent(arr){
+  try { localStorage.setItem(TRI_RECENT_KEY, JSON.stringify(arr)); } catch(e){}
+}
+function _triMarkRecent(ticket, squadId, squadNome, atendente){
+  var arr = _triLoadRecent();
+  // Remove duplicata se existir
+  arr = arr.filter(function(r){ return String(r.ticket) !== String(ticket); });
+  arr.unshift({
+    ticket: String(ticket),
+    squadId: squadId,
+    squadNome: squadNome,
+    atendente: atendente,
+    ts: Date.now(),
+    confirmado: false
+  });
+  _triSaveRecent(arr);
+  _triBumpStatsHoje();
+}
+window._triUndoRecent = function(ticket){
+  var arr = _triLoadRecent().filter(function(r){ return String(r.ticket) !== String(ticket); });
+  _triSaveRecent(arr);
+  if(typeof renderTriagemView === 'function') renderTriagemView();
+};
+
+// ── Stats do dia (Feature 3) ──────────────────────────────────
+function _triHojeKey(){
+  var d = new Date();
+  return 'tri.stats.' + d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+}
+function _triStatsHoje(){
+  try {
+    var raw = localStorage.getItem(_triHojeKey());
+    return raw ? JSON.parse(raw) : { count:0, primeira:null, ultima:null, deltas:[] };
+  } catch(e){ return { count:0, primeira:null, ultima:null, deltas:[] }; }
+}
+function _triSaveStatsHoje(s){
+  try { localStorage.setItem(_triHojeKey(), JSON.stringify(s)); } catch(e){}
+}
+function _triBumpStatsHoje(){
+  var s = _triStatsHoje();
+  var now = Date.now();
+  if(s.ultima){ s.deltas.push(now - s.ultima); }
+  s.count += 1;
+  s.primeira = s.primeira || now;
+  s.ultima = now;
+  _triSaveStatsHoje(s);
+}
+function _triFmtHora(ts){
+  if(!ts) return '—';
+  var d = new Date(ts);
+  return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+}
+function _triMediaMin(deltas){
+  if(!deltas || !deltas.length) return null;
+  var avg = deltas.reduce(function(s,d){return s+d;}, 0) / deltas.length;
+  return Math.round(avg / 60000); // ms → min
+}
 window.renderTriagemView = function(){
   var listEl = document.getElementById('tri-list');
   var subEl  = document.getElementById('tri-head-sub');
@@ -18391,43 +18506,116 @@ window.renderTriagemView = function(){
     return;
   }
 
-  // Filtra triagem
+  // Filtra triagem (pendentes em NOC)
   var tickets = (TICKETS_ATIVOS_DATA.rows||[]).filter(function(r){
     return r.fila === FILA_TRIAGEM
         && r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER
         && (r.estado||'').toUpperCase() === TRIAGEM_ESTADO_NOVO;
   });
-  // Ordena por mais antigo primeiro (quem tá esperando mais)
-  tickets.sort(function(a,b){
-    return (a.criado||'').localeCompare(b.criado||'');
+  // Ordena por mais antigo primeiro
+  tickets.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+
+  // Recém triados (Feature 2): persistem por 5min na lista, com aparência diferente.
+  // Se sync confirma que ticket saiu de NOC → mantém como "triado" (ela acertou).
+  // Se ainda está em NOC → remove do recente (ela cancelou no OTRS).
+  var recentRaw = _triLoadRecent();
+  var ticketsPendentesIds = {};
+  tickets.forEach(function(t){ ticketsPendentesIds[String(t.ticket)] = true; });
+  var recent = [];
+  var recentPurge = [];
+  recentRaw.forEach(function(r){
+    if(ticketsPendentesIds[r.ticket]){
+      // Ainda está em NOC após sync — ela não confirmou no OTRS.
+      // Tolerância de 2 min antes de purgar (sync pode demorar)
+      if(Date.now() - r.ts > 2*60*1000){
+        recentPurge.push(r);
+      } else {
+        // Ainda na janela de tolerância: mantém como recém triado
+        r.confirmado = false;
+        recent.push(r);
+      }
+    } else {
+      // Saiu de NOC → confirmado
+      r.confirmado = true;
+      recent.push(r);
+    }
   });
+  if(recentPurge.length){
+    var keep = recentRaw.filter(function(r){
+      return !recentPurge.some(function(p){ return p.ticket === r.ticket; });
+    });
+    _triSaveRecent(keep);
+  } else {
+    _triSaveRecent(recent);
+  }
+  // Remove tickets pendentes que aparecem em recent confirmados (não duplica)
+  var recentIds = {};
+  recent.forEach(function(r){ if(r.confirmado) recentIds[r.ticket] = true; });
+  tickets = tickets.filter(function(t){ return !recentIds[String(t.ticket)]; });
 
   if(numEl) numEl.textContent = tickets.length;
 
-  if(!tickets.length){
+  // ── Empty state enriquecido (Feature 3) ────────────────────
+  if(!tickets.length && !recent.length){
     if(subEl) subEl.textContent = 'Tudo distribuído. Hora do café ☕';
+    var stats = _triStatsHoje();
+    var dur = (stats.primeira && stats.ultima) ? Math.round((stats.ultima - stats.primeira)/60000) : 0;
+    var media = _triMediaMin(stats.deltas);
+    var FRASES_VAZIO = [
+      'Aproveita pra esticar as pernas 🧘',
+      'Pode pegar um café ☕',
+      'Tira 5 minutos pra você 💆',
+      'Bom momento pra um respiro 🌿',
+      'Hora de relaxar — tá voando 🚀',
+      'Olha quem tá em dia! 👏'
+    ];
+    var fraseIdx = stats.count % FRASES_VAZIO.length;
+    var statsHtml = stats.count > 0
+      ? '<div class="tri-empty-stats">'
+        + '<div class="tri-empty-stat"><div class="tri-empty-stat-num">'+stats.count+'</div><div class="tri-empty-stat-lbl">chamado'+(stats.count!==1?'s':'')+' triado'+(stats.count!==1?'s':'')+' hoje</div></div>'
+        + '<div class="tri-empty-stat"><div class="tri-empty-stat-num">'+_triFmtHora(stats.primeira)+'</div><div class="tri-empty-stat-lbl">início</div></div>'
+        + '<div class="tri-empty-stat"><div class="tri-empty-stat-num">'+_triFmtHora(stats.ultima)+'</div><div class="tri-empty-stat-lbl">último</div></div>'
+        + (media !== null ? '<div class="tri-empty-stat"><div class="tri-empty-stat-num">'+media+'min</div><div class="tri-empty-stat-lbl">média entre chamados</div></div>' : '')
+      + '</div>'
+      : '';
     listEl.innerHTML = '<div class="tri-card-empty">'
       + '<div class="tri-card-empty-icon">✨</div>'
-      + '<div style="font-weight:600;color:var(--text);font-size:16px">Sem chamados pra triar agora</div>'
-      + '<div style="margin-top:6px;font-size:12px;color:var(--muted)">Quando entrarem novos, eles aparecem aqui automaticamente.</div>'
+      + '<div style="font-weight:700;color:var(--text);font-size:18px;font-family:var(--display)">Sem chamados pra triar agora</div>'
+      + '<div style="margin-top:8px;font-size:13px;color:var(--muted)">Quando entrar algo novo, aparece aqui em até 1 minuto.</div>'
+      + (stats.count > 0 ? '<div style="margin-top:18px;font-size:13.5px;color:var(--text);font-weight:500">'+FRASES_VAZIO[fraseIdx]+'</div>' : '')
+      + statsHtml
       + '</div>';
     return;
   }
 
   if(subEl){
     var antigos = tickets.filter(function(t){ return _triMinutosDesde(t.criado) >= 30; }).length;
-    subEl.innerHTML = tickets.length + ' chamado' + (tickets.length!==1?'s':'') + ' aguardando você definir pra onde vão'
-      + (antigos ? ' · <strong style="color:var(--warn)">' + antigos + ' há mais de 30min</strong>' : '');
+    var recentTxt = recent.length ? ' · <span style="color:var(--ok)">'+recent.length+' acabou'+(recent.length!==1?'ram':'')+' de ser triado'+(recent.length!==1?'s':'')+'</span>' : '';
+    subEl.innerHTML = (tickets.length || 0) + ' chamado' + (tickets.length!==1?'s':'') + ' aguardando você definir pra onde vão'
+      + (antigos ? ' · <strong style="color:var(--warn)">' + antigos + ' há mais de 30min</strong>' : '')
+      + recentTxt;
   }
 
   var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
-  listEl.innerHTML = tickets.map(function(t,idx){
+
+  // ── Cards de chamados PENDENTES ────────────────────────────
+  var pendentesHtml = tickets.map(function(t){
     var cli = _triExtractCliente(t);
     var minutos = _triMinutosDesde(t.criado);
     var ageClass = minutos >= 60 ? 'danger' : (minutos >= 30 ? 'warn' : '');
     var urgentClass = minutos >= 60 ? ' urgent' : '';
     var sug = _triSugerirSquad(t);
     var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
+
+    // SLA badge (Feature 1) — ampulheta com tempo restante. Atualiza via _triTickSLA.
+    var slaHtml = '';
+    if(typeof t.escalation_time === 'number' && t.escalation_time > 0){
+      var sla = _triFmtSLA(t.escalation_time);
+      slaHtml = '<div class="tri-sla-badge tri-sla-'+sla.status+'" data-esc="'+t.escalation_time+'" title="SLA via OTRS">'
+        + '<span class="tri-sla-icon">⏳</span>'
+        + '<span class="tri-sla-txt">'+sla.txt+'</span>'
+      + '</div>';
+    }
 
     var sugLine = '';
     if(sug){
@@ -18442,7 +18630,6 @@ window.renderTriagemView = function(){
       var sCfg = SQUADS[sid];
       var sugClass = (sug && sug.squadId === sid) ? ' sugerido' : '';
       var ticketEsc = String(t.ticket).replace(/"/g,'&quot;');
-      var sNomeEsc  = sCfg.nome.replace(/"/g,'&quot;');
       var pctTxt = (sug && sug.squadId===sid) ? '<span class="tri-sug-pct">'+sug.pct+'%</span>' : '';
       return '<button class="tri-squad-btn'+sugClass+'" onclick="_triPickSquad(\''+ticketEsc+'\',\''+sid+'\')">'+sCfg.nome.replace('· Protheus','').replace(/^Infraestrutura$/,'Infra')+pctTxt+'</button>';
     }).join('');
@@ -18451,6 +18638,7 @@ window.renderTriagemView = function(){
       + '<div class="tri-card-hd">'
         + '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="tri-card-num" title="Abrir no OTRS">#'+t.ticket+'</a>'
         + '<div class="tri-card-cli">'+cli+'</div>'
+        + slaHtml
         + '<div class="tri-card-age '+ageClass+'">há '+_triFmtIdade(minutos)+'</div>'
       + '</div>'
       + '<div class="tri-card-assunto">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
@@ -18461,7 +18649,49 @@ window.renderTriagemView = function(){
       + '</div>'
     + '</div>';
   }).join('');
+
+  // ── Cards RECÉM TRIADOS (Feature 2) ────────────────────────
+  var recentHtml = '';
+  if(recent.length){
+    recentHtml = '<div class="tri-section-divider">'
+      + '<span class="tri-section-label">✓ ACABARAM DE SAIR — confirmação visual ('+recent.length+')</span>'
+    + '</div>'
+    + recent.map(function(r){
+      var ageS = Math.round((Date.now() - r.ts) / 1000);
+      var ageTxt = ageS < 60 ? 'agora mesmo' : 'há '+Math.round(ageS/60)+' min';
+      var canUndo = ageS < 30 && !r.confirmado;
+      var statusBadge = r.confirmado
+        ? '<span class="tri-recent-confirmed">✓ confirmado no OTRS</span>'
+        : '<span class="tri-recent-pending">aguardando confirmação do OTRS…</span>';
+      return '<div class="tri-card tri-card-done">'
+        + '<div class="tri-card-hd">'
+          + '<span class="tri-card-num" style="opacity:.8">#'+r.ticket+'</span>'
+          + '<div class="tri-card-cli" style="opacity:.85">→ <strong>'+r.squadNome+'</strong> · '+r.atendente+'</div>'
+          + '<div class="tri-card-age">' + ageTxt + '</div>'
+        + '</div>'
+        + '<div style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11.5px">'
+          + statusBadge
+          + (canUndo ? '<button onclick="_triUndoRecent(\''+r.ticket+'\')" class="tri-undo-btn">desfazer</button>' : '')
+        + '</div>'
+      + '</div>';
+    }).join('');
+  }
+
+  listEl.innerHTML = pendentesHtml + recentHtml;
 };
+// Tick local pra ampulheta de SLA — atualiza só os badges sem re-render full.
+// Evita flicker da animação a cada 30s do refresh de dados.
+var _triTickInterval = null;
+function _triTickSLA(){
+  document.querySelectorAll('.tri-sla-badge[data-esc]').forEach(function(el){
+    var esc = parseInt(el.getAttribute('data-esc'), 10);
+    if(!esc) return;
+    var sla = _triFmtSLA(esc);
+    el.className = 'tri-sla-badge tri-sla-' + sla.status;
+    var txt = el.querySelector('.tri-sla-txt');
+    if(txt) txt.textContent = sla.txt;
+  });
+}
 // Click numa squad → abre modal de atendentes daquela squad
 window._triPickSquad = function(ticket, squadId){
   var cfg = SQUADS[squadId];
@@ -18507,13 +18737,16 @@ window._triAssign = function(ticket, squadId, atendente){
   try {
     if(navigator.clipboard) navigator.clipboard.writeText(decisao);
   } catch(e){}
+  // Marca como recém triado (Feature 2) — fica visível por 5min como "fantasma"
+  // com badge "aguardando confirmação OTRS"; quando próximo sync confirmar
+  // que saiu de NOC, vira "✓ confirmado".
+  _triMarkRecent(ticket, squadId, sNome, atendente);
   // Abre OTRS no ticket
   var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(ticket);
   window.open(tkUrl, '_blank', 'noopener');
   _triClosePick();
-  // Feedback visual rápido (não bloqueia)
-  var msg = '✓ Decisão copiada · ' + sNome + ' → ' + atendente + '\n\nO OTRS abriu numa nova aba — faça o "Move/Atribuir" lá pra concluir.';
-  setTimeout(function(){ alert(msg); }, 100);
+  // Re-renderiza pra mostrar o card como recém triado
+  if(typeof renderTriagemView === 'function') renderTriagemView();
 };
 function _isTriagemMode(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
@@ -18609,6 +18842,20 @@ function bootSquadMode(){
   setInterval(function(){
     var c = document.getElementById('sq-clock-tick');
     if(c) c.textContent = ('0'+new Date().getHours()).slice(-2)+':'+('0'+new Date().getMinutes()).slice(-2);
+  }, 30*1000);
+  // Tick local da ampulheta de SLA na triagem — atualiza badges in-place
+  // a cada 30s sem re-render. Também re-renderiza a view de triagem
+  // pra atualizar "há X min" dos cards recém triados.
+  if(_triTickInterval){ clearInterval(_triTickInterval); }
+  _triTickInterval = setInterval(function(){
+    if(!isSquadMode()) return;
+    var cfgCur = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+    if(!cfgCur || cfgCur.tipo !== 'triagem') return;
+    try { _triTickSLA(); } catch(e){}
+    // A cada 60s força re-render dos recém triados pra atualizar idade
+    if(Math.floor(Date.now()/1000) % 60 < 30){
+      try { renderTriagemView(); } catch(e){}
+    }
   }, 30*1000);
 }
 
