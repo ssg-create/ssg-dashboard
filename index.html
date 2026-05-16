@@ -18351,6 +18351,17 @@ setInterval(function(){
   _walkerState.lastWalk = Date.now();
   _walkerStart();
 }, 60*1000); // checa a cada 1min
+// Expõe pra testes manuais: abrir console e rodar `_walkerStart()`
+// ou apertar Shift+W (em qualquer lugar do squad-view) pra disparar agora.
+window._walkerStart = _walkerStart;
+document.addEventListener('keydown', function(e){
+  if(e.shiftKey && (e.key === 'W' || e.key === 'w')){
+    if(typeof isSquadMode === 'function' && isSquadMode()){
+      _walkerState.lastWalk = 0; // bypass cooldown
+      _walkerStart();
+    }
+  }
+});
 
 // ── Holofote rotativo ────────────────────────────────────────
 // Mostra UM chamado de cada vez (rotacionando) entre os "pra fazer agora":
