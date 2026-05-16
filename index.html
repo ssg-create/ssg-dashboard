@@ -1113,6 +1113,21 @@ body.squad-mode #rpt-btn{display:none!important}
 @keyframes walkerFade{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes walkerTargetGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.5),0 4px 14px rgba(255,100,0,.15)}50%{box-shadow:0 0 0 8px rgba(255,100,0,0),0 4px 18px rgba(255,100,0,.35)}}
 
+/* ─── Onboarding (1ª visita) ───────────────────────────────── */
+.sq-onboard-overlay{position:fixed;inset:0;z-index:9500;pointer-events:none}
+.sq-onboard-card{position:fixed;width:360px;max-width:92vw;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 12px 32px rgba(0,0,0,.4);pointer-events:auto;animation:onboardIn .35s cubic-bezier(.34,1.56,.64,1)}
+.sq-onboard-step{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;opacity:.85;margin-bottom:6px}
+.sq-onboard-titulo{font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:8px;letter-spacing:-.01em}
+.sq-onboard-msg{font-size:14px;line-height:1.45;margin-bottom:14px;opacity:.95}
+.sq-onboard-acts{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sq-onboard-pular{background:transparent;border:none;color:#fff;font-size:12px;cursor:pointer;opacity:.75;padding:6px 0;font-family:inherit}
+.sq-onboard-pular:hover{opacity:1;text-decoration:underline}
+.sq-onboard-prox{background:#fff;color:#FF6400;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:transform .15s}
+.sq-onboard-prox:hover{transform:scale(1.04)}
+.sq-onboard-target{position:relative;animation:onboardTargetPulse 1.8s ease-in-out infinite;z-index:9499}
+@keyframes onboardIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes onboardTargetPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.55),0 4px 18px rgba(255,100,0,.25)}50%{box-shadow:0 0 0 10px rgba(255,100,0,0),0 6px 24px rgba(255,100,0,.4)}}
+
 /* ─── Modo Triagem ────────────────────────────────────────── */
 .tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
 .tri-head-title{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -3547,7 +3562,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       class="sq-walker-char"
       src="https://assets-v2.lottiefiles.com/a/fe807c20-1183-11ee-a7e0-738836ffd98a/rkkiNXXFMb.lottie"
       autoplay loop
-      style="width:140px;height:140px;display:block">
+      style="width:180px;height:180px;display:block">
     </dotlottie-wc>
   </div>
   <!-- Companion / mascote fixo no canto. Persistente em todo o squad-view.
@@ -17908,6 +17923,261 @@ function renderSquadGreeting(meus){
 
 // Hero da Pilha — primeiro card grande do dia. Total à esquerda,
 // 4 categorias clicáveis à direita (Sua vez / No radar / Esperando / Backlog).
+// ── Onboarding (1ª visita) ───────────────────────────────────
+// Walker se apresenta + tour 4 passos pelos blocos principais.
+// Marca em localStorage quando completo (não repete).
+var ONBOARD_KEY = 'sq.onboarded_v1';
+var ONBOARD_STEPS = [
+  {
+    targetId: 'sq-hero-pilha',
+    titulo: '👋 Oi! Bem-vindo ao seu painel.',
+    msg: 'Eu sou seu companion operacional. Aqui em cima você vê sua pilha — total de chamados e como estão distribuídos.'
+  },
+  {
+    targetId: 'sq-block-1',
+    titulo: '⚡ Sua vez de jogar',
+    msg: 'Quando o cliente responde, o chamado cai aqui — agora é a sua vez. Priorize esses primeiro.'
+  },
+  {
+    targetId: 'sq-block-3',
+    titulo: '⏳ Bola com eles',
+    msg: 'Aqui ficam os chamados que estão aguardando alguém (cliente, time interno, externo). Você não precisa fazer nada, mas vale acompanhar.'
+  },
+  {
+    targetId: 'sq-attention',
+    titulo: '💡 Sinais de alerta',
+    msg: 'Cards aqui aparecem quando algo precisa de atenção — vencidos, esquecidos, cliente sumido. Clique pra ver os chamados.'
+  },
+  {
+    targetId: null, // sem target = fala flutuante final
+    titulo: '🎯 Pronto!',
+    msg: 'Eu vou aparecer de vez em quando pra te lembrar de coisas importantes. Bom trabalho!'
+  }
+];
+function _onboardJaFeito(){
+  try { return !!localStorage.getItem(ONBOARD_KEY); } catch(e){ return false; }
+}
+function _onboardMarcarFeito(){
+  try { localStorage.setItem(ONBOARD_KEY, String(Date.now())); } catch(e){}
+}
+function _onboardStart(){
+  if(_onboardJaFeito()) return;
+  if(typeof isSquadMode !== 'function' || !isSquadMode()) return;
+  // Espera 2s pro layout renderizar completamente
+  setTimeout(function(){ _onboardStep(0); }, 2000);
+}
+function _onboardStep(idx){
+  if(idx >= ONBOARD_STEPS.length){
+    _onboardMarcarFeito();
+    _onboardClose();
+    return;
+  }
+  var step = ONBOARD_STEPS[idx];
+  var overlay = document.getElementById('sq-onboard-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'sq-onboard-overlay';
+    overlay.className = 'sq-onboard-overlay';
+    document.body.appendChild(overlay);
+  }
+  // Scroll até o target
+  var targetEl = step.targetId ? document.getElementById(step.targetId) : null;
+  if(targetEl){
+    targetEl.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(function(){ _onboardRenderStep(idx, step, targetEl); }, 600);
+  } else {
+    _onboardRenderStep(idx, step, null);
+  }
+}
+function _onboardRenderStep(idx, step, targetEl){
+  var overlay = document.getElementById('sq-onboard-overlay');
+  if(!overlay) return;
+  var pos = '';
+  if(targetEl){
+    var r = targetEl.getBoundingClientRect();
+    // Posiciona o tooltip abaixo do target (ou acima se não couber)
+    var top = r.bottom + 16;
+    if(top + 220 > window.innerHeight) top = r.top - 220;
+    var left = Math.max(20, Math.min(window.innerWidth - 380, r.left));
+    pos = 'top:'+top+'px;left:'+left+'px';
+    // Highlight no target
+    targetEl.classList.add('sq-onboard-target');
+  } else {
+    pos = 'top:50%;left:50%;transform:translate(-50%,-50%)';
+  }
+  overlay.innerHTML = '<div class="sq-onboard-card" style="'+pos+'">'
+    + '<div class="sq-onboard-step">passo '+(idx+1)+' de '+ONBOARD_STEPS.length+'</div>'
+    + '<div class="sq-onboard-titulo">'+step.titulo+'</div>'
+    + '<div class="sq-onboard-msg">'+step.msg+'</div>'
+    + '<div class="sq-onboard-acts">'
+      + '<button class="sq-onboard-pular" onclick="_onboardSkip()">Pular tour</button>'
+      + '<button class="sq-onboard-prox" onclick="_onboardNext('+idx+')">'+(idx === ONBOARD_STEPS.length-1 ? 'Vamos lá! 🚀' : 'Próximo →')+'</button>'
+    + '</div>'
+  + '</div>';
+  overlay.style.display = 'block';
+}
+window._onboardNext = function(idx){
+  // Remove highlight do step anterior
+  document.querySelectorAll('.sq-onboard-target').forEach(function(el){
+    el.classList.remove('sq-onboard-target');
+  });
+  _onboardStep(idx + 1);
+};
+window._onboardSkip = function(){
+  _onboardMarcarFeito();
+  _onboardClose();
+};
+function _onboardClose(){
+  document.querySelectorAll('.sq-onboard-target').forEach(function(el){
+    el.classList.remove('sq-onboard-target');
+  });
+  var overlay = document.getElementById('sq-onboard-overlay');
+  if(overlay) overlay.remove();
+}
+// Atalho: aperta Shift+O pra re-disparar onboarding (debug/showing)
+document.addEventListener('keydown', function(e){
+  if(e.shiftKey && (e.key === 'O' || e.key === 'o')){
+    if(typeof isSquadMode === 'function' && isSquadMode()){
+      try { localStorage.removeItem(ONBOARD_KEY); } catch(e){}
+      _onboardStart();
+    }
+  }
+});
+
+// ── Notificações (título da aba + browser push) ──────────────
+// Resolve o cenário: atendente abriu outra aba e perdeu tickets urgentes.
+// 1) Título da aba pisca com count quando há novidade
+// 2) Browser push (opt-in): pede permission no 1º urgência detectada
+// 3) Detecta DELTA — só notifica tickets que entraram desde a última visita
+var _notifState = {
+  lastSeenTickets: null,      // Set de IDs vistos na última render
+  pendingCount: 0,            // urgentes novos não vistos
+  titleOriginal: document.title,
+  blinkInterval: null,
+  permPedida: false,
+  notificadosIds: {}          // pra não duplicar push pro mesmo ticket
+};
+function _notifPickUrgentes(meus){
+  if(!meus) return [];
+  return meus.filter(function(t){
+    var st = (t.estado||'').toUpperCase();
+    if(st === 'RETORNO CLIENTE') return true;
+    var sla = (typeof _calcSLA === 'function') ? _calcSLA(t) : null;
+    if(sla && sla.status === 'vencido') return true;
+    return false;
+  });
+}
+function _notifAtualiza(meus){
+  var urgentes = _notifPickUrgentes(meus);
+  var idsAtuais = {};
+  urgentes.forEach(function(t){ idsAtuais[String(t.ticket)] = t; });
+
+  // 1ª chamada: só registra o que tem agora, não notifica histórico
+  if(_notifState.lastSeenTickets === null){
+    _notifState.lastSeenTickets = idsAtuais;
+    return;
+  }
+
+  // Detecta NOVOS (entraram agora, não estavam antes)
+  var novos = [];
+  Object.keys(idsAtuais).forEach(function(id){
+    if(!_notifState.lastSeenTickets[id]) novos.push(idsAtuais[id]);
+  });
+
+  // Se aba está visível, considera "visto" mas dispara walker reativo
+  if(document.visibilityState === 'visible'){
+    _notifState.lastSeenTickets = idsAtuais;
+    if(novos.length > 0){
+      // Trigger walker reativo (Etapa 2)
+      _notifTriggerWalkerReativo(novos[0]);
+    }
+    _notifClearTitle();
+    return;
+  }
+
+  // Aba inativa: acumula pendentes, pisca título, envia push pros NOVOS
+  if(novos.length > 0){
+    _notifState.pendingCount += novos.length;
+    _notifBlinkTitle(_notifState.pendingCount);
+    novos.forEach(function(t){
+      var tid = String(t.ticket);
+      if(_notifState.notificadosIds[tid]) return;
+      _notifState.notificadosIds[tid] = true;
+      _notifBrowserPush(t);
+    });
+    _notifState.lastSeenTickets = idsAtuais;
+  }
+}
+function _notifBlinkTitle(count){
+  if(_notifState.blinkInterval) return; // já tá piscando
+  var msgs = ['🔥 (' + count + ') Painel GW', _notifState.titleOriginal];
+  var i = 0;
+  document.title = msgs[0];
+  _notifState.blinkInterval = setInterval(function(){
+    i = (i + 1) % 2;
+    document.title = i === 0 ? msgs[0].replace(/\(\d+\)/, '('+_notifState.pendingCount+')') : msgs[1];
+  }, 1500);
+}
+function _notifClearTitle(){
+  if(_notifState.blinkInterval){
+    clearInterval(_notifState.blinkInterval);
+    _notifState.blinkInterval = null;
+  }
+  _notifState.pendingCount = 0;
+  document.title = _notifState.titleOriginal;
+}
+function _notifBrowserPush(ticket){
+  if(!('Notification' in window)) return;
+  // Pede permission na 1ª vez (sem ser intrusivo)
+  if(Notification.permission === 'default' && !_notifState.permPedida){
+    _notifState.permPedida = true;
+    Notification.requestPermission().then(function(perm){
+      if(perm === 'granted') _notifDispatchPush(ticket);
+    });
+    return;
+  }
+  if(Notification.permission === 'granted') _notifDispatchPush(ticket);
+}
+function _notifDispatchPush(ticket){
+  try {
+    var st = (ticket.estado||'').toUpperCase();
+    var titulo = st === 'RETORNO CLIENTE'
+      ? '🔥 Cliente devolveu a bola'
+      : '⚠ SLA estourou';
+    var body = (ticket.cliente||'cliente') + ' · ' + (ticket.assunto||'').slice(0, 80);
+    var n = new Notification(titulo, {
+      body: body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: 'ticket-'+ticket.ticket,
+      requireInteraction: false
+    });
+    n.onclick = function(){
+      window.focus();
+      var url = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(ticket.ticket);
+      window.open(url, '_blank', 'noopener');
+      n.close();
+    };
+    setTimeout(function(){ try { n.close(); } catch(e){} }, 8000);
+  } catch(e){ console.warn('push:', e); }
+}
+// Hook no visibilitychange pra limpar título quando volta
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible') _notifClearTitle();
+});
+
+// Placeholder pra Etapa 2 (mascote reativo) — implementado no próximo passo
+function _notifTriggerWalkerReativo(ticket){
+  if(typeof _walkerStart !== 'function') return;
+  // Dispara walker imediato se não tá rolando E há card crítico
+  if(_walkerState && _walkerState.walking) return;
+  if(Date.now() - _walkerState.lastUserActivity < 5000) return; // dá 5s pro user
+  setTimeout(function(){
+    _walkerState.lastWalk = 0; // bypass cooldown
+    _walkerStart();
+  }, 2000); // espera 2s pra render terminar
+}
+
 // ── Companion / Mascote operacional ──────────────────────────
 // Floating bubble persistente no canto inferior direito que reage ao
 // estado da pilha. Estados: urgente / esquecido / foco / calmo / comemora.
@@ -18936,6 +19206,9 @@ window.renderSquadView = function(){
   renderHeroPilha(meus);
   renderAttention(meus);
   try { _mascotUpdate(meus); } catch(e){ console.warn('mascot:',e); }
+  try { _notifAtualiza(meus); } catch(e){ console.warn('notif:',e); }
+  // Dispara onboarding na 1ª visita (atendente identificado + nunca viu antes)
+  try { if(atend && !_onboardJaFeito()) _onboardStart(); } catch(e){ console.warn('onboard:',e); }
   renderBlock1AtaqueAgora(meus);
   renderBlock2Ativas(meus);
   renderBlock3Esperando(meus);
