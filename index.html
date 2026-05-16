@@ -18608,12 +18608,20 @@ window.renderTriagemView = function(){
     var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
 
     // SLA badge (Feature 1) — ampulheta com tempo restante. Atualiza via _triTickSLA.
+    // Sempre renderiza o badge — mesmo quando sem SLA — pra deixar claro
+    // que o painel CHECOU (silêncio confundia com "não funcionou").
     var slaHtml = '';
     if(typeof t.escalation_time === 'number' && t.escalation_time > 0){
       var sla = _triFmtSLA(t.escalation_time);
-      slaHtml = '<div class="tri-sla-badge tri-sla-'+sla.status+'" data-esc="'+t.escalation_time+'" title="SLA via OTRS">'
+      slaHtml = '<div class="tri-sla-badge tri-sla-'+sla.status+'" data-esc="'+t.escalation_time+'" title="SLA via OTRS — '+sla.txt+'">'
         + '<span class="tri-sla-icon">⏳</span>'
         + '<span class="tri-sla-txt">'+sla.txt+'</span>'
+      + '</div>';
+    } else {
+      // Ticket sem SLA configurado (alerta automático, cliente sem contrato, etc.)
+      slaHtml = '<div class="tri-sla-badge tri-sla-none" title="Esse ticket não tem SLA configurado no OTRS — alerta automático ou cliente sem contrato.">'
+        + '<span class="tri-sla-icon">—</span>'
+        + '<span class="tri-sla-txt">sem SLA</span>'
       + '</div>';
     }
 
