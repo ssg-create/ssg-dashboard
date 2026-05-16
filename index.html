@@ -1086,21 +1086,14 @@ body.squad-mode #rpt-btn{display:none!important}
 
 /* ─── GW Walker (mini-personagem ambulante) ────────────────── */
 .sq-walker{position:fixed;bottom:30px;left:-60px;z-index:8500;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px}
-/* Easing cubic-bezier irregular = não anda em velocidade constante.
-   Levemente acelera/desacelera ao longo do caminho, como passos humanos. */
 .sq-walker.walking{animation:walkAcross 32s cubic-bezier(.42,0,.58,1) forwards}
 .sq-walker.paused{animation-play-state:paused}
-.sq-walker-char{display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
-/* Bob de andar com ritmo variável (não 100% periódico) */
-.sq-walker.walking .sq-walker-char{animation:walkBob .58s cubic-bezier(.5,.1,.5,.9) infinite}
-.sq-walker.paused .sq-walker-char{animation:walkBobIdle 2s ease-in-out infinite}
-/* Pernas balançam quando andando */
-.sq-walker.walking .gw-leg-l{animation:legSwingL .58s cubic-bezier(.5,.1,.5,.9) infinite;transform-origin:16px 35px}
-.sq-walker.walking .gw-leg-r{animation:legSwingR .58s cubic-bezier(.5,.1,.5,.9) infinite;transform-origin:28px 35px}
-.sq-walker.paused .gw-leg-l,.sq-walker.paused .gw-leg-r{animation:legIdle 2s ease-in-out infinite}
-.sq-walker.paused .gw-leg-r{animation-delay:.3s}
-/* Olhos piscam + olham pros lados de vez em quando */
-.gw-pupil{animation:gwBlink 5.5s ease-in-out infinite,gwLook 9s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+/* Filter pra transformar paleta azul/turquesa do Lottie em laranja GW
+   (hue-rotate -110deg + saturate vivo). Drop-shadow pra grudar no fundo. */
+.sq-walker-char{display:block;filter:hue-rotate(-110deg) saturate(1.4) brightness(1.05) drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+/* Bob sutil enquanto anda (additional sobre a anim interna do Lottie) */
+.sq-walker.walking .sq-walker-char{animation:walkBob 1.2s ease-in-out infinite}
+.sq-walker.paused .sq-walker-char{animation:walkBobIdle 2.4s ease-in-out infinite}
 /* Braço acenando quando paused */
 .gw-arm{display:none;transform-origin:38px 14px}
 .sq-walker.paused .gw-arm{display:block;animation:gwWave .55s ease-in-out infinite}
@@ -1112,19 +1105,10 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Highlight no card alvo */
 .sq-walker-target{animation:walkerTargetGlow 1.8s ease-in-out infinite;position:relative;z-index:5}
 @keyframes walkAcross{0%{left:-60px}100%{left:calc(100vw + 20px)}}
-/* Bob com 3 pontos não-simétricos: leve pisada mais forte no pé direito */
-@keyframes walkBob{0%{transform:translateY(0) rotate(-.5deg)}25%{transform:translateY(-2px) rotate(0)}50%{transform:translateY(-1px) rotate(.5deg)}75%{transform:translateY(-3px) rotate(0)}100%{transform:translateY(0) rotate(-.5deg)}}
-/* Idle (pausado): respira levemente */
-@keyframes walkBobIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
-/* Pernas com swing assimétrico (cada lado em fase oposta + variação angular) */
-@keyframes legSwingL{0%{transform:rotate(-22deg)}50%{transform:rotate(18deg)}100%{transform:rotate(-22deg)}}
-@keyframes legSwingR{0%{transform:rotate(18deg)}50%{transform:rotate(-22deg)}100%{transform:rotate(18deg)}}
-/* Idle das pernas: leve troca de peso */
-@keyframes legIdle{0%,100%{transform:rotate(0)}50%{transform:rotate(-2deg)}}
-@keyframes gwBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
-/* Olhar pros lados ocasionalmente: 80% do tempo centro, depois desvia */
-@keyframes gwLook{0%,60%,100%{transform:translateX(0)}65%,75%{transform:translateX(1.2px)}80%,92%{transform:translateX(-1.2px)}}
-@keyframes gwWave{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(35deg)}}
+/* Bob sutil que se soma à animação interna do Lottie */
+@keyframes walkBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+/* Idle pausado: respira */
+@keyframes walkBobIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 @keyframes bubbleIn{from{opacity:0;transform:translateY(6px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes walkerFade{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes walkerTargetGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.5),0 4px 14px rgba(255,100,0,.15)}50%{box-shadow:0 0 0 8px rgba(255,100,0,0),0 4px 18px rgba(255,100,0,.35)}}
@@ -2110,6 +2094,8 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 [data-theme="light"] .cs-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
 
 </style>
+<!-- Lottie web component pra mascote animado (GW Walker) — CDN, ~25KB -->
+<script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.5.0/dist/dotlottie-wc.js"></script>
 </head>
 <body>
 <div id="lo" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 65% 35%,rgba(255,100,0,0.08) 0%,transparent 55%),radial-gradient(ellipse at 20% 75%,rgba(79,142,247,0.06) 0%,transparent 50%),#0D1B2E;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;">
@@ -3549,31 +3535,20 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <div class="tri-loading">Carregando fila de triagem…</div>
     </div>
   </div>
-  <!-- GW Walker: mini-personagem inspirado no logo GW que ATRAVESSA a tela
-       de vez em quando, para em frente a um card crítico, acena/fala, e
-       continua andando até sumir. Reativo: pula se aba inativa ou usuário ativo. -->
+  <!-- GW Walker: mascote Lottie que ATRAVESSA a tela de vez em quando,
+       para em frente a um card crítico, acena/fala, e continua andando até
+       sumir. Lottie do LottieFiles ("Live chatbot") com filter CSS pra
+       transformar paleta azul/turquesa em laranja GW. -->
   <div id="sq-walker" class="sq-walker" style="display:none">
     <div class="sq-walker-bubble" id="sq-walker-bubble" style="display:none">
       <span id="sq-walker-msg">Ei, ó aqui!</span>
     </div>
-    <svg class="sq-walker-char" viewBox="0 0 44 52" width="44" height="52">
-      <!-- sombra -->
-      <ellipse cx="22" cy="50" rx="13" ry="1.5" fill="#000" opacity=".35"/>
-      <!-- pernas (animadas) -->
-      <rect class="gw-leg gw-leg-l" x="13" y="35" width="6" height="13" rx="2" fill="#cc5200"/>
-      <rect class="gw-leg gw-leg-r" x="25" y="35" width="6" height="13" rx="2" fill="#cc5200"/>
-      <!-- corpo (logo GW) -->
-      <rect x="3" y="4" width="38" height="34" rx="8" fill="#FF6400"/>
-      <!-- olhos -->
-      <circle cx="14" cy="13" r="2.2" fill="#fff"/>
-      <circle cx="30" cy="13" r="2.2" fill="#fff"/>
-      <circle class="gw-pupil" cx="14" cy="13.5" r="1" fill="#1a1a1a"/>
-      <circle class="gw-pupil" cx="30" cy="13.5" r="1" fill="#1a1a1a"/>
-      <!-- texto GW -->
-      <text x="22" y="32" text-anchor="middle" fill="#fff" font-family="'Inter',sans-serif" font-weight="900" font-size="12" letter-spacing="-.3">GW</text>
-      <!-- braço acenando (some quando não tá acenando) -->
-      <rect class="gw-arm" x="38" y="14" width="5" height="10" rx="2" fill="#cc5200"/>
-    </svg>
+    <dotlottie-wc
+      class="sq-walker-char"
+      src="https://assets-v2.lottiefiles.com/a/fe807c20-1183-11ee-a7e0-738836ffd98a/rkkiNXXFMb.lottie"
+      autoplay loop
+      style="width:96px;height:96px;display:block">
+    </dotlottie-wc>
   </div>
   <!-- Companion / mascote fixo no canto. Persistente em todo o squad-view.
        Reage ao estado da pilha (urgente/esquecido/foco/calmo/comemora). -->
