@@ -15786,56 +15786,66 @@ function _analystPickFrase(arr, ctx){
   return f.replace(/\{(\w+)\}/g, function(_,k){ return ctx[k] != null ? ctx[k] : '?'; });
 }
 function _analystGerarFalaAlertas(){
-  // Conta críticos: tickets prio Muito Alta abertos + reaberturas + silenciosos
-  var nCrit = 0, topCli = '', topSquad = '';
+  // Separa 2 conceitos distintos:
+  //   1. SLA ESTOUROU (regra real do OTRS via escalation_time) — violação contratual
+  //   2. Prio MUITO ALTA aberta (classificação do ticket) — atenção operacional
+  // Prioriza falar de SLA estourado quando há, porque é o risco real.
+  var nSLAVencido = 0, nMuitoAltaAberta = 0;
+  var topCliSLA = '', topFilaSLA = '';
+  var nowSec = Math.floor(Date.now()/1000);
   try {
-    if(typeof CRIT_TOTAL_MESES !== 'undefined' && CRIT_TOTAL_MESES && CRIT_TOTAL_MESES.all != null){
-      nCrit = CRIT_TOTAL_MESES.all;
-    }
-  } catch(e){}
-  try {
-    if(typeof RAW_DATA !== 'undefined' && RAW_DATA && RAW_DATA.length){
-      // Conta crit por cliente nos últimos 30 dias
-      var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
-      var byCli = {}, byFila = {};
-      RAW_DATA.forEach(function(t){
-        if(!t || t.prior !== 'Muito Alta') return;
-        if(!t.criado || t.criado < cutoff) return;
-        if(t.cli_id) byCli[t.cli_id] = (byCli[t.cli_id]||0)+1;
-        if(t.fila) byFila[t.fila] = (byFila[t.fila]||0)+1;
+    if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+      var byCliSla = {}, byFilaSla = {};
+      TICKETS_ATIVOS_DATA.rows.forEach(function(t){
+        // SLA vencido = escalation_time válido E já passou
+        if(typeof t.escalation_time === 'number' && t.escalation_time > 0 && t.escalation_time < nowSec){
+          nSLAVencido++;
+          if(t.cli_id) byCliSla[t.cli_id] = (byCliSla[t.cli_id]||0)+1;
+          if(t.fila) byFilaSla[t.fila] = (byFilaSla[t.fila]||0)+1;
+        }
+        // Muito Alta aberta = prioridade alta + estado ainda em fluxo
+        var stU = (t.estado||'').toUpperCase();
+        var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+        if((t.prioridade||'').indexOf('Muito Alta') !== -1 && DORMENT.indexOf(stU) === -1){
+          nMuitoAltaAberta++;
+        }
       });
-      var topCliKey = Object.keys(byCli).sort(function(a,b){return byCli[b]-byCli[a];})[0];
-      var topFilaKey = Object.keys(byFila).sort(function(a,b){return byFila[b]-byFila[a];})[0];
-      topCli = topCliKey || '';
-      topSquad = topFilaKey || '';
+      topCliSLA  = Object.keys(byCliSla).sort(function(a,b){return byCliSla[b]-byCliSla[a];})[0] || '';
+      topFilaSLA = Object.keys(byFilaSla).sort(function(a,b){return byFilaSla[b]-byFilaSla[a];})[0] || '';
     }
   } catch(e){}
-  var ctx = { n: nCrit, cli: topCli, squad: topSquad };
-  if(nCrit === 0){
+
+  // 1ª prioridade: SLA estourado (violação real do contrato)
+  if(nSLAVencido > 0){
+    if(nSLAVencido < 5){
+      return _analystPickFrase([
+        '<strong>{n} chamado{s} com SLA estourado</strong>{cliTxt}. Vale resolver hoje.',
+        'Tem <strong>{n}</strong> fora do prazo contratado{cliTxt} — atenção aí.',
+        '{n} violação{vs} de SLA aberta{s}. Recuperável se mexer agora.'
+      ], { n: nSLAVencido, s: nSLAVencido===1?'':'s', vs: nSLAVencido===1?'':'ões', cliTxt: topCliSLA ? ' — '+topCliSLA : '' });
+    }
     return _analystPickFrase([
-      'Tá tudo tranquilo agora — sem chamados críticos abertos.',
-      'Filas calmas. Bom momento pra ajustar processos ✨',
-      'Zero críticos hoje. Mereceu, hein!'
-    ], ctx);
-  } else if(nCrit < 5){
-    return _analystPickFrase([
-      'Identifiquei <strong>{n} chamado{s} crítico{s}</strong>. Vale dar uma olhada.',
-      '{n} crítico{s} aberto{s}{cliTxt}. Tranquilo de gerenciar.',
-      'Atenção em {n} chamado{s} crítico{s} — nada que assuste.'
-    ], { n: nCrit, s: nCrit === 1 ? '' : 's', cliTxt: topCli ? ' — destaque pra '+topCli : '' });
-  } else if(nCrit < 15){
-    return _analystPickFrase([
-      'São <strong>{n} críticos</strong> no momento{cliTxt}. Já vale ação coordenada.',
-      'Vejo {n} críticos — concentração em <strong>{squad}</strong>. Conversar com o squad?',
-      '{n} críticos hoje. Cliente que mais aparece: <strong>{cli}</strong>.'
-    ], { n: nCrit, cliTxt: topCli ? ' (líder: '+topCli+')' : '', cli: topCli || 'misto', squad: topSquad || 'várias filas' });
-  } else {
-    return _analystPickFrase([
-      '<strong>{n} críticos abertos</strong> — atenção máxima. Cliente líder: <strong>{cli}</strong>.',
-      'Volume crítico alto ({n}). Fila mais pressionada: <strong>{squad}</strong>.',
-      'Sinal vermelho: {n} críticos. {cli} sozinho responde por boa parte.'
-    ], { n: nCrit, cli: topCli || 'misto', squad: topSquad || 'várias filas' });
+      '<strong>{n} SLAs estourados</strong>. Cliente que mais aparece: <strong>{cli}</strong>.',
+      'Sinal vermelho: {n} violações de SLA em aberto. Fila: <strong>{squad}</strong>.',
+      'Pressão alta: {n} chamados fora do prazo contratado.'
+    ], { n: nSLAVencido, cli: topCliSLA || 'misto', squad: topFilaSLA || 'várias filas' });
   }
+
+  // 2ª prioridade: prio Muito Alta abertas (sem SLA estourado)
+  if(nMuitoAltaAberta > 0){
+    return _analystPickFrase([
+      'SLAs em dia ✓ — mas tem <strong>{n} chamado{s} de prioridade muito alta</strong> em aberto.',
+      'Nenhum SLA estourado. {n} prioridade alta aberto{s} — monitorar.',
+      'Sem violação contratual. {n} ticket{s} muito alta seguem ativos.'
+    ], { n: nMuitoAltaAberta, s: nMuitoAltaAberta===1?'':'s' });
+  }
+
+  // Tudo tranquilo
+  return _analystPickFrase([
+    'SLAs em dia e sem prioridades altas abertas. Operação rodando ✨',
+    'Zero violações de SLA hoje. Mereceu, hein!',
+    'Sem chamados estourados nem prio alta pendente. Bom momento pra processos.'
+  ], {});
 }
 function _analystGerarFalaIA(){
   if(typeof AI_DATA === 'undefined' || !AI_DATA){
