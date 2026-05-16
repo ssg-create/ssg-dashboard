@@ -1042,6 +1042,48 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Ponto vivo do sq-meta (indicador de frescura do sync) */
 @keyframes sqLiveDot{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
 
+/* ─── Companion / mascote operacional ─────────────────────── */
+.sq-mascot{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px;font-family:var(--font)}
+.sq-mascot.minimized .sq-mascot-bubble{display:none !important}
+.sq-mascot.minimized .sq-mascot-orb{width:36px;height:36px}
+.sq-mascot.minimized .sq-mascot-emoji{font-size:16px}
+.sq-mascot-orb{position:relative;width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;font-family:inherit;padding:0;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.sq-mascot-orb:hover{transform:translateY(-3px);box-shadow:0 6px 22px rgba(0,0,0,.5)}
+.sq-mascot-emoji{font-size:28px;line-height:1;display:block;transition:transform .3s}
+.sq-mascot-pulse{position:absolute;inset:-2px;border-radius:50%;pointer-events:none;opacity:0}
+/* Estados do orb */
+.sq-mascot[data-state="urgente"] .sq-mascot-orb{background:linear-gradient(135deg,rgba(244,63,94,.3),rgba(244,63,94,.15));border-color:var(--danger)}
+.sq-mascot[data-state="urgente"] .sq-mascot-pulse{opacity:1;animation:mascotPulse 1.4s ease-in-out infinite;box-shadow:0 0 0 0 rgba(244,63,94,.6)}
+.sq-mascot[data-state="urgente"] .sq-mascot-emoji{animation:mascotBounce 1s ease-in-out infinite}
+.sq-mascot[data-state="esquecido"] .sq-mascot-orb{background:linear-gradient(135deg,rgba(245,158,11,.25),rgba(245,158,11,.1));border-color:rgba(245,158,11,.6)}
+.sq-mascot[data-state="esquecido"] .sq-mascot-emoji{animation:mascotSway 2.5s ease-in-out infinite}
+.sq-mascot[data-state="foco"] .sq-mascot-orb{background:linear-gradient(135deg,rgba(79,142,247,.25),rgba(79,142,247,.1));border-color:rgba(79,142,247,.5)}
+.sq-mascot[data-state="foco"] .sq-mascot-emoji{animation:mascotIdle 3s ease-in-out infinite}
+.sq-mascot[data-state="calmo"] .sq-mascot-orb{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.08));border-color:rgba(16,185,129,.45)}
+.sq-mascot[data-state="calmo"] .sq-mascot-emoji{animation:mascotIdle 4s ease-in-out infinite}
+.sq-mascot[data-state="comemora"] .sq-mascot-orb{background:linear-gradient(135deg,rgba(139,92,246,.3),rgba(0,212,168,.2));border-color:var(--purple)}
+.sq-mascot[data-state="comemora"] .sq-mascot-emoji{animation:mascotParty 1s ease-in-out infinite}
+.sq-mascot[data-state="loading"] .sq-mascot-orb{background:var(--bg3);border-color:var(--border)}
+.sq-mascot[data-state="loading"] .sq-mascot-emoji{animation:mascotIdle 2.5s ease-in-out infinite;opacity:.6}
+/* Balão de fala */
+.sq-mascot-bubble{position:relative;max-width:280px;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px 12px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:mascotBubbleIn .25s ease-out;color:var(--text)}
+.sq-mascot-bubble-msg{font-size:13.5px;line-height:1.4;font-weight:500;color:var(--text);padding-right:18px}
+.sq-mascot-bubble-cta{margin-top:8px;font-size:11.5px}
+.sq-mascot-bubble-cta a{color:var(--blue);text-decoration:none;font-weight:600;padding:4px 0;display:inline-block}
+.sq-mascot-bubble-cta a:hover{text-decoration:underline}
+.sq-mascot-bubble-close{position:absolute;top:6px;right:8px;background:transparent;border:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;font-family:inherit}
+.sq-mascot-bubble-close:hover{color:var(--text)}
+.sq-mascot-bubble-tail{position:absolute;bottom:-7px;right:18px;width:14px;height:14px;background:var(--bg2);border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);transform:rotate(45deg)}
+/* Animações */
+@keyframes mascotPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,63,94,.6)}50%{box-shadow:0 0 0 12px rgba(244,63,94,0)}}
+@keyframes mascotBounce{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(5deg)}}
+@keyframes mascotSway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes mascotIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes mascotParty{0%,100%{transform:rotate(-15deg) scale(1)}25%{transform:rotate(15deg) scale(1.1)}50%{transform:rotate(-10deg) scale(1)}75%{transform:rotate(10deg) scale(1.1)}}
+@keyframes mascotBubbleIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Confete sutil */
+.sq-confetti{position:fixed;pointer-events:none;z-index:9001}
+
 /* ─── Modo Triagem ────────────────────────────────────────── */
 .tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
 .tri-head-title{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -3461,6 +3503,20 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div id="tri-list" class="tri-list">
       <div class="tri-loading">Carregando fila de triagem…</div>
     </div>
+  </div>
+  <!-- Companion / mascote fixo no canto. Persistente em todo o squad-view.
+       Reage ao estado da pilha (urgente/esquecido/foco/calmo/comemora). -->
+  <div id="sq-mascot" class="sq-mascot" data-state="loading" style="display:none">
+    <div class="sq-mascot-bubble" id="sq-mascot-bubble" style="display:none">
+      <button class="sq-mascot-bubble-close" onclick="_mascotCloseBubble(true)" title="Fechar (volta em 5min)">×</button>
+      <div class="sq-mascot-bubble-msg" id="sq-mascot-bubble-msg">—</div>
+      <div class="sq-mascot-bubble-cta" id="sq-mascot-bubble-cta"></div>
+      <div class="sq-mascot-bubble-tail"></div>
+    </div>
+    <button class="sq-mascot-orb" id="sq-mascot-orb" onclick="_mascotClick()" title="Olá! Sou seu companion operacional">
+      <span class="sq-mascot-emoji" id="sq-mascot-emoji">🌿</span>
+      <span class="sq-mascot-pulse"></span>
+    </button>
   </div>
 </div><!-- /view-sq -->
 
@@ -17806,6 +17862,257 @@ function renderSquadGreeting(meus){
 
 // Hero da Pilha — primeiro card grande do dia. Total à esquerda,
 // 4 categorias clicáveis à direita (Sua vez / No radar / Esperando / Backlog).
+// ── Companion / Mascote operacional ──────────────────────────
+// Floating bubble persistente no canto inferior direito que reage ao
+// estado da pilha. Estados: urgente / esquecido / foco / calmo / comemora.
+// Frases descontraídas rotativas. Pode ser minimizado e fechado por 5min.
+var _mascotState = {
+  current: 'loading', emoji: '🌿', interval: null, bubbleHideAt: 0,
+  ticketAtual: null, ultimoMarco: 0
+};
+var _MASCOT_DISMISS_KEY = 'mascot.dismissed_until';
+var _MASCOT_MARCOS_KEY  = 'mascot.marcos.';
+// Pool gigante de frases por estado + sub-contexto.
+// Microcopy varia por tom (descontraído, motivacional, observacional).
+var MASCOT_FRASES = {
+  urgente_retorno: [
+    'Ei, o cliente {cli} te devolveu a bola 👀',
+    '{cli} respondeu — agora é com você.',
+    'Olha quem voltou: {cli}. Bora dar atenção?',
+    'Tá esperando você há {idade}. Encara?',
+    'Esse aqui escapou do radar — {cli} respondeu.',
+    'Cliente já jogou a bola. Sua vez, {primNome}.'
+  ],
+  urgente_vencido: [
+    'SLA do {cli} estourou — corre que dá pra reverter!',
+    '{cli} além do prazo. Bora atacar?',
+    'Esse chamado tá pedindo socorro operacional.',
+    'Cliente {cli} esperando além do contratado. Prioridade.',
+    'Atenção: {cli} vencido. Não deixa pra depois.'
+  ],
+  esquecido: [
+    'Esse aqui tá dormindo há {idade} 😴',
+    'Já viu o chamado do {cli}?',
+    'Acho que esse ficou esquecido no prato.',
+    'Chamado do {cli} cochilando há {idade}.',
+    '{cli} tá quietinho, mas continua na sua pilha.',
+    'Que tal dar uma olhada nesse aqui?'
+  ],
+  foco: [
+    'Tem {n} chamado{s} esperando — bora avançar?',
+    '{n} item{s} na sua pilha. Tudo sob controle?',
+    'Sua vez de mostrar serviço, {primNome}.',
+    'Pilha enxuta hoje, {primNome}. Ritmo bom.',
+    'Pequenos passos: {n} chamado{s} pela frente.'
+  ],
+  calmo: [
+    'Boa! Sua fila está sob controle ✨',
+    'Hoje você tá jogando bonito, {primNome}.',
+    'Poucos chamados críticos. Continue nesse ritmo.',
+    'Tudo sob controle — aproveita o respiro.',
+    'Pilha limpa. Hora do café? ☕',
+    'Que dia tranquilo, {primNome}. Bom trabalho.'
+  ],
+  comemora: [
+    '🎉 Você passou de {n} hoje! Tá voando.',
+    '👏 Marca de {n} chamados. Manda ver, {primNome}!',
+    'Bombou hoje! {n} já fechados. Mereceu uma pausa.',
+    'Recorde no horizonte? Já são {n}!'
+  ],
+  loading: [
+    'Buscando o que tem rolando…',
+    'Carregando teu dia…'
+  ]
+};
+var MASCOT_EMOJIS = {
+  urgente_retorno: '👀',
+  urgente_vencido: '⚠️',
+  esquecido:       '😴',
+  foco:            '🎯',
+  calmo:           '🌿',
+  comemora:        '🎉',
+  loading:         '🤔'
+};
+function _mascotPickFrase(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function _mascotFmtFrase(template, ctx){
+  return template
+    .replace('{cli}',      ctx.cli      || 'o cliente')
+    .replace('{idade}',    ctx.idade    || 'um tempinho')
+    .replace('{primNome}', ctx.primNome || 'colega')
+    .replace('{n}',        ctx.n        || '')
+    .replace('{s}',        (ctx.n === 1 ? '' : 's'));
+}
+function _mascotMarcosKey(){
+  var d = new Date();
+  return _MASCOT_MARCOS_KEY + d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+// Detecta estado do mascote a partir da pilha do atendente.
+function _mascotAnalisa(meus){
+  meus = meus || [];
+  var now = new Date();
+  // Caso 1: comemora (atingiu marca de N tickets hoje — checa stats triagem se aplicável)
+  // Pra atendente regular: usa marca interna baseada em count de meus que viraram "resolvidos hoje".
+  // Por simplicidade aqui: deixa só pra triagem (que tem _triStatsHoje).
+  var statsTri = (typeof _triStatsHoje === 'function') ? _triStatsHoje() : null;
+  if(statsTri && statsTri.count >= 10){
+    var jaComemorouKey = _mascotMarcosKey();
+    var ultimoComemorado = parseInt(localStorage.getItem(jaComemorouKey) || '0', 10);
+    var marcos = [10, 25, 50, 100];
+    var prox = marcos.find(function(m){ return statsTri.count >= m && m > ultimoComemorado; });
+    if(prox){
+      localStorage.setItem(jaComemorouKey, String(prox));
+      return { estado:'comemora', ticket:null, ctx:{ n: prox } };
+    }
+  }
+  // Caso 2: urgente (cliente devolveu OU SLA vencido)
+  var retorno = meus.filter(function(t){ return (t.estado||'').toUpperCase()==='RETORNO CLIENTE'; });
+  if(retorno.length){
+    retorno.sort(function(a,b){ return (a.modificado||'').localeCompare(b.modificado||''); });
+    var t = retorno[0];
+    var mod = _parseDate(t.modificado);
+    var dias = mod ? _daysSince(mod, now) : 0;
+    var idadeTxt = dias === 0 ? 'hoje' : (dias === 1 ? '1 dia' : dias+' dias');
+    return { estado:'urgente_retorno', ticket:t, ctx:{ cli: t.cliente, idade: idadeTxt } };
+  }
+  var vencidos = meus.filter(function(t){
+    var sla = (typeof _calcSLA === 'function') ? _calcSLA(t) : null;
+    return sla && sla.status === 'vencido';
+  });
+  if(vencidos.length){
+    vencidos.sort(function(a,b){ return (a.modificado||'').localeCompare(b.modificado||''); });
+    var v = vencidos[0];
+    return { estado:'urgente_vencido', ticket:v, ctx:{ cli: v.cliente } };
+  }
+  // Caso 3: esquecido (3+ dias em estado ativo)
+  var ATIVOS = ['EM ATENDIMENTO','OPEN','NEW'];
+  var esquecidos = meus.filter(function(t){
+    if(ATIVOS.indexOf((t.estado||'').toUpperCase()) === -1) return false;
+    var mod = _parseDate(t.modificado);
+    return mod && _daysSince(mod, now) >= 3;
+  });
+  if(esquecidos.length){
+    esquecidos.sort(function(a,b){ return (a.modificado||'').localeCompare(b.modificado||''); });
+    var e = esquecidos[0];
+    var emod = _parseDate(e.modificado);
+    var ediasS = emod ? _daysSince(emod, now) : 0;
+    return { estado:'esquecido', ticket:e, ctx:{ cli: e.cliente, idade: ediasS+' dias' } };
+  }
+  // Caso 4: foco (tem coisa mas não urgente)
+  if(meus.length >= 3){
+    return { estado:'foco', ticket:null, ctx:{ n: meus.length } };
+  }
+  // Caso 5: calmo
+  return { estado:'calmo', ticket:null, ctx:{ n: meus.length } };
+}
+function _mascotPrimNome(){
+  var atend = (typeof getCurrentAtendente === 'function') ? getCurrentAtendente() : '';
+  return atend ? atend.split(' ')[0] : 'colega';
+}
+function _mascotUpdate(meus){
+  var el = document.getElementById('sq-mascot');
+  if(!el) return;
+  // Dispensado por enquanto?
+  var dismissedUntil = parseInt(localStorage.getItem(_MASCOT_DISMISS_KEY) || '0', 10);
+  if(Date.now() < dismissedUntil){
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = 'flex';
+  var analise = _mascotAnalisa(meus);
+  analise.ctx.primNome = _mascotPrimNome();
+  _mascotState.current = analise.estado;
+  _mascotState.ticketAtual = analise.ticket;
+  el.setAttribute('data-state', analise.estado);
+  var emEl = document.getElementById('sq-mascot-emoji');
+  if(emEl) emEl.textContent = MASCOT_EMOJIS[analise.estado] || '🌿';
+  // Renderiza fala atual no balão (se aberto)
+  _mascotRenderBubble(analise);
+  // Comemora: confete + abre balão automaticamente
+  if(analise.estado === 'comemora'){
+    _mascotConfete();
+    _mascotShowBubble();
+  }
+}
+function _mascotRenderBubble(analise){
+  var bubble = document.getElementById('sq-mascot-bubble');
+  var msgEl = document.getElementById('sq-mascot-bubble-msg');
+  var ctaEl = document.getElementById('sq-mascot-bubble-cta');
+  if(!bubble || !msgEl || !ctaEl) return;
+  var frases = MASCOT_FRASES[analise.estado] || MASCOT_FRASES.calmo;
+  var msg = _mascotFmtFrase(_mascotPickFrase(frases), analise.ctx || {});
+  msgEl.textContent = msg;
+  if(analise.ticket){
+    var tk = analise.ticket;
+    var url = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(tk.ticket);
+    ctaEl.innerHTML = '<a href="'+url+'" target="_blank" rel="noopener">Abrir #'+tk.ticket+' no OTRS →</a>';
+  } else {
+    ctaEl.innerHTML = '';
+  }
+}
+window._mascotClick = function(){
+  var el = document.getElementById('sq-mascot');
+  var bubble = document.getElementById('sq-mascot-bubble');
+  if(!el || !bubble) return;
+  // Se minimizado: expande. Senão: alterna balão.
+  if(el.classList.contains('minimized')){
+    el.classList.remove('minimized');
+    _mascotShowBubble();
+    return;
+  }
+  if(bubble.style.display === 'none' || !bubble.style.display){
+    _mascotShowBubble();
+  } else {
+    _mascotCloseBubble(false);
+  }
+};
+window._mascotShowBubble = function(){
+  var bubble = document.getElementById('sq-mascot-bubble');
+  if(!bubble) return;
+  var meus = (typeof _getMeusTickets === 'function') ? _getMeusTickets() : [];
+  var analise = _mascotAnalisa(meus);
+  analise.ctx.primNome = _mascotPrimNome();
+  _mascotRenderBubble(analise);
+  bubble.style.display = 'block';
+  // Esconde sozinho em 12s
+  _mascotState.bubbleHideAt = Date.now() + 12000;
+  setTimeout(function(){
+    if(Date.now() >= _mascotState.bubbleHideAt) _mascotCloseBubble(false);
+  }, 12000);
+};
+window._mascotCloseBubble = function(dismissTemp){
+  var bubble = document.getElementById('sq-mascot-bubble');
+  if(bubble) bubble.style.display = 'none';
+  if(dismissTemp){
+    // Esconde mascote por 5min
+    localStorage.setItem(_MASCOT_DISMISS_KEY, String(Date.now() + 5*60*1000));
+    var el = document.getElementById('sq-mascot');
+    if(el) el.style.display = 'none';
+  }
+};
+function _mascotConfete(){
+  // Confete sutil — 12 emojis caindo
+  var emojis = ['🎉','✨','🎊','⭐','🌟'];
+  for(var i=0;i<12;i++){
+    (function(idx){
+      setTimeout(function(){
+        var c = document.createElement('div');
+        c.className = 'sq-confetti';
+        c.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        c.style.left = (50 + Math.random()*40 - 20) + 'vw';
+        c.style.top = '20vh';
+        c.style.fontSize = (14 + Math.random()*10) + 'px';
+        c.style.transition = 'all 2.5s cubic-bezier(.2,.6,.4,1)';
+        document.body.appendChild(c);
+        setTimeout(function(){
+          c.style.transform = 'translateY(70vh) rotate('+(Math.random()*720-360)+'deg)';
+          c.style.opacity = '0';
+        }, 20);
+        setTimeout(function(){ c.remove(); }, 2700);
+      }, idx * 80);
+    })(i);
+  }
+}
+
 // ── Holofote rotativo ────────────────────────────────────────
 // Mostra UM chamado de cada vez (rotacionando) entre os "pra fazer agora":
 //   - cliente devolveu a bola (RETORNO CLIENTE)
@@ -17814,45 +18121,46 @@ function renderSquadGreeting(meus){
 // Tom brincalhão. Click → abre o ticket no OTRS.
 var _spotState = { interval: null, idx: 0, candidatos: [] };
 var _SPOT_FRASES_RETORNO = [
-  'PSST...',
-  'Ó AÍ',
-  'BORA?',
-  'É TUA AGORA',
-  'OLHA ELE AÍ',
-  'TÁ ESPERANDO TE',
-  'ELE RESPONDEU!',
-  'EI, LEMBRA?'
+  'PSST...','Ó AÍ','BORA?','É TUA AGORA','OLHA ELE AÍ','TÁ ESPERANDO TE',
+  'ELE RESPONDEU!','EI, LEMBRA?','BOLA DEVOLVIDA','TUA VEZ','OLHA QUEM VOLTOU',
+  'CHEGOU PRA TI','RESPONDEU AGORA','VAI ENCARAR?','ATENÇÃO AQUI','ESPERANDO TE'
 ];
 var _SPOT_FRASES_ESQUECIDO = [
-  'TÁ ESQUECIDO',
-  'LEMBRA DE MIM?',
-  'FAZ TEMPO HEIN',
-  'PSST... AINDA AQUI',
-  'NÃO ME ABANDONA',
-  'Ô!'
+  'TÁ ESQUECIDO','LEMBRA DE MIM?','FAZ TEMPO HEIN','PSST... AINDA AQUI',
+  'NÃO ME ABANDONA','Ô!','TÔ AQUI EM!','SEM CARINHO?','LARGADO',
+  'CONTINUO ESPERANDO','SUMIU DE MIM?','VOLTA AQUI'
 ];
 var _SPOT_FRASES_VENCIDO = [
-  'SLA ESTOUROU',
-  'ATENÇÃO!',
-  'CORRE QUE DÁ',
-  'BORA BORA'
+  'SLA ESTOUROU','ATENÇÃO!','CORRE QUE DÁ','BORA BORA','FORA DO PRAZO',
+  'VENCEU','PRIORIDADE','URGÊNCIA','TÁ ATRASADO','SOCORRO!'
 ];
 var _SPOT_MSG_RETORNO = [
   'O cliente respondeu — a bola é tua.',
   'Ele já te devolveu. Próxima jogada?',
   'Cliente esperando você de volta.',
-  'A vez é tua agora.'
+  'A vez é tua agora.',
+  'Bola voltou pro seu campo, vai jogar?',
+  'O cliente já fez a parte dele. Sua vez!',
+  'Te marcaram. Hora de responder.',
+  'Veio direto pra você — bora?'
 ];
 var _SPOT_MSG_ESQUECIDO = [
   'Esse aqui tá quietinho no canto.',
   'Sem mexer faz dias. Bora dar um tapa?',
   'Tá te chamando lá no fundo da pilha.',
-  'Olha quem voltou pra superfície.'
+  'Olha quem voltou pra superfície.',
+  'Ficou no esquecimento — resgata?',
+  'Acumulou poeira. Tira uma olhada?',
+  'Vai virar problema se ficar parado.',
+  'O tempo passa, ele continua aí.'
 ];
 var _SPOT_MSG_VENCIDO = [
   'Tá além do prazo. Vamos fechar?',
   'Cliente esperando além do contratado.',
-  'SLA passou — prioridade alta.'
+  'SLA passou — prioridade alta.',
+  'Já estourou. Atenção máxima.',
+  'Cliente vai cobrar — bora resolver.',
+  'Cada minuto agora conta.'
 ];
 
 function _spotPickCandidatos(meus){
@@ -18306,10 +18614,12 @@ window.renderSquadView = function(){
     openWhoAreYouModal(false, ctx);
     renderSquadGreeting(null);
     renderBlock6Alertas();
-    // Limpa o holofote e o painel de atenção quando não tem atendente
+    // Limpa o holofote, mascote e o painel de atenção quando não tem atendente
     var _spotEl = document.getElementById('sq-spotlight');
     if(_spotEl) _spotEl.innerHTML = '';
     if(_spotState.interval){ clearInterval(_spotState.interval); _spotState.interval = null; }
+    var _mascotEl = document.getElementById('sq-mascot');
+    if(_mascotEl) _mascotEl.style.display = 'none';
     document.getElementById('sq-attention').innerHTML = '';
     var emptyMsg = _isDir
       ? 'Selecione no topo qual atendente você quer visualizar.'
@@ -18335,6 +18645,7 @@ window.renderSquadView = function(){
   renderSpotlight(meus);
   renderHeroPilha(meus);
   renderAttention(meus);
+  try { _mascotUpdate(meus); } catch(e){ console.warn('mascot:',e); }
   renderBlock1AtaqueAgora(meus);
   renderBlock2Ativas(meus);
   renderBlock3Esperando(meus);
