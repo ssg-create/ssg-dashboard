@@ -1088,9 +1088,9 @@ body.squad-mode #rpt-btn{display:none!important}
 .sq-walker{position:fixed;bottom:30px;left:-60px;z-index:8500;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px}
 .sq-walker.walking{animation:walkAcross 32s cubic-bezier(.42,0,.58,1) forwards}
 .sq-walker.paused{animation-play-state:paused}
-/* Filter pra transformar paleta azul/turquesa do Lottie em laranja GW
-   (hue-rotate -110deg + saturate vivo). Drop-shadow pra grudar no fundo. */
-.sq-walker-char{display:block;filter:hue-rotate(-110deg) saturate(1.4) brightness(1.05) drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+/* Filter pra transformar paleta azul/turquesa do Lottie em laranja GW.
+   Receita sepia+saturate+hue-rotate dá controle melhor que só hue-rotate. */
+.sq-walker-char{display:block;filter:sepia(1) saturate(7) hue-rotate(-15deg) brightness(1.05) drop-shadow(0 4px 12px rgba(0,0,0,.5))}
 /* Bob sutil enquanto anda (additional sobre a anim interna do Lottie) */
 .sq-walker.walking .sq-walker-char{animation:walkBob 1.2s ease-in-out infinite}
 .sq-walker.paused .sq-walker-char{animation:walkBobIdle 2.4s ease-in-out infinite}
@@ -3547,7 +3547,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       class="sq-walker-char"
       src="https://assets-v2.lottiefiles.com/a/fe807c20-1183-11ee-a7e0-738836ffd98a/rkkiNXXFMb.lottie"
       autoplay loop
-      style="width:96px;height:96px;display:block">
+      style="width:140px;height:140px;display:block">
     </dotlottie-wc>
   </div>
   <!-- Companion / mascote fixo no canto. Persistente em todo o squad-view.
