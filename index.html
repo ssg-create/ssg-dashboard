@@ -1113,6 +1113,20 @@ body.squad-mode #rpt-btn{display:none!important}
 @keyframes walkerFade{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes walkerTargetGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.5),0 4px 14px rgba(255,100,0,.15)}50%{box-shadow:0 0 0 8px rgba(255,100,0,0),0 4px 18px rgba(255,100,0,.35)}}
 
+/* ─── Avatar Analista GW (mascote do painel de gestão) ──────── */
+/* Usado em headers de Alertas Críticos + IA. Emoji 🧑‍💼 dentro de
+   círculo gradient laranja GW. Identidade analítica/executiva. */
+.gw-analyst{display:flex;align-items:center;gap:14px;margin:0 0 18px;padding:14px 18px;background:linear-gradient(135deg,rgba(255,100,0,.08),rgba(245,158,11,.04));border:1px solid rgba(255,100,0,.2);border-radius:14px}
+.gw-analyst-avatar{position:relative;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FF6400,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:34px;line-height:1;flex-shrink:0;box-shadow:0 4px 14px rgba(255,100,0,.35);border:2px solid rgba(255,255,255,.15);transition:transform .25s}
+.gw-analyst-avatar:hover{transform:scale(1.06) rotate(-3deg)}
+.gw-analyst-avatar::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:2px solid rgba(255,100,0,.4);animation:gwAnalystPulse 3s ease-in-out infinite;pointer-events:none}
+.gw-analyst-info{flex:1;min-width:0}
+.gw-analyst-nome{font-family:var(--display);font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.01em;line-height:1.1}
+.gw-analyst-nome-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:2px 8px;background:rgba(255,100,0,.15);color:var(--orange);border:1px solid rgba(255,100,0,.3);border-radius:4px;margin-left:8px;vertical-align:2px}
+.gw-analyst-fala{font-size:13px;color:var(--sub);margin-top:4px;line-height:1.45;font-style:italic}
+.gw-analyst-fala strong{color:var(--text);font-style:normal;font-weight:700}
+@keyframes gwAnalystPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.08);opacity:.2}}
+
 /* ─── Onboarding (1ª visita) ───────────────────────────────── */
 .sq-onboard-overlay{position:fixed;inset:0;z-index:9500;pointer-events:none}
 .sq-onboard-card{position:fixed;width:360px;max-width:92vw;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 12px 32px rgba(0,0,0,.4);pointer-events:auto;animation:onboardIn .35s cubic-bezier(.34,1.56,.64,1)}
@@ -2455,6 +2469,14 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <p>Chamados que exigem ação imediata da equipe</p>
     </div>
     <div class="page-body">
+      <!-- Analista GW: identidade visual dos painéis de gestão -->
+      <div class="gw-analyst">
+        <div class="gw-analyst-avatar" title="Analista GW">🧑‍💼</div>
+        <div class="gw-analyst-info">
+          <div class="gw-analyst-nome">Analista GW <span class="gw-analyst-nome-tag">vigilância contínua</span></div>
+          <div class="gw-analyst-fala" id="gw-analyst-fala-alertas">Monitorando os chamados que precisam de você. Quando algo escalar, eu sinalizo aqui.</div>
+        </div>
+      </div>
       <div class="al-hero" id="al-hero">
         <div class="al-hero-grid">
           <div class="al-hero-left">
@@ -3459,6 +3481,15 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
   </div>
   <div class="page-body">
+
+    <!-- Analista GW: identidade visual dos painéis de gestão -->
+    <div class="gw-analyst">
+      <div class="gw-analyst-avatar" title="Analista GW">🧑‍💼</div>
+      <div class="gw-analyst-info">
+        <div class="gw-analyst-nome">Analista GW <span class="gw-analyst-nome-tag">insights operacionais</span></div>
+        <div class="gw-analyst-fala" id="gw-analyst-fala-ia">Cruzando volume, SLA, clientes e equipes pra encontrar o que merece sua atenção agora.</div>
+      </div>
+    </div>
 
     <!-- BLOCO 1: RESUMO + KPIs -->
     <section id="ia-resumo" class="ia-block">
