@@ -1039,6 +1039,8 @@ body.squad-mode #rpt-btn{display:none!important}
 @keyframes spotBounce{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-4px) rotate(8deg)}}
 @keyframes spotSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .sq-spot-fading{opacity:0}
+/* Ponto vivo do sq-meta (indicador de frescura do sync) */
+@keyframes sqLiveDot{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
 
 /* ─── Modo Triagem ────────────────────────────────────────── */
 .tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
@@ -10998,6 +11000,17 @@ setInterval(function(){
   fetchTicketsAtivos();
 }, 30*1000);
 setInterval(fetchTicketsAtivos, 10*60*1000);
+// Re-fetch instantâneo quando a aba volta a ficar visível.
+// Browsers afogam (e às vezes pausam) setInterval em tabs inativas — sem
+// isso, atendente que abriu outra aba e voltou pode ficar com painel
+// defasado vários minutos (caso reportado pelo Vinicius: 10min de delay).
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState !== 'visible') return;
+  fetchTicketsAtivos();
+  if(typeof fetchSilenciosos === 'function') fetchSilenciosos();
+  if(typeof fetchTriagem      === 'function') fetchTriagem();
+  if(typeof fetchReaberturas  === 'function') fetchReaberturas();
+});
 
 // ─── LIVE KPIs — sobrescreve valores de "em aberto / bloqueados / muito alta" ──
 // Regra: XLSX para histórico/fechado, GWMS para estado atual.
@@ -18205,6 +18218,28 @@ window.onAttentionClick = function(filter, scrollTo, tipo){
   }
 };
 
+// Indicador "vivo" no topo: hora local + ponto colorido conforme idade
+// do último sync GWMS. Sem dado fresco, dot vermelho. Sub-3min = verde
+// pulsando (saudável). Sub-6min = amarelo. >6min = vermelho parado.
+function _sqRenderMeta(){
+  var el = document.getElementById('sq-meta');
+  if(!el) return;
+  var now = new Date();
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  var ageMin = 999;
+  if(data && data.generated_at){
+    ageMin = Math.floor((Date.now()/1000 - data.generated_at) / 60);
+  }
+  var dotColor, dotAnim, ageTxt;
+  if(ageMin < 0 || ageMin >= 999){ dotColor='var(--muted)'; dotAnim='none'; ageTxt='aguardando dados'; }
+  else if(ageMin <= 3){ dotColor='var(--ok)';     dotAnim='sqLiveDot 1.8s ease-in-out infinite'; ageTxt='dados há '+(ageMin||0)+'min'; }
+  else if(ageMin <= 6){ dotColor='var(--warn)';   dotAnim='none'; ageTxt='dados há '+ageMin+'min'; }
+  else { dotColor='var(--danger)'; dotAnim='none'; ageTxt='dados há '+(ageMin>60?Math.floor(ageMin/60)+'h':ageMin+'min'); }
+  el.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dotColor+';margin-right:7px;vertical-align:middle;animation:'+dotAnim+'"></span>'
+    + '<span style="vertical-align:middle">atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2)
+    + ' <span style="opacity:.6;margin-left:4px">· '+ageTxt+'</span></span>';
+}
+
 window.renderSquadView = function(){
   var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
   if(!cfg) return;
@@ -18229,8 +18264,7 @@ window.renderSquadView = function(){
   document.getElementById('sq-squad-name').textContent = cfg.nome;
   var _filasMostra = atend ? _getAtendenteAllFilas(atend) : cfg.filas;
   document.getElementById('sq-squad-sub').textContent = 'Filas: ' + _filasMostra.join(' · ');
-  var now = new Date();
-  document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  _sqRenderMeta();
 
   // Diretor: badge + botão "Trocar squad" visíveis. Pill funciona como switcher
   // de atendente (não logout, pra deixar trocar de quem está visualizando rápido).
@@ -18481,8 +18515,7 @@ window.renderTriagemView = function(){
   var cfg = getSquadCfg();
   document.getElementById('sq-squad-name').textContent = 'Triagem · Groundwork';
   document.getElementById('sq-squad-sub').textContent  = 'Distribuição de chamados sem atendente';
-  var now = new Date();
-  document.getElementById('sq-meta').textContent = 'atualizado ' + ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  _sqRenderMeta();
 
   // Pill: mostra "triagem.gw"
   document.getElementById('sq-user-avatar').textContent = 'T';
@@ -18846,10 +18879,12 @@ function bootSquadMode(){
   setInterval(function(){
     if(isSquadMode()) renderSquadView();
   }, 60*1000); // refresh visual a cada 1min (dados refrescam a cada 10min)
-  // Clock leve a cada 30s (sem re-renderizar a view inteira)
+  // Clock leve a cada 30s + atualiza indicador "vivo" do meta
+  // (sem re-renderizar a view inteira)
   setInterval(function(){
     var c = document.getElementById('sq-clock-tick');
     if(c) c.textContent = ('0'+new Date().getHours()).slice(-2)+':'+('0'+new Date().getMinutes()).slice(-2);
+    try { _sqRenderMeta(); } catch(e){}
   }, 30*1000);
   // Tick local da ampulheta de SLA na triagem — atualiza badges in-place
   // a cada 30s sem re-render. Também re-renderiza a view de triagem
