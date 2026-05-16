@@ -1084,6 +1084,39 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Confete sutil */
 .sq-confetti{position:fixed;pointer-events:none;z-index:9001}
 
+/* ─── GW Walker (mini-personagem ambulante) ────────────────── */
+.sq-walker{position:fixed;bottom:30px;left:-60px;z-index:8500;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px}
+.sq-walker.walking{animation:walkAcross 28s linear forwards}
+.sq-walker.paused{animation-play-state:paused}
+.sq-walker-char{display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+.sq-walker.walking .sq-walker-char{animation:walkBob .5s ease-in-out infinite}
+.sq-walker.paused .sq-walker-char{animation:walkBob .9s ease-in-out infinite}
+/* Pernas balançam quando andando, param quando pausado */
+.sq-walker.walking .gw-leg-l{animation:legSwingL .5s ease-in-out infinite;transform-origin:16px 35px}
+.sq-walker.walking .gw-leg-r{animation:legSwingR .5s ease-in-out infinite;transform-origin:28px 35px}
+.sq-walker.paused .gw-leg-l,.sq-walker.paused .gw-leg-r{animation:none;transform:rotate(0)}
+/* Olhos piscam de vez em quando */
+.gw-pupil{animation:gwBlink 6s ease-in-out infinite}
+/* Braço acenando quando paused */
+.gw-arm{display:none;transform-origin:38px 14px}
+.sq-walker.paused .gw-arm{display:block;animation:gwWave .55s ease-in-out infinite}
+/* Balão de fala (aparece quando pausado) */
+.sq-walker-bubble{display:flex;align-items:center;gap:6px;padding:9px 14px;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;border-radius:18px;box-shadow:0 6px 18px rgba(255,100,0,.45),0 2px 6px rgba(0,0,0,.3);font-family:var(--display);font-weight:700;font-size:13.5px;white-space:nowrap;position:relative;pointer-events:auto;cursor:pointer;animation:bubbleIn .3s ease-out;transition:transform .18s}
+.sq-walker-bubble:hover{transform:scale(1.05)}
+.sq-walker-bubble::after{content:'';position:absolute;bottom:-6px;left:50%;margin-left:-6px;width:12px;height:12px;background:#FF6400;transform:rotate(45deg);box-shadow:1px 1px 3px rgba(0,0,0,.15)}
+.sq-walker.fade-out{animation:walkerFade .5s ease-in forwards}
+/* Highlight no card alvo */
+.sq-walker-target{animation:walkerTargetGlow 1.8s ease-in-out infinite;position:relative;z-index:5}
+@keyframes walkAcross{0%{left:-60px}100%{left:calc(100vw + 20px)}}
+@keyframes walkBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes legSwingL{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+@keyframes legSwingR{0%,100%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
+@keyframes gwBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes gwWave{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(35deg)}}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(6px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes walkerFade{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+@keyframes walkerTargetGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.5),0 4px 14px rgba(255,100,0,.15)}50%{box-shadow:0 0 0 8px rgba(255,100,0,0),0 4px 18px rgba(255,100,0,.35)}}
+
 /* ─── Modo Triagem ────────────────────────────────────────── */
 .tri-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 4px 22px;flex-wrap:wrap}
 .tri-head-title{font-family:var(--display);font-size:30px;font-weight:800;color:var(--text);letter-spacing:-.025em;line-height:1.1;background:linear-gradient(135deg,#FF6400,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -3503,6 +3536,32 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div id="tri-list" class="tri-list">
       <div class="tri-loading">Carregando fila de triagem…</div>
     </div>
+  </div>
+  <!-- GW Walker: mini-personagem inspirado no logo GW que ATRAVESSA a tela
+       de vez em quando, para em frente a um card crítico, acena/fala, e
+       continua andando até sumir. Reativo: pula se aba inativa ou usuário ativo. -->
+  <div id="sq-walker" class="sq-walker" style="display:none">
+    <div class="sq-walker-bubble" id="sq-walker-bubble" style="display:none">
+      <span id="sq-walker-msg">Ei, ó aqui!</span>
+    </div>
+    <svg class="sq-walker-char" viewBox="0 0 44 52" width="44" height="52">
+      <!-- sombra -->
+      <ellipse cx="22" cy="50" rx="13" ry="1.5" fill="#000" opacity=".35"/>
+      <!-- pernas (animadas) -->
+      <rect class="gw-leg gw-leg-l" x="13" y="35" width="6" height="13" rx="2" fill="#cc5200"/>
+      <rect class="gw-leg gw-leg-r" x="25" y="35" width="6" height="13" rx="2" fill="#cc5200"/>
+      <!-- corpo (logo GW) -->
+      <rect x="3" y="4" width="38" height="34" rx="8" fill="#FF6400"/>
+      <!-- olhos -->
+      <circle cx="14" cy="13" r="2.2" fill="#fff"/>
+      <circle cx="30" cy="13" r="2.2" fill="#fff"/>
+      <circle class="gw-pupil" cx="14" cy="13.5" r="1" fill="#1a1a1a"/>
+      <circle class="gw-pupil" cx="30" cy="13.5" r="1" fill="#1a1a1a"/>
+      <!-- texto GW -->
+      <text x="22" y="32" text-anchor="middle" fill="#fff" font-family="'Inter',sans-serif" font-weight="900" font-size="12" letter-spacing="-.3">GW</text>
+      <!-- braço acenando (some quando não tá acenando) -->
+      <rect class="gw-arm" x="38" y="14" width="5" height="10" rx="2" fill="#cc5200"/>
+    </svg>
   </div>
   <!-- Companion / mascote fixo no canto. Persistente em todo o squad-view.
        Reage ao estado da pilha (urgente/esquecido/foco/calmo/comemora). -->
@@ -18112,6 +18171,186 @@ function _mascotConfete(){
     })(i);
   }
 }
+
+// ── GW Walker (mini-personagem ambulante) ────────────────────
+// Atravessa a tela a cada 4-7min. Se há card crítico visível, para em
+// frente dele e fala "ei!". Pula se aba inativa OU usuário interagiu há <60s.
+// Max 4 aparições/hora pra não cansar.
+var _walkerState = { walking: false, lastWalk: 0, count: 0, lastUserActivity: Date.now(), pauseTimer: null };
+// Reset contador a cada hora
+setInterval(function(){ _walkerState.count = 0; }, 60*60*1000);
+// Detecta usuário ativo
+['mousemove','click','keydown','scroll'].forEach(function(ev){
+  document.addEventListener(ev, function(){ _walkerState.lastUserActivity = Date.now(); }, {passive:true});
+});
+
+var WALKER_FRASES_RETORNO = [
+  'Ei, esse voltou pra você 👀',
+  'Cliente te devolveu a bola!',
+  'Olha esse aqui, ó!',
+  'Esse tá esperando — bora?',
+  'Psst! Ele respondeu.',
+  'Hora de pegar esse aqui!'
+];
+var WALKER_FRASES_VENCIDO = [
+  'Atenção, esse vencido!',
+  'SLA estourou — corre!',
+  'Esse pede ação agora.',
+  'Prioridade aqui, ó!'
+];
+var WALKER_FRASES_ESQUECIDO = [
+  'Esse aqui tá dormindo 😴',
+  'Já viu esse?',
+  'Ficou esquecidinho…',
+  'Lembra desse?',
+  'Acho que esse precisa de você.'
+];
+var WALKER_FRASES_CALMO = [
+  'Boa! Tá tudo redondo.',
+  'Tá jogando bonito hoje 👏',
+  'Continua nesse ritmo!',
+  'Pilha limpa, parabéns.'
+];
+function _walkerPickFrase(estado){
+  var pool;
+  if(estado === 'urgente_retorno') pool = WALKER_FRASES_RETORNO;
+  else if(estado === 'urgente_vencido') pool = WALKER_FRASES_VENCIDO;
+  else if(estado === 'esquecido') pool = WALKER_FRASES_ESQUECIDO;
+  else pool = WALKER_FRASES_CALMO;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+// Procura card crítico visível na viewport (sq-block-1 .at-pend-cell, etc.)
+function _walkerFindTarget(meus){
+  if(!meus || !meus.length) return null;
+  // Seletores de cards de tickets nos blocos do squad view
+  var candidatos = [];
+  // Cards de "Sua vez de jogar" (block-1) — sempre prioridade máxima
+  document.querySelectorAll('#sq-block-1 .at-pend-cell, #sq-block-1 [data-tk], #sq-block-1 a[href*="TicketNumber"]').forEach(function(el){
+    candidatos.push({ el: el, prio: 100 });
+  });
+  // Cards de atenção (sq-attention)
+  document.querySelectorAll('#sq-attention .sq-att-card.danger').forEach(function(el){
+    candidatos.push({ el: el, prio: 80 });
+  });
+  document.querySelectorAll('#sq-attention .sq-att-card.warn').forEach(function(el){
+    candidatos.push({ el: el, prio: 50 });
+  });
+  // Spotlight (sq-spot) como fallback sempre
+  document.querySelectorAll('#sq-spotlight .sq-spot:not(.calm-tone)').forEach(function(el){
+    candidatos.push({ el: el, prio: 60 });
+  });
+  if(!candidatos.length) return null;
+  // Filtra os que estão na viewport visível
+  var visiveis = candidatos.filter(function(c){
+    var r = c.el.getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= window.innerHeight && r.width > 0;
+  });
+  if(!visiveis.length) return null;
+  visiveis.sort(function(a,b){ return b.prio - a.prio; });
+  return visiveis[0].el;
+}
+function _walkerStart(){
+  var el = document.getElementById('sq-walker');
+  if(!el) return;
+  if(_walkerState.walking) return;
+  _walkerState.walking = true;
+  _walkerState.count++;
+
+  var meus = (typeof _getMeusTickets === 'function') ? _getMeusTickets() : [];
+  var analise = (typeof _mascotAnalisa === 'function') ? _mascotAnalisa(meus) : { estado:'calmo', ticket:null };
+  var target = _walkerFindTarget(meus);
+
+  el.style.display = 'flex';
+  el.style.left = '-60px';
+  el.classList.remove('fade-out','paused');
+  // Força reflow pra reiniciar animação
+  void el.offsetWidth;
+  el.classList.add('walking');
+
+  // Se tem target, agenda pausa quando ele chegar perto
+  if(target){
+    var rectTarget = target.getBoundingClientRect();
+    // Calcula posição alvo (centraliza o walker em frente ao card)
+    var alvoLeft = rectTarget.left + (rectTarget.width / 2) - 22;
+    if(alvoLeft < 40) alvoLeft = 40;
+    if(alvoLeft > window.innerWidth - 80) alvoLeft = window.innerWidth - 80;
+    // Tempo até chegar no alvo (animação é 28s pra atravessar tela toda)
+    var pctCaminho = alvoLeft / window.innerWidth;
+    var msAteAlvo = 28000 * pctCaminho;
+    _walkerState.pauseTimer = setTimeout(function(){
+      // Pausa
+      el.classList.remove('walking');
+      el.classList.add('paused');
+      // Força posição (porque animação parou)
+      el.style.left = alvoLeft + 'px';
+      // Mostra balão
+      var bubble = document.getElementById('sq-walker-bubble');
+      var msgEl = document.getElementById('sq-walker-msg');
+      if(bubble && msgEl){
+        msgEl.textContent = _walkerPickFrase(analise.estado);
+        bubble.style.display = 'flex';
+        // Click no balão abre o ticket
+        if(analise.ticket){
+          bubble.onclick = function(){
+            var url = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(analise.ticket.ticket);
+            window.open(url, '_blank', 'noopener');
+          };
+        } else { bubble.onclick = null; }
+      }
+      // Glow no card alvo
+      target.classList.add('sq-walker-target');
+      // Após 4.5s continua andando
+      setTimeout(function(){
+        el.classList.remove('paused');
+        if(bubble) bubble.style.display = 'none';
+        target.classList.remove('sq-walker-target');
+        // Continua de onde parou até o fim (animação new com left atual)
+        var msRestantes = 28000 * (1 - pctCaminho);
+        el.style.transition = 'left ' + msRestantes + 'ms linear';
+        el.style.left = (window.innerWidth + 20) + 'px';
+        setTimeout(function(){
+          el.classList.add('fade-out');
+          setTimeout(function(){
+            el.style.display = 'none';
+            el.style.transition = '';
+            el.classList.remove('fade-out');
+            _walkerState.walking = false;
+          }, 500);
+        }, msRestantes);
+      }, 4500);
+    }, msAteAlvo);
+  } else {
+    // Sem target — só passeia
+    setTimeout(function(){
+      el.classList.add('fade-out');
+      setTimeout(function(){
+        el.style.display = 'none';
+        el.classList.remove('walking','fade-out');
+        _walkerState.walking = false;
+      }, 500);
+    }, 28000);
+  }
+}
+function _walkerShouldShow(){
+  if(typeof isSquadMode !== 'function' || !isSquadMode()) return false;
+  if(document.visibilityState !== 'visible') return false;
+  if(_walkerState.walking) return false;
+  // Usuário ativo nos últimos 45s? Pula.
+  if(Date.now() - _walkerState.lastUserActivity < 45000) return false;
+  // Min 3min desde último walker
+  if(Date.now() - _walkerState.lastWalk < 3*60*1000) return false;
+  // Max 4/hora
+  if(_walkerState.count >= 4) return false;
+  return true;
+}
+// Loop de aparições
+setInterval(function(){
+  if(!_walkerShouldShow()) return;
+  // Jitter: 60% chance de aparecer no tick (pra não ser previsível)
+  if(Math.random() > 0.6) return;
+  _walkerState.lastWalk = Date.now();
+  _walkerStart();
+}, 60*1000); // checa a cada 1min
 
 // ── Holofote rotativo ────────────────────────────────────────
 // Mostra UM chamado de cada vez (rotacionando) entre os "pra fazer agora":
