@@ -83,6 +83,16 @@ FILAS_WHERE = f"q.name REGEXP '{FILAS_REGEX}'"
 # customizados que o GWMS NÃO trata como fechados — ficam como "Outros" nas
 # views por estado. Manter alinhamento aqui evita divergir do dashboard fonte.
 ESTADOS_FECHADOS = (2, 3, 5, 9)
+
+# Estados que NÃO devem aparecer em "tickets ativos" do painel/relatório.
+# Estende ESTADOS_FECHADOS com 17/18/19 — esses são dormentes (auto-fechado por
+# inatividade, resolvido aguardando, cancelado) e não tickets vivos na carteira.
+# Bug encontrado em 18/05/26: q_tickets_ativos puxava tickets em FECHADO SEM
+# ÊXITO (AUTO) como ativos, inflando carteira em aberto do Status Report PDF.
+# Não altera ESTADOS_FECHADOS pra preservar alinhamento com GWMS canônico nas
+# views de "Tickets Fechados" e contagens históricas.
+ESTADOS_NAO_ATIVOS = ESTADOS_FECHADOS + (17, 18, 19)
+
 # Estado "em atendimento" é id=14
 # Estado "open" (triagem inicial) é id=4
 # History type StateUpdate=27, OwnerUpdate=23, Move=16
@@ -396,7 +406,7 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
     LEFT JOIN service    s  ON t.service_id         = s.id
     LEFT JOIN sla        sl ON t.sla_id             = sl.id
     {CLI_ID_JOINS}
-    WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_FECHADOS)})
+    WHERE t.ticket_state_id NOT IN ({','.join(str(s) for s in ESTADOS_NAO_ATIVOS)})
       AND {FILAS_WHERE}
     ORDER BY t.change_time DESC
     LIMIT 3000
