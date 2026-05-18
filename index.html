@@ -13290,11 +13290,19 @@ window._eqCopiarCobranca = function(nome){
   var introExtra = maisAntigoDias >= 30
     ? ' — chamando atenção pro mais antigo de ' + maisAntigoDias + ' dias parado'
     : (maisAntigoDias >= 7 ? ' — o mais antigo já tem ' + maisAntigoDias + ' dias' : '');
+  // Fechamentos rotativos (reforço de time GW — não cobrança seca)
+  var fechamentos = [
+    'Me dá um update rápido do que tá travando? Se precisar de ajuda pra destravar algum, me avisa — você não tá sozinho, somos um time GW e a gente resolve junto.\n\nValeu! 🚀',
+    'Bora alinhar o que tá pegando? Se algum desses precisa de outra área ou apoio extra, conta comigo — time GW resolve em time.\n\nAbraço!',
+    'Me passa um status do que tá empacando? Se for algo bloqueado por externo ou que precisa de força extra, me avisa — não deixa carregar sozinho, time GW tá aqui pra apoiar.\n\nValeu! 💪',
+    'Como tá o cenário desses chamados? Qualquer coisa que dependa de ajuda — minha, de outra squad, de quem for — me chama. A gente é time GW, ninguém resolve sozinho.\n\nValeu!',
+    'Conta um pouco onde tá o gargalo. Se algum precisa de empurrão de outra área ou conversa minha, me avisa — somos um time GW e a gente atravessa junto.\n\nAbraço! 🙌'
+  ];
+  var fechamento = fechamentos[Math.floor(Math.random() * fechamentos.length)];
   var msg = 'Olá ' + primNome + '! Tudo bem?\n\n'
     + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' ativo' + (n!==1?'s':'') + introExtra + '.\n\n'
     + 'Os mais antigos são:\n' + linhas + resto + '\n\n'
-    + 'Pode me dar um update rápido do que está travando? Se algo precisar de prioridade ou ajuda pra destravar, me avisa.\n\n'
-    + 'Valeu!';
+    + fechamento;
   try {
     if(navigator.clipboard) navigator.clipboard.writeText(msg);
   } catch(e){}
