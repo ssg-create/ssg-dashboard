@@ -9053,6 +9053,22 @@ function _pdfInferETA(estado, agingDias, prioridade){
   if(n==='aberto') return 'Atribuição imediata';
   return '—';
 }
+function _pdfIsCarteiraOpen(estadoRaw){
+  // Filtro de carteira em aberto: lista NEGATIVA por substring.
+  // tickets_ativos.json hoje inclui estados que NÃO são realmente abertos
+  // (FECHADO SEM ÊXITO (AUTO), RESOLVIDO, CANCELADO) porque o gwms_sync.py
+  // só exclui state_id (2,3,5,9) — IDs customizados 17/18/19 do OTRS escapam.
+  // Esta função bloqueia esses estados no frontend do relatório.
+  if(!estadoRaw) return false;
+  var s = String(estadoRaw).toLowerCase().trim();
+  if(s.indexOf('fechado')>=0)   return false;
+  if(s.indexOf('resolvido')>=0) return false;
+  if(s.indexOf('cancelad')>=0)  return false;
+  if(s.indexOf('agrupado')>=0)  return false;
+  if(s.indexOf('merged')>=0)    return false;
+  if(s.indexOf('removed')>=0 || s.indexOf('removido')>=0) return false;
+  return true;
+}
 function _pdfBuildCarteira(cli_id){
   // Retorna lista de tickets em ABERTO do cliente (via TICKETS_ATIVOS_DATA),
   // enriquecida com aging, risco, bloqueio, owner, governança, faixa.
@@ -9064,6 +9080,8 @@ function _pdfBuildCarteira(cli_id){
     TICKETS_ATIVOS_DATA.rows.forEach(function(r){
       if(!r) return;
       if(String(r.cli_id||r.cliente||'').toUpperCase() !== String(cli_id||'').toUpperCase()) return;
+      // Bloqueia estados que escaparam do filtro de "ativos" no sync (auto-fechados, resolvido, cancelado)
+      if(!_pdfIsCarteiraOpen(r.estado)) return;
       var criado = r.criado ? new Date(r.criado) : null;
       var aging  = _pdfAgingDias(criado);
       var prioN  = _pdfNormPrior(r.prioridade);
@@ -9841,10 +9859,81 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='</div>'; // /seção 2
 
     // ══════════════════════════════════════════════════
-    // SEÇÃO 3: CARDS INDIVIDUAIS (um por chamado em aberto)
+    // SEÇÃO 3: MÓDULOS & PRIORIDADE (contexto histórico do cliente)
+    // ══════════════════════════════════════════════════
+    // Fonte: d.servicos / d.prior — agregados do período ativo (não da carteira em aberto),
+    // espelhando a seção "Categorização" do relatório antigo que o cliente gostava.
+    var _hasModulos = d.servicos && Object.keys(d.servicos).length>0;
+    var _hasPrior   = d.prior    && Object.keys(d.prior).some(function(k){return (d.prior[k]||0)>0;});
+    if(_hasModulos || _hasPrior){
+      // d.servicos/d.prior são agregados HISTÓRICOS do cliente (todos os meses),
+      // não só do período. Usa a soma deles como denominador pra evitar % > 100
+      // (bug do PDF antigo: "Contabilidade 333% do volume").
+      var _totalModulos = _hasModulos ? Object.values(d.servicos).reduce(function(a,b){return a+b;},0) : 0;
+      H+='<div class="section" style="page-break-after:always">';
+      H+='<div class="sec-header"><div class="sec-num">3</div><div class="sec-title">Categorização — histórico do cliente</div><div class="sec-sub">Onde o cliente concentrou demanda</div></div>';
+      H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Distribuição dos <strong>'+_totalModulos+' chamado(s)</strong> do histórico completo de <strong>'+d.nome+'</strong> por módulo e prioridade — útil pra entender onde concentrar projetos preventivos e automações.</p>';
+      H+='<div class="grid2">';
+
+      // Módulos mais acionados
+      if(_hasModulos){
+        var _svcEntries = Object.keys(d.servicos).map(function(k){return {k:k,v:d.servicos[k]||0};}).sort(function(a,b){return b.v-a.v;});
+        var _svcMax = Math.max.apply(null, _svcEntries.map(function(e){return e.v;}).concat([1]));
+        var _svcCols = ['#1a2744','#E8622A','#16a34a','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899'];
+        H+='<div class="card"><div class="card-title">Módulos mais acionados</div>';
+        _svcEntries.slice(0,8).forEach(function(e,i){
+          var p = Math.round(e.v/_svcMax*100);
+          H+='<div class="bar-item"><span class="bar-label">'+e.k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+_svcCols[i%_svcCols.length]+'"></div></div><span class="bar-val">'+e.v+'</span></div>';
+        });
+        if(_svcEntries.length>8){
+          H+='<div style="font-size:10px;color:#9ca3af;margin-top:6px">+ '+(_svcEntries.length-8)+' outros módulos</div>';
+        }
+        H+='</div>';
+      } else {
+        H+='<div></div>';
+      }
+
+      // Por prioridade
+      if(_hasPrior){
+        var _priorOrder = ['Muito Alta','Alta','Normal','Baixa','Muito Baixa'];
+        var _priorColors = {'Muito Alta':'#ef4444','Alta':'#f59e0b','Normal':'#3b82f6','Baixa':'#10b981','Muito Baixa':'#9ca3af'};
+        var _priorMax = Math.max.apply(null, _priorOrder.map(function(k){return d.prior[k]||0;}).concat([1]));
+        var _totalPrior = Object.values(d.prior).reduce(function(a,b){return a+b;},0) || 1;
+        H+='<div class="card"><div class="card-title">Por prioridade</div>';
+        _priorOrder.forEach(function(k){
+          var v = d.prior[k]||0;
+          if(!v) return;
+          var p = Math.round(v/_priorMax*100);
+          var pct = Math.round(v/_totalPrior*100);
+          H+='<div class="bar-item"><span class="bar-label">'+k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+(_priorColors[k]||'#9ca3af')+'"></div></div><span class="bar-val">'+v+' <span style="color:#9ca3af;font-weight:500">('+pct+'%)</span></span></div>';
+        });
+        H+='</div>';
+      } else {
+        H+='<div></div>';
+      }
+      H+='</div>'; // /grid2
+
+      // Comentário automático sobre concentração
+      if(_hasModulos && _totalModulos>0){
+        var _svcEntries2 = Object.keys(d.servicos).map(function(k){return {k:k,v:d.servicos[k]||0};}).sort(function(a,b){return b.v-a.v;});
+        var _topSvc = _svcEntries2[0];
+        if(_topSvc){
+          var _topPct = Math.round(_topSvc.v/_totalModulos*100);
+          if(_topPct>=30){
+            H+='<div style="background:#fff7ed;border-left:4px solid #E8622A;border-radius:0 8px 8px 0;padding:10px 14px;margin-top:12px;font-size:11.5px;color:#374151;line-height:1.5">';
+            H+='<strong style="color:#E8622A">💡 Insight:</strong> Concentração em <strong>'+_topSvc.k+'</strong> representa <strong>'+_topPct+'%</strong> do histórico do cliente — vale avaliar projeto preventivo ou automação focados nessa área.';
+            H+='</div>';
+          }
+        }
+      }
+      H+='</div>'; // /seção 3
+    }
+
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 4: CARDS INDIVIDUAIS (um por chamado em aberto)
     // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num">3</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) — 1 card por ticket</div></div>';
+    H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) — 1 card por ticket</div></div>';
     H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS (estado, aging, prioridade, atendente). Sem edição manual.</p>';
 
     _carteira.forEach(function(t, idx){
@@ -9874,11 +9963,11 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='</div>'; // /seção 3
 
     // ══════════════════════════════════════════════════
-    // SEÇÃO 4: PLANO DE AÇÃO PRIORIZADO
+    // SEÇÃO 5: PLANO DE AÇÃO PRIORIZADO
     // ══════════════════════════════════════════════════
     if(_planoAcoes.length){
       H+='<div class="section">';
-      H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Plano de ação</div><div class="sec-sub">Movimentos sugeridos para as próximas 2 semanas</div></div>';
+      H+='<div class="sec-header"><div class="sec-num">5</div><div class="sec-title">Plano de ação</div><div class="sec-sub">Movimentos sugeridos para as próximas 2 semanas</div></div>';
       H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Recomendações priorizadas a partir do estado atual da carteira. Cada movimento aponta o objetivo e a ação concreta sugerida.</p>';
       _planoAcoes.forEach(function(a, i){
         var _tagCol = a.tag==='URGENTE' ? '#dc2626' : a.tag==='COBRAR' ? '#d97706' : a.tag==='COMUNICAR' ? '#9ca3af' : '#1a2744';
@@ -9900,10 +9989,10 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     }
 
     // ══════════════════════════════════════════════════
-    // SEÇÃO 5: PRÓXIMOS PASSOS (consolidados)
+    // SEÇÃO 6: PRÓXIMOS PASSOS (consolidados)
     // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num">5</div><div class="sec-title">Próximos passos</div><div class="sec-sub">Foco operacional para a próxima quinzena</div></div>';
+    H+='<div class="sec-header"><div class="sec-num">6</div><div class="sec-title">Próximos passos</div><div class="sec-sub">Foco operacional para a próxima quinzena</div></div>';
     H+='<div style="background:#1a2744;color:#fff;border-radius:10px;padding:22px 26px">';
     H+='<div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8622A;margin-bottom:12px">Plano operacional · próximas 2 semanas</div>';
     if(_planoAcoes.length){
@@ -9923,7 +10012,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   // STATUSREPORT-MARKER-END
   // SEÇÃO FINAL: CONSIDERAÇÕES FINAIS
   H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">6</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
+  H+='<div class="sec-header"><div class="sec-num">7</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
   H+='<div class="consider">Com base nas informa\u00e7\u00f5es demonstradas acima, nosso objetivo \u00e9 produzir dados e indicadores que permitam avaliar de maneira simples, segura e confi\u00e1vel o atendimento prestado. Contamos com o retorno de todos para continuar aprimorando a qualidade dos servi\u00e7os.<br><br>Contamos com voc\u00eas.<br><br><strong>EQUIPE ERP</strong><br>GROUNDWORK</div>';
   H+='</div>';
 
