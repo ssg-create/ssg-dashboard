@@ -13224,6 +13224,7 @@ function renderEquipes(){
           + (critCount ? ' · <span style="color:var(--danger);font-weight:700">'+critCount+' 🔴</span>' : '')
           + (warnCount ? ' · <span style="color:var(--warn);font-weight:700">'+warnCount+' 🟡</span>' : '')
         + '</div>'
+        + (ativosCount > 0 ? '<button class="eq-btn primary" style="margin-left:14px" onclick="_eqCobrancaColetiva(\''+sqId+'\')" title="Mensagem pronta pra mandar no grupo da squad">📢 Cobrança coletiva</button>' : '')
       + '</div>';
     if(!consultores.length){
       html += '<div class="eq-squad-empty">Nenhum consultor com carga ativa nesta squad.</div>';
@@ -13263,6 +13264,92 @@ function renderEquipes(){
   });
   el.innerHTML = html;
 }
+// Cobrança coletiva da squad — 1 mensagem com todos os consultores
+// empilhados (em vez de cobrar 1-a-1). Pra mandar no grupo da equipe.
+window._eqCobrancaColetiva = function(squadId){
+  var sqCfg = SQUADS[squadId];
+  if(!sqCfg) return;
+  if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
+  var allow = sqCfg.allowed_logins || [];
+  var byAtend = {};
+  TICKETS_ATIVOS_DATA.rows.forEach(function(t){
+    if(!t.atendente || t.atendente === 'Admin OTRS') return;
+    if(!_eqAtivoState(t.estado)) return;
+    var nome = t.atendente.trim();
+    var login = _eqNameToLogin(nome);
+    if(allow.indexOf(login) === -1) return;
+    if(!byAtend[nome]) byAtend[nome] = [];
+    byAtend[nome].push(t);
+  });
+  // Lista ordenada: crit > warn > ok, depois por count desc
+  var rankStatus = { crit:0, warn:1, ok:2 };
+  var consultores = Object.keys(byAtend).map(function(nome){
+    var tickets = byAtend[nome];
+    var status = _eqStatusFromCount(tickets.length);
+    // mais antigo
+    tickets.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+    var maisAntigo = tickets[0];
+    var diasAntigo = 0;
+    if(maisAntigo && maisAntigo.criado){
+      var dt = new Date(String(maisAntigo.criado).replace(' ','T'));
+      if(!isNaN(dt.getTime())) diasAntigo = Math.floor((Date.now() - dt.getTime())/(86400000));
+    }
+    return { nome:nome, n:tickets.length, status:status, diasAntigo:diasAntigo };
+  });
+  consultores.sort(function(a,b){
+    var ra = rankStatus[a.status.key], rb = rankStatus[b.status.key];
+    if(ra !== rb) return ra - rb;
+    return b.n - a.n;
+  });
+  if(!consultores.length) return;
+
+  // Linhas: 🔴/🟡/🟢 Primeiro Nome — N chamados (mais antigo: X dias)
+  var linhas = consultores.map(function(c){
+    var emoji = c.status.key === 'crit' ? '🔴' : (c.status.key === 'warn' ? '🟡' : '🟢');
+    var primNome = c.nome.split(' ').slice(0,2).join(' '); // 2 primeiros nomes
+    var sufixo = '';
+    if(c.status.key === 'crit' && c.diasAntigo >= 30){
+      sufixo = ' (mais antigo: ' + c.diasAntigo + ' dias)';
+    } else if(c.diasAntigo >= 30){
+      sufixo = ' (mais antigo: ' + c.diasAntigo + 'd)';
+    }
+    return emoji + ' ' + primNome + ' — *' + c.n + ' chamado' + (c.n!==1?'s':'') + '*' + sufixo;
+  }).join('\n');
+  var totalChamados = consultores.reduce(function(s,c){return s + c.n;}, 0);
+  var nCrit = consultores.filter(function(c){return c.status.key==='crit';}).length;
+  var nWarn = consultores.filter(function(c){return c.status.key==='warn';}).length;
+  var resumoLinha = totalChamados + ' chamados ativos'
+    + (nCrit ? ' · *' + nCrit + ' sobrecarregado' + (nCrit!==1?'s':'') + '*' : '')
+    + (nWarn ? ' · ' + nWarn + ' em atenção' : '');
+  var gestor = sqCfg.gestor || '';
+  var alinhaGestor = gestor
+    ? '*' + gestor + '*, alinha aí a redistribuição com a galera?\n\n'
+    : '';
+  var saudacoes = ['Galera ' + sqCfg.nome, 'Time ' + sqCfg.nome, 'E aí, galera ' + sqCfg.nome, 'Pessoal da ' + sqCfg.nome];
+  var saud = saudacoes[Math.floor(Math.random() * saudacoes.length)];
+  var fechamentos = [
+    'Quem tá com carga alta, encara uma re-triagem e me chama se precisar de apoio. Time GW resolve em time 💪',
+    'Se algum precisa redistribuir ou tem bloqueio externo, alinha aqui. A gente atravessa junto 🚀',
+    'Não é cobrança fria — é pra ninguém perder chamado de vista. Quem tá apertado, chama pra apoiar 🙌',
+    'Quem precisar de força extra, me marca aqui ou no privado. Somos um time GW, ninguém resolve sozinho.'
+  ];
+  var fech = fechamentos[Math.floor(Math.random() * fechamentos.length)];
+
+  var msg = saud + ', bom dia! 👋\n\n'
+    + 'Olha como tá nossa pilha hoje:\n\n'
+    + linhas + '\n\n'
+    + '📊 ' + resumoLinha + '\n\n'
+    + alinhaGestor
+    + fech;
+
+  try { if(navigator.clipboard) navigator.clipboard.writeText(msg); } catch(e){}
+  var tEl = document.createElement('div');
+  tEl.className = 'eq-toast';
+  tEl.textContent = '✓ Cobrança coletiva da ' + sqCfg.nome + ' copiada — cola no grupo da equipe';
+  document.body.appendChild(tEl);
+  setTimeout(function(){ tEl.remove(); }, 3500);
+};
+
 window._eqCopiarCobranca = function(nome, squadId){
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   var primNome = nome.split(' ')[0];
