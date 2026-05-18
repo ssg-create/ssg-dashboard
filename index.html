@@ -13253,7 +13253,7 @@ function renderEquipes(){
           + '<div class="eq-cons-num '+statusCls+'">'+c.n+'</div>'
           + '<div class="eq-cons-actions">'
             + '<button class="eq-btn" onclick="openAtendPendModal(\''+nomeEsc+'\',\'live\')">Ver detalhe</button>'
-            + '<button class="eq-btn primary" onclick="_eqCopiarCobranca(\''+nomeEsc+'\','+c.n+','+c.diasAntigo+')" title="Copia mensagem pronta pra cobrança">📋 Cobrar</button>'
+            + '<button class="eq-btn primary" onclick="_eqCopiarCobranca(\''+nomeEsc+'\')" title="Copia mensagem pronta pra cobrança com os top 3 chamados mais antigos">📋 Cobrar</button>'
           + '</div>'
         + '</div>';
       });
@@ -13262,22 +13262,48 @@ function renderEquipes(){
   });
   el.innerHTML = html;
 }
-window._eqCopiarCobranca = function(nome, n, diasAntigo){
+window._eqCopiarCobranca = function(nome){
+  if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   var primNome = nome.split(' ')[0];
-  var diasTxt = diasAntigo >= 30 ? ' — sendo o mais antigo com '+diasAntigo+' dias parado' : (diasAntigo >= 7 ? ' — o mais antigo já tem '+diasAntigo+' dias' : '');
+  // Pega tickets ativos desse atendente
+  var meus = TICKETS_ATIVOS_DATA.rows.filter(function(t){
+    return t.atendente && t.atendente.trim() === nome.trim() && _eqAtivoState(t.estado);
+  });
+  if(!meus.length) return;
+  // Ordena por mais antigo primeiro (criado mais velho)
+  meus.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+  var n = meus.length;
+  // Top 3 mais antigos — os mais preocupantes
+  var top = meus.slice(0, 3);
+  var linhas = top.map(function(t){
+    var dt = new Date(String(t.criado||'').replace(' ','T'));
+    var dias = !isNaN(dt.getTime()) ? Math.floor((Date.now() - dt.getTime())/(86400000)) : 0;
+    var idade = dias === 0 ? 'hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
+    var assunto = (t.assunto||'(sem assunto)').slice(0, 70);
+    return '• #' + t.ticket + ' — ' + idade + ' — ' + assunto;
+  }).join('\n');
+  var maisAntigoDias = (function(){
+    var dt = new Date(String(meus[0].criado||'').replace(' ','T'));
+    return !isNaN(dt.getTime()) ? Math.floor((Date.now() - dt.getTime())/(86400000)) : 0;
+  })();
+  var resto = n > 3 ? '\n\n(+ outros ' + (n - 3) + ' chamado' + (n-3!==1?'s':'') + ' ativos)' : '';
+  var introExtra = maisAntigoDias >= 30
+    ? ' — chamando atenção pro mais antigo de ' + maisAntigoDias + ' dias parado'
+    : (maisAntigoDias >= 7 ? ' — o mais antigo já tem ' + maisAntigoDias + ' dias' : '');
   var msg = 'Olá ' + primNome + '! Tudo bem?\n\n'
-    + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' ativo' + (n!==1?'s':'') + diasTxt + '.\n\n'
+    + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' ativo' + (n!==1?'s':'') + introExtra + '.\n\n'
+    + 'Os mais antigos são:\n' + linhas + resto + '\n\n'
     + 'Pode me dar um update rápido do que está travando? Se algo precisar de prioridade ou ajuda pra destravar, me avisa.\n\n'
     + 'Valeu!';
   try {
     if(navigator.clipboard) navigator.clipboard.writeText(msg);
   } catch(e){}
   // Toast feedback
-  var t = document.createElement('div');
-  t.className = 'eq-toast';
-  t.textContent = '✓ Mensagem copiada — cola no WhatsApp/Slack do ' + primNome;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.remove(); }, 3000);
+  var tEl = document.createElement('div');
+  tEl.className = 'eq-toast';
+  tEl.textContent = '✓ Mensagem copiada — cola no WhatsApp/Slack do ' + primNome;
+  document.body.appendChild(tEl);
+  setTimeout(function(){ tEl.remove(); }, 3000);
 };
 
 // ════════════════════════════════════════════════════════════
