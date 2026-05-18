@@ -9124,8 +9124,8 @@ function _pdfPlanoAcao(tix){
     var top = criticos[0]; // já está ordenado por aging desc
     acoes.push({
       tag: 'URGENTE',
-      titulo: 'Atacar o #...'+String(top.num).slice(-3)+' esta semana',
-      sub: 'Chamado em estado crítico ('+top.aging+' dias de aging) — '+top.assunto.slice(0,60),
+      titulo: 'Atacar o #'+String(top.num).slice(-8)+' esta semana',
+      sub: 'Chamado em estado crítico ('+top.aging+' dias de aging) — '+top.assunto.slice(0,80),
       desc: 'Alocar dev sênior dedicado para reproduzir o cenário em ambiente de homologação, definir owner técnico responsável e estabelecer reporte diário até a conclusão. Comunicar ao cliente que o caso está em ação ativa.',
       prazo: 'Esta semana'
     });
@@ -9133,7 +9133,7 @@ function _pdfPlanoAcao(tix){
   // 2) Tickets em GMUD agrupados
   var emGmud = tix.filter(function(t){return _pdfNormEstado(t.estado)==='gmud';});
   if(emGmud.length>=2){
-    var nums = emGmud.slice(0,3).map(function(t){return '#...'+String(t.num).slice(-3);}).join(' e ');
+    var nums = emGmud.slice(0,3).map(function(t){return '#'+String(t.num).slice(-8);}).join(' e ');
     acoes.push({
       tag: 'DESTRAVAR',
       titulo: 'Destravar GMUD conjunta dos '+nums,
@@ -9145,7 +9145,7 @@ function _pdfPlanoAcao(tix){
     var g = emGmud[0];
     acoes.push({
       tag: 'GMUD',
-      titulo: 'Concluir GMUD do #...'+String(g.num).slice(-3),
+      titulo: 'Concluir GMUD do #'+String(g.num).slice(-8),
       sub: 'Entrega pronta aguardando janela de mudança',
       desc: 'Confirmar janela formal de GMUD com o cliente e subir a entrega. '+g.assunto.slice(0,80),
       prazo: 'Próxima janela'
@@ -9165,8 +9165,8 @@ function _pdfPlanoAcao(tix){
     var c = aguardCli30[0];
     acoes.push({
       tag: 'COBRAR',
-      titulo: 'Reforçar acionamento do #...'+String(c.num).slice(-3),
-      sub: c.aging+' dias aguardando cliente — '+c.assunto.slice(0,50),
+      titulo: 'Reforçar acionamento do #'+String(c.num).slice(-8),
+      sub: c.aging+' dias aguardando cliente — '+c.assunto.slice(0,80),
       desc: 'Enviar comunicação formal solicitando retorno. Documentar tentativas de contato. Considerar fechamento por inatividade se persistir.',
       prazo: 'Esta semana'
     });
@@ -9174,7 +9174,7 @@ function _pdfPlanoAcao(tix){
   // 4) Terceiros
   var terceiros = tix.filter(function(t){return t.owner==='Terceiro';});
   if(terceiros.length){
-    var ts = terceiros.slice(0,3).map(function(t){return '#...'+String(t.num).slice(-3);}).join(', ');
+    var ts = terceiros.slice(0,3).map(function(t){return '#'+String(t.num).slice(-8);}).join(', ');
     acoes.push({
       tag: 'COMUNICAR',
       titulo: 'Formalizar dependência externa do(s) '+ts,
@@ -9725,7 +9725,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       _leitura += '<strong>'+_govForaPct+'% da carteira está fora da governança GW</strong>. ';
     }
     if(_critTicket){
-      _leitura += 'O risco crítico é o <strong>#...'+String(_critTicket.num).slice(-3)+'</strong> ('+_critTicket.aging+' dias em aberto, prioridade Muito Alta), que requer ação técnica imediata.';
+      _leitura += 'O risco crítico é o <strong>#'+String(_critTicket.num).slice(-8)+'</strong> ('+_critTicket.aging+' dias em aberto, prioridade Muito Alta), que requer ação técnica imediata.';
     } else if(_agingMax>60){
       _leitura += 'Maior aging da carteira: <strong>'+_agingMax+' dias</strong>. Revisar bloqueios técnicos com a equipe.';
     } else {
@@ -9758,7 +9758,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_agingMaxColor+'">';
     H+='<div style="font-size:36px;font-weight:900;color:'+_agingMaxColor+';line-height:1">'+_agingMax+'</div>';
     H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Aging máximo (dias)</div>';
-    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">ticket #...'+String(_ticketMax.num).slice(-3)+(_ticketMax.prioridade==='Muito Alta'?' — URGENTE':'')+'</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">ticket #'+String(_ticketMax.num).slice(-8)+(_ticketMax.prioridade==='Muito Alta'?' — URGENTE':'')+'</div>';
     H+='</div>';
     var _govColor = _govForaPct>=70?'#d97706':'#1a2744';
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_govColor+'">';
@@ -9971,11 +9971,11 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Recomendações priorizadas a partir do estado atual da carteira. Cada movimento aponta o objetivo e a ação concreta sugerida.</p>';
       _planoAcoes.forEach(function(a, i){
         var _tagCol = a.tag==='URGENTE' ? '#dc2626' : a.tag==='COBRAR' ? '#d97706' : a.tag==='COMUNICAR' ? '#9ca3af' : '#1a2744';
-        H+='<div style="display:grid;grid-template-columns:48px 1fr 130px;gap:14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;margin-bottom:10px;page-break-inside:avoid">';
+        H+='<div style="display:grid;grid-template-columns:48px 1fr 110px;gap:14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;margin-bottom:10px;page-break-inside:avoid">';
         H+='<div style="display:flex;align-items:flex-start;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:#1a2744;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center">'+(i+1)+'</div></div>';
-        H+='<div>';
-        H+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:'+_tagCol+';color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">'+a.tag+'</span>';
-        H+='<span style="font-size:13.5px;font-weight:800;color:#1a2744">'+a.titulo+'</span></div>';
+        H+='<div style="min-width:0">';
+        H+='<div style="margin-bottom:6px;line-height:1.4"><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:'+_tagCol+';color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;vertical-align:middle;margin-right:8px;white-space:nowrap">'+a.tag+'</span>';
+        H+='<span style="font-size:13.5px;font-weight:800;color:#1a2744;vertical-align:middle">'+a.titulo+'</span></div>';
         H+='<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+a.sub+'</div>';
         H+='<div style="font-size:11.5px;line-height:1.55;color:#374151">'+a.desc+'</div>';
         H+='</div>';
@@ -12710,7 +12710,7 @@ function exportCSPDF() {
   // Gera tickets abertos
   var ticketsAbertos = (d.tickets||[]).filter(function(t){return ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno'].indexOf(t.estado)!==-1;});
   var ticketsHtml = ticketsAbertos.map(function(t){
-    return '<tr><td style="padding:5px 8px;font-size:11px;color:#334155">#'+t.num.slice(-6)+'</td><td style="padding:5px 8px;font-size:11px">'+t.assunto.slice(0,50)+'</td><td style="padding:5px 8px;font-size:11px">'+t.estado+'</td><td style="padding:5px 8px;font-size:11px">'+t.prioridade+'</td></tr>';
+    return '<tr><td style="padding:5px 8px;font-size:11px;color:#334155">#'+t.num.slice(-6)+'</td><td style="padding:5px 8px;font-size:11px">'+t.assunto.slice(0,80)+'</td><td style="padding:5px 8px;font-size:11px">'+t.estado+'</td><td style="padding:5px 8px;font-size:11px">'+t.prioridade+'</td></tr>';
   }).join('');
   // Gera ações
   var actions = [];
