@@ -4070,6 +4070,7 @@ var SQUADS = {
     nome: 'SSG · Protheus',
     filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
     exclude_atendentes: ['Admin OTRS'],
+    gestor: 'Weskley',  // primeiro nome — usado em mensagens de cobrança
     allowed_logins: [
       'adriano.ribeiro','alisson.silva','carlos.fernandes','cristiano.scaranci',
       'debora.gomes','diego.cardoso','diego.carvalho','dyalef.santos',
@@ -13253,7 +13254,7 @@ function renderEquipes(){
           + '<div class="eq-cons-num '+statusCls+'">'+c.n+'</div>'
           + '<div class="eq-cons-actions">'
             + '<button class="eq-btn" onclick="openAtendPendModal(\''+nomeEsc+'\',\'live\')">Ver detalhe</button>'
-            + '<button class="eq-btn primary" onclick="_eqCopiarCobranca(\''+nomeEsc+'\')" title="Copia mensagem pronta pra cobrança com os top 3 chamados mais antigos">📋 Cobrar</button>'
+            + '<button class="eq-btn primary" onclick="_eqCopiarCobranca(\''+nomeEsc+'\',\''+sqId+'\')" title="Copia mensagem pronta pra cobrança com os top 3 chamados mais antigos">📋 Cobrar</button>'
           + '</div>'
         + '</div>';
       });
@@ -13262,9 +13263,10 @@ function renderEquipes(){
   });
   el.innerHTML = html;
 }
-window._eqCopiarCobranca = function(nome){
+window._eqCopiarCobranca = function(nome, squadId){
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   var primNome = nome.split(' ')[0];
+  var gestor = (squadId && SQUADS[squadId] && SQUADS[squadId].gestor) ? SQUADS[squadId].gestor : '';
   // Pega tickets ativos desse atendente
   var meus = TICKETS_ATIVOS_DATA.rows.filter(function(t){
     return t.atendente && t.atendente.trim() === nome.trim() && _eqAtivoState(t.estado);
@@ -13290,15 +13292,21 @@ window._eqCopiarCobranca = function(nome){
   var introExtra = maisAntigoDias >= 30
     ? ' — chamando atenção pro mais antigo de ' + maisAntigoDias + ' dias parado'
     : (maisAntigoDias >= 7 ? ' — o mais antigo já tem ' + maisAntigoDias + ' dias' : '');
-  // Fechamentos rotativos (reforço de time GW — não cobrança seca)
-  var fechamentos = [
-    'Me dá um update rápido do que tá travando? Se precisar de ajuda pra destravar algum, me avisa — você não tá sozinho, somos um time GW e a gente resolve junto.\n\nValeu! 🚀',
-    'Bora alinhar o que tá pegando? Se algum desses precisa de outra área ou apoio extra, conta comigo — time GW resolve em time.\n\nAbraço!',
-    'Me passa um status do que tá empacando? Se for algo bloqueado por externo ou que precisa de força extra, me avisa — não deixa carregar sozinho, time GW tá aqui pra apoiar.\n\nValeu! 💪',
-    'Como tá o cenário desses chamados? Qualquer coisa que dependa de ajuda — minha, de outra squad, de quem for — me chama. A gente é time GW, ninguém resolve sozinho.\n\nValeu!',
-    'Conta um pouco onde tá o gargalo. Se algum precisa de empurrão de outra área ou conversa minha, me avisa — somos um time GW e a gente atravessa junto.\n\nAbraço! 🙌'
+  // Fechamentos propositivos (sugerem ação: re-triagem + redistribuir) + tom de time GW.
+  // Quando tem gestor cadastrado pra squad, cita o nome — senão usa versão genérica.
+  var fechamentosComGestor = [
+    'Que tal fazer uma nova triagem e redistribuir entre os companheiros? Você já alinhou com o {gestor}, gestor da área?\n\nSe precisar de apoio pra organizar, conta comigo — somos time GW e a gente resolve junto.\n\nValeu! 🚀',
+    'Bora dar uma nova triagem nesses e ver o que dá pra distribuir entre os colegas? Vale também alinhar com o {gestor} pra entender as prioridades dele.\n\nQualquer coisa, me chama — time GW resolve em time.\n\nAbraço! 💪',
+    'Acho que vale uma re-triagem e dividir alguns desses com os companheiros — não precisa segurar tudo sozinho. O {gestor} tá sabendo do cenário?\n\nMe avisa se quiser apoio pra organizar. Somos um time GW, a gente atravessa junto.\n\nValeu! 🙌',
+    'Que tal repassar esses chamados com o {gestor} e ver com os colegas o que dá pra redistribuir? Distribuir carga é parte do jogo.\n\nQualquer coisa, conta comigo — time GW não deixa ninguém sozinho.\n\nAbraço!'
   ];
-  var fechamento = fechamentos[Math.floor(Math.random() * fechamentos.length)];
+  var fechamentosGenericos = [
+    'Que tal fazer uma nova triagem e ver se algum dá pra redistribuir entre os companheiros? Não precisa carregar tudo sozinho.\n\nSe precisar de apoio pra organizar, conta comigo — somos time GW e a gente resolve junto.\n\nValeu! 🚀',
+    'Bora dar uma nova triagem nesses e dividir o que der com os colegas? Distribuir carga é parte do jogo.\n\nQualquer coisa me chama — time GW resolve em time.\n\nAbraço! 💪',
+    'Acho que vale uma re-triagem — alguns desses podem ser redistribuídos com os companheiros. Me chama se quiser apoio pra organizar.\n\nSomos um time GW e a gente atravessa junto.\n\nValeu! 🙌'
+  ];
+  var pool = (gestor ? fechamentosComGestor : fechamentosGenericos);
+  var fechamento = pool[Math.floor(Math.random() * pool.length)].replace('{gestor}', gestor);
   var msg = 'Olá ' + primNome + '! Tudo bem?\n\n'
     + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' ativo' + (n!==1?'s':'') + introExtra + '.\n\n'
     + 'Os mais antigos são:\n' + linhas + resto + '\n\n'
