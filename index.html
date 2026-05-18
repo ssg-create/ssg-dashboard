@@ -11178,6 +11178,13 @@ function fetchTicketsAtivos(){
           renderSquadView();
         }
       }catch(e){console.warn('sq re-render:',e);}
+      // Re-render da aba Equipes & Cobrança quando dados chegam
+      try {
+        var eqSec = document.getElementById('s-eq');
+        if(eqSec && eqSec.classList.contains('on') && typeof renderEquipes==='function'){
+          renderEquipes();
+        }
+      } catch(e){ console.warn('eq re-render:',e); }
     })
     .catch(function(){});
 }
@@ -13125,7 +13132,19 @@ function renderEquipes(){
   var el = document.getElementById('eq-content');
   if(!el) return;
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows){
-    el.innerHTML = '<div class="ai-empty" style="padding:40px;text-align:center;color:var(--muted)">Aguardando dados do GWMS…</div>';
+    el.innerHTML = '<div class="ai-empty" style="padding:40px;text-align:center;color:var(--muted)">'
+      + '<div style="font-size:32px;margin-bottom:10px">⏳</div>'
+      + '<div>Carregando dados do GWMS…</div>'
+      + '<div style="font-size:11px;margin-top:8px;opacity:.7">Se demorar, aperta F5</div>'
+    + '</div>';
+    // Força fetch + retry após 2s (caso dado ainda não tenha chegado)
+    if(typeof fetchTicketsAtivos === 'function') fetchTicketsAtivos();
+    setTimeout(function(){
+      var sec = document.getElementById('s-eq');
+      if(sec && sec.classList.contains('on') && typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA){
+        renderEquipes();
+      }
+    }, 2000);
     return;
   }
   var rows = TICKETS_ATIVOS_DATA.rows;
