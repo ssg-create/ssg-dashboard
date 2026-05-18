@@ -8872,10 +8872,36 @@ function _pdfFmtDataPtBr(criado){
   var p2=function(n){return n<10?'0'+n:''+n;};
   return p2(dt.getDate())+'/'+p2(dt.getMonth()+1)+'/'+dt.getFullYear();
 }
+function _pdfNormEstado(estado){
+  // Normaliza estado vindo de fontes diferentes (EMPRESAS usa "Em Atendimento",
+  // TICKETS_ATIVOS_DATA usa "EM ATENDIMENTO" maiúsculo, OTRS tem variantes).
+  var e = String(estado||'').toLowerCase().trim();
+  if(e.indexOf('em atendimento')>=0) return 'em_atendimento';
+  if(e.indexOf('retorno cliente')>=0) return 'retorno_cliente';
+  if(e.indexOf('aguardando cliente')>=0) return 'aguardando_cliente';
+  if(e.indexOf('aguardando externo')>=0) return 'aguardando_externo';
+  if(e.indexOf('aguardando interno')>=0) return 'aguardando_interno';
+  if(e.indexOf('pendente auto')>=0) return 'agendado';
+  if(e.indexOf('agendado')>=0) return 'agendado';
+  if(e.indexOf('gmud')>=0) return 'gmud';
+  if(e==='open' || e.indexOf('aberto')>=0 || e.indexOf('novo')>=0) return 'aberto';
+  return 'outro';
+}
+function _pdfNormPrior(prioridade){
+  // OTRS usa "5 very high", "4 high", "3 normal", "2 low", "1 very low"
+  // EMPRESAS usa "Muito Alta", "Alta", "Normal", "Baixa", "Muito Baixa"
+  var p = String(prioridade||'').toLowerCase().trim();
+  if(p.indexOf('5')>=0 || p.indexOf('very high')>=0 || p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0) return 'Muito Alta';
+  if(p.indexOf('4')>=0 || p === 'high' || p.indexOf('alta')>=0) return 'Alta';
+  if(p.indexOf('3')>=0 || p === 'normal') return 'Normal';
+  if(p.indexOf('2')>=0 || p === 'low' || p.indexOf('baixa')>=0) return 'Baixa';
+  if(p.indexOf('1')>=0 || p.indexOf('very low')>=0 || p.indexOf('muito baixa')>=0) return 'Muito Baixa';
+  return 'Normal';
+}
 function _pdfInferRisco(agingDias, prioridade){
-  var p = String(prioridade||'').toLowerCase();
-  var isAlta  = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
-  var isMedia = p === 'alta';
+  var p = _pdfNormPrior(prioridade);
+  var isAlta  = p==='Muito Alta';
+  var isMedia = p==='Alta';
   if(agingDias==null) return 'BAIXO';
   if(isAlta){
     if(agingDias > 30) return 'ALTO';
@@ -8892,75 +8918,276 @@ function _pdfInferRisco(agingDias, prioridade){
   return 'BAIXO';
 }
 function _pdfInferBloqueio(estado){
-  var e = String(estado||'').toLowerCase();
-  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0) return 'Aguarda cliente';
-  if(e.indexOf('aguardando externo')>=0) return 'Aguarda terceiro';
-  if(e.indexOf('aguardando interno')>=0) return 'Aguarda interno GroundWork';
-  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0) return 'Agendado';
-  if(e.indexOf('em atendimento')>=0) return 'GroundWork executando';
-  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0) return 'Em triagem';
+  var n = _pdfNormEstado(estado);
+  if(n==='retorno_cliente' || n==='aguardando_cliente') return 'Aguarda cliente';
+  if(n==='aguardando_externo')   return 'Aguarda terceiro';
+  if(n==='aguardando_interno')   return 'Aguarda interno GroundWork';
+  if(n==='agendado')             return 'Agendado';
+  if(n==='gmud')                 return 'Em janela de GMUD';
+  if(n==='em_atendimento')       return 'GroundWork executando';
+  if(n==='aberto')               return 'Em triagem';
   return 'Sem classificação';
 }
 function _pdfInferOwner(estado){
   var b = _pdfInferBloqueio(estado);
-  if(b==='Aguarda cliente')    return 'Cliente';
-  if(b==='Aguarda terceiro')   return 'Terceiro';
-  if(b==='Agendado')           return 'GroundWork (agendado)';
+  if(b==='Aguarda cliente')           return 'Cliente';
+  if(b==='Aguarda terceiro')          return 'Terceiro';
+  if(b==='Agendado')                  return 'GroundWork (agendado)';
+  if(b==='Em janela de GMUD')         return 'GroundWork (em deploy)';
   return 'GroundWork';
 }
-function _pdfGenStatusAuto(estado, criadoDate, agingDias, atendente){
-  var e = String(estado||'').toLowerCase();
-  var ag = agingDias!=null ? agingDias : '—';
+function _pdfClassGovernanca(estado){
+  // 3 buckets: GroundWork, Cliente, Terceiros — para o "% fora da governança"
+  var o = _pdfInferOwner(estado);
+  if(o==='Cliente') return 'cliente';
+  if(o==='Terceiro') return 'terceiro';
+  return 'groundwork';
+}
+function _pdfFaixaAging(agingDias){
+  if(agingDias==null) return '0-30d';
+  if(agingDias <= 30) return '0-30d';
+  if(agingDias <= 60) return '31-60d';
+  if(agingDias <= 90) return '61-90d';
+  return '91+d';
+}
+function _pdfGenStatusAuto(estado, criadoDate, agingDias, atendente, prioridade, assunto){
+  // Narrativa multi-frase: combina estado + aging + prioridade + tom contextual.
+  // Ainda determinístico, mas com 2-3 frases em vez de 1.
+  var n = _pdfNormEstado(estado);
+  var p = _pdfNormPrior(prioridade);
+  var ag = agingDias!=null ? agingDias : null;
   var data = _pdfFmtDataPtBr(criadoDate);
   var at = (atendente && atendente !== '—' && atendente !== 'Admin OTRS') ? atendente : null;
-  if(e.indexOf('em atendimento')>=0){
-    var base = 'Em atendimento'+(at?' por '+at:'')+' desde '+data+' ('+ag+' dias em aberto).';
-    if(agingDias!=null && agingDias>60) base += ' Aging acima da janela esperada.';
-    return base;
+  var isCritico = p==='Muito Alta' && ag!=null && ag>60;
+  var s = '';
+  if(n==='em_atendimento'){
+    s = 'Chamado em atendimento'+(at?' por '+at:'')+' desde '+data+' ('+ag+' dias). ';
+    if(isCritico) s += 'Aging muito acima da janela esperada — requer ação prioritária para destravar. ';
+    else if(ag!=null && ag>30) s += 'Aging acima da janela típica — vale revisar bloqueios técnicos. ';
+    else s += 'Execução em curso pela equipe GroundWork. ';
+    if(p==='Muito Alta') s += 'Prioridade Muito Alta — reportar avanço diário.';
+    else if(p==='Alta')  s += 'Prioridade Alta — reportar avanço a cada 2 dias.';
+    return s.trim();
   }
-  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0){
-    return 'Aguardando retorno do cliente desde '+data+' ('+ag+' dias). Cliente sem manifestação no canal.';
+  if(n==='retorno_cliente' || n==='aguardando_cliente'){
+    s = 'Aguardando retorno do cliente desde '+data+' ('+ag+' dias). ';
+    if(ag!=null && ag>30) s += 'Cliente sem manifestação no canal há mais de 30 dias — risco de inatividade prolongada. ';
+    else if(ag!=null && ag>14) s += 'Cliente sem manifestação há mais de 2 semanas — reforço de acionamento recomendado. ';
+    else s += 'Resposta do cliente é o próximo passo para destravar. ';
+    if(p==='Muito Alta') s += 'Apesar do bloqueio externo, prioridade segue Muito Alta.';
+    return s.trim();
   }
-  if(e.indexOf('aguardando externo')>=0){
-    return 'Aguardando retorno externo desde '+data+' ('+ag+' dias). Bloqueio em terceiro — fora da governança Groundwork.';
+  if(n==='aguardando_externo'){
+    return 'Bloqueio em terceiro (fora da governança GroundWork) desde '+data+' ('+ag+' dias). Follow-up periódico em curso. '+(p==='Muito Alta'?'Caso crítico — vale avaliar alternativa se sem retorno em 15 dias.':'Acompanhamento regular mantido com o agente externo.');
   }
-  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0){
-    return 'Em janela de auto-liberação / agendamento. Ação programada conforme cronograma do ticket.';
+  if(n==='aguardando_interno'){
+    return 'Em fila interna GroundWork desde '+data+' ('+ag+' dias). Aguarda alocação ou retorno de área especializada (DBA, Infra, Tecnologia). '+(p==='Muito Alta'?'Escalação interna recomendada dado o impacto.':'Aguarda janela natural da área responsável.');
   }
-  if(e.indexOf('aguardando interno')>=0){
-    return 'Em fila interna Groundwork desde '+data+' ('+ag+' dias). Aguarda alocação ou retorno de área especializada.';
+  if(n==='gmud'){
+    return 'Em janela de GMUD desde '+data+' ('+ag+' dias). Solução técnica concluída e em aprovação para deploy. '+(p==='Muito Alta'?'Prioridade Muito Alta — alinhar com cliente para subir na próxima janela.':'Aguarda agenda formal de mudança.');
   }
-  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0){
-    return 'Chamado aberto em '+data+' ('+ag+' dias) aguardando triagem inicial.';
+  if(n==='agendado'){
+    return 'Em janela de auto-liberação / agendamento desde '+data+'. Ação programada conforme cronograma definido com o cliente.';
+  }
+  if(n==='aberto'){
+    s = 'Chamado em aberto desde '+data+' ('+ag+' dias). ';
+    if(isCritico) s += 'Em aberto há muito tempo com prioridade Muito Alta — situação crítica que demanda triagem imediata.';
+    else if(ag!=null && ag>30) s += 'Aging acima do esperado — revisar triagem.';
+    else s += 'Aguarda triagem inicial e atribuição de atendente.';
+    return s.trim();
   }
   return 'Estado: '+(estado||'—')+' desde '+data+' ('+ag+' dias).';
 }
 function _pdfGenProximaAcaoAuto(estado, agingDias, prioridade){
-  var e = String(estado||'').toLowerCase();
-  var p = String(prioridade||'').toLowerCase();
-  var isAlta = p.indexOf('muito alta')>=0 || p.indexOf('urgente')>=0;
-  if(e.indexOf('em atendimento')>=0){
-    if(agingDias!=null && agingDias>60) return 'Acelerar tratativa — chamado fora da janela esperada. Definir prazo de entrega.';
-    if(isAlta) return 'Manter prioridade alta e reportar avanço diário.';
-    return 'Dar continuidade à tratativa.';
+  var n = _pdfNormEstado(estado);
+  var p = _pdfNormPrior(prioridade);
+  var isAlta = p==='Muito Alta';
+  var isMedAlta = p==='Alta';
+  if(n==='em_atendimento'){
+    if(agingDias!=null && agingDias>60 && isAlta) return 'Caso crítico de aging — alocar dev sênior esta semana, reproduzir cenário em homologação e reportar avanço diário até resolução.';
+    if(agingDias!=null && agingDias>30) return 'Acelerar tratativa — definir prazo de entrega com cliente e reportar marcos intermediários.';
+    if(isAlta) return 'Manter prioridade alta na execução. Reportar avanço diário ao cliente.';
+    if(isMedAlta) return 'Continuar execução em ritmo normal. Reportar status a cada 2 dias.';
+    return 'Dar continuidade à tratativa conforme planejamento.';
   }
-  if(e.indexOf('retorno cliente')>=0 || e.indexOf('aguardando cliente')>=0){
-    if(agingDias!=null && agingDias>14) return 'Reforçar acionamento ao cliente. Considerar fechamento por inatividade se persistir.';
+  if(n==='retorno_cliente' || n==='aguardando_cliente'){
+    if(agingDias!=null && agingDias>30) return 'Reforçar acionamento formal ao cliente esta semana. Se persistir sem retorno em 7 dias, considerar fechamento por inatividade com aviso.';
+    if(agingDias!=null && agingDias>14) return 'Reforçar acionamento ao cliente nos próximos dias. Documentar tentativas de contato.';
     return 'Acompanhar retorno do cliente nos próximos dias úteis.';
   }
-  if(e.indexOf('aguardando externo')>=0){
-    return 'Follow-up formal com o terceiro. Avaliar alternativa se não houver retorno em 15 dias.';
+  if(n==='aguardando_externo'){
+    if(agingDias!=null && agingDias>30) return 'Follow-up formal com o terceiro. Avaliar fonte alternativa ou solução paliativa caso não haja retorno nas próximas 2 semanas.';
+    return 'Follow-up formal com o terceiro. Reportar evolução ao cliente no próximo ciclo de comunicação.';
   }
-  if(e.indexOf('pendente auto')>=0 || e.indexOf('agendado')>=0){
-    return 'Executar conforme cronograma agendado.';
+  if(n==='aguardando_interno'){
+    if(isAlta) return 'Escalar para gerente da área interna responsável. Definir prazo para destravar.';
+    return 'Acompanhar alocação na área responsável.';
   }
-  if(e.indexOf('aberto')>=0 || e.indexOf('novo')>=0){
+  if(n==='gmud'){
+    if(isAlta) return 'Alinhar com cliente próxima janela de GMUD desta semana. Confirmar checklist técnico e proceder com o deploy.';
+    return 'Aguardar janela formal de GMUD agendada com o cliente.';
+  }
+  if(n==='agendado'){
+    return 'Executar conforme cronograma agendado. Confirmar agenda do cliente.';
+  }
+  if(n==='aberto'){
+    if(isAlta && agingDias!=null && agingDias>30) return 'Triagem URGENTE — chamado de alta prioridade em aberto há muito tempo. Atribuir owner imediatamente e iniciar tratativa.';
     return 'Realizar triagem inicial e atribuir atendente responsável.';
   }
-  if(e.indexOf('aguardando interno')>=0){
-    return 'Alocar ou escalar para a área responsável.';
-  }
   return 'Acompanhar evolução no ticket.';
+}
+function _pdfInferETA(estado, agingDias, prioridade){
+  // ETA aproximada baseada em estado + prioridade. Devolve uma string curta.
+  var n = _pdfNormEstado(estado);
+  var p = _pdfNormPrior(prioridade);
+  if(n==='agendado') return 'Conforme cronograma';
+  if(n==='gmud')    return 'Próxima janela de GMUD';
+  if(n==='retorno_cliente' || n==='aguardando_cliente') return 'Aguarda retorno cliente';
+  if(n==='aguardando_externo') return 'Dependente de terceiro';
+  if(n==='aguardando_interno') return 'Aguarda área interna';
+  if(n==='em_atendimento'){
+    if(p==='Muito Alta') return 'Esta semana';
+    if(p==='Alta')       return 'Próximas 2 semanas';
+    return 'Conforme planejamento';
+  }
+  if(n==='aberto') return 'Atribuição imediata';
+  return '—';
+}
+function _pdfBuildCarteira(cli_id){
+  // Retorna lista de tickets em ABERTO do cliente (via TICKETS_ATIVOS_DATA),
+  // enriquecida com aging, risco, bloqueio, owner, governança, faixa.
+  // Fallback: se TICKETS_ATIVOS_DATA não estiver disponível, usa d.tickets
+  // filtrado por isOpenState (perde tickets fora do escopo de mês ativo, mas
+  // funciona offline).
+  var tix = [];
+  if(typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+      if(!r) return;
+      if(String(r.cli_id||r.cliente||'').toUpperCase() !== String(cli_id||'').toUpperCase()) return;
+      var criado = r.criado ? new Date(r.criado) : null;
+      var aging  = _pdfAgingDias(criado);
+      var prioN  = _pdfNormPrior(r.prioridade);
+      tix.push({
+        num:        r.ticket,
+        assunto:    r.assunto || '—',
+        estado:     r.estado || '—',
+        prioridade: prioN,
+        atendente:  r.atendente || '—',
+        fila:       r.fila || '—',
+        servico:    r.servico || '',
+        criado:     criado,
+        aging:      aging,
+        risco:      _pdfInferRisco(aging, prioN),
+        bloqueio:   _pdfInferBloqueio(r.estado),
+        owner:      _pdfInferOwner(r.estado),
+        governanca: _pdfClassGovernanca(r.estado),
+        faixa:      _pdfFaixaAging(aging),
+        eta:        _pdfInferETA(r.estado, aging, prioN)
+      });
+    });
+  }
+  // Ordena por aging desc — mais antigos primeiro
+  tix.sort(function(a,b){return (b.aging||0)-(a.aging||0);});
+  return tix;
+}
+function _pdfPlanoAcao(tix){
+  // Gera até 5 movimentos priorizados a partir da carteira em aberto.
+  // Regras (em ordem de prioridade):
+  //  1) Caso crítico isolado: 1 ticket Muito Alta aging > 60d → "Atacar imediato"
+  //  2) Tickets em janela de GMUD (mesma fila): "Destravar GMUD conjunta"
+  //  3) Tickets aguardando cliente há > 30d (mais de 1): "Reforçar acionamento"
+  //  4) Tickets aguardando terceiro: "Formalizar dependência externa"
+  //  5) Demais tickets em atendimento com aging > 30d: "Acelerar tratativa"
+  if(!tix || !tix.length) return [];
+  var acoes = [];
+  // 1) Caso crítico individual
+  var criticos = tix.filter(function(t){return t.prioridade==='Muito Alta' && t.aging!=null && t.aging>60;});
+  if(criticos.length){
+    var top = criticos[0]; // já está ordenado por aging desc
+    acoes.push({
+      tag: 'URGENTE',
+      titulo: 'Atacar o #...'+String(top.num).slice(-3)+' esta semana',
+      sub: 'Chamado em estado crítico ('+top.aging+' dias de aging) — '+top.assunto.slice(0,60),
+      desc: 'Alocar dev sênior dedicado para reproduzir o cenário em ambiente de homologação, definir owner técnico responsável e estabelecer reporte diário até a conclusão. Comunicar ao cliente que o caso está em ação ativa.',
+      prazo: 'Esta semana'
+    });
+  }
+  // 2) Tickets em GMUD agrupados
+  var emGmud = tix.filter(function(t){return _pdfNormEstado(t.estado)==='gmud';});
+  if(emGmud.length>=2){
+    var nums = emGmud.slice(0,3).map(function(t){return '#...'+String(t.num).slice(-3);}).join(' e ');
+    acoes.push({
+      tag: 'DESTRAVAR',
+      titulo: 'Destravar GMUD conjunta dos '+nums,
+      sub: emGmud.length+' entrega(s) prontas — em janela de mudança',
+      desc: 'Alinhar formalmente com o cliente próxima janela de GMUD para subir as entregas em sequência. Reduz overhead operacional e concentra esforço de validação em um único ciclo.',
+      prazo: 'Próxima janela'
+    });
+  } else if(emGmud.length===1){
+    var g = emGmud[0];
+    acoes.push({
+      tag: 'GMUD',
+      titulo: 'Concluir GMUD do #...'+String(g.num).slice(-3),
+      sub: 'Entrega pronta aguardando janela de mudança',
+      desc: 'Confirmar janela formal de GMUD com o cliente e subir a entrega. '+g.assunto.slice(0,80),
+      prazo: 'Próxima janela'
+    });
+  }
+  // 3) Aguardando cliente há > 30d (mais de 1)
+  var aguardCli30 = tix.filter(function(t){return t.owner==='Cliente' && t.aging!=null && t.aging>30;});
+  if(aguardCli30.length>=2){
+    acoes.push({
+      tag: 'COBRAR',
+      titulo: 'Reforçar acionamento em '+aguardCli30.length+' chamado(s) parados no cliente',
+      sub: aguardCli30.length+' chamados aguardando cliente há mais de 30 dias',
+      desc: 'Enviar comunicação formal consolidada ao cliente listando os chamados em retorno e solicitando resposta. Se persistir sem manifestação em 7 dias úteis, considerar fechamento por inatividade com aviso prévio.',
+      prazo: 'Próxima semana'
+    });
+  } else if(aguardCli30.length===1){
+    var c = aguardCli30[0];
+    acoes.push({
+      tag: 'COBRAR',
+      titulo: 'Reforçar acionamento do #...'+String(c.num).slice(-3),
+      sub: c.aging+' dias aguardando cliente — '+c.assunto.slice(0,50),
+      desc: 'Enviar comunicação formal solicitando retorno. Documentar tentativas de contato. Considerar fechamento por inatividade se persistir.',
+      prazo: 'Esta semana'
+    });
+  }
+  // 4) Terceiros
+  var terceiros = tix.filter(function(t){return t.owner==='Terceiro';});
+  if(terceiros.length){
+    var ts = terceiros.slice(0,3).map(function(t){return '#...'+String(t.num).slice(-3);}).join(', ');
+    acoes.push({
+      tag: 'COMUNICAR',
+      titulo: 'Formalizar dependência externa do(s) '+ts,
+      sub: terceiros.length+' chamado(s) bloqueado(s) por terceiros',
+      desc: 'Enviar comunicação oficial ao cliente esclarecendo que esses chamados não dependem de ação GroundWork e estão em follow-up periódico com o terceiro. Definir cadência de reporte quinzenal de evolução.',
+      prazo: 'Esta quinzena'
+    });
+  }
+  // 5) Em atendimento com aging > 30d (mas que não viraram crítico individual)
+  var atrasados = tix.filter(function(t){
+    return _pdfNormEstado(t.estado)==='em_atendimento' && t.aging!=null && t.aging>30 && t.aging<=60;
+  });
+  if(atrasados.length && acoes.length<5){
+    acoes.push({
+      tag: 'ACELERAR',
+      titulo: 'Acelerar '+atrasados.length+' chamado(s) em execução com aging acima de 30 dias',
+      sub: atrasados.length+' chamados em execução interna fora da janela típica',
+      desc: 'Revisar com a equipe técnica os principais bloqueios. Definir marcos intermediários de entrega e reportar avanço ao cliente em ritmo semanal.',
+      prazo: 'Próximas 2 semanas'
+    });
+  }
+  return acoes.slice(0,5);
+}
+function _pdfTop3Prioridades(tix, acoes){
+  // Versão curta do plano de ação para o Resumo Executivo.
+  // Reusa as 3 primeiras ações geradas, formatando como bullets.
+  var top = [];
+  (acoes||[]).slice(0,3).forEach(function(a,i){
+    top.push({n:(i+1), titulo:a.titulo, sub:a.sub});
+  });
+  return top;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -9405,13 +9632,16 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='<div class="cover-accent"></div>';
   H+='<div class="cover-top">'+LOGO_WHITE+'<div style="font-size:10px;color:rgba(255,255,255,.5);text-align:right">Emitido em '+now+'<br>Confidencial</div></div>';
   H+='<div class="cover-body">';
-  H+='<div class="cover-tag">Relat\u00f3rio de Atendimento</div>';
-  H+='<div class="cover-title">Relat\u00f3rio de<br>Atendimentos</div>';
-  H+='<div class="cover-sub">'+sistemasLabel+'</div>';
+  H+='<div class="cover-tag">Status Report \u00b7 Centro de Opera\u00e7\u00f5es SSG</div>';
+  H+='<div class="cover-title">'+d.nome+'</div>';
+  H+='<div class="cover-sub">Acompanhamento detalhado de chamados em aberto</div>';
+  // Carteira atual em aberto (TICKETS_ATIVOS_DATA) \u2014 usada na capa e no resumo
+  var _carteiraNSX = _pdfBuildCarteira(dRaw.id);
+  var _carteiraQtd = _carteiraNSX.length;
   H+='<div class="cover-chips">';
   H+='<span class="cover-chip orange">'+d.nome+'</span>';
   H+='<span class="cover-chip blue">'+mesLabel+'</span>';
-  H+='<span class="cover-chip gray">'+d.total+' chamados no per\u00edodo</span>';
+  H+='<span class="cover-chip gray">'+_carteiraQtd+' chamado(s) em aberto</span>';
   H+='<span class="cover-chip gray">'+sistemasLabel+'</span>';
   H+='</div>';
   H+='<div class="cover-score">';
@@ -9429,475 +9659,271 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   // Bot\u00e3o print
   H+='<div class="no-print" style="text-align:right;margin-bottom:24px"><button onclick="window.print()" style="padding:9px 22px;background:#1a2744;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:.03em">\ud83d\udda8\ufe0f Imprimir / Salvar PDF</button></div>';
 
-  // ============================================================
-  // TL;DR EXECUTIVO (pra gerente decidir em 30 segundos)
-  // ============================================================
-  var _opBench = (function(){
-    var op = (typeof getActiveOP==='function') ? getActiveOP() : (typeof OP!=='undefined' ? OP : null);
-    if(!op) return null;
-    return {
-      taxa: (op.total>0) ? Math.round((op.fechados||0)/op.total*100) : null,
-      resp: op.resp_med!=null ? Math.round(op.resp_med) : null,
-      sol:  (op.sol_med!=null) ? Math.round(op.sol_med) : (op.sol_med_h!=null ? Math.round(op.sol_med_h) : null),
-      sla:  op.sla_pct!=null ? op.sla_pct : (op.sla ? op.sla.pct_within_sla : null)
-    };
-  })();
-  var prevScoreDelta = null;
-  if(typeof curData!=='undefined' && curData && typeof prevData!=='undefined' && prevData){
-    var prevScore = (typeof calcUnifiedScore==='function') ? calcUnifiedScore(prevData) : null;
-    if(prevScore!=null) prevScoreDelta = score - prevScore;
-  }
-  var deltaTxt = prevScoreDelta!=null ? (prevScoreDelta>0?'\u2191'+prevScoreDelta+'pp':prevScoreDelta<0?'\u2193'+Math.abs(prevScoreDelta)+'pp':'est\u00e1vel') : '';
-  var deltaCol = prevScoreDelta!=null ? (prevScoreDelta>0?'#16a34a':prevScoreDelta<0?'#dc2626':'#6b7280') : '#6b7280';
-  var highlights = [];
-  if(taxaConc>=90) highlights.push('<strong>'+taxaConc+'%</strong> dos chamados resolvidos ('+d.fechados+' de '+d.total+')');
-  else if(taxaConc>=70) highlights.push('Taxa de conclus\u00e3o de <strong>'+taxaConc+'%</strong>');
-  if(d.resp_med!=null && d.resp_med<=30) highlights.push('Resposta m\u00e9dia <strong>'+fmtRespTxt(d.resp_med)+'</strong> (meta 30min)');
-  if(d.sla_pct!=null && d.sla_pct>=90) highlights.push('SLA cumprido em <strong>'+d.sla_pct+'%</strong> dos chamados resolvidos');
-  if(_opBench && _opBench.taxa!=null && taxaConc>_opBench.taxa) highlights.push('Sua taxa est\u00e1 <strong>'+(taxaConc-_opBench.taxa)+'pp acima</strong> da m\u00e9dia da opera\u00e7\u00e3o');
-  var _atencoes = [];
-  var aging7 = (d.tickets||[]).filter(function(t){
-    if(!t || !t.criado) return false;
-    if(typeof isOpenState==='function' && !isOpenState(t.estado)) return false;
-    var dt = (t.criado instanceof Date) ? t.criado : new Date(t.criado);
-    if(!dt || isNaN(dt)) return false;
-    return ((new Date()-dt)/86400000) > 7;
-  }).length;
-  if(aging7>0) _atencoes.push('<strong>'+aging7+' chamado(s) em aberto h\u00e1 mais de 7 dias</strong>');
-  if(d.sla_pct!=null && d.sla_pct<70) _atencoes.push('SLA cumprido em apenas <strong>'+d.sla_pct+'%</strong> \u2014 abaixo da meta de 90%');
-  var _maPdf=0; (d.tickets||[]).forEach(function(t){if(t && t.prioridade==='Muito Alta') _maPdf++;});
-  if(_maPdf>0 && d.total>0 && _maPdf/d.total>=0.10) _atencoes.push('<strong>'+_maPdf+' chamado(s) Muito Alta</strong> ('+Math.round(_maPdf/d.total*100)+'% do volume)');
-  if(d.resp_med!=null && d.resp_med>30) _atencoes.push('1\u00aa resposta em <strong>'+fmtRespTxt(d.resp_med)+'</strong> \u2014 acima da meta');
-  var proximoPasso = '';
-  if(d.sla_pct!=null && d.sla_pct<70){
-    proximoPasso = 'Recomendamos <strong>QBR t\u00e9cnico</strong> para revisar SLA e prioriza\u00e7\u00e3o. Vamos agendar nas pr\u00f3ximas 2 semanas.';
-  } else if(score>=80 && d.total>=20){
-    proximoPasso = 'Cliente em performance saud\u00e1vel. Sugerimos <strong>QBR estrat\u00e9gico</strong> para discutir expans\u00e3o de servi\u00e7os e otimiza\u00e7\u00f5es.';
-  } else if(aging7>0){
-    proximoPasso = 'Foco no pr\u00f3ximo per\u00edodo: <strong>reduzir backlog de '+aging7+' chamado(s) com aging >7 dias</strong>. Plano de a\u00e7\u00e3o dedicado.';
-  } else if(d.servicos){
-    var topSvcKey = Object.keys(d.servicos).sort(function(a,b){return d.servicos[b]-d.servicos[a];})[0];
-    if(topSvcKey){
-      var topSvcVol = d.servicos[topSvcKey];
-      var topSvcPct = d.total>0 ? Math.round(topSvcVol/d.total*100) : 0;
-      if(topSvcPct>=30) proximoPasso = 'Volume concentrado em <strong>'+topSvcKey+' ('+topSvcPct+'%)</strong>. Vamos avaliar projeto preventivo ou automa\u00e7\u00e3o para esta \u00e1rea.';
-    }
-  }
-  if(!proximoPasso) proximoPasso = 'Acompanhamento mensal mantido. Continuaremos monitorando e reportando os indicadores.';
-  H+='<div style="page-break-after:always;margin-bottom:36px">';
-  H+='<div style="border-left:4px solid #E8622A;padding:0 0 0 18px;margin-bottom:18px">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#E8622A;margin-bottom:6px">Resumo Executivo</div>';
-  H+='<div style="font-size:22px;font-weight:900;color:#1a2744;line-height:1.2">'+d.nome+' \u00b7 '+mesLabel+'</div>';
-  H+='</div>';
-  H+='<div style="display:flex;align-items:center;gap:24px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin-bottom:18px">';
-  H+='<div style="font-size:48px;font-weight:900;color:'+scoreColor+';line-height:1;font-family:Arial">'+score+'</div>';
-  H+='<div style="flex:1">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">Health Score</div>';
-  H+='<div style="font-size:18px;font-weight:800;color:'+scoreColor+';margin-bottom:2px">'+scoreLabel+'</div>';
-  if(deltaTxt) H+='<div style="font-size:11px;color:'+deltaCol+';font-weight:700">'+deltaTxt+' vs '+(typeof prevMk2!=='undefined' && prevMk2 ? (mNamesFull[prevMk2]||prevMk2) : 'm\u00eas anterior')+'</div>';
-  H+='</div>';
-  if(_opBench){
-    H+='<div style="border-left:1px solid #e5e7eb;padding-left:24px;font-size:10.5px;line-height:1.7">';
-    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px">Voc\u00ea vs Opera\u00e7\u00e3o</div>';
-    if(_opBench.taxa!=null){
-      var tCmp = taxaConc - _opBench.taxa;
-      H+='<div>Taxa: <b>'+taxaConc+'%</b> \u00b7 Fila: '+_opBench.taxa+'% <span style="color:'+(tCmp>=0?'#16a34a':'#dc2626')+';font-weight:700">'+(tCmp>=0?'\u2713 +':'')+tCmp+'pp</span></div>';
-    }
-    if(d.resp_med!=null && _opBench.resp!=null){
-      var rCmp = d.resp_med - _opBench.resp;
-      H+='<div>Resposta: <b>'+d.resp_med+'min</b> \u00b7 Fila: '+_opBench.resp+'min <span style="color:'+(rCmp<=0?'#16a34a':'#dc2626')+';font-weight:700">'+(rCmp<=0?'\u2713 ':'')+(rCmp>0?'+':'')+rCmp+'min</span></div>';
-    }
-    if(d.sla_pct!=null && _opBench.sla!=null){
-      var sCmp = d.sla_pct - _opBench.sla;
-      H+='<div>SLA cumprido: <b>'+d.sla_pct+'%</b> \u00b7 Fila: '+_opBench.sla+'% <span style="color:'+(sCmp>=0?'#16a34a':'#dc2626')+';font-weight:700">'+(sCmp>=0?'\u2713 +':'')+sCmp+'pp</span></div>';
-    }
+  // STATUSREPORT-MARKER-START
+  // ════════════════════════════════════════════════════════════════════
+  // STATUS REPORT — formato espelhando o PPT aprovado pelo cliente.
+  // Substitui as antigas seções 1-9 (Introdução, KPIs do período, SLA,
+  // Categorização, Análise por fila, Detalhamento, Destaques, Comparativo).
+  // Foco em CARTEIRA EM ABERTO (não mais SLA do período).
+  // ════════════════════════════════════════════════════════════════════
+  var _carteira = _pdfBuildCarteira(dRaw.id);
+  if(!_carteira.length){
+    H+='<div style="padding:24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;text-align:center;margin-bottom:24px">';
+    H+='<div style="font-size:32px;margin-bottom:8px">✅</div>';
+    H+='<div style="font-size:16px;font-weight:800;color:#166534">Carteira limpa</div>';
+    H+='<div style="font-size:12px;color:#374151;margin-top:6px">Não há chamados em aberto para '+d.nome+' no fechamento de '+mesLabel+'.</div>';
     H+='</div>';
-  }
-  H+='</div>';
-  H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">';
-  H+='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#166534;margin-bottom:8px">\u2705 O que foi bem</div>';
-  if(highlights.length){
-    highlights.slice(0,3).forEach(function(h){
-      H+='<div style="font-size:11.5px;line-height:1.5;color:#374151;padding:4px 0;border-bottom:1px solid #dcfce7">'+h+'</div>';
-    });
   } else {
-    H+='<div style="font-size:11.5px;color:#9ca3af">Sem destaques no per\u00edodo.</div>';
-  }
-  H+='</div>';
-  H+='<div style="background:'+(_atencoes.length?'#fef9c3':'#f0fdf4')+';border:1px solid '+(_atencoes.length?'#fde68a':'#bbf7d0')+';border-radius:10px;padding:14px 16px">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:'+(_atencoes.length?'#854d0e':'#166534')+';margin-bottom:8px">\u26a0\ufe0f Aten\u00e7\u00e3o</div>';
-  if(_atencoes.length){
-    _atencoes.slice(0,3).forEach(function(a){
-      H+='<div style="font-size:11.5px;line-height:1.5;color:#374151;padding:4px 0;border-bottom:1px solid #fde68a">'+a+'</div>';
-    });
-  } else {
-    H+='<div style="font-size:11.5px;color:#166534;font-weight:600">Nenhum ponto cr\u00edtico no per\u00edodo. \u2713</div>';
-  }
-  H+='</div>';
-  H+='</div>';
-  H+='<div style="background:#fff7ed;border-left:4px solid #E8622A;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:18px">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#E8622A;margin-bottom:6px">\ud83d\udccc Pr\u00f3ximo passo</div>';
-  H+='<div style="font-size:12.5px;line-height:1.6;color:#374151">'+proximoPasso+'</div>';
-  H+='</div>';
-  var narrativa = d.nome + ' registrou <strong>' + d.total + ' chamados</strong> no per\u00edodo de ' + mesLabel + '.';
-  if(typeof curData!=='undefined' && curData && typeof prevData!=='undefined' && prevData && prevData.total>0){
-    var deltaVol = Math.round((curData.total - prevData.total) / prevData.total * 100);
-    if(deltaVol!==0) narrativa += ' Volume ' + (deltaVol>0?'subiu '+deltaVol+'%':'caiu '+Math.abs(deltaVol)+'%') + ' vs ' + (mNamesFull[prevMk2]||prevMk2) + '.';
-  }
-  if(d.solucao_median_h!=null) narrativa += ' Tempo t\u00edpico de solu\u00e7\u00e3o: <strong>'+d.solucao_median_h+'h</strong>' + (d.solucao_median_h<=48?' (dentro do SLA).':' (acima do SLA de 48h).');
-  if(d.servicos){
-    var topSvcK = Object.keys(d.servicos).sort(function(a,b){return d.servicos[b]-d.servicos[a];})[0];
-    if(topSvcK){
-      var topSvcP = d.total>0 ? Math.round(d.servicos[topSvcK]/d.total*100) : 0;
-      if(topSvcP>=30) narrativa += ' Concentra\u00e7\u00e3o em <strong>'+topSvcK+'</strong> ('+topSvcP+'% do volume) sugere oportunidade de projeto preventivo.';
+    // ── Métricas de carteira ──
+    var _agings = _carteira.map(function(t){return t.aging||0;});
+    var _agingMed = Math.round(_agings.reduce(function(a,b){return a+b;},0)/_agings.length);
+    var _agingMax = Math.max.apply(null,_agings);
+    var _ticketMax = _carteira[0]; // já ordenado por aging desc
+    // Governança
+    var _govCounts = {groundwork:0,cliente:0,terceiro:0};
+    _carteira.forEach(function(t){_govCounts[t.governanca]=(_govCounts[t.governanca]||0)+1;});
+    var _govForaPct = Math.round(((_govCounts.cliente+_govCounts.terceiro)/_carteira.length)*100);
+    // Faixas
+    var _faixas = {'0-30d':0,'31-60d':0,'61-90d':0,'91+d':0};
+    _carteira.forEach(function(t){_faixas[t.faixa]=(_faixas[t.faixa]||0)+1;});
+    // Plano de ação derivado
+    var _planoAcoes = _pdfPlanoAcao(_carteira);
+    var _top3 = _pdfTop3Prioridades(_carteira, _planoAcoes);
+
+    // ── Leitura executiva (narrativa de abertura) ──
+    var _critTicket = _carteira.find(function(t){return t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60;});
+    var _emExec = _carteira.filter(function(t){return t.owner==='GroundWork' || t.owner==='GroundWork (em deploy)' || t.owner==='GroundWork (agendado)';}).length;
+    var _aguardCli = _govCounts.cliente;
+    var _aguardTerc = _govCounts.terceiro;
+    var _leitura = 'A carteira do <strong>'+d.nome+'</strong> tem <strong>'+_carteira.length+' chamado(s) em aberto</strong> no fechamento de '+mesLabel+'. ';
+    var _partesGov = [];
+    if(_emExec>0)    _partesGov.push('<strong>'+_emExec+'</strong> sob execução direta da GroundWork');
+    if(_aguardCli>0) _partesGov.push('<strong>'+_aguardCli+'</strong> aguardando retorno do cliente');
+    if(_aguardTerc>0)_partesGov.push('<strong>'+_aguardTerc+'</strong> em terceiros');
+    if(_partesGov.length){
+      _leitura += _partesGov.join(', ').replace(/, ([^,]*)$/, ' e $1') + '. ';
     }
-  }
-  H+='<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;font-size:12px;line-height:1.7;color:#374151">';
-  H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">\ud83d\udcca An\u00e1lise do per\u00edodo</div>';
-  H+=narrativa;
-  H+='</div>';
-  H+='</div>';
+    if(_govForaPct>=50){
+      _leitura += '<strong>'+_govForaPct+'% da carteira está fora da governança GW</strong>. ';
+    }
+    if(_critTicket){
+      _leitura += 'O risco crítico é o <strong>#...'+String(_critTicket.num).slice(-3)+'</strong> ('+_critTicket.aging+' dias em aberto, prioridade Muito Alta), que requer ação técnica imediata.';
+    } else if(_agingMax>60){
+      _leitura += 'Maior aging da carteira: <strong>'+_agingMax+' dias</strong>. Revisar bloqueios técnicos com a equipe.';
+    } else {
+      _leitura += 'Nenhum caso em estado crítico de aging.';
+    }
 
-  // ── SE\u00c7\u00c3O 1: INTRODU\u00c7\u00c3O
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">1</div><div class="sec-title">Introdu\u00e7\u00e3o</div></div>';
-  H+='<p class="intro-text">Com o objetivo de gerar melhor <strong>transpar\u00eancia e confian\u00e7a</strong>, este relat\u00f3rio apresenta os indicadores de atendimento do per\u00edodo de <strong>'+mesLabel+'</strong> para <strong>'+d.nome+'</strong>. As informa\u00e7\u00f5es aqui consolidadas incluem volume de chamados, efici\u00eancia de SLA, tempo m\u00e9dio de solu\u00e7\u00e3o e detalhamento completo das solicita\u00e7\u00f5es, com o objetivo de demonstrar as a\u00e7\u00f5es realizadas e manter os canais de comunica\u00e7\u00e3o sempre transparentes.</p>';
-  H+='<br><p class="intro-text"><strong>Meta de efici\u00eancia:</strong> m\u00ednimo de 90% dos atendimentos dentro do prazo de 48h \u00fateis. &nbsp;|&nbsp; <strong>Meta de 1\u00aa resposta:</strong> at\u00e9 30 minutos.</p>';
-  H+='</div>';
-
-  // ── BLOCO: INDICADORES DO PERIODO (KPIs visuais — espelha o dashboard)
-  // Antes: PDF mostrava só 4 KPIs de SLA. Agora: 8 KPIs alinhados com o dashboard.
-  var _ema=d.abertos||0;
-  var _ema_pct=d.total>0?Math.round(_ema/d.total*100):0;
-  // d.prior é agregado da empresa toda (não respeita filtro de mês/fila),
-  // por isso calculo Muito Alta + Atendentes diretamente do RAW_DATA escopado.
-  var _ma=0, _atSet={};
-  (typeof RAW_DATA!=='undefined' && RAW_DATA?RAW_DATA:[]).forEach(function(t){
-    if(!t) return;
-    if(t.cli_id!==dRaw.id) return;
-    if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all' && t.fila!==activeFilaOP) return;
-    if(typeof ticketInFilter==='function' && !ticketInFilter(t)) return;
-    if(t.prior==='Muito Alta') _ma++;
-    if(t.atend && t.atend!=='—') _atSet[t.atend]=true;
-  });
-  var _ma_pct=d.total>0?Math.round(_ma/d.total*100):0;
-  var _bl_e=d.estados||{};
-  var _bl=(_bl_e['Aguardando Cliente']||0)+(_bl_e['Aguardando Interno']||0)+(_bl_e['Aguardando Externo']||0)+(_bl_e['Retorno Cliente']||0);
-  var _bl_pct=d.total>0?Math.round(_bl/d.total*100):0;
-  var _at=Object.keys(_atSet).length;
-  H+='<div class="section" style="page-break-inside:avoid">';
-  H+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#E8622A;margin-bottom:10px">Indicadores do período</div>';
-  H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">';
-  H+='<div class="kpi"><div class="kpi-lbl">Em aberto</div><div class="kpi-val" style="color:#d97706">'+_ema+'</div><div class="kpi-sub">'+_ema_pct+'% do período</div></div>';
-  H+='<div class="kpi '+(_ma>0?'red':'')+'"><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:'+(_ma>0?'#dc2626':'#16a34a')+'">'+_ma+'</div><div class="kpi-sub">'+_ma_pct+'% do volume</div></div>';
-  H+='<div class="kpi orange"><div class="kpi-lbl">Em Espera</div><div class="kpi-val" style="color:#E8622A">'+_bl+'</div><div class="kpi-sub">'+_bl_pct+'% aguardando</div></div>';
-  H+='<div class="kpi"><div class="kpi-lbl">Atendentes</div><div class="kpi-val" style="color:#1a2744">'+_at+'</div><div class="kpi-sub">atuaram no período</div></div>';
-  H+='</div>';
-  if(_bl>0){
-    var _bl_c=_bl_e['Aguardando Cliente']||0;
-    var _bl_i=_bl_e['Aguardando Interno']||0;
-    var _bl_x=_bl_e['Aguardando Externo']||0;
-    var _bl_r=_bl_e['Retorno Cliente']||0;
-    H+='<div style="font-size:10.5px;color:#374151;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;margin-top:8px">';
-    H+='<strong style="color:#E8622A">Detalhamento da espera:</strong> ';
-    var _parts=[];
-    if(_bl_c>0)_parts.push('<strong>'+_bl_c+'</strong> aguardando cliente');
-    if(_bl_i>0)_parts.push('<strong>'+_bl_i+'</strong> aguardando interno');
-    if(_bl_r>0)_parts.push('<strong>'+_bl_r+'</strong> retorno cliente');
-    if(_bl_x>0)_parts.push('<strong>'+_bl_x+'</strong> aguardando agente externo');
-    H+=_parts.join(' &middot; ');
-    H+='</div>';
-  }
-  H+='</div>';
-
-  // ── SE\u00c7\u00c3O 2: TICKETS ABERTOS
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">2</div><div class="sec-title">Tickets Abertos</div><div class="sec-sub">Hist\u00f3rico do per\u00edodo</div></div>';
-  // Mês corrente highlight: se filtro ativo, destaca o mês no texto
-  var totalMesCorrente=activeMonth==='all'?d.total:(allByMes[mesShort]||d.total);
-  H+='<p style="font-size:13px;color:#374151;margin-bottom:16px">A <strong>'+d.nome+'</strong> abriu <strong>'+totalMesCorrente+'</strong> chamado(s) no per\u00edodo de <strong>'+mesLabel+'</strong>. O hist\u00f3rico mensal completo segue abaixo:</p>';
-  H+='<div class="chart-box">'+barChart(histKeys,histVals,'#1a2744')+'</div>';
-  H+='</div>';
-
-  // ── SE\u00c7\u00c3O 3: ATENDIDOS x VIOLADOS
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">3</div><div class="sec-title">Tickets Atendidos x Violados</div><div class="sec-sub">Meta: \u226590% efici\u00eancia</div></div>';
-  var eficClass=efic>=90?'efic-box':'efic-box efic-bad';
-  var eficIcon=efic>=90?'\u2705':'&#9888;';
-  H+='<div class="'+eficClass+'">';
-  H+='<div class="efic-num">'+efic+'%</div>';
-  H+='<div class="efic-info">Nossa efici\u00eancia no per\u00edodo foi de <strong>'+efic+'%</strong>.<br><strong>'+d.fechados+' chamado(s) conclu\u00eddo(s)</strong> de um total de '+d.total+'.<br>'+(violados>0?'<strong>'+violados+' chamado(s) ultrapassaram</strong> o prazo de 48h na amostra.':'<strong>0 viola\u00e7\u00f5es</strong> detectadas na amostra disponível.')+'</div>';
-  H+='</div>';
-  H+='<div class="chart-box">'+atenViolChart(histKeys,histAten,histViol,histEfic)+'</div>';
-  H+='</div>';
-
-  // ── SEÇÃO 4: CUMPRIMENTO DE SLA (refeita — mediana + p90 + auto-fechados)
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Cumprimento de SLA</div><div class="sec-sub">Meta: \u2265 90% dentro de 48h \u00fateis</div></div>';
-  // Resumo textual contextualizado
-  var _slaPctTxt=(d.sla_pct!=null)?('<strong>'+d.sla_pct+'% dentro do SLA</strong>'):'sem amostra';
-  var _slaMedTxt=(d.solucao_median_h!=null)?d.solucao_median_h+'h (mediana)':'\u2014';
-  var _slaAvgTxt=(d.solucao_med_h!=null)?d.solucao_med_h+'h (m\u00e9dia)':'\u2014';
-  H+='<p style="font-size:13px;color:#374151;margin-bottom:16px">No per\u00edodo, '+_slaPctTxt+' de 48h \u00fateis. Tempo de solu\u00e7\u00e3o: <strong>'+_slaMedTxt+'</strong> \u00b7 '+_slaAvgTxt+'. Primeira resposta mediana: <strong>'+(d.resp_med!=null?d.resp_med+'min':'\u2014')+'</strong>.</p>';
-  // KPI row 1 — % SLA + Mediana + Média + P90 (fonte única = calcSLA)
-  var _slaCol=(d.sla_pct==null)?'':(d.sla_pct>=90?'green':d.sla_pct>=70?'':'orange');
-  var _medCol=(d.solucao_median_h==null)?'':(d.solucao_median_h<=48?'green':'orange');
-  var _avgCol=(d.solucao_med_h==null)?'':(d.solucao_med_h<=48?'green':'orange');
-  var _p90Col=(d.solucao_p90_h==null)?'':(d.solucao_p90_h<=72?'green':'red');
-  H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">';
-  H+='<div class="kpi '+_slaCol+'"><div class="kpi-lbl">% Dentro do SLA</div><div class="kpi-val">'+(d.sla_pct!=null?d.sla_pct:'\u2014')+'<span style="font-size:14px">%</span></div><div class="kpi-sub">'+(d.sla_pct!=null?(d.sla_pct>=90?'\u2705 meta atingida':'\u26a0\ufe0f abaixo da meta de 90%'):'sem amostra')+'</div></div>';
-  H+='<div class="kpi '+_medCol+'"><div class="kpi-lbl">Mediana <span style="font-size:8px">(t\u00edpico)</span></div><div class="kpi-val">'+(d.solucao_median_h!=null?d.solucao_median_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">'+(d.solucao_median_h!=null?(d.solucao_median_h<=48?'\u2705 dentro do SLA':'\u26a0\ufe0f acima de 48h'):'\u2014')+'</div></div>';
-  H+='<div class="kpi '+_avgCol+'"><div class="kpi-lbl">M\u00e9dia <span style="font-size:8px">(c/ outliers)</span></div><div class="kpi-val">'+(d.solucao_med_h!=null?d.solucao_med_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">base: '+slaScope.sample_size+' resolvidos</div></div>';
-  H+='<div class="kpi '+_p90Col+'"><div class="kpi-lbl">P90 <span style="font-size:8px">(cauda)</span></div><div class="kpi-val">'+(d.solucao_p90_h!=null?d.solucao_p90_h:'\u2014')+'<span style="font-size:14px">h</span></div><div class="kpi-sub">90% dos casos abaixo</div></div>';
-  H+='</div>';
-  // KPI row 2 — 1ª Resposta + Atendidos + Violados + Auto-fechados
-  H+='<div class="kpi-row" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">';
-  H+='<div class="kpi '+(d.resp_med!=null&&d.resp_med<=30?'green':'orange')+'"><div class="kpi-lbl">1\u00aa Resposta (med.)</div><div class="kpi-val">'+(d.resp_med!=null?d.resp_med:'\u2014')+'<span style="font-size:14px">min</span></div><div class="kpi-sub">'+(d.resp_med!=null?(d.resp_med<=30?'\u2705 dentro da meta':'\u26a0\ufe0f acima de 30min'):'\u2014')+'</div></div>';
-  H+='<div class="kpi"><div class="kpi-lbl">Atendidos OK</div><div class="kpi-val" style="color:#16a34a">'+atenOK+'</div><div class="kpi-sub">dentro de 48h</div></div>';
-  H+='<div class="kpi '+(violados>0?'red':'')+'"><div class="kpi-lbl">Violados</div><div class="kpi-val" style="color:'+(violados>0?'#dc2626':'#16a34a')+'">'+violados+'</div><div class="kpi-sub">'+(violados>0?'acima de 48h':'nenhuma viola\u00e7\u00e3o')+'</div></div>';
-  H+='<div class="kpi"><div class="kpi-lbl">Auto-fechados</div><div class="kpi-val" style="color:#9ca3af">'+(d.auto_closed||0)+'</div><div class="kpi-sub">n\u00e3o computados no SLA</div></div>';
-  H+='</div>';
-  // Box explicativo de auto-fechados (s\u00f3 se houver)
-  if(d.auto_closed && d.auto_closed>0){
-    var _pctAuto=d.total>0?Math.round(d.auto_closed/d.total*100):0;
-    H+='<div style="background:#f8fafc;border-left:4px solid #9ca3af;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;font-size:11.5px;color:#374151;line-height:1.6">';
-    H+='<strong>Sobre auto-fechamento por inatividade:</strong> '+d.auto_closed+' chamado(s) ('+_pctAuto+'% do volume) foram fechados automaticamente por inatividade do solicitante. Esses tickets <strong>n\u00e3o entram no c\u00e1lculo de SLA</strong> \u2014 pois o tempo medido reflete espera por retorno do cliente, n\u00e3o desempenho da Groundwork. Apresentados aqui como m\u00e9trica separada para transpar\u00eancia.';
-    H+='</div>';
-  }
-  // Gr\u00e1fico mensal de tempo (s\u00f3 com dados reais)
-  if(hasMonthlyData){
-    H+='<div class="chart-box">'+tempoChart(tempoKeys,tempoVals.map(function(v){return v==null?0:v;}))+'</div>';
-  } else {
-    H+='<div style="padding:16px;text-align:center;color:#9ca3af;font-size:11px;background:#f8fafc;border-radius:8px">Sem dados hist\u00f3ricos suficientes para tend\u00eancia mensal.</div>';
-  }
-  // Legenda fixa de metodologia
-  H+='<div style="margin-top:8px;font-size:9.5px;color:#9ca3af;line-height:1.5">Base: chamados resolvidos com sucesso (Fechado/Resolvido). Tempo em horas \u00fateis (08:00\u201312:00 / 13:00\u201318:00, seg\u2013sex). Auto-fechados n\u00e3o computados.</div>';
-  H+='</div>';
-
-  // ── SE\u00c7\u00c3O 5: CATEGORIZA\u00c7\u00c3O
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">5</div><div class="sec-title">Categoriza\u00e7\u00e3o por M\u00f3dulo & Status</div></div>';
-  H+='<div class="grid2">';
-
-  // M\u00f3dulos/servi\u00e7os
-  H+='<div class="card"><div class="card-title">M\u00f3dulos utilizados</div>';
-  var svcKeys2=Object.keys(d.servicos); var svcMax=Math.max.apply(null,Object.values(d.servicos).concat([1]));
-  var svcCols=['#1a2744','#E8622A','#16a34a','#3b82f6','#a855f7','#f59e0b'];
-  svcKeys2.forEach(function(k,i){var v=d.servicos[k];var p=Math.round(v/svcMax*100);H+='<div class="bar-item"><span class="bar-label">'+k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+svcCols[i%svcCols.length]+'"></div></div><span class="bar-val">'+v+'</span></div>';});
-  H+='</div>';
-
-  // Status donut + legenda
-  H+='<div class="card"><div class="card-title">Status dos chamados</div>';
-  H+='<div style="display:flex;align-items:center;gap:12px">';
-  H+=donut(d.estados,eColors);
-  H+='<div class="estado-list" style="flex:1">';
-  var estadoTotal2=Object.values(d.estados).reduce(function(a,b){return a+b;},0)||1;
-  Object.keys(d.estados).forEach(function(k){
-    var v=d.estados[k];var p=Math.round(v/estadoTotal2*100);
-    H+='<div class="estado-row"><div class="estado-left"><div class="estado-dot" style="background:'+(eColors[k]||'#d1d5db')+'"></div><span>'+k+'</span></div><span class="estado-pct">'+p+'%</span><span class="estado-num">'+v+'</span></div>';
-  });
-  H+='</div></div></div>';
-  H+='</div>';
-
-  // Prioridades
-  H+='<div style="margin-top:16px"><div class="card"><div class="card-title">Por prioridade</div>';
-  priorOrder.forEach(function(k){var v=d.prior[k]||0;if(!v)return;var p=Math.round(v/priorMax*100);H+='<div class="bar-item"><span class="bar-label">'+k+'</span><div class="bar-track"><div class="bar-fill" style="width:'+p+'%;background:'+(priorColors[k]||'#9ca3af')+'"></div></div><span class="bar-val">'+v+'</span></div>';});
-  H+='</div></div>';
-  H+='</div>';
-
-  // ── SE\u00c7\u00c3O 6: AN\u00c1LISE POR FILA
-  H+='<div class="section">';
-  var notaAmostra=d.tickets.length<d.total?' (amostra \u2014 '+d.tickets.length+' de '+d.total+' exibidos)':'';
-  H+='<div class="sec-header"><div class="sec-num">6</div><div class="sec-title">An\u00e1lise por Fila</div><div class="sec-sub">'+d.total+' total'+notaAmostra+'</div></div>';
-
-  // Agrupa tickets da amostra por fila (t.servico)
-  var filaMap={};
-  d.tickets.forEach(function(t){var f=t.servico||'Outros';if(!filaMap[f])filaMap[f]=[];filaMap[f].push(t);});
-  // Para visão geral (todos os meses): inclui filas do d.servicos mesmo sem amostra
-  // Para mês filtrado: só exibe filas com tickets reais na amostra do período
-  if(activeMonth==='all'){
-    Object.keys(d.servicos).forEach(function(k){if(!filaMap[k])filaMap[k]=[];});
-  }
-  // Ordena pelo volume: geral usa d.servicos, filtrado usa tamanho da amostra
-  var filaKeys=Object.keys(filaMap).sort(function(a,b){
-    var va=activeMonth==='all'?(d.servicos[a]||filaMap[a].length):filaMap[a].length;
-    var vb=activeMonth==='all'?(d.servicos[b]||filaMap[b].length):filaMap[b].length;
-    return vb-va;
-  });
-  var filaColors=['#1a2744','#E8622A','#16a34a','#3b82f6','#a855f7','#f59e0b','#06b6d4','#ec4899'];
-
-  filaKeys.forEach(function(fila,fi){
-    var ftix=filaMap[fila];
-    var ftotal=activeMonth==='all'?(d.servicos[fila]||ftix.length):ftix.length;
-    var pctFila=d.total>0?Math.round(ftotal/d.total*100):0;
-    var fAbertos=ftix.filter(function(t){return isAberto(t.estado);});
-    var fFechados=ftix.filter(function(t){return isFechado(t.estado);});
-    var fResps=ftix.filter(function(t){return t.resp_min!=null;}).map(function(t){return t.resp_min;});
-    var fRespMed=fResps.length?Math.round(fResps.reduce(function(a,b){return a+b;},0)/fResps.length):null;
-    var fSols=ftix.filter(function(t){return t.sol!=null;}).map(function(t){return t.sol;});
-    var fSolMed=fSols.length?Math.round(fSols.reduce(function(a,b){return a+b;},0)/fSols.length*10)/10:null;
-    var fViol=fSols.filter(function(s){return s>48;}).length;
-    var fc=filaColors[fi%filaColors.length];
-
-    H+='<div style="margin-bottom:28px;page-break-inside:avoid">';
-
-    // Cabe\u00e7alho da fila
-    H+='<div style="display:flex;align-items:center;gap:12px;background:'+fc+';color:#fff;padding:11px 16px;border-radius:8px 8px 0 0">';
-    H+='<span style="font-size:13px;font-weight:700;letter-spacing:-.01em">'+fila+'</span>';
-    H+='<span style="font-size:11px;color:rgba(255,255,255,.65);margin-left:auto">'+ftotal+' chamados &nbsp;\u00b7&nbsp; '+pctFila+'% do total</span>';
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 1: RESUMO EXECUTIVO (visão geral da carteira)
+    // ══════════════════════════════════════════════════
+    H+='<div class="section" style="page-break-after:always">';
+    H+='<div style="border-left:4px solid #E8622A;padding:0 0 0 18px;margin-bottom:18px">';
+    H+='<div style="font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#E8622A;margin-bottom:6px">Resumo Executivo · Status Report</div>';
+    H+='<div style="font-size:22px;font-weight:900;color:#1a2744;line-height:1.2">Visão geral da carteira</div>';
+    H+='<div style="font-size:12px;color:#6b7280;margin-top:4px">Estado da fila de suporte do '+d.nome+' no fechamento de '+mesLabel+'</div>';
     H+='</div>';
 
-    // Mini KPIs da fila
-    H+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e5e7eb;border:1px solid #e5e7eb;border-top:none;margin-bottom:10px">';
-    H+='<div style="background:#f8fafc;padding:10px 14px">'
-     +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px;font-weight:600">Volume</div>'
-     +'<div style="font-size:22px;font-weight:900;color:'+fc+'">'+ftotal+'</div>'
-     +'<div style="font-size:10px;color:#9ca3af">'+(activeMonth!=='all'?'amostra do per\u00edodo':pctFila+'% do per\u00edodo')+'</div>'
-     +'</div>';
-    H+='<div style="background:#f8fafc;padding:10px 14px">'
-     +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px;font-weight:600">1\u00aa Resposta (med.)</div>'
-     +'<div style="font-size:22px;font-weight:900;color:'+(fRespMed!=null?(fRespMed<=30?'#16a34a':'#d97706'):'#9ca3af')+'">'+(fRespMed!=null?fmtRespTxt(fRespMed):'\u2014')+'</div>'
-     +'<div style="font-size:10px;color:#9ca3af">'+(fRespMed!=null?(fRespMed<=30?'\u2705 dentro da meta':'\u26a0\ufe0f acima de 30min'):'sem amostra')+'</div>'
-     +'</div>';
-    H+='<div style="background:#f8fafc;padding:10px 14px">'
-     +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px;font-weight:600">Solu\u00e7\u00e3o M\u00e9dia</div>'
-     +'<div style="font-size:22px;font-weight:900;color:'+(fSolMed!=null?(fSolMed<=48?'#16a34a':'#dc2626'):'#9ca3af')+'">'+(fSolMed!=null?fSolMed+'h':'\u2014')+'</div>'
-     +'<div style="font-size:10px;color:#9ca3af">'+(fSolMed!=null?(fSolMed<=48?'\u2705 dentro do SLA':'\u26a0\ufe0f acima de 48h'):'sem amostra')+'</div>'
-     +'</div>';
-    H+='<div style="background:#f8fafc;padding:10px 14px">'
-     +'<div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:4px;font-weight:600">Viola\u00e7\u00f5es SLA</div>'
-     +'<div style="font-size:22px;font-weight:900;color:'+(fViol>0?'#dc2626':'#16a34a')+'">'+fViol+'</div>'
-     +'<div style="font-size:10px;color:#9ca3af">'+(fViol>0?fViol+' acima de 48h':'nenhuma viola\u00e7\u00e3o')+'</div>'
-     +'</div>';
+    // KPIs principais da carteira (4 cards no estilo PPT)
+    H+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">';
+    H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid #1a2744">';
+    H+='<div style="font-size:36px;font-weight:900;color:#1a2744;line-height:1">'+_carteira.length+'</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Chamados em aberto</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">no fechamento de '+mesLabel+'</div>';
+    H+='</div>';
+    H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid #E8622A">';
+    H+='<div style="font-size:36px;font-weight:900;color:#E8622A;line-height:1">'+_agingMed+'</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Aging médio (dias)</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">tempo médio em aberto</div>';
+    H+='</div>';
+    var _agingMaxColor = _agingMax>90?'#dc2626':_agingMax>60?'#d97706':'#16a34a';
+    H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_agingMaxColor+'">';
+    H+='<div style="font-size:36px;font-weight:900;color:'+_agingMaxColor+';line-height:1">'+_agingMax+'</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Aging máximo (dias)</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">ticket #...'+String(_ticketMax.num).slice(-3)+(_ticketMax.prioridade==='Muito Alta'?' — URGENTE':'')+'</div>';
+    H+='</div>';
+    var _govColor = _govForaPct>=70?'#d97706':'#1a2744';
+    H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_govColor+'">';
+    H+='<div style="font-size:36px;font-weight:900;color:'+_govColor+';line-height:1">'+_govForaPct+'%</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Fora da governança GW</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">aguarda cliente ou terceiros</div>';
+    H+='</div>';
     H+='</div>';
 
-    // Tabela Em Aberto
-    if(fAbertos.length){
+    // Leitura executiva (parágrafo narrativo)
+    H+='<div style="background:#f8fafc;border-left:4px solid #1a2744;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:20px">';
+    H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a2744;margin-bottom:8px">📊 Leitura executiva</div>';
+    H+='<div style="font-size:13px;line-height:1.7;color:#374151">'+_leitura+'</div>';
+    H+='</div>';
+
+    // Top 3 prioridades
+    if(_top3.length){
       H+='<div style="margin-bottom:8px">';
-      H+='<div class="subsec-title">Em Aberto ('+fAbertos.length+')</div>';
-      H+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>N\u00famero</th><th>Assunto</th><th>Estado</th><th>Prioridade</th><th>Abertura</th><th>1\u00aa Resp</th></tr></thead><tbody>';
-      fAbertos.forEach(function(t){
-        var rc=t.resp_min!=null?(t.resp_min<=30?'#16a34a':t.resp_min<=120?'#d97706':'#dc2626'):'#9ca3af';
-        H+='<tr><td class="num">#'+t.num.slice(-8)+'</td><td style="max-width:220px;font-weight:500">'+t.assunto+'</td><td>'+eBadge(t.estado)+'</td><td>'+pBadge(t.prioridade)+'</td><td style="color:#6b7280;white-space:nowrap">'+t.criado+'</td><td style="font-family:monospace;color:'+rc+';white-space:nowrap">'+(t.resp_min!=null?fmtRespTxt(t.resp_min):'\u2014')+'</td></tr>';
+      H+='<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#E8622A;margin-bottom:12px">🎯 Top 3 prioridades operacionais</div>';
+      _top3.forEach(function(p){
+        H+='<div style="display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:8px">';
+        H+='<div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#E8622A;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center">'+p.n+'</div>';
+        H+='<div style="flex:1"><div style="font-size:13px;font-weight:800;color:#1a2744;margin-bottom:3px">'+p.titulo+'</div>';
+        H+='<div style="font-size:11px;color:#6b7280;line-height:1.4">'+p.sub+'</div></div>';
+        H+='</div>';
       });
-      H+='</tbody></table></div></div>';
+      H+='</div>';
     }
+    H+='</div>'; // /seção 1
 
-    // Tabela Conclu\u00eddos
-    if(fFechados.length){
-      H+='<div>';
-      H+='<div class="subsec-title" style="color:#1a2744">Conclu\u00eddos ('+fFechados.length+')</div>';
-      H+='<div class="tbl-wrap"><table class="tbl"><thead><tr><th>N\u00famero</th><th>Assunto</th><th>Estado</th><th>Prioridade</th><th>Abertura</th><th>1\u00aa Resp</th><th>Solu\u00e7\u00e3o</th></tr></thead><tbody>';
-      fFechados.forEach(function(t){
-        var rc=t.resp_min!=null?(t.resp_min<=30?'#16a34a':t.resp_min<=120?'#d97706':'#dc2626'):'#9ca3af';
-        var sc=t.sol!=null?(t.sol<=48?'#16a34a':t.sol<=96?'#d97706':'#dc2626'):'#9ca3af';
-        H+='<tr><td class="num">#'+t.num.slice(-8)+'</td><td style="max-width:200px;font-weight:500">'+t.assunto+'</td><td>'+eBadge(t.estado)+'</td><td>'+pBadge(t.prioridade)+'</td><td style="color:#6b7280;white-space:nowrap">'+t.criado+'</td><td style="font-family:monospace;color:'+rc+';white-space:nowrap">'+(t.resp_min!=null?fmtRespTxt(t.resp_min):'\u2014')+'</td><td style="font-family:monospace;color:'+sc+';white-space:nowrap;font-weight:700">'+(t.sol!=null?t.sol+'h':'\u2014')+'</td></tr>';
-      });
-      H+='</tbody></table></div></div>';
-    }
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 2: ANÁLISE DA CARTEIRA (bloqueio + faixas + tendência)
+    // ══════════════════════════════════════════════════
+    H+='<div class="section" style="page-break-after:always">';
+    H+='<div class="sec-header"><div class="sec-num">2</div><div class="sec-title">Análise da carteira</div><div class="sec-sub">Como os '+_carteira.length+' chamados se distribuem</div></div>';
 
-    // Fila sem amostra (só aparece no modo todos-os-meses via d.servicos)
-    if(!fAbertos.length&&!fFechados.length){
-      H+='<div style="padding:12px 16px;font-size:11px;color:#6b7280;background:#f8fafc;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">'+ftotal+' chamados no per\u00edodo \u2014 sem detalhamento de tickets na amostra.</div>';
-    }
-
-    H+='</div>'; // /fila
-  });
-
-  H+='</div>';
-
-  // ── SEÇÃO 7: DETALHAMENTO DOS CHAMADOS EM ABERTO (1 card por ticket)
-  // Tudo derivado do sistema por regras determinísticas (estado, aging,
-  // prioridade, atendente). Zero edição manual.
-  var _tixAbertos = d.tickets.filter(function(t){return isAberto(t.estado);});
-  if(_tixAbertos.length){
-    var _criadoMap = {};
-    rowsScope.forEach(function(r){ if(r && r.num) _criadoMap[r.num] = r.criado; });
-    var _tixOrd = _tixAbertos.slice().sort(function(a,b){
-      var da = _criadoMap[a.num], db = _criadoMap[b.num];
-      var ta = (da instanceof Date) ? da.getTime() : 0;
-      var tb = (db instanceof Date) ? db.getTime() : 0;
-      return ta - tb;
+    // Bloqueio por responsabilidade
+    H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">';
+    H+='<div>';
+    H+='<div class="subsec-title">Bloqueio por responsabilidade</div>';
+    var _govBars = [
+      {label:'GroundWork (em execução)', val:_govCounts.groundwork, color:'#1a2744'},
+      {label:'Cliente (aguarda retorno)', val:_govCounts.cliente,    color:'#E8622A'},
+      {label:'Terceiros (fora da gov.)',  val:_govCounts.terceiro,   color:'#9ca3af'}
+    ];
+    _govBars.forEach(function(b){
+      var pct = Math.round(b.val/_carteira.length*100);
+      H+='<div style="margin-bottom:10px">';
+      H+='<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#374151;margin-bottom:4px"><span><strong>'+b.label+'</strong></span><span style="font-weight:700">'+b.val+' ('+pct+'%)</span></div>';
+      H+='<div style="background:#e5e7eb;border-radius:4px;height:10px;overflow:hidden"><div style="background:'+b.color+';height:100%;width:'+pct+'%"></div></div>';
+      H+='</div>';
     });
+    H+='</div>';
+
+    // Perfil de aging
+    H+='<div>';
+    H+='<div class="subsec-title">Perfil de aging</div>';
+    H+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px">';
+    var _faixaCfg = [
+      {k:'0-30d',  color:'#16a34a'},
+      {k:'31-60d', color:'#3b82f6'},
+      {k:'61-90d', color:'#d97706'},
+      {k:'91+d',   color:'#dc2626'}
+    ];
+    _faixaCfg.forEach(function(c){
+      var v = _faixas[c.k]||0;
+      H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px 8px;text-align:center;border-top:3px solid '+c.color+'">';
+      H+='<div style="font-size:24px;font-weight:900;color:'+c.color+';line-height:1">'+v+'</div>';
+      H+='<div style="font-size:9.5px;color:#6b7280;margin-top:4px;font-weight:600">'+c.k+'</div>';
+      H+='</div>';
+    });
+    H+='</div>';
+    H+='<div style="font-size:10.5px;color:#9ca3af;margin-top:10px;line-height:1.5">Distribuição dos '+_carteira.length+' chamados em aberto por tempo desde a abertura.</div>';
+    H+='</div>';
+    H+='</div>'; // /grid
+
+    // Tendência mensal (reaproveita histKeys/histVals)
+    if(histKeys.length){
+      H+='<div style="margin-top:16px"><div class="subsec-title">Tendência de abertura mensal</div>';
+      H+='<div class="chart-box">'+barChart(histKeys,histVals,'#1a2744')+'</div>';
+      // Comentário automático sobre tendência
+      if(histVals.length>=2){
+        var _last = histVals[histVals.length-1]||0;
+        var _prev = histVals[histVals.length-2]||0;
+        if(_prev>0){
+          var _delta = Math.round((_last-_prev)/_prev*100);
+          var _bg = _delta>30?'#fff7ed':_delta<-20?'#f0fdf4':'#f8fafc';
+          var _ic = _delta>30?'▲':_delta<-20?'▼':'●';
+          var _co = _delta>30?'#d97706':_delta<-20?'#16a34a':'#6b7280';
+          var _tx = _delta>30 ? 'Volume crescente — '+_delta+'% vs mês anterior. Vale monitorar nas próximas semanas.'
+                  : _delta<-20 ? 'Volume em queda — '+Math.abs(_delta)+'% vs mês anterior. Mantém sinal positivo de estabilidade.'
+                  : 'Volume estável em relação ao mês anterior. Sem variação significativa.';
+          H+='<div style="background:'+_bg+';border-radius:8px;padding:10px 14px;margin-top:8px;font-size:11.5px;color:'+_co+';font-weight:600"><span style="font-size:14px;margin-right:6px">'+_ic+'</span>'+_tx+'</div>';
+        }
+      }
+      H+='</div>';
+    }
+    H+='</div>'; // /seção 2
+
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 3: CARDS INDIVIDUAIS (um por chamado em aberto)
+    // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num">7</div><div class="sec-title">Detalhamento dos chamados em aberto</div><div class="sec-sub">'+_tixOrd.length+' chamado(s) \u2014 1 card por ticket</div></div>';
-    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Status e pr\u00f3xima a\u00e7\u00e3o derivados de regras determin\u00edsticas sobre os dados do sistema (estado, aging, prioridade, atendente). Sem edi\u00e7\u00e3o manual.</p>';
-    _tixOrd.forEach(function(t){
-      var criadoDate = _criadoMap[t.num] || null;
-      var aging      = _pdfAgingDias(criadoDate);
-      var risco      = _pdfInferRisco(aging, t.prioridade);
-      var bloqueio   = _pdfInferBloqueio(t.estado);
-      var owner      = _pdfInferOwner(t.estado);
-      var statusTxt  = _pdfGenStatusAuto(t.estado, criadoDate, aging, t.atend || t.atendente);
-      var proxAcao   = _pdfGenProximaAcaoAuto(t.estado, aging, t.prioridade);
-      var fila       = t.servico || t.fila || '\u2014';
+    H+='<div class="sec-header"><div class="sec-num">3</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) — 1 card por ticket</div></div>';
+    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS (estado, aging, prioridade, atendente). Sem edição manual.</p>';
+
+    _carteira.forEach(function(t, idx){
+      var statusTxt = _pdfGenStatusAuto(t.estado, t.criado, t.aging, t.atendente, t.prioridade, t.assunto);
+      var proxAcao  = _pdfGenProximaAcaoAuto(t.estado, t.aging, t.prioridade);
+      var urgentTag = (t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60) ? ' <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:4px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">URGENTE</span>' : '';
+      var filaShow = t.fila || t.servico || '—';
       H+='<div class="det-card">';
       H+='<div class="det-hd">';
-      H+='<div><div class="det-tk">#'+t.num+'</div><div class="det-meta">Aberto em '+_pdfFmtDataPtBr(criadoDate)+' \u00b7 '+fila+'</div></div>';
-      H+='<div class="det-aging"><div class="det-aging-num">'+(aging!=null?aging+'d':'\u2014')+'</div><div class="det-aging-lbl">Aging</div></div>';
-      H+='<div><span class="det-risk det-risk-'+risco+'">Risco '+risco+'</span></div>';
+      H+='<div><div class="det-tk">#'+t.num+'</div><div class="det-meta">Chamado '+(idx+1)+' de '+_carteira.length+' · Aberto em '+_pdfFmtDataPtBr(t.criado)+' · '+filaShow+'</div></div>';
+      H+='<div class="det-aging"><div class="det-aging-num">'+(t.aging!=null?t.aging+'d':'—')+'</div><div class="det-aging-lbl">Aging</div></div>';
+      H+='<div><span class="det-risk det-risk-'+t.risco+'">Risco '+t.risco+'</span>'+urgentTag+'</div>';
       H+='</div>';
-      H+='<div class="det-ttl">'+(t.assunto||'\u2014')+'</div>';
+      H+='<div class="det-ttl">'+(t.assunto||'—')+'</div>';
       H+='<div class="det-body">';
-      H+='<div class="det-row"><div class="det-lbl">Status</div><div class="det-val">'+statusTxt+'</div></div>';
-      H+='<div class="det-row"><div class="det-lbl">Pr\u00f3xima a\u00e7\u00e3o</div><div class="det-val">'+proxAcao+'</div></div>';
+      H+='<div class="det-row"><div class="det-lbl">Status atual</div><div class="det-val">'+statusTxt+'</div></div>';
+      H+='<div class="det-row"><div class="det-lbl">Próxima ação</div><div class="det-val">'+proxAcao+'</div></div>';
       H+='</div>';
-      H+='<div class="det-grid">';
-      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Bloqueio</div><div class="det-grid-val">'+bloqueio+'</div></div>';
-      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Owner</div><div class="det-grid-val">'+owner+'</div></div>';
-      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Prioridade</div><div class="det-grid-val">'+(t.prioridade||'\u2014')+'</div></div>';
+      H+='<div class="det-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Situação</div><div class="det-grid-val">'+t.bloqueio+'</div></div>';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Owner</div><div class="det-grid-val">'+t.owner+'</div></div>';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Próximo marco</div><div class="det-grid-val">'+t.eta+'</div></div>';
+      H+='<div class="det-grid-cell"><div class="det-grid-lbl">Prioridade</div><div class="det-grid-val">'+t.prioridade+'</div></div>';
       H+='</div>';
       H+='</div>';
     });
-    H+='</div>';
-  }
+    H+='</div>'; // /seção 3
 
-  // \u2500\u2500 SE\u00c7\u00c3O 8: INSIGHTS
-  H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">8</div><div class="sec-title">Destaques do Per\u00edodo</div></div>';
-  H+='<div class="insight-box"><div class="insight-title">\ud83d\udcca An\u00e1lise autom\u00e1tica</div>';
-  insights.forEach(function(ins){H+='<div class="insight-item">'+ins.icon+' '+ins.txt+'</div>';});
-  H+='</div>';
-  H+='</div>';
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 4: PLANO DE AÇÃO PRIORIZADO
+    // ══════════════════════════════════════════════════
+    if(_planoAcoes.length){
+      H+='<div class="section">';
+      H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Plano de ação</div><div class="sec-sub">Movimentos sugeridos para as próximas 2 semanas</div></div>';
+      H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Recomendações priorizadas a partir do estado atual da carteira. Cada movimento aponta o objetivo e a ação concreta sugerida.</p>';
+      _planoAcoes.forEach(function(a, i){
+        var _tagCol = a.tag==='URGENTE' ? '#dc2626' : a.tag==='COBRAR' ? '#d97706' : a.tag==='COMUNICAR' ? '#9ca3af' : '#1a2744';
+        H+='<div style="display:grid;grid-template-columns:48px 1fr 130px;gap:14px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;margin-bottom:10px;page-break-inside:avoid">';
+        H+='<div style="display:flex;align-items:flex-start;justify-content:center"><div style="width:34px;height:34px;border-radius:50%;background:#1a2744;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center">'+(i+1)+'</div></div>';
+        H+='<div>';
+        H+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="display:inline-block;padding:2px 8px;border-radius:4px;background:'+_tagCol+';color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">'+a.tag+'</span>';
+        H+='<span style="font-size:13.5px;font-weight:800;color:#1a2744">'+a.titulo+'</span></div>';
+        H+='<div style="font-size:11px;color:#6b7280;margin-bottom:6px">'+a.sub+'</div>';
+        H+='<div style="font-size:11.5px;line-height:1.55;color:#374151">'+a.desc+'</div>';
+        H+='</div>';
+        H+='<div style="text-align:right">';
+        H+='<div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af">Prazo</div>';
+        H+='<div style="font-size:11.5px;font-weight:800;color:#E8622A;margin-top:3px">'+a.prazo+'</div>';
+        H+='</div>';
+        H+='</div>';
+      });
+      H+='</div>'; // /seção 4
+    }
 
-  // ── SEÇÃO 9: COMPARATIVO MÊS ANTERIOR
-  if(curData && prevData) {
-    var compSec9rows = [
-      {label:'Volume total',      cur:curData.total,    prev:prevData.total,    unit:'',    lower:false},
-      {label:'Fechados',          cur:curData.fechados, prev:prevData.fechados, unit:'',    lower:false},
-      {label:'Em aberto',         cur:curData.abertos,  prev:prevData.abertos,  unit:'',    lower:true},
-      {label:'Taxa de conclusão', cur:curData.total>0?Math.round(curData.fechados/curData.total*100):0, prev:prevData.total>0?Math.round(prevData.fechados/prevData.total*100):0, unit:'%', lower:false},
-      {label:'1ª Resposta (med.)',cur:curData.resp_med, prev:prevData.resp_med, unit:'min', lower:true},
-      {label:'Solução (med.)',    cur:curData.sol_med,  prev:prevData.sol_med,  unit:'h',   lower:true}
-    ];
+    // ══════════════════════════════════════════════════
+    // SEÇÃO 5: PRÓXIMOS PASSOS (consolidados)
+    // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num" style="background:#E8622A">9</div><div class="sec-title">Comparativo — '+(mNamesFull[prevMk2]||prevMk2)+' vs '+(mNamesFull[curMk2]||curMk2)+'</div></div>';
-    H+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    H+='<thead><tr style="border-bottom:2px solid #e5e7eb">';
-    H+='<th style="padding:7px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Métrica</th>';
-    H+='<th style="padding:7px 10px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">'+(mNamesFull[prevMk2]||prevMk2)+'</th>';
-    H+='<th style="padding:7px 10px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">'+(mNamesFull[curMk2]||curMk2)+'</th>';
-    H+='<th style="padding:7px 10px;text-align:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Variação</th>';
-    H+='</tr></thead><tbody>';
-    compSec9rows.forEach(function(row){
-      var dlt=pctDelta(row.cur,row.prev,row.lower);
-      var cf=(row.cur!==null&&row.cur!==undefined)?row.cur+row.unit:'—';
-      var pf=(row.prev!==null&&row.prev!==undefined)?row.prev+row.unit:'—';
-      H+='<tr style="border-bottom:1px solid #f3f4f6">'+
-        '<td style="padding:8px 10px;font-weight:600;color:#1a2744">'+row.label+'</td>'+
-        '<td style="padding:8px 10px;text-align:right;color:#6b7280">'+pf+'</td>'+
-        '<td style="padding:8px 10px;text-align:right;font-weight:700;color:#1a2744">'+cf+'</td>'+
-        '<td style="padding:8px 10px;text-align:center">'+fmtDelta(dlt)+'</td>'+
-      '</tr>';
-    });
-    H+='</tbody></table>';
+    H+='<div class="sec-header"><div class="sec-num">5</div><div class="sec-title">Próximos passos</div><div class="sec-sub">Foco operacional para a próxima quinzena</div></div>';
+    H+='<div style="background:#1a2744;color:#fff;border-radius:10px;padding:22px 26px">';
+    H+='<div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8622A;margin-bottom:12px">Plano operacional · próximas 2 semanas</div>';
+    if(_planoAcoes.length){
+      _planoAcoes.slice(0,3).forEach(function(a,i){
+        H+='<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px;line-height:1.5">';
+        H+='<div style="flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#E8622A;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center">'+(i+1)+'</div>';
+        H+='<div style="flex:1"><strong>'+a.titulo+'</strong><div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">'+a.prazo+'</div></div>';
+        H+='</div>';
+      });
+    } else {
+      H+='<div style="font-size:13px">Manter monitoramento da carteira. Sem ações críticas pendentes neste ciclo.</div>';
+    }
     H+='</div>';
-  }
+    H+='</div>'; // /seção 5
+  } // end if carteira.length
 
-  // SEÇÃO 10: CONSIDERAÇÕES FINAIS
+  // STATUSREPORT-MARKER-END
+  // SEÇÃO FINAL: CONSIDERAÇÕES FINAIS
   H+='<div class="section">';
-  H+='<div class="sec-header"><div class="sec-num">10</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
+  H+='<div class="sec-header"><div class="sec-num">6</div><div class="sec-title">Considera\u00e7\u00f5es Finais</div></div>';
   H+='<div class="consider">Com base nas informa\u00e7\u00f5es demonstradas acima, nosso objetivo \u00e9 produzir dados e indicadores que permitam avaliar de maneira simples, segura e confi\u00e1vel o atendimento prestado. Contamos com o retorno de todos para continuar aprimorando a qualidade dos servi\u00e7os.<br><br>Contamos com voc\u00eas.<br><br><strong>EQUIPE ERP</strong><br>GROUNDWORK</div>';
   H+='</div>';
 
