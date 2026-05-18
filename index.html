@@ -1113,6 +1113,38 @@ body.squad-mode #rpt-btn{display:none!important}
 @keyframes walkerFade{0%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 @keyframes walkerTargetGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,100,0,.5),0 4px 14px rgba(255,100,0,.15)}50%{box-shadow:0 0 0 8px rgba(255,100,0,0),0 4px 18px rgba(255,100,0,.35)}}
 
+/* ─── Equipes & Cobrança ──────────────────────────────────── */
+.eq-squad{margin-bottom:26px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.eq-squad-hd{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.eq-squad-nome{font-family:var(--display);font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.eq-squad-stats{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto}
+.eq-squad-stats strong{color:var(--text)}
+.eq-squad-empty{padding:24px;text-align:center;color:var(--muted);font-size:12px;font-style:italic}
+.eq-cons{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border);transition:background .15s}
+.eq-cons:last-child{border-bottom:none}
+.eq-cons:hover{background:rgba(255,255,255,.015)}
+.eq-cons-light{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.eq-cons-light.crit{background:var(--danger);box-shadow:0 0 8px rgba(244,63,94,.6)}
+.eq-cons-light.warn{background:var(--warn);box-shadow:0 0 6px rgba(245,158,11,.5)}
+.eq-cons-light.ok{background:var(--ok);box-shadow:0 0 6px rgba(16,185,129,.4)}
+.eq-cons-info{flex:1;min-width:0}
+.eq-cons-nome{font-size:14px;font-weight:700;color:var(--text);line-height:1.2}
+.eq-cons-sub{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.eq-cons-sub strong{color:var(--sub)}
+.eq-cons-old{font-size:10.5px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.eq-cons-old strong{color:var(--warn)}
+.eq-cons-num{font-family:var(--display);font-size:28px;font-weight:800;line-height:1;min-width:44px;text-align:right}
+.eq-cons-num.crit{color:var(--danger)}
+.eq-cons-num.warn{color:var(--warn)}
+.eq-cons-num.ok{color:var(--ok)}
+.eq-cons-actions{display:flex;gap:6px;flex-shrink:0}
+.eq-btn{padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.eq-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.06)}
+.eq-btn.primary{background:linear-gradient(135deg,#FF6400,#f59e0b);border-color:transparent;color:#fff}
+.eq-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,100,0,.4)}
+.eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
+@keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
 /* ─── Avatar Analista GW (mascote do painel de gestão) ──────── */
 /* Usado em headers de Alertas Críticos + IA. Emoji 🧑‍💼 dentro de
    círculo gradient laranja GW. Identidade analítica/executiva. */
@@ -2303,6 +2335,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="sb-head">Gestão</div>
     <div class="nav" onclick="goSec('op','s-sl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>SLA & Tempos</div>
     <div class="nav" onclick="goSec('op','s-ctr',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>Contratos SSG</div>
+    <div class="nav" onclick="goSec('op','s-eq',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>Equipes & Cobrança</div>
     <div class="nav" onclick="goSec('op','s-bl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Em Espera</div>
     <div class="nav" onclick="goSec('op','s-fv',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="18" y1="2" x2="22" y2="6"/><line x1="22" y1="2" x2="18" y2="6"/></svg>Previsão de Volume</div>
     <div class="nav" onclick="goSec('op','s-bk',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Backlog</div>
@@ -2872,6 +2905,17 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
         <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
+    </div>
+  </div>
+
+  <!-- EQUIPES & COBRANÇA · consultores por squad com carga viva pra cobrar -->
+  <div id="s-eq" class="sec">
+    <div class="page-header">
+      <h1>Equipes & Cobrança</h1>
+      <p>Consultores por squad · carga viva · botão pra gerar mensagem de cobrança</p>
+    </div>
+    <div class="page-body">
+      <div id="eq-content"></div>
     </div>
   </div>
 
@@ -4192,6 +4236,7 @@ function renderSec(id){
   else if(id==='s-bk')renderBacklog();
   else if(id==='s-fv')renderForecast();
   else if(id==='s-ctr')renderContratosSSG();
+  else if(id==='s-eq')renderEquipes();
   else if(id==='c-inf')renderInf();
 }
 
@@ -13059,6 +13104,152 @@ function renderForecast() {
     weeksEl.innerHTML = wHtml;
   }
 }
+
+// ════════════════════════════════════════════════════════════
+// EQUIPES & COBRANÇA — consultores por squad com carga viva
+// Usa TICKETS_ATIVOS_DATA pra count + estado, agrupado por squad
+// via allowed_logins. Status: 🔴 ≥15 ativos · 🟡 6-14 · 🟢 ≤5
+// Click "Copiar pra cobrar" gera template no clipboard.
+// ════════════════════════════════════════════════════════════
+function _eqStatusFromCount(n){
+  if(n >= 15) return { key:'crit', label:'sobrecarregado' };
+  if(n >= 6)  return { key:'warn', label:'atenção' };
+  return        { key:'ok',   label:'normal' };
+}
+function _eqAtivoState(estado){
+  // Estados que contam como "ativo na pilha" (exclui dormentes)
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : ['CANCELADO','RESOLVIDO','FECHADO','FECHADO SEM ÊXITO (AUTO)','AGRUPADO'];
+  return DORMENT.indexOf((estado||'').toUpperCase()) === -1;
+}
+function renderEquipes(){
+  var el = document.getElementById('eq-content');
+  if(!el) return;
+  if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows){
+    el.innerHTML = '<div class="ai-empty" style="padding:40px;text-align:center;color:var(--muted)">Aguardando dados do GWMS…</div>';
+    return;
+  }
+  var rows = TICKETS_ATIVOS_DATA.rows;
+  // Agrupa tickets ativos por atendente
+  var byAtend = {};
+  rows.forEach(function(t){
+    if(!t.atendente || t.atendente === 'Admin OTRS') return;
+    if(!_eqAtivoState(t.estado)) return;
+    var nome = t.atendente.trim();
+    if(!byAtend[nome]) byAtend[nome] = { tickets:[], estados:{} };
+    byAtend[nome].tickets.push(t);
+    byAtend[nome].estados[t.estado] = (byAtend[nome].estados[t.estado]||0) + 1;
+  });
+  // Itera squads (exceto triagem) e monta cards
+  var html = '';
+  var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
+  squadIds.forEach(function(sqId){
+    var sqCfg = SQUADS[sqId];
+    if(!sqCfg) return;
+    var allow = sqCfg.allowed_logins || [];
+    // Lista atendentes da squad (que estão no roster)
+    var consultores = [];
+    Object.keys(byAtend).forEach(function(nome){
+      var login = (typeof _nameToLogin === 'function') ? _nameToLogin(nome) : '';
+      if(allow.indexOf(login) === -1) return;
+      var info = byAtend[nome];
+      var status = _eqStatusFromCount(info.tickets.length);
+      // Mais antigo: pega ticket com criado mais antigo
+      var maisAntigo = info.tickets.slice().sort(function(a,b){
+        return (a.criado||'').localeCompare(b.criado||'');
+      })[0];
+      var diasAntigo = 0;
+      if(maisAntigo && maisAntigo.criado){
+        var dt = new Date(String(maisAntigo.criado).replace(' ','T'));
+        if(!isNaN(dt.getTime())) diasAntigo = Math.floor((Date.now() - dt.getTime())/(86400000));
+      }
+      consultores.push({
+        nome: nome,
+        n: info.tickets.length,
+        estados: info.estados,
+        status: status,
+        maisAntigo: maisAntigo,
+        diasAntigo: diasAntigo
+      });
+    });
+    // Ordena por status: crit > warn > ok, depois por n desc
+    var rankStatus = { crit:0, warn:1, ok:2 };
+    consultores.sort(function(a,b){
+      var ra = rankStatus[a.status.key], rb = rankStatus[b.status.key];
+      if(ra !== rb) return ra - rb;
+      return b.n - a.n;
+    });
+    var totalChamados = consultores.reduce(function(s,c){return s + c.n;}, 0);
+    var rosterTotal = allow.length;
+    var ativosCount = consultores.length;
+    var critCount = consultores.filter(function(c){return c.status.key==='crit';}).length;
+    var warnCount = consultores.filter(function(c){return c.status.key==='warn';}).length;
+    html += '<div class="eq-squad">'
+      + '<div class="eq-squad-hd">'
+        + '<div>'
+          + '<div class="eq-squad-nome">'+sqCfg.nome+'</div>'
+        + '</div>'
+        + '<div class="eq-squad-stats">'
+          + '<strong>'+ativosCount+'/'+rosterTotal+'</strong> consultores com carga · '
+          + '<strong>'+totalChamados+'</strong> chamados ativos'
+          + (critCount ? ' · <span style="color:var(--danger);font-weight:700">'+critCount+' 🔴</span>' : '')
+          + (warnCount ? ' · <span style="color:var(--warn);font-weight:700">'+warnCount+' 🟡</span>' : '')
+        + '</div>'
+      + '</div>';
+    if(!consultores.length){
+      html += '<div class="eq-squad-empty">Nenhum consultor com carga ativa nesta squad.</div>';
+    } else {
+      consultores.forEach(function(c){
+        var statusCls = c.status.key;
+        // Breakdown principais 3 estados
+        var topEst = Object.keys(c.estados).sort(function(a,b){
+          return c.estados[b] - c.estados[a];
+        }).slice(0,3);
+        var subTxt = topEst.map(function(e){
+          return c.estados[e]+' '+e.toLowerCase();
+        }).join(' · ');
+        var oldTxt = '';
+        if(c.diasAntigo >= 30){
+          oldTxt = '<div class="eq-cons-old">Mais antigo: <strong>'+c.diasAntigo+' dias</strong> · #'+(c.maisAntigo.ticket||'')+'</div>';
+        } else if(c.diasAntigo > 0){
+          oldTxt = '<div class="eq-cons-old">Mais antigo: '+c.diasAntigo+' dia'+(c.diasAntigo!==1?'s':'')+' · #'+(c.maisAntigo.ticket||'')+'</div>';
+        }
+        var nomeEsc = c.nome.replace(/'/g,"\\'");
+        html += '<div class="eq-cons">'
+          + '<div class="eq-cons-light '+statusCls+'"></div>'
+          + '<div class="eq-cons-info">'
+            + '<div class="eq-cons-nome">'+c.nome+'</div>'
+            + '<div class="eq-cons-sub">'+subTxt+'</div>'
+            + oldTxt
+          + '</div>'
+          + '<div class="eq-cons-num '+statusCls+'">'+c.n+'</div>'
+          + '<div class="eq-cons-actions">'
+            + '<button class="eq-btn" onclick="openAtendPendModal(\''+nomeEsc+'\',\'live\')">Ver detalhe</button>'
+            + '<button class="eq-btn primary" onclick="_eqCopiarCobranca(\''+nomeEsc+'\','+c.n+','+c.diasAntigo+')" title="Copia mensagem pronta pra cobrança">📋 Cobrar</button>'
+          + '</div>'
+        + '</div>';
+      });
+    }
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+window._eqCopiarCobranca = function(nome, n, diasAntigo){
+  var primNome = nome.split(' ')[0];
+  var diasTxt = diasAntigo >= 30 ? ' — sendo o mais antigo com '+diasAntigo+' dias parado' : (diasAntigo >= 7 ? ' — o mais antigo já tem '+diasAntigo+' dias' : '');
+  var msg = 'Olá ' + primNome + '! Tudo bem?\n\n'
+    + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' ativo' + (n!==1?'s':'') + diasTxt + '.\n\n'
+    + 'Pode me dar um update rápido do que está travando? Se algo precisar de prioridade ou ajuda pra destravar, me avisa.\n\n'
+    + 'Valeu!';
+  try {
+    if(navigator.clipboard) navigator.clipboard.writeText(msg);
+  } catch(e){}
+  // Toast feedback
+  var t = document.createElement('div');
+  t.className = 'eq-toast';
+  t.textContent = '✓ Mensagem copiada — cola no WhatsApp/Slack do ' + primNome;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
+};
 
 // ════════════════════════════════════════════════════════════
 // CONTRATOS SSG — controle mensal + gatilho de cobrança trimestral
