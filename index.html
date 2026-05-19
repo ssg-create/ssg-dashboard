@@ -5610,7 +5610,10 @@ function openAtendPendModal(nome, mode){
         : p.indexOf('normal')>-1?'Normal' : (r.prioridade||'—');
       var est=r.estado||'—';
       liveEst[est]=(liveEst[est]||0)+1;
-      return{num:r.ticket||r.num, assunto:r.assunto||'', estado:est, prior:prior, criado:dt, idade:idade, agingN:agingN};
+      var cliNome=r.cliente||'';
+      // Normaliza pra nome de exibição quando o ID bate em ENM2 (ex: CONTINENTAL → Aumovio)
+      if(cliNome && typeof ENM2!=='undefined' && ENM2[cliNome.toUpperCase()]) cliNome=ENM2[cliNome.toUpperCase()];
+      return{num:r.ticket||r.num, assunto:r.assunto||'', cliente:cliNome, estado:est, prior:prior, criado:dt, idade:idade, agingN:agingN};
     });
   } else {
     chamados=(RAW_DATA||[]).filter(function(d){
@@ -5623,7 +5626,8 @@ function openAtendPendModal(nome, mode){
       var idade=diffDays===null?'—':diffDays===0?'hoje':diffDays===1?'1 dia':diffDays+' dias';
       var agingN=diffDays!==null?diffDays:0;
       var dt=d.criado?pad2(d.criado.getDate())+'/'+pad2(d.criado.getMonth()+1)+' '+pad2(d.criado.getHours())+'h':'—';
-      return{num:d.num,assunto:d.assunto,estado:d.estado,prior:d.prior,criado:dt,idade:idade,agingN:agingN};
+      var cliNome=d.cli_id?((typeof ENM2!=='undefined'&&ENM2[d.cli_id])||d.cli_id):'';
+      return{num:d.num,assunto:d.assunto,cliente:cliNome,estado:d.estado,prior:d.prior,criado:dt,idade:idade,agingN:agingN};
     });
   }
 
@@ -13433,7 +13437,9 @@ function openTicketOTRS(num,ev){
 function filterAtModal(){
   var q=document.getElementById('at-modal-search').value.toLowerCase().trim();
   var rows=q?_atModalRows.filter(function(r){
-    return (r.num||'').toLowerCase().indexOf(q)!==-1||(r.assunto||'').toLowerCase().indexOf(q)!==-1;
+    return (r.num||'').toLowerCase().indexOf(q)!==-1
+      ||(r.assunto||'').toLowerCase().indexOf(q)!==-1
+      ||(r.cliente||'').toLowerCase().indexOf(q)!==-1;
   }):_atModalRows;
   document.getElementById('at-modal-count').textContent=rows.length+' chamado'+(rows.length!==1?'s':'');
   renderAtModalTable(rows,_atModalRows.length);
@@ -13486,6 +13492,7 @@ function renderAtModalTable(chamados,totalPend){
     +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr style="background:var(--bg3)">'
     +'<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Número</th>'
+    +'<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Cliente</th>'
     +'<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Assunto</th>'
     +'<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Estado</th>'
     +'<th style="text-align:left;padding:9px 10px;font-size:9.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border)">Prior.</th>'
@@ -13513,8 +13520,10 @@ function renderAtModalTable(chamados,totalPend){
     } else {
       tdNum='<td style="padding:10px;font-family:var(--mono);font-size:10.5px;color:var(--teal);font-weight:600;white-space:nowrap">'+numDisp+'</td>';
     }
+    var cliDisp=(c.cliente||'—');
     html+='<tr style="border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s" onmouseenter="this.style.background=\'rgba(255,255,255,.025)\'" onmouseleave="this.style.background=\'\'"> '
       +tdNum
+      +'<td style="padding:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:600;color:var(--text)" title="'+cliDisp+'">'+cliDisp+'</td>'
       +'<td style="padding:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(c.assunto||'')+'">'+(c.assunto||'—')+'</td>'
       +'<td style="padding:10px;white-space:nowrap"><span style="font-size:10.5px;padding:3px 9px;border-radius:12px;background:'+ec+'18;border:1px solid '+ec+'30;color:'+ec+'">'+c.estado+'</span></td>'
       +'<td style="padding:10px;white-space:nowrap">'+pPill(c.prior||'')+'</td>'
@@ -14589,7 +14598,7 @@ function renderBacklogTable(rows) {
       <div id="at-modal-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"></div>
     </div>
     <div style="padding:12px 24px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;align-items:center">
-      <input id="at-modal-search" type="text" placeholder="Buscar por número ou assunto…" oninput="filterAtModal()"
+      <input id="at-modal-search" type="text" placeholder="Buscar por número, cliente ou assunto…" oninput="filterAtModal()"
         style="flex:1;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:12px;font-family:var(--font);outline:none;transition:border-color .2s"
         onfocus="this.style.borderColor='var(--danger)'" onblur="this.style.borderColor='var(--border2)'">
       <div id="at-modal-count" style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;padding:6px 12px;background:var(--bg3);border-radius:20px;border:1px solid var(--border)"></div>
