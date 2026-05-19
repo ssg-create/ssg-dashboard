@@ -10162,13 +10162,22 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   H+='<div class="cover-tag">Status Report \u00b7 Centro de Opera\u00e7\u00f5es SSG</div>';
   H+='<div class="cover-title">'+d.nome+'</div>';
   H+='<div class="cover-sub">Acompanhamento detalhado de chamados em aberto</div>';
-  // Carteira atual em aberto (TICKETS_ATIVOS_DATA) \u2014 usada na capa e no resumo
-  var _carteiraNSX = _pdfBuildCarteira(dRaw.id);
-  var _carteiraQtd = _carteiraNSX.length;
+  // Carteira do PDF \u2014 usa MESMA l\u00f3gica do corpo pra capa ser coerente.
+  // Modo per\u00edodo: todos os abertos no m\u00eas (inclui resolvidos). Modo "todos":
+  // snapshot atual da carteira em aberto.
+  var _modoPeriodoCapa = (typeof activeMonth!=='undefined' && activeMonth && activeMonth !== 'all' && !(activeRangeStart && activeRangeEnd));
+  var _carteiraCapa = _modoPeriodoCapa ? _pdfBuildPeriodo(dRaw.id, rowsScope) : _pdfBuildCarteira(dRaw.id);
+  var _emAbertoCapa = _carteiraCapa.filter(function(t){return !t.isFechado;}).length;
   H+='<div class="cover-chips">';
   H+='<span class="cover-chip orange">'+d.nome+'</span>';
   H+='<span class="cover-chip blue">'+mesLabel+'</span>';
-  H+='<span class="cover-chip gray">'+_carteiraQtd+' chamado(s) em aberto</span>';
+  if(_modoPeriodoCapa){
+    // ex: "11 chamado(s) no per\u00edodo \u00b7 0 em aberto hoje"
+    H+='<span class="cover-chip gray">'+_carteiraCapa.length+' chamado(s) no per\u00edodo</span>';
+    H+='<span class="cover-chip gray">'+_emAbertoCapa+' em aberto hoje</span>';
+  } else {
+    H+='<span class="cover-chip gray">'+_carteiraCapa.length+' chamado(s) em aberto</span>';
+  }
   H+='<span class="cover-chip gray">'+sistemasLabel+'</span>';
   H+='</div>';
   H+='<div class="cover-score">';
@@ -10199,13 +10208,9 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   //   (B) Filtro = "todos"/range → _pdfBuildCarteira(cli_id)
   //       Snapshot atual da carteira em aberto. Usa TICKETS_ATIVOS_DATA.
   // ════════════════════════════════════════════════════════════════════
-  var _modoPeriodo = (typeof activeMonth!=='undefined' && activeMonth && activeMonth !== 'all' && !(activeRangeStart && activeRangeEnd));
-  var _carteira;
-  if(_modoPeriodo){
-    _carteira = _pdfBuildPeriodo(dRaw.id, rowsScope);
-  } else {
-    _carteira = _pdfBuildCarteira(dRaw.id);
-  }
+  // Reusa o que a capa já calculou — evita rodar _pdfBuildPeriodo duas vezes.
+  var _modoPeriodo = _modoPeriodoCapa;
+  var _carteira = _carteiraCapa;
   // Subsets úteis para narrativa/métricas
   var _emAberto    = _carteira.filter(function(t){return !t.isFechado;});
   var _resolvidos  = _carteira.filter(function(t){return t.isFechado;});
