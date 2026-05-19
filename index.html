@@ -9837,7 +9837,8 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
 
     // Tendência mensal (reaproveita histKeys/histVals)
     if(histKeys.length){
-      H+='<div style="margin-top:16px"><div class="subsec-title">Tendência de abertura mensal</div>';
+      H+='<div style="margin-top:16px"><div class="subsec-title">Volume de aberturas por mês</div>';
+      H+='<div style="font-size:10.5px;color:#9ca3af;margin-bottom:8px;line-height:1.5">Quantos chamados <strong>foram abertos</strong> em cada mês (inclui os já fechados). Não confundir com a carteira em aberto da seção anterior, que mostra apenas os '+_carteira.length+' chamados ainda ativos hoje.</div>';
       H+='<div class="chart-box">'+barChart(histKeys,histVals,'#1a2744')+'</div>';
       // Comentário automático sobre tendência
       if(histVals.length>=2){
@@ -9933,8 +9934,8 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     // SEÇÃO 4: CARDS INDIVIDUAIS (um por chamado em aberto)
     // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) — 1 card por ticket</div></div>';
-    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS (estado, aging, prioridade, atendente). Sem edição manual.</p>';
+    H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) em aberto hoje — 1 card por ticket</div></div>';
+    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Mostra apenas os <strong>'+_carteira.length+' chamado(s) ainda ativos</strong> no fechamento do relatório (não os que foram abertos e já fechados no mês). Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS — sem edição manual.</p>';
 
     _carteira.forEach(function(t, idx){
       var statusTxt = _pdfGenStatusAuto(t.estado, t.criado, t.aging, t.atendente, t.prioridade, t.assunto);
