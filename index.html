@@ -847,9 +847,16 @@ input[type=file]{display:none}
 .tb-settings-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center}
 .tb-settings-btn:hover{color:var(--text);background:var(--bg3)}
 .tb-settings-btn svg{width:16px;height:16px}
-.tb-logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center;margin-left:2px}
+.tb-logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center;gap:6px;margin-left:2px;font-family:inherit;font-size:12px}
 .tb-logout-btn:hover{color:#ef4444;background:var(--bg3)}
 .tb-logout-btn svg{width:16px;height:16px}
+.tb-logout-lbl{display:none;font-weight:600}
+body.atendente-mode .tb-logout-btn,
+body.triagem-mode .tb-logout-btn{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.25);color:#ef4444;padding:6px 12px}
+body.atendente-mode .tb-logout-btn:hover,
+body.triagem-mode .tb-logout-btn:hover{background:rgba(239,68,68,.18);color:#ef4444}
+body.atendente-mode .tb-logout-lbl,
+body.triagem-mode .tb-logout-lbl{display:inline}
 /* ── MODO ESPELHO (gestor visualizando atendente) ─────────────── */
 body.espelho-mode .topbar{display:flex!important}
 body.espelho-mode .sidebar{display:flex!important}
@@ -986,8 +993,10 @@ body.atendente-mode #fs-btn,
 body.atendente-mode #rpt-btn{display:none!important}
 #at-piloto-badge{display:none;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-left:10px}
 body.atendente-mode #at-piloto-badge{display:inline-block!important}
-body.atendente-mode #at-user-pill{display:flex!important}
-#at-user-pill{display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:12px;color:var(--text);margin-left:8px}
+body.atendente-mode #at-user-pill,
+body.triagem-mode #at-user-pill{display:flex!important}
+#at-user-pill{display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:12px;color:var(--text);margin-left:8px;cursor:pointer;transition:all .15s}
+#at-user-pill:hover{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)}
 #at-user-pill .at-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 #view-atend{padding:28px 32px;max-width:1280px;margin:0 auto}
 .at-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
@@ -2499,13 +2508,14 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button class="tb-settings-btn" onclick="openSettings()" title="Configurar metas e SLA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     <div id="gw-user-pill" onclick="changeGWUser()" title="Clique para trocar nome" style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--muted);background:var(--surface2,#22263a);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin-left:2px;white-space:nowrap">👤 <span id="gw-user-name">—</span></div>
     <div id="at-piloto-badge" title="Login de teste — espelha atendente real">PILOTO</div>
-    <div id="at-user-pill" title="Modo atendente — clique no botão Sair pra deslogar">
+    <div id="at-user-pill" onclick="_logoutSquad()" title="Clique para sair">
       <div class="at-avatar" id="at-avatar">?</div>
       <span id="at-user-name">—</span>
     </div>
     <button class="tb-theme-btn" id="tb-theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
     <button class="tb-logout-btn" id="tb-logout-btn" onclick="_logoutSquad()" title="Sair e voltar para tela de login" aria-label="Sair">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span class="tb-logout-lbl">Sair</span>
     </button>
   </div>
 </div>
@@ -21614,6 +21624,11 @@ function renderTriagemHeader(){
     var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
     per.textContent = meses[d.getMonth()] + '/' + String(d.getFullYear()).slice(-2);
   }
+  // Pill do usuário no topbar — mostra "Triagem" + clique pra sair
+  var pillName = document.getElementById('at-user-name');
+  if(pillName) pillName.textContent = 'Triagem';
+  var av = document.getElementById('at-avatar');
+  if(av) av.textContent = 'T';
 }
 
 function bootTriagemMode(){
