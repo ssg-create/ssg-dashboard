@@ -9108,6 +9108,60 @@ function _pdfBuildCarteira(cli_id){
   tix.sort(function(a,b){return (b.aging||0)-(a.aging||0);});
   return tix;
 }
+function _pdfBuildPeriodo(cli_id, rowsScope){
+  // Lista tickets ABERTOS no período (vem de rowsScope = RAW_DATA filtrado por
+  // cliente + mês). Cada ticket vem com status atual: 'em_aberto' ou 'resolvido'.
+  // Usado quando o usuário filtra um mês específico — relatório do MÊS, não
+  // do snapshot atual. Bate com o gráfico "Volume de aberturas por mês".
+  var tix = [];
+  (rowsScope || []).forEach(function(r){
+    if(!r) return;
+    var criado = (r.criado instanceof Date) ? r.criado : (r.criado ? new Date(r.criado) : null);
+    if(!criado) return;
+    var prioN  = _pdfNormPrior(r.prior || r.prioridade);
+    var estado = r.estado || '—';
+    var isFechado = (typeof isClosedAnyState==='function') ? isClosedAnyState(estado) : false;
+    // Aging vivo se em aberto; até fechamento se já fechou
+    var aging;
+    var fechadoDate = null;
+    if(isFechado){
+      // Tenta achar data de fechamento no RAW (campo "fechado" no historico_completo)
+      fechadoDate = r.fechado ? ((r.fechado instanceof Date) ? r.fechado : new Date(r.fechado)) : null;
+      if(fechadoDate && !isNaN(fechadoDate.getTime())){
+        aging = Math.floor((fechadoDate.getTime() - criado.getTime()) / 86400000);
+      } else {
+        aging = _pdfAgingDias(criado);
+      }
+    } else {
+      aging = _pdfAgingDias(criado);
+    }
+    tix.push({
+      num:        r.num || r.ticket,
+      assunto:    r.assunto || '—',
+      estado:     estado,
+      prioridade: prioN,
+      atendente:  r.atend || r.atendente || '—',
+      fila:       r.fila || '—',
+      servico:    r.servico || '',
+      criado:     criado,
+      fechado:    fechadoDate,
+      aging:      aging,
+      isFechado:  isFechado,
+      risco:      isFechado ? 'BAIXO' : _pdfInferRisco(aging, prioN),
+      bloqueio:   isFechado ? 'Resolvido' : _pdfInferBloqueio(estado),
+      owner:      isFechado ? 'GroundWork' : _pdfInferOwner(estado),
+      governanca: isFechado ? 'groundwork' : _pdfClassGovernanca(estado),
+      faixa:      _pdfFaixaAging(aging),
+      eta:        isFechado ? 'Concluído' : _pdfInferETA(estado, aging, prioN)
+    });
+  });
+  // Ordena: em aberto primeiro (por aging desc), fechados depois (por data fechamento desc)
+  tix.sort(function(a,b){
+    if(a.isFechado !== b.isFechado) return a.isFechado ? 1 : -1;
+    return (b.aging||0) - (a.aging||0);
+  });
+  return tix;
+}
 function _pdfPlanoAcao(tix){
   // Gera até 5 movimentos priorizados a partir da carteira em aberto.
   // Regras (em ordem de prioridade):
@@ -9682,9 +9736,24 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
   // STATUS REPORT — formato espelhando o PPT aprovado pelo cliente.
   // Substitui as antigas seções 1-9 (Introdução, KPIs do período, SLA,
   // Categorização, Análise por fila, Detalhamento, Destaques, Comparativo).
-  // Foco em CARTEIRA EM ABERTO (não mais SLA do período).
+  //
+  // DUAS FONTES POSSÍVEIS:
+  //   (A) Filtro = mês específico → _pdfBuildPeriodo(rowsScope)
+  //       Lista os N tickets ABERTOS no mês (inclui já fechados).
+  //       Garante coerência: capa diz "11 do mês" = 11 cards no detalhamento.
+  //   (B) Filtro = "todos"/range → _pdfBuildCarteira(cli_id)
+  //       Snapshot atual da carteira em aberto. Usa TICKETS_ATIVOS_DATA.
   // ════════════════════════════════════════════════════════════════════
-  var _carteira = _pdfBuildCarteira(dRaw.id);
+  var _modoPeriodo = (typeof activeMonth!=='undefined' && activeMonth && activeMonth !== 'all' && !(activeRangeStart && activeRangeEnd));
+  var _carteira;
+  if(_modoPeriodo){
+    _carteira = _pdfBuildPeriodo(dRaw.id, rowsScope);
+  } else {
+    _carteira = _pdfBuildCarteira(dRaw.id);
+  }
+  // Subsets úteis para narrativa/métricas
+  var _emAberto    = _carteira.filter(function(t){return !t.isFechado;});
+  var _resolvidos  = _carteira.filter(function(t){return t.isFechado;});
   if(!_carteira.length){
     H+='<div style="padding:24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;text-align:center;margin-bottom:24px">';
     H+='<div style="font-size:32px;margin-bottom:8px">✅</div>';
@@ -9693,42 +9762,52 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='</div>';
   } else {
     // ── Métricas de carteira ──
-    var _agings = _carteira.map(function(t){return t.aging||0;});
-    var _agingMed = Math.round(_agings.reduce(function(a,b){return a+b;},0)/_agings.length);
-    var _agingMax = Math.max.apply(null,_agings);
-    var _ticketMax = _carteira[0]; // já ordenado por aging desc
+    // Aging/governança fazem sentido só para tickets EM ABERTO. Se modo período,
+    // usa _emAberto (subset); senão, _carteira inteira (que já são todos abertos).
+    var _baseMetricas = _emAberto.length ? _emAberto : _carteira;
+    var _agings = _baseMetricas.map(function(t){return t.aging||0;});
+    var _agingMed = _agings.length ? Math.round(_agings.reduce(function(a,b){return a+b;},0)/_agings.length) : 0;
+    var _agingMax = _agings.length ? Math.max.apply(null,_agings) : 0;
+    var _ticketMax = _baseMetricas[0] || _carteira[0]; // já ordenado por aging desc
     // Governança
     var _govCounts = {groundwork:0,cliente:0,terceiro:0};
-    _carteira.forEach(function(t){_govCounts[t.governanca]=(_govCounts[t.governanca]||0)+1;});
-    var _govForaPct = Math.round(((_govCounts.cliente+_govCounts.terceiro)/_carteira.length)*100);
+    _baseMetricas.forEach(function(t){_govCounts[t.governanca]=(_govCounts[t.governanca]||0)+1;});
+    var _govForaPct = _baseMetricas.length ? Math.round(((_govCounts.cliente+_govCounts.terceiro)/_baseMetricas.length)*100) : 0;
     // Faixas
     var _faixas = {'0-30d':0,'31-60d':0,'61-90d':0,'91+d':0};
-    _carteira.forEach(function(t){_faixas[t.faixa]=(_faixas[t.faixa]||0)+1;});
-    // Plano de ação derivado
-    var _planoAcoes = _pdfPlanoAcao(_carteira);
-    var _top3 = _pdfTop3Prioridades(_carteira, _planoAcoes);
+    _baseMetricas.forEach(function(t){_faixas[t.faixa]=(_faixas[t.faixa]||0)+1;});
+    // Plano de ação derivado — só sobre os em aberto (faz sentido só pra eles)
+    var _planoAcoes = _pdfPlanoAcao(_baseMetricas);
+    var _top3 = _pdfTop3Prioridades(_baseMetricas, _planoAcoes);
 
     // ── Leitura executiva (narrativa de abertura) ──
-    var _critTicket = _carteira.find(function(t){return t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60;});
-    var _emExec = _carteira.filter(function(t){return t.owner==='GroundWork' || t.owner==='GroundWork (em deploy)' || t.owner==='GroundWork (agendado)';}).length;
+    var _critTicket = _baseMetricas.find(function(t){return t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60;});
+    var _emExec = _baseMetricas.filter(function(t){return t.owner==='GroundWork' || t.owner==='GroundWork (em deploy)' || t.owner==='GroundWork (agendado)';}).length;
     var _aguardCli = _govCounts.cliente;
     var _aguardTerc = _govCounts.terceiro;
-    var _leitura = 'A carteira do <strong>'+d.nome+'</strong> tem <strong>'+_carteira.length+' chamado(s) em aberto</strong> no fechamento de '+mesLabel+'. ';
+    var _leitura;
+    if(_modoPeriodo){
+      _leitura = '<strong>'+d.nome+'</strong> teve <strong>'+_carteira.length+' chamado(s) abertos</strong> em '+mesLabel;
+      if(_resolvidos.length>0) _leitura += ' — <strong>'+_resolvidos.length+'</strong> j'+(_resolvidos.length===1?'á foi':'á foram')+' resolvido(s) e <strong>'+_emAberto.length+'</strong> seguem em aberto';
+      _leitura += '. ';
+    } else {
+      _leitura = 'A carteira do <strong>'+d.nome+'</strong> tem <strong>'+_carteira.length+' chamado(s) em aberto</strong> no fechamento de '+mesLabel+'. ';
+    }
     var _partesGov = [];
     if(_emExec>0)    _partesGov.push('<strong>'+_emExec+'</strong> sob execução direta da GroundWork');
     if(_aguardCli>0) _partesGov.push('<strong>'+_aguardCli+'</strong> aguardando retorno do cliente');
     if(_aguardTerc>0)_partesGov.push('<strong>'+_aguardTerc+'</strong> em terceiros');
-    if(_partesGov.length){
-      _leitura += _partesGov.join(', ').replace(/, ([^,]*)$/, ' e $1') + '. ';
+    if(_partesGov.length && _emAberto.length){
+      _leitura += 'Dos em aberto: ' + _partesGov.join(', ').replace(/, ([^,]*)$/, ' e $1') + '. ';
     }
-    if(_govForaPct>=50){
-      _leitura += '<strong>'+_govForaPct+'% da carteira está fora da governança GW</strong>. ';
+    if(_govForaPct>=50 && _emAberto.length){
+      _leitura += '<strong>'+_govForaPct+'%</strong> da carteira ativa está fora da governança GW. ';
     }
     if(_critTicket){
       _leitura += 'O risco crítico é o <strong>#'+String(_critTicket.num).slice(-8)+'</strong> ('+_critTicket.aging+' dias em aberto, prioridade Muito Alta), que requer ação técnica imediata.';
     } else if(_agingMax>60){
       _leitura += 'Maior aging da carteira: <strong>'+_agingMax+' dias</strong>. Revisar bloqueios técnicos com a equipe.';
-    } else {
+    } else if(_emAberto.length){
       _leitura += 'Nenhum caso em estado crítico de aging.';
     }
 
@@ -9746,8 +9825,13 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     H+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">';
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid #1a2744">';
     H+='<div style="font-size:36px;font-weight:900;color:#1a2744;line-height:1">'+_carteira.length+'</div>';
-    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Chamados em aberto</div>';
-    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">no fechamento de '+mesLabel+'</div>';
+    if(_modoPeriodo){
+      H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Chamados no período</div>';
+      H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">'+_emAberto.length+' em aberto · '+_resolvidos.length+' resolvido(s)</div>';
+    } else {
+      H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Chamados em aberto</div>';
+      H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">no fechamento de '+mesLabel+'</div>';
+    }
     H+='</div>';
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid #E8622A">';
     H+='<div style="font-size:36px;font-weight:900;color:#E8622A;line-height:1">'+_agingMed+'</div>';
@@ -9793,7 +9877,10 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     // SEÇÃO 2: ANÁLISE DA CARTEIRA (bloqueio + faixas + tendência)
     // ══════════════════════════════════════════════════
     H+='<div class="section" style="page-break-after:always">';
-    H+='<div class="sec-header"><div class="sec-num">2</div><div class="sec-title">Análise da carteira</div><div class="sec-sub">Como os '+_carteira.length+' chamados se distribuem</div></div>';
+    var _subSecAnalise = _modoPeriodo
+      ? 'Distribuição dos '+_baseMetricas.length+' ainda em aberto (de '+_carteira.length+' do período)'
+      : 'Como os '+_carteira.length+' chamados se distribuem';
+    H+='<div class="sec-header"><div class="sec-num">2</div><div class="sec-title">Análise da carteira</div><div class="sec-sub">'+_subSecAnalise+'</div></div>';
 
     // Bloqueio por responsabilidade
     H+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">';
@@ -9805,7 +9892,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       {label:'Terceiros (fora da gov.)',  val:_govCounts.terceiro,   color:'#9ca3af'}
     ];
     _govBars.forEach(function(b){
-      var pct = Math.round(b.val/_carteira.length*100);
+      var pct = _baseMetricas.length ? Math.round(b.val/_baseMetricas.length*100) : 0;
       H+='<div style="margin-bottom:10px">';
       H+='<div style="display:flex;justify-content:space-between;font-size:11.5px;color:#374151;margin-bottom:4px"><span><strong>'+b.label+'</strong></span><span style="font-weight:700">'+b.val+' ('+pct+'%)</span></div>';
       H+='<div style="background:#e5e7eb;border-radius:4px;height:10px;overflow:hidden"><div style="background:'+b.color+';height:100%;width:'+pct+'%"></div></div>';
@@ -9831,7 +9918,7 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       H+='</div>';
     });
     H+='</div>';
-    H+='<div style="font-size:10.5px;color:#9ca3af;margin-top:10px;line-height:1.5">Distribuição dos '+_carteira.length+' chamados em aberto por tempo desde a abertura.</div>';
+    H+='<div style="font-size:10.5px;color:#9ca3af;margin-top:10px;line-height:1.5">Distribuição dos '+_baseMetricas.length+' chamado(s) ainda em aberto por tempo desde a abertura.</div>';
     H+='</div>';
     H+='</div>'; // /grid
 
@@ -9934,19 +10021,32 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
     // SEÇÃO 4: CARDS INDIVIDUAIS (um por chamado em aberto)
     // ══════════════════════════════════════════════════
     H+='<div class="section">';
-    H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_carteira.length+' chamado(s) em aberto hoje — 1 card por ticket</div></div>';
-    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">Mostra apenas os <strong>'+_carteira.length+' chamado(s) ainda ativos</strong> no fechamento do relatório (não os que foram abertos e já fechados no mês). Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS — sem edição manual.</p>';
+    var _subDetalhe = _modoPeriodo
+      ? _carteira.length+' chamado(s) abertos em '+mesLabel+' ('+_emAberto.length+' ainda ativos · '+_resolvidos.length+' resolvido(s))'
+      : _carteira.length+' chamado(s) em aberto hoje — 1 card por ticket';
+    H+='<div class="sec-header"><div class="sec-num">4</div><div class="sec-title">Detalhamento por chamado</div><div class="sec-sub">'+_subDetalhe+'</div></div>';
+    var _introDetalhe = _modoPeriodo
+      ? 'Lista <strong>todos os '+_carteira.length+' chamado(s)</strong> abertos em '+mesLabel+' com seu status atual. Cards verdes "RESOLVIDO" já foram fechados; cards normais continuam em aberto. Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS — sem edição manual.'
+      : 'Mostra apenas os <strong>'+_carteira.length+' chamado(s) ainda ativos</strong> no fechamento do relatório (não os que foram abertos e já fechados no mês). Status, bloqueio, owner e próxima ação derivados de regras determinísticas sobre os dados do OTRS — sem edição manual.';
+    H+='<p style="font-size:11.5px;color:#6b7280;margin-bottom:14px;line-height:1.6">'+_introDetalhe+'</p>';
 
     _carteira.forEach(function(t, idx){
-      var statusTxt = _pdfGenStatusAuto(t.estado, t.criado, t.aging, t.atendente, t.prioridade, t.assunto);
-      var proxAcao  = _pdfGenProximaAcaoAuto(t.estado, t.aging, t.prioridade);
-      var urgentTag = (t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60) ? ' <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:4px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">URGENTE</span>' : '';
+      var isFechado = t.isFechado === true;
+      var statusTxt = isFechado
+        ? 'Resolvido em '+_pdfFmtDataPtBr(t.fechado||t.criado)+' — chamado fechado com sucesso após '+(t.aging!=null?t.aging+' dias':'período não medido')+'.'
+        : _pdfGenStatusAuto(t.estado, t.criado, t.aging, t.atendente, t.prioridade, t.assunto);
+      var proxAcao  = isFechado
+        ? 'Nenhuma ação pendente — chamado concluído.'
+        : _pdfGenProximaAcaoAuto(t.estado, t.aging, t.prioridade);
+      var urgentTag = (!isFechado && t.risco==='ALTO' && t.prioridade==='Muito Alta' && t.aging>60) ? ' <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:4px;background:#dc2626;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">URGENTE</span>' : '';
+      var resolvedTag = isFechado ? ' <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:4px;background:#16a34a;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em">RESOLVIDO</span>' : '';
       var filaShow = t.fila || t.servico || '—';
-      H+='<div class="det-card">';
+      var cardBg = isFechado ? 'background:#f0fdf4;border-color:#bbf7d0;' : '';
+      H+='<div class="det-card" style="'+cardBg+'">';
       H+='<div class="det-hd">';
-      H+='<div><div class="det-tk">#'+t.num+'</div><div class="det-meta">Chamado '+(idx+1)+' de '+_carteira.length+' · Aberto em '+_pdfFmtDataPtBr(t.criado)+' · '+filaShow+'</div></div>';
-      H+='<div class="det-aging"><div class="det-aging-num">'+(t.aging!=null?t.aging+'d':'—')+'</div><div class="det-aging-lbl">Aging</div></div>';
-      H+='<div><span class="det-risk det-risk-'+t.risco+'">Risco '+t.risco+'</span>'+urgentTag+'</div>';
+      H+='<div><div class="det-tk">#'+t.num+'</div><div class="det-meta">Chamado '+(idx+1)+' de '+_carteira.length+' · Aberto em '+_pdfFmtDataPtBr(t.criado)+' · '+filaShow+(isFechado && t.fechado?' · Fechado em '+_pdfFmtDataPtBr(t.fechado):'')+'</div></div>';
+      H+='<div class="det-aging"><div class="det-aging-num">'+(t.aging!=null?t.aging+'d':'—')+'</div><div class="det-aging-lbl">'+(isFechado?'Solução':'Aging')+'</div></div>';
+      H+='<div>'+(isFechado ? '<span class="det-risk det-risk-BAIXO">Risco BAIXO</span>' : '<span class="det-risk det-risk-'+t.risco+'">Risco '+t.risco+'</span>')+urgentTag+resolvedTag+'</div>';
       H+='</div>';
       H+='<div class="det-ttl">'+(t.assunto||'—')+'</div>';
       H+='<div class="det-body">';
