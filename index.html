@@ -847,6 +847,191 @@ input[type=file]{display:none}
 .tb-settings-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center}
 .tb-settings-btn:hover{color:var(--text);background:var(--bg3)}
 .tb-settings-btn svg{width:16px;height:16px}
+.tb-logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:all .15s;display:flex;align-items:center;margin-left:2px}
+.tb-logout-btn:hover{color:#ef4444;background:var(--bg3)}
+.tb-logout-btn svg{width:16px;height:16px}
+/* ── MODO ESPELHO (gestor visualizando atendente) ─────────────── */
+body.espelho-mode .topbar{display:flex!important}
+body.espelho-mode .sidebar{display:flex!important}
+body.espelho-mode .app{padding-top:60px!important}
+body.espelho-mode .main{margin-left:240px!important}
+body.espelho-mode .tb-mode,
+body.espelho-mode .tb-ai-badge,
+body.espelho-mode .tb-alerts > :not(.tb-filter-chip),
+body.espelho-mode #notif-btn{display:none!important}
+body.espelho-mode #fs-btn,body.espelho-mode #rpt-btn{display:none!important}
+/* topbar bonita também pro modo atendente (já tinha o esqueleto) */
+body.atendente-mode .app{padding-top:60px!important}
+/* ── MODO TRIAGEM (sidebar + abas próprias) ────────────────── */
+body.triagem-mode .tb-mode,
+body.triagem-mode .tb-alerts,
+body.triagem-mode #notif-btn,
+body.triagem-mode .tb-ai-badge,
+body.triagem-mode #gw-user-pill,
+body.triagem-mode .tb-settings-btn{display:none!important}
+body.triagem-mode #nav-op,
+body.triagem-mode #nav-cli,
+body.triagem-mode #nav-cs,
+body.triagem-mode #nav-rg,
+body.triagem-mode #nav-ia,
+body.triagem-mode #nav-acoes,
+body.triagem-mode #nav-atend{display:none!important}
+body.triagem-mode #nav-triagem{display:block!important}
+body.triagem-mode #view-op,
+body.triagem-mode #view-cli,
+body.triagem-mode #view-cs,
+body.triagem-mode #view-rg,
+body.triagem-mode #view-ia,
+body.triagem-mode #view-acoes,
+body.triagem-mode #view-sq,
+body.triagem-mode #view-atend{display:none!important}
+body.triagem-mode #view-triagem{display:block!important}
+body.triagem-mode #sb-import-btn,
+body.triagem-mode #sb-export-csv-btn,
+body.triagem-mode #sel-cliente-global,
+body.triagem-mode .sb-footer > div:first-child,
+body.triagem-mode #mf-op,
+body.triagem-mode #mf-cli,
+body.triagem-mode #mf-cs,
+body.triagem-mode #fs-btn,
+body.triagem-mode #rpt-btn{display:none!important}
+body.triagem-mode .app{padding-top:60px!important}
+#view-triagem{padding:28px 32px;max-width:1280px;margin:0 auto}
+/* Aba 'Fila Agora' reusa a sq-triagem-shell (visual bonito original) */
+body.triagem-mode #view-sq{display:none}
+body.triagem-mode.tr-sec-fila #view-sq{display:block!important;padding:0 32px;max-width:1280px;margin:0 auto}
+body.triagem-mode.tr-sec-fila #view-triagem #tr-fila{display:none!important}
+body.triagem-mode.tr-sec-fila .sq-topbar{display:none!important}
+body.triagem-mode.tr-sec-fila #sq-shell{display:none!important}
+body.triagem-mode.tr-sec-fila #sq-triagem-shell{display:block!important;padding:24px 0!important}
+/* ── HERO IMPACTANTE da squad-view (atendente/espelho/squad) ─── */
+.sq-greeting.sq-hero-mode{display:block;padding:0;margin-bottom:22px}
+.sq-hero-impacto{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(255,112,36,.25);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:30px 38px 28px;min-height:170px}
+.sq-hero-impacto::before{content:"";position:absolute;inset:-2px;pointer-events:none;z-index:0;background:radial-gradient(circle at 92% 30%,rgba(255,112,36,.22),transparent 52%),radial-gradient(circle at 8% 90%,rgba(245,158,11,.10),transparent 45%)}
+.sq-hero-impacto::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(255,255,255,.02) 50%,transparent 58%,transparent 100%);animation:ialScan 10s linear infinite}
+.sq-hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.sq-hero-left{display:flex;flex-direction:column;gap:8px;min-width:0}
+.sq-hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:10px;font-family:var(--mono);color:#FF7A33;text-transform:uppercase;letter-spacing:.18em;font-weight:600;width:fit-content}
+.sq-hero-tag::before{content:"";width:8px;height:8px;border-radius:50%;background:#FF6400;box-shadow:0 0 8px rgba(255,100,0,.7);animation:pulseDot 1.6s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+.sq-hero-title{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:#e5edf5;margin-top:2px}
+.sq-hero-title .sq-hero-name{background:linear-gradient(135deg,#FF6400 0%,#f59e0b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(255,100,0,.35))}
+.sq-hero-sub{font-size:15px;color:#a4b5cb;line-height:1.55;margin-top:4px;font-weight:400}
+.sq-hero-sub strong{color:#e5edf5;font-weight:700}
+.sq-hero-sub .urg{color:#f43f5e;font-weight:700}
+.sq-hero-vibe{display:block;margin-top:6px;font-size:13px;color:#7d8ba0;font-style:italic}
+.sq-hero-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sq-hero-chip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#a4b5cb;background:rgba(40,54,69,.45);border:1px solid rgba(79,142,247,.18);padding:4px 9px;border-radius:6px}
+.sq-hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:14px;min-width:170px}
+.sq-hero-ring{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
+.sq-hero-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.sq-hero-ring svg circle{fill:none;stroke-width:3}
+.sq-hero-ring-bg{stroke:rgba(40,54,69,.5)}
+.sq-hero-ring-fg{stroke:#FF6400;stroke-linecap:round;filter:drop-shadow(0 0 10px rgba(255,100,0,.6))}
+.sq-hero-ring-core{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1}
+.sq-hero-ring-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:#e5edf5;line-height:1}
+.sq-hero-ring-lbl{font-family:var(--mono);font-size:9.5px;color:#a4b5cb;text-transform:uppercase;letter-spacing:.18em;font-weight:600;margin-top:3px}
+.sq-hero-clock{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#e5edf5;letter-spacing:.02em;text-align:right}
+.sq-hero-date{font-family:var(--mono);font-size:10.5px;color:#7d8ba0;text-transform:uppercase;letter-spacing:.14em;margin-top:2px;text-align:right}
+[data-theme="light"] .sq-hero-impacto{background:linear-gradient(135deg,#ffffff 0%,#f8fafc 60%,#eef2f7 100%);box-shadow:0 4px 20px rgba(40,54,69,.08);border-color:rgba(255,112,36,.3)}
+[data-theme="light"] .sq-hero-title{color:#0f172a}
+[data-theme="light"] .sq-hero-sub{color:#64748b}
+[data-theme="light"] .sq-hero-sub strong{color:#0f172a}
+[data-theme="light"] .sq-hero-vibe{color:#94a3b8}
+[data-theme="light"] .sq-hero-chip{color:#64748b;background:rgba(148,163,184,.12);border-color:rgba(79,142,247,.25)}
+[data-theme="light"] .sq-hero-ring-bg{stroke:rgba(148,163,184,.4)}
+[data-theme="light"] .sq-hero-ring-num{color:#0f172a}
+[data-theme="light"] .sq-hero-ring-lbl{color:#64748b}
+[data-theme="light"] .sq-hero-clock{color:#0f172a}
+[data-theme="light"] .sq-hero-date{color:#94a3b8}
+@media (max-width:720px){
+  .sq-hero-grid{grid-template-columns:1fr;gap:18px}
+  .sq-hero-right{flex-direction:row;align-items:center;justify-content:space-between;width:100%}
+  .sq-hero-title{font-size:34px}
+}
+/* ── MODO ATENDENTE INDIVIDUAL ──────────────────────────────── */
+body.atendente-mode .tb-mode,
+body.atendente-mode .tb-alerts,
+body.atendente-mode #notif-btn,
+body.atendente-mode .tb-ai-badge,
+body.atendente-mode #gw-user-pill,
+body.atendente-mode .tb-settings-btn{display:none!important}
+body.atendente-mode #nav-op,
+body.atendente-mode #nav-cli,
+body.atendente-mode #nav-cs,
+body.atendente-mode #nav-rg,
+body.atendente-mode #nav-ia,
+body.atendente-mode #nav-acoes{display:none!important}
+body.atendente-mode #nav-atend{display:block!important}
+body.atendente-mode #view-op,
+body.atendente-mode #view-cli,
+body.atendente-mode #view-cs,
+body.atendente-mode #view-rg,
+body.atendente-mode #view-ia,
+body.atendente-mode #view-acoes{display:none!important}
+/* view-sq e view-atend alternam via classe at-sec-* aplicada no body */
+body.atendente-mode #view-sq{display:none}
+body.atendente-mode #view-atend{display:none}
+body.atendente-mode.at-sec-hoje #view-sq{display:block!important}
+body.atendente-mode.at-sec-hoje .sq-topbar{display:none!important}
+body.atendente-mode:not(.at-sec-hoje) #view-atend{display:block!important}
+body.atendente-mode #sb-import-btn,
+body.atendente-mode #sb-export-csv-btn,
+body.atendente-mode #sel-cliente-global,
+body.atendente-mode .sb-footer > div:first-child,
+body.atendente-mode #mf-op,
+body.atendente-mode #mf-cli,
+body.atendente-mode #mf-cs,
+body.atendente-mode #fs-btn,
+body.atendente-mode #rpt-btn{display:none!important}
+#at-piloto-badge{display:none;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-left:10px}
+body.atendente-mode #at-piloto-badge{display:inline-block!important}
+body.atendente-mode #at-user-pill{display:flex!important}
+#at-user-pill{display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:12px;color:var(--text);margin-left:8px}
+#at-user-pill .at-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+#view-atend{padding:28px 32px;max-width:1280px;margin:0 auto}
+.at-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.at-h-title{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+.at-h-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.at-h-spacer{flex:1}
+.at-h-period{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--bg3);padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
+.at-sec{animation:atFadeIn .2s ease-out}
+@keyframes atFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.at-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.at-kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.at-kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:var(--mono);font-weight:600}
+.at-kpi-val{font-size:28px;font-weight:700;color:var(--text);margin-top:6px;line-height:1.1}
+.at-kpi-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.at-kpi-val.ok{color:var(--ok,#10b981)}
+.at-kpi-val.warn{color:var(--warn,#f59e0b)}
+.at-kpi-val.danger{color:var(--danger,#ef4444)}
+.at-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.at-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.at-ticket{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:12.5px}
+.at-ticket:last-child{border-bottom:none}
+.at-ticket-num{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:90px}
+.at-ticket-title{flex:1;color:var(--text)}
+.at-ticket-meta{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.at-ticket-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--muted);font-family:var(--mono);text-transform:uppercase}
+/* Card rico — usado em Meus Chamados / Meu SLA */
+.at-ticket-rich{display:flex;align-items:center;gap:16px;padding:14px 14px;border-bottom:1px solid var(--border);transition:background .15s}
+.at-ticket-rich:last-child{border-bottom:none}
+.at-ticket-rich:hover{background:rgba(79,142,247,.04)}
+.at-ticket-main{flex:1;min-width:0}
+.at-ticket-line1{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.at-ticket-line1 .at-ticket-num{font-size:11.5px;font-weight:700;color:var(--teal);background:rgba(0,212,168,.10);border:1px solid rgba(0,212,168,.20);border-radius:5px;padding:2px 8px;min-width:auto}
+.at-ticket-line1 .at-ticket-title{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-ticket-cli{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:500}
+.at-ticket-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.at-ticket-tags .at-ticket-tag{padding:3px 8px;font-size:9.5px;font-weight:600;letter-spacing:.04em}
+.at-sla-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:8px}
+.at-sla-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.at-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;font-style:italic}
+.at-dist-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:12.5px}
+.at-dist-lbl{flex:1;color:var(--text)}
+.at-dist-bar{flex:2;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.at-dist-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:3px;transition:width .3s}
+.at-dist-val{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:30px;text-align:right}
 
 .ri-cli-section{margin-top:20px}
 .ri-cli-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
@@ -2181,7 +2366,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_DIRETOR="1ba1e4fe727a4f5b23aec4bb275ba3cb5bb8c14c3e414da6ce3d39b77f3f17ac";var _DIRETOR_LOGINS=["gestor.operacoes"];var _H_TRIAGEM="23c020a6381df65cbfd5570f08c0d61e05929e81718b41083ed2bf290d289f44";var _TRIAGEM_LOGINS=["triagem.gw"];function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("atendLogin",login);}else{sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterDiretor(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","diretor");sessionStorage.removeItem("squadId");sessionStorage.removeItem("sq.atendente");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var loginRaw=(_u&&_u.value||"").trim().toLowerCase();var loginN=_normLogin(loginRaw);if(h===_H_GEST){_enterGestao();}else if(h===_H_DIRETOR&&_DIRETOR_LOGINS.indexOf(loginN)!==-1){_enterDiretor(loginN);}else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
+</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_TRIAGEM="23c020a6381df65cbfd5570f08c0d61e05929e81718b41083ed2bf290d289f44";var _TRIAGEM_LOGINS=["triagem.gw"];function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("mode","atendente");sessionStorage.setItem("atendLogin",login);try{sessionStorage.removeItem("atendNome");}catch(e){}try{localStorage.removeItem("sq.atendente");}catch(e){}}else{sessionStorage.setItem("mode","squad");sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var loginRaw=(_u&&_u.value||"").trim().toLowerCase();var loginN=_normLogin(loginRaw);if(h===_H_GEST){_enterGestao();}else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -2313,7 +2498,15 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="tb-time" id="tb-clock"></div>
     <button class="tb-settings-btn" onclick="openSettings()" title="Configurar metas e SLA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     <div id="gw-user-pill" onclick="changeGWUser()" title="Clique para trocar nome" style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--muted);background:var(--surface2,#22263a);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin-left:2px;white-space:nowrap">👤 <span id="gw-user-name">—</span></div>
+    <div id="at-piloto-badge" title="Login de teste — espelha atendente real">PILOTO</div>
+    <div id="at-user-pill" title="Modo atendente — clique no botão Sair pra deslogar">
+      <div class="at-avatar" id="at-avatar">?</div>
+      <span id="at-user-name">—</span>
+    </div>
     <button class="tb-theme-btn" id="tb-theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
+    <button class="tb-logout-btn" id="tb-logout-btn" onclick="_logoutSquad()" title="Sair e voltar para tela de login" aria-label="Sair">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
   </div>
 </div>
 
@@ -2399,6 +2592,22 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
   <div id="nav-acoes" style="display:none">
     <div class="sb-head">Ações da Operação</div>
     <div class="nav on" style="color:#f43f5e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Painel de Ações</div>
+  </div>
+  <div id="nav-atend" style="display:none">
+    <div class="sb-head">Minha Visão</div>
+    <div class="nav on" data-at-sec="at-hoje" onclick="goSecAtend('at-hoje',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Hoje</div>
+    <div class="nav" data-at-sec="at-dash" onclick="goSecAtend('at-dash',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Meu Dashboard</div>
+    <div class="nav" data-at-sec="at-ch" onclick="goSecAtend('at-ch',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Meus Chamados</div>
+    <div class="nav" data-at-sec="at-sl" onclick="goSecAtend('at-sl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Meu SLA</div>
+    <div class="nav" data-at-sec="at-ev" onclick="goSecAtend('at-ev',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Minha Evolução</div>
+  </div>
+  <div id="nav-triagem" style="display:none">
+    <div class="sb-head">Triagem</div>
+    <div class="nav on" data-tr-sec="tr-fila" onclick="goSecTriagem('tr-fila',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Fila Agora<span class="nav-badge" id="badge-tri-fila">0</span></div>
+    <div class="nav" data-tr-sec="tr-dist" onclick="goSecTriagem('tr-dist',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="12"/><line x1="12" y1="12" x2="20" y2="6"/></svg>Distribuição</div>
+    <div class="nav" data-tr-sec="tr-hoje" onclick="goSecTriagem('tr-hoje',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Atividade Hoje</div>
+    <div class="nav" data-tr-sec="tr-pad" onclick="goSecTriagem('tr-pad',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 12l4-4 4 4 6-6"/></svg>Padrões</div>
+    <div class="nav" data-tr-sec="tr-perf" onclick="goSecTriagem('tr-perf',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>Minha Performance</div>
   </div>
   <div class="sb-footer">
     <div style="margin-bottom:8px">
@@ -3588,6 +3797,12 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
       <span>Trocar squad</span>
     </button>
     <div id="sq-diretor-badge" style="display:none;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase">DIRETOR</div>
+    <div id="sq-atend-badge" style="display:none;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase" title="Login de teste — espelha um atendente real">PILOTO</div>
+    <button id="sq-espelho-voltar" onclick="window.gestaoVoltarAoRanking()" title="Voltar ao ranking de atendentes" style="display:none;background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.3);border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;align-items:center;gap:6px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Voltar ao ranking</span>
+    </button>
+    <div id="sq-espelho-badge" style="display:none;background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;padding:5px 11px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase" title="Você está visualizando como gestor">VISUALIZANDO</div>
     <div class="sq-user" id="sq-user-pill" onclick="onUserPillClick()">
       <div class="sq-user-avatar" id="sq-user-avatar">?</div>
       <span id="sq-user-name">—</span>
@@ -3699,6 +3914,151 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </div>
     <div class="tri-pick-foot">
       <button class="tri-pick-cancel" onclick="_triClosePick()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ VIEW · ATENDENTE INDIVIDUAL ════════════════ -->
+<div id="view-atend" class="view">
+  <div class="at-header">
+    <div>
+      <div class="at-h-title" id="at-h-title">Minha Visão</div>
+      <div class="at-h-sub" id="at-h-sub">—</div>
+    </div>
+    <div class="at-h-spacer"></div>
+    <div class="at-h-period" id="at-h-period">—</div>
+  </div>
+
+  <!-- ── ABA · MEU DASHBOARD ────────────────────────────── -->
+  <div id="at-dash" class="at-sec on">
+    <div class="at-kpi-grid">
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Em aberto agora</div><div class="at-kpi-val" id="at-kpi-aberto">—</div><div class="at-kpi-sub" id="at-kpi-aberto-sub"></div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Resolvidos no mês</div><div class="at-kpi-val" id="at-kpi-resolv">—</div><div class="at-kpi-sub" id="at-kpi-resolv-sub"></div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Taxa de conclusão</div><div class="at-kpi-val" id="at-kpi-taxa">—</div><div class="at-kpi-sub" id="at-kpi-taxa-sub"></div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Tempo médio solução</div><div class="at-kpi-val" id="at-kpi-tsol">—</div><div class="at-kpi-sub" id="at-kpi-tsol-sub"></div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">1ª resposta média</div><div class="at-kpi-val" id="at-kpi-tresp">—</div><div class="at-kpi-sub" id="at-kpi-tresp-sub"></div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Aguardando terceiros</div><div class="at-kpi-val" id="at-kpi-bola">—</div><div class="at-kpi-sub">bola com cliente / fornecedor</div></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Distribuição da sua pilha</div>
+      <div id="at-dash-dist"></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Próximos vencimentos SLA</div>
+      <div id="at-dash-sla"></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · MEUS CHAMADOS ────────────────────────────── -->
+  <div id="at-ch" class="at-sec" style="display:none">
+    <div class="at-card">
+      <div class="at-card-title">Meus chamados em aberto <span id="at-ch-count" style="color:var(--muted);font-size:12px;font-weight:400"></span></div>
+      <div id="at-ch-list"></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · MEU SLA ──────────────────────────────────── -->
+  <div id="at-sl" class="at-sec" style="display:none">
+    <div class="at-card">
+      <div class="at-card-title">Vencimentos SLA — em ordem de urgência</div>
+      <div id="at-sl-list"></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · MINHA EVOLUÇÃO ───────────────────────────── -->
+  <div id="at-ev" class="at-sec" style="display:none">
+    <div class="at-card">
+      <div class="at-card-title">Resolvidos por mês</div>
+      <div style="height:280px"><canvas id="at-ev-chart"></canvas></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Padrão de horário (seg–sex)</div>
+      <div style="overflow-x:auto"><canvas id="at-ev-heat"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ VIEW · TRIAGEM (gestor de fluxo) ════════════════ -->
+<div id="view-triagem" class="view">
+  <div class="at-header">
+    <div>
+      <div class="at-h-title" id="tr-h-title">Triagem · Groundwork</div>
+      <div class="at-h-sub" id="tr-h-sub">Distribuição de chamados sem atendente</div>
+    </div>
+    <div class="at-h-spacer"></div>
+    <div class="at-h-period" id="tr-h-period">—</div>
+  </div>
+
+  <!-- ── ABA · FILA AGORA ───────────────────────────────────── -->
+  <div id="tr-fila" class="at-sec on">
+    <div class="at-kpi-grid">
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Aguardando triagem</div><div class="at-kpi-val" id="tr-kpi-fila">—</div><div class="at-kpi-sub" id="tr-kpi-fila-sub">tickets sem atendente</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Mais antigo</div><div class="at-kpi-val" id="tr-kpi-antigo">—</div><div class="at-kpi-sub">aguardando há</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Triados hoje</div><div class="at-kpi-val" id="tr-kpi-hoje">—</div><div class="at-kpi-sub">processados hoje</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Velocidade média</div><div class="at-kpi-val" id="tr-kpi-vel">—</div><div class="at-kpi-sub">tempo até triagem</div></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Tickets aguardando distribuição <span id="tr-fila-count" style="color:var(--muted);font-size:12px;font-weight:400"></span></div>
+      <div id="tr-fila-list"></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · DISTRIBUIÇÃO ─────────────────────────────────── -->
+  <div id="tr-dist" class="at-sec" style="display:none">
+    <div class="at-card">
+      <div class="at-card-title">Pra onde os tickets foram (últimos 30 dias)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center">
+        <div style="height:240px"><canvas id="tr-dist-chart"></canvas></div>
+        <div id="tr-dist-list"></div>
+      </div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Tendência por dia</div>
+      <div style="height:220px"><canvas id="tr-dist-trend"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · ATIVIDADE HOJE ───────────────────────────────── -->
+  <div id="tr-hoje" class="at-sec" style="display:none">
+    <div class="at-kpi-grid">
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Volume processado</div><div class="at-kpi-val" id="tr-hoje-vol">—</div><div class="at-kpi-sub">tickets triados hoje</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Velocidade média</div><div class="at-kpi-val" id="tr-hoje-vel">—</div><div class="at-kpi-sub">tempo médio até triagem</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Entrada (hoje)</div><div class="at-kpi-val" id="tr-hoje-ent">—</div><div class="at-kpi-sub">novos chegando</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Backlog atual</div><div class="at-kpi-val" id="tr-hoje-bkl">—</div><div class="at-kpi-sub">ainda na fila</div></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Volume por hora do dia</div>
+      <div style="height:240px"><canvas id="tr-hoje-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · PADRÕES ──────────────────────────────────────── -->
+  <div id="tr-pad" class="at-sec" style="display:none">
+    <div class="at-card">
+      <div class="at-card-title">Horários de pico (média histórica)</div>
+      <div style="overflow-x:auto"><canvas id="tr-pad-heat"></canvas></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Top clientes que mais geram tickets</div>
+      <div id="tr-pad-cli"></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Tempo médio que ticket fica na fila antes de ser triado</div>
+      <div id="tr-pad-tempo"></div>
+    </div>
+  </div>
+
+  <!-- ── ABA · MINHA PERFORMANCE ────────────────────────────── -->
+  <div id="tr-perf" class="at-sec" style="display:none">
+    <div class="at-kpi-grid">
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Volume mensal</div><div class="at-kpi-val" id="tr-perf-mes">—</div><div class="at-kpi-sub">tickets processados no mês</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Vel. média (mês)</div><div class="at-kpi-val" id="tr-perf-vel">—</div><div class="at-kpi-sub">tempo médio até triagem</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Maior dia</div><div class="at-kpi-val" id="tr-perf-max">—</div><div class="at-kpi-sub">recorde de volume</div></div>
+      <div class="at-kpi-card"><div class="at-kpi-lbl">Dias trabalhados</div><div class="at-kpi-val" id="tr-perf-dias">—</div><div class="at-kpi-sub">no mês corrente</div></div>
+    </div>
+    <div class="at-card">
+      <div class="at-card-title">Volume mês a mês</div>
+      <div style="height:280px"><canvas id="tr-perf-chart"></canvas></div>
     </div>
   </div>
 </div>
@@ -4133,22 +4493,24 @@ var SQUADS = {
   }
 };
 function getAppMode(){
-  // gestao | squad | diretor
+  // gestao | squad | diretor | atendente
   if(sessionStorage.getItem('k')!=='1') return null;
   return sessionStorage.getItem('mode') || 'gestao'; // legado: sessão sem mode = gestão
 }
 function getSquadId(){ return sessionStorage.getItem('squadId') || null; }
 function getSquadCfg(){ var id=getSquadId(); return id?SQUADS[id]||null:null; }
-// Squad mode OU diretor com squad já escolhida — ambos renderizam a squad view.
+// Squad mode OU diretor OU espelho de gestor — renderizam a squad view com filtro.
 function isSquadMode(){
   var m=getAppMode();
-  if(m!=='squad' && m!=='diretor') return false;
+  if(m!=='squad' && m!=='diretor' && m!=='espelho-gestao') return false;
   return !!getSquadCfg();
 }
-// Diretor: master que pode ver qualquer squad como se fosse atendente dela.
-// Bypassa allowed_logins (ele não é da squad) — usa _DIRETOR_LOGINS no gate.
-function isDiretorMode(){ return getAppMode()==='diretor'; }
-function getDiretorLogin(){ return isDiretorMode() ? (sessionStorage.getItem('atendLogin')||'') : ''; }
+// Modo Diretor removido — ssg2026 (sem usuário) cobre o papel de gestor da squad.
+// Funções abaixo ficam como no-op pra não quebrar referências em outras seções.
+function isDiretorMode(){ return false; }
+function getDiretorLogin(){ return ''; }
+// Atendente individual: login próprio, espelha um atendente real, sem trocar identidade.
+function isAtendenteMode(){ return getAppMode()==='atendente'; }
 
 // ════════════════════════════════════════════════════════════
 // CLOCK
@@ -4969,6 +5331,64 @@ function renderCriticos(){
   }
   document.getElementById('lista-criticos').innerHTML=html;
 }
+
+// ════════════════════════════════════════════════════════════
+// ESPELHAMENTO GESTOR → ATENDENTE
+// Clique no nome do atendente abre a "primeira página individual"
+// (squad-view personalizada) em vez do modal de KPIs.
+// ════════════════════════════════════════════════════════════
+window.gestaoEspelharAtendente = function(nome){
+  if(!nome) return;
+  // Descobre squad principal do atendente pelo allowed_logins
+  var squadId = null;
+  try {
+    var login = (typeof _nameToLogin === 'function') ? _nameToLogin(nome) : '';
+    if(login && typeof SQUADS !== 'undefined'){
+      var keys = Object.keys(SQUADS);
+      for(var i=0;i<keys.length;i++){
+        var s = SQUADS[keys[i]];
+        if(s.tipo === 'triagem') continue;
+        if((s.allowed_logins||[]).indexOf(login) !== -1){ squadId = keys[i]; break; }
+      }
+    }
+  } catch(e){ console.warn('espelhar squad lookup:',e); }
+  // Fallback: se não bateu, usa a primeira squad de SQUADS (provavelmente ssg-protheus)
+  if(!squadId && typeof SQUADS !== 'undefined'){
+    var nonTri = Object.keys(SQUADS).filter(function(k){ return SQUADS[k].tipo !== 'triagem'; });
+    if(nonTri.length) squadId = nonTri[0];
+  }
+  // Salva o modo anterior pra restaurar no voltar
+  var modoAnterior = sessionStorage.getItem('mode') || 'gestao';
+  sessionStorage.setItem('espelho_modo_anterior', modoAnterior);
+  sessionStorage.setItem('espelho_squad_anterior', sessionStorage.getItem('squadId') || '');
+  sessionStorage.setItem('espelho_atend_anterior', sessionStorage.getItem('atendLogin') || '');
+  // Configura sessão de espelho
+  sessionStorage.setItem('k', '1');
+  sessionStorage.setItem('mode', 'espelho-gestao');
+  if(squadId) sessionStorage.setItem('squadId', squadId);
+  sessionStorage.setItem('atendNome', nome);
+  try { localStorage.setItem('sq.atendente', nome); } catch(e){}
+  location.reload();
+};
+
+window.gestaoVoltarAoRanking = function(){
+  var prev = sessionStorage.getItem('espelho_modo_anterior') || 'gestao';
+  var prevSquad = sessionStorage.getItem('espelho_squad_anterior') || '';
+  var prevAtend = sessionStorage.getItem('espelho_atend_anterior') || '';
+  sessionStorage.removeItem('espelho_modo_anterior');
+  sessionStorage.removeItem('espelho_squad_anterior');
+  sessionStorage.removeItem('espelho_atend_anterior');
+  sessionStorage.setItem('mode', prev);
+  if(prevSquad) sessionStorage.setItem('squadId', prevSquad);
+  else sessionStorage.removeItem('squadId');
+  if(prevAtend) sessionStorage.setItem('atendLogin', prevAtend);
+  else sessionStorage.removeItem('atendLogin');
+  sessionStorage.removeItem('atendNome');
+  try { localStorage.removeItem('sq.atendente'); } catch(e){}
+  location.reload();
+};
+
+window.isEspelhoMode = function(){ return sessionStorage.getItem('mode') === 'espelho-gestao'; };
 
 function openAtendProfile(nome) {
   var overlay = document.getElementById('atend-profile-overlay');
@@ -6065,13 +6485,11 @@ function renderTeamCapacity() {
 function renderAt(){
   if(!UTIL_DATA||(Date.now()/1000-UTIL_DATA.generated_at)>300) fetchUtilizacao();
   else renderUtilizacao(UTIL_DATA);
-  // Ranking detalhado é por fila inteira — quando uma fila específica está ativa,
-  // a Carga Atual da Equipe + Carga atual (GWMS) já cobrem o recorte. Esconde o card
-  // pra evitar ruído visual, mas ainda roda renderTeamCapacity (Carga Atual da Equipe).
-  var _filaActive=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
+  // Ranking detalhado sempre visível — quando filtrado por fila, mostra o recorte
+  // (getActiveOP() já filtra os atendentes pela fila ativa). Permite clicar no nome
+  // pra abrir a tela individual mesmo dentro de um filtro de fila.
   var _rankCard=document.getElementById('atend-tbl-card');
-  if(_rankCard) _rankCard.style.display=_filaActive?'none':'';
-  if(_filaActive){ try{renderTeamCapacity();}catch(e){console.warn('cap:',e);} return; }
+  if(_rankCard) _rankCard.style.display='';
   var atendFiltrado=(getActiveOP().atend||OP.atend);
   var top=atendFiltrado.slice(0,10);
   var N=top.map(function(a){return a.n.split(' ')[0];});
@@ -6208,9 +6626,11 @@ function renderAt(){
     });
     td.addEventListener('click',function(){openAtendPendModal(this.dataset.nome);});
   });
-  // Profile click
+  // Click no nome → abre a "primeira página individual" do atendente (estilo squad-view).
+  // Substitui o modal antigo (openAtendProfile) por uma navegação completa,
+  // pra o gestor analisar como o atendente vê o sistema.
   tbl.querySelectorAll('.at-name-link').forEach(function(el){
-    el.addEventListener('click',function(e){e.stopPropagation();openAtendProfile(this.dataset.nome);});
+    el.addEventListener('click',function(e){e.stopPropagation();window.gestaoEspelharAtendente(this.dataset.nome);});
   });
   renderTeamCapacity();
 }
@@ -11397,6 +11817,12 @@ function fetchTicketsAtivos(){
       try{
         if(typeof isSquadMode==='function' && isSquadMode() && typeof renderSquadView==='function'){
           renderSquadView();
+        }
+        if(typeof isAtendenteMode==='function' && isAtendenteMode() && typeof window.renderCurrentAtendenteAba==='function'){
+          window.renderCurrentAtendenteAba();
+        }
+        if(typeof window.isTriagemMode==='function' && window.isTriagemMode() && typeof window.renderCurrentTriagemAba==='function'){
+          window.renderCurrentTriagemAba();
         }
       }catch(e){console.warn('sq re-render:',e);}
       // Re-render da aba Equipes & Cobrança quando dados chegam
@@ -17908,6 +18334,16 @@ function _resolveAtendByLogin(login){
 // Auto-identifica o atendente baseado no login digitado no gate.
 // Chamado no boot quando isSquadMode() e há atendLogin salvo.
 function _tryAutoIdentify(){
+  // Mode 'atendente' OU espelho de gestor: identidade é fixa via sessionStorage.atendNome,
+  // independe de match nome↔login. Garante visão estável mesmo se localStorage zerar.
+  var forcedNome = sessionStorage.getItem('atendNome');
+  if(forcedNome && (
+       (typeof isAtendenteMode === 'function' && isAtendenteMode()) ||
+       (typeof window.isEspelhoMode === 'function' && window.isEspelhoMode())
+     )){
+    setCurrentAtendente(forcedNome);
+    return true;
+  }
   var login = sessionStorage.getItem('atendLogin');
   if(!login) return false;
   // Se já tem atendente salvo e bate com o login, OK
@@ -17942,6 +18378,16 @@ window._logoutSquad = function(){
 // - Veio via login (atendLogin salvo) → Sair (logout)
 // - Sessão legada sem login → modal "Quem é você?" pra trocar
 window.onUserPillClick = function(){
+  // Atendente individual: pill sempre desloga, nunca troca identidade.
+  if(typeof isAtendenteMode === 'function' && isAtendenteMode()){
+    _logoutSquad();
+    return;
+  }
+  // Espelho de gestor: pill volta ao ranking (não desloga, não troca atendente).
+  if(typeof window.isEspelhoMode === 'function' && window.isEspelhoMode()){
+    window.gestaoVoltarAoRanking();
+    return;
+  }
   if(typeof isDiretorMode === 'function' && isDiretorMode()){
     // Modo diretor: limpa atendente atual e reabre picker
     try { localStorage.removeItem('sq.atendente'); } catch(e){}
@@ -18623,39 +19069,66 @@ function renderSquadGreeting(meus){
   var primeiroNome = atend ? atend.split(' ')[0] : 'colega';
   var total = meus ? meus.length : 0;
   // "Precisa de ação agora" = RETORNO CLIENTE + vencidos
-  var precisa = 0;
+  var precisa = 0, bola = 0;
   if(meus){
     meus.forEach(function(t){
-      if((t.estado||'').toUpperCase()==='RETORNO CLIENTE') { precisa++; return; }
+      var est = (t.estado||'').toUpperCase();
+      if(est==='RETORNO CLIENTE') { precisa++; return; }
+      if(est.indexOf('AGUARDANDO')===0 || est==='AGUARDANDO CLIENTE' || est==='AGUARDANDO EXTERNO' || est==='AGUARDANDO FORNECEDOR'){ bola++; return; }
       var sla = _calcSLA(t);
       if(sla.status==='vencido') precisa++;
     });
   }
-  var subMain, vibe = atend ? _vibeFrase(atend) : '';
+  var vibe = atend ? _vibeFrase(atend) : '';
+  var subMain;
   if(!atend){
     subMain = 'Selecione seu nome no topo para ver seus chamados.';
   } else if(total === 0){
-    subMain = '✨ Sua pilha está zerada agora.';
+    subMain = '✨ Sua pilha está zerada agora — bom trabalho!';
   } else if(precisa === 0){
     subMain = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — nada urgente no momento.';
   } else {
-    subMain = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <strong style="color:var(--danger)">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</strong>.';
+    subMain = 'Você tem <strong>'+total+' chamado'+(total!==1?'s':'')+'</strong> — <span class="urg">'+precisa+' precisa'+(precisa!==1?'m':'')+' de ação agora</span>.';
   }
-  var subMsg = subMain + (vibe ? '<span class="sq-greeting-vibe">'+vibe+'</span>' : '');
-  // Chips = filas REAIS do atendente (union de squads onde ele está cadastrado).
+  var subMsg = subMain + (vibe ? '<span class="sq-hero-vibe">'+vibe+'</span>' : '');
   var _chipFilas = atend ? _getAtendenteAllFilas(atend) : cfg.filas;
+
+  // Tag de contexto — depende do modo
+  var tagTxt = 'Sua operação · ao vivo';
+  if(typeof window.isEspelhoMode === 'function' && window.isEspelhoMode()) tagTxt = 'Visualizando como gestor';
+
+  // Ring: SVG decorativo com volta cheia, número grande no centro
+  var R = 66, C = 2 * Math.PI * R;
+  var ringSvg = '<svg viewBox="0 0 150 150">'
+    + '<circle class="sq-hero-ring-bg" cx="75" cy="75" r="'+R+'"/>'
+    + '<circle class="sq-hero-ring-fg" cx="75" cy="75" r="'+R+'" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="0"/>'
+    + '</svg>';
+
+  el.classList.add('sq-hero-mode');
   el.innerHTML =
-    '<div class="sq-greeting-msg">'
-      + '<div class="sq-greeting-hi">' + _saudacao() + ', <span class="sq-greeting-name">' + primeiroNome + '</span></div>'
-      + '<div class="sq-greeting-sub">' + subMsg + '</div>'
-      + '<div class="sq-filas-chips">'
-        + _chipFilas.map(function(f){ return '<span class="sq-fila-chip">'+f+'</span>'; }).join('')
-      + '</div>'
-    + '</div>'
-    + '<div class="sq-greeting-side">'
-      + '<div>'
-        + '<div class="sq-clock" id="sq-clock-tick">'+_fmtClock()+'</div>'
-        + '<div class="sq-clock-date">'+_fmtDateBR()+'</div>'
+    '<div class="sq-hero-impacto">'
+      + '<div class="sq-hero-grid">'
+        + '<div class="sq-hero-left">'
+          + '<div class="sq-hero-tag">'+tagTxt+'</div>'
+          + '<div class="sq-hero-title">' + _saudacao() + ', <span class="sq-hero-name">' + primeiroNome + '</span></div>'
+          + '<div class="sq-hero-sub">' + subMsg + '</div>'
+          + '<div class="sq-hero-chips">'
+            + _chipFilas.map(function(f){ return '<span class="sq-hero-chip">'+f+'</span>'; }).join('')
+          + '</div>'
+        + '</div>'
+        + '<div class="sq-hero-right">'
+          + '<div class="sq-hero-ring">'
+            + ringSvg
+            + '<div class="sq-hero-ring-core">'
+              + '<div class="sq-hero-ring-num">'+total+'</div>'
+              + '<div class="sq-hero-ring-lbl">em aberto</div>'
+            + '</div>'
+          + '</div>'
+          + '<div>'
+            + '<div class="sq-hero-clock" id="sq-clock-tick">'+_fmtClock()+'</div>'
+            + '<div class="sq-hero-date">'+_fmtDateBR()+'</div>'
+          + '</div>'
+        + '</div>'
       + '</div>'
     + '</div>';
 }
@@ -19882,10 +20355,18 @@ window.renderSquadView = function(){
   // Diretor: badge + botão "Trocar squad" visíveis. Pill funciona como switcher
   // de atendente (não logout, pra deixar trocar de quem está visualizando rápido).
   var _isDir = (typeof isDiretorMode === 'function') && isDiretorMode();
+  var _isAtend = (typeof isAtendenteMode === 'function') && isAtendenteMode();
+  var _isEsp = (typeof window.isEspelhoMode === 'function') && window.isEspelhoMode();
   var dSwitch = document.getElementById('sq-diretor-switch');
   var dBadge  = document.getElementById('sq-diretor-badge');
-  if(dSwitch) dSwitch.style.display = _isDir ? 'inline-flex' : 'none';
-  if(dBadge)  dBadge.style.display  = _isDir ? 'inline-block' : 'none';
+  var aBadge  = document.getElementById('sq-atend-badge');
+  var eBadge  = document.getElementById('sq-espelho-badge');
+  var eVolta  = document.getElementById('sq-espelho-voltar');
+  if(dSwitch) dSwitch.style.display = 'none';
+  if(dBadge)  dBadge.style.display  = 'none';
+  if(aBadge)  aBadge.style.display  = 'none';
+  if(eBadge)  eBadge.style.display  = _isEsp ? 'inline-block' : 'none';
+  if(eVolta)  eVolta.style.display  = _isEsp ? 'inline-flex' : 'none';
 
   // Pill: ação muda conforme veio do login (Sair) ou sessão legada (Trocar)
   var hasLogin = !!sessionStorage.getItem('atendLogin');
@@ -20457,7 +20938,16 @@ function bootSquadMode(){
     }
     return;
   }
+  // Se for triagem, delega pro bootTriagemMode (view dedicada com sidebar+abas).
+  // Failsafe: redireciona mesmo se _bootByMode não tiver sido chamado.
+  if(typeof window.isTriagemMode === 'function' && window.isTriagemMode() && typeof bootTriagemMode === 'function'){
+    return bootTriagemMode();
+  }
   document.body.classList.add('squad-mode');
+  // Espelho de gestor: adiciona classe extra que reativa topbar e sidebar
+  if(typeof window.isEspelhoMode === 'function' && window.isEspelhoMode()){
+    document.body.classList.add('espelho-mode');
+  }
   // Dispara fetches dos datasets de alertas (no dash gerencial são lazy via nav).
   // Re-renderiza quando cada um chega.
   function _onArrive(){ if(isSquadMode()) renderBlock6Alertas(); }
@@ -20521,11 +21011,647 @@ function bootSquadMode(){
   }, 30*1000);
 }
 
-// Inicializa após DOM pronto
-if(document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', bootSquadMode);
-} else {
+// ════════════════════════════════════════════════════════════
+// MODO ATENDENTE INDIVIDUAL — boot + render das abas
+// ════════════════════════════════════════════════════════════
+var AT_CUR_SEC = 'at-hoje';
+window.goSecAtend = function(secId, el){
+  AT_CUR_SEC = secId;
+  // Body controla qual view aparece (view-sq pra Hoje, view-atend pras demais)
+  if(secId === 'at-hoje'){
+    document.body.classList.add('at-sec-hoje');
+  } else {
+    document.body.classList.remove('at-sec-hoje');
+  }
+  ['at-dash','at-ch','at-sl','at-ev'].forEach(function(id){
+    var s = document.getElementById(id);
+    if(s) s.style.display = (id===secId) ? 'block' : 'none';
+  });
+  var navs = document.querySelectorAll('#nav-atend .nav');
+  navs.forEach(function(n){ n.classList.remove('on'); });
+  if(el) el.classList.add('on');
+  else {
+    var match = document.querySelector('#nav-atend .nav[data-at-sec="'+secId+'"]');
+    if(match) match.classList.add('on');
+  }
+  // Re-renderiza a aba ativa
+  try { renderAtendenteAba(secId); } catch(e){ console.warn('atend aba:',e); }
+};
+
+function _atGetMeusTickets(){
+  var atend = sessionStorage.getItem('atendNome') || getCurrentAtendente();
+  if(!atend) return [];
+  if(typeof _getAtendenteTickets !== 'function') return [];
+  var DORMENT = (typeof _LIVE_DORMANT_STATES !== 'undefined') ? _LIVE_DORMANT_STATES : [];
+  return _getAtendenteTickets(atend)
+    .filter(function(r){ return DORMENT.indexOf((r.estado||'').toUpperCase()) === -1; });
+}
+
+function _atFmtDate(d){
+  if(!d) return '—';
+  try {
+    var dt = (d instanceof Date) ? d : new Date(d);
+    if(isNaN(dt.getTime())) return String(d);
+    return ('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2);
+  } catch(e){ return String(d); }
+}
+function _atDiasDesde(d){
+  if(!d) return null;
+  try {
+    var dt = (d instanceof Date) ? d : new Date(d);
+    if(isNaN(dt.getTime())) return null;
+    return Math.floor((Date.now() - dt.getTime()) / 86400000);
+  } catch(e){ return null; }
+}
+
+function renderAtDashboard(){
+  var meus = _atGetMeusTickets();
+  var emAberto = meus.length;
+  var bola = meus.filter(function(r){
+    var e = (r.estado||'').toLowerCase();
+    return e.indexOf('aguardando cliente')>=0 || e.indexOf('aguardando fornec')>=0 || e.indexOf('terceiro')>=0;
+  }).length;
+  document.getElementById('at-kpi-aberto').textContent = emAberto;
+  document.getElementById('at-kpi-aberto-sub').textContent = emAberto === 1 ? 'chamado seu' : 'chamados seus';
+  document.getElementById('at-kpi-bola').textContent = bola;
+
+  // KPIs históricos (resolvidos no mês, taxa, tempos) — derivados do histórico se disponível.
+  var atend = sessionStorage.getItem('atendNome') || getCurrentAtendente();
+  var resolv = 0, somaSol = 0, somaResp = 0, nSol = 0, nResp = 0, abertos = 0, fechados = 0;
+  try {
+    var H = (typeof _ATEND_HIST !== 'undefined' && _ATEND_HIST && _ATEND_HIST.rows) ? _ATEND_HIST.rows : [];
+    var hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth();
+    var atendN = atend ? atend.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+    H.forEach(function(r){
+      var rAt = (r.atendente||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      if(rAt !== atendN) return;
+      var dt = r.criado ? new Date(r.criado) : (r.aberto ? new Date(r.aberto) : null);
+      if(!dt || isNaN(dt.getTime())) return;
+      if(dt.getFullYear() === ano && dt.getMonth() === mes){
+        abertos++;
+        var estLow = (r.estado||'').toLowerCase();
+        if(estLow.indexOf('fechado')>=0 || estLow.indexOf('resolvido')>=0){
+          fechados++;
+          resolv++;
+          if(typeof r.tempo_solucao_h === 'number'){ somaSol += r.tempo_solucao_h; nSol++; }
+          else if(typeof r.tsol_h === 'number'){ somaSol += r.tsol_h; nSol++; }
+          if(typeof r.tempo_resposta_min === 'number'){ somaResp += r.tempo_resposta_min; nResp++; }
+          else if(typeof r.tresp_min === 'number'){ somaResp += r.tresp_min; nResp++; }
+        }
+      }
+    });
+  } catch(e){ console.warn('at-dash historico:',e); }
+  document.getElementById('at-kpi-resolv').textContent = resolv;
+  document.getElementById('at-kpi-resolv-sub').textContent = 'no mês corrente';
+  var META_TAXA = 70, META_SOL = 48, META_RESP = 30;
+  try {
+    var cfg = JSON.parse(localStorage.getItem('cfg-metas')||'{}');
+    if(cfg.taxa) META_TAXA = cfg.taxa;
+    if(cfg.sol)  META_SOL  = cfg.sol;
+    if(cfg.resp) META_RESP = cfg.resp;
+  } catch(e){}
+  var taxa = abertos > 0 ? Math.round((fechados/abertos)*100) : 0;
+  var tEl = document.getElementById('at-kpi-taxa');
+  tEl.textContent = abertos > 0 ? (taxa+'%') : '—';
+  tEl.className = 'at-kpi-val ' + (taxa >= META_TAXA ? 'ok' : (taxa >= META_TAXA*0.7 ? 'warn' : 'danger'));
+  document.getElementById('at-kpi-taxa-sub').textContent = 'meta '+META_TAXA+'%';
+  var medSol = nSol > 0 ? (somaSol/nSol).toFixed(1) : null;
+  var sEl = document.getElementById('at-kpi-tsol');
+  sEl.textContent = medSol ? (medSol+'h') : '—';
+  sEl.className = 'at-kpi-val ' + (medSol === null ? '' : (medSol <= META_SOL ? 'ok' : 'warn'));
+  document.getElementById('at-kpi-tsol-sub').textContent = 'meta '+META_SOL+'h';
+  var medResp = nResp > 0 ? Math.round(somaResp/nResp) : null;
+  var rEl = document.getElementById('at-kpi-tresp');
+  rEl.textContent = medResp ? (medResp+'min') : '—';
+  rEl.className = 'at-kpi-val ' + (medResp === null ? '' : (medResp <= META_RESP ? 'ok' : 'warn'));
+  document.getElementById('at-kpi-tresp-sub').textContent = 'meta '+META_RESP+'min';
+
+  // Distribuição da pilha por estado
+  var byEst = {};
+  meus.forEach(function(r){
+    var e = (r.estado||'desconhecido');
+    byEst[e] = (byEst[e]||0) + 1;
+  });
+  var estados = Object.keys(byEst).sort(function(a,b){ return byEst[b]-byEst[a]; });
+  var maxV = estados.length ? byEst[estados[0]] : 1;
+  var distEl = document.getElementById('at-dash-dist');
+  if(!estados.length){
+    distEl.innerHTML = '<div class="at-empty">Você não tem chamados em aberto agora. 🎉</div>';
+  } else {
+    distEl.innerHTML = estados.map(function(e){
+      var v = byEst[e];
+      var pct = Math.round((v/maxV)*100);
+      return '<div class="at-dist-row"><span class="at-dist-lbl">'+e+'</span><span class="at-dist-bar"><span class="at-dist-bar-fill" style="width:'+pct+'%"></span></span><span class="at-dist-val">'+v+'</span></div>';
+    }).join('');
+  }
+
+  // Próximos vencimentos SLA — top 5 mais antigos como proxy
+  var slaEl = document.getElementById('at-dash-sla');
+  var ordenados = meus.slice().sort(function(a,b){
+    var da = (a.criado||a.aberto) ? new Date(a.criado||a.aberto).getTime() : Infinity;
+    var db = (b.criado||b.aberto) ? new Date(b.criado||b.aberto).getTime() : Infinity;
+    return da - db;
+  }).slice(0, 5);
+  if(!ordenados.length){
+    slaEl.innerHTML = '<div class="at-empty">Nenhum chamado em aberto.</div>';
+  } else {
+    slaEl.innerHTML = ordenados.map(function(r){
+      var dias = _atDiasDesde(r.criado||r.aberto);
+      var tag = (dias===null) ? '' : (dias > 7 ? '<span class="at-ticket-tag" style="background:rgba(239,68,68,.15);color:#ef4444">há '+dias+'d</span>' : '<span class="at-ticket-tag">há '+dias+'d</span>');
+      return '<div class="at-ticket"><span class="at-ticket-num">#'+(r.ticket||r.numero||r.id||'?')+'</span><span class="at-ticket-title">'+(r.assunto||r.titulo||'(sem título)')+'</span>'+tag+'</div>';
+    }).join('');
+  }
+}
+
+function renderAtChamados(){
+  var meus = _atGetMeusTickets();
+  var el = document.getElementById('at-ch-list');
+  document.getElementById('at-ch-count').textContent = meus.length ? '('+meus.length+')' : '';
+  if(!meus.length){
+    el.innerHTML = '<div class="at-empty">Você não tem chamados em aberto. Aproveita! 🎉</div>';
+    return;
+  }
+  var ord = meus.slice().sort(function(a,b){
+    var da = (a.criado||a.aberto) ? new Date(a.criado||a.aberto).getTime() : Infinity;
+    var db = (b.criado||b.aberto) ? new Date(b.criado||b.aberto).getTime() : Infinity;
+    return da - db;
+  });
+  el.innerHTML = ord.map(function(r){
+    var dias = (typeof r.idade_dias === 'number') ? r.idade_dias : _atDiasDesde(r.criado||r.aberto);
+    var diasCor = dias > 7 ? 'rgba(239,68,68,.15);color:#ef4444' : (dias > 3 ? 'rgba(245,158,11,.15);color:#f59e0b' : 'rgba(40,54,69,.5);color:var(--muted)');
+    var diasTag = (dias===null||dias===undefined) ? '' : '<span class="at-ticket-tag" style="background:'+diasCor+'">'+dias+'d</span>';
+    var estCor = (r.estado||'').toLowerCase().indexOf('aguardando')>=0 ? 'rgba(245,158,11,.12);color:#f59e0b' : 'rgba(79,142,247,.12);color:var(--blue)';
+    var estTag = r.estado ? '<span class="at-ticket-tag" style="background:'+estCor+'">'+r.estado+'</span>' : '';
+    var filaTag = r.fila ? '<span class="at-ticket-tag">'+r.fila+'</span>' : '';
+    var prioCor = (r.prioridade||'').toLowerCase().indexOf('muito alta')>=0 ? 'rgba(239,68,68,.15);color:#ef4444' : (r.prioridade||'').toLowerCase().indexOf('alta')>=0 ? 'rgba(245,158,11,.15);color:#f59e0b' : '';
+    var prioTag = (r.prioridade && prioCor) ? '<span class="at-ticket-tag" style="background:'+prioCor+'">'+r.prioridade+'</span>' : '';
+    var cliLine = r.cliente ? '<div class="at-ticket-cli">'+r.cliente+'</div>' : '';
+    return '<div class="at-ticket at-ticket-rich">'
+      +'<div class="at-ticket-main">'
+        +'<div class="at-ticket-line1">'
+          +'<span class="at-ticket-num">#'+(r.ticket||r.numero||r.id||'?')+'</span>'
+          +'<span class="at-ticket-title">'+(r.assunto||r.titulo||'(sem título)')+'</span>'
+        +'</div>'
+        +cliLine
+      +'</div>'
+      +'<div class="at-ticket-tags">'+estTag+prioTag+filaTag+diasTag+'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function renderAtSla(){
+  var meus = _atGetMeusTickets();
+  var el = document.getElementById('at-sl-list');
+  if(!meus.length){
+    el.innerHTML = '<div class="at-empty">Sem chamados em aberto — sem SLA a acompanhar.</div>';
+    return;
+  }
+  // Mais antigos primeiro (proxy de risco de SLA)
+  var ord = meus.slice().sort(function(a,b){
+    var da = (a.criado||a.aberto) ? new Date(a.criado||a.aberto).getTime() : Infinity;
+    var db = (b.criado||b.aberto) ? new Date(b.criado||b.aberto).getTime() : Infinity;
+    return da - db;
+  });
+  el.innerHTML = ord.map(function(r){
+    var dias = (typeof r.idade_dias === 'number') ? r.idade_dias : _atDiasDesde(r.criado||r.aberto);
+    var nivel = 'ok';
+    if(dias !== null && dias !== undefined){
+      if(dias > 7) nivel = 'danger';
+      else if(dias > 3) nivel = 'warn';
+    }
+    var cor = nivel==='danger' ? '#ef4444' : (nivel==='warn' ? '#f59e0b' : '#10b981');
+    var lbl = (dias===null||dias===undefined) ? '?' : (dias > 7 ? 'ATRASADO' : (dias > 3 ? 'ATENÇÃO' : 'NO PRAZO'));
+    var slaBar = (dias===null||dias===undefined) ? '' :
+      '<div class="at-sla-bar"><div class="at-sla-bar-fill" style="width:'+Math.min(100,(dias/10)*100)+'%;background:'+cor+'"></div></div>';
+    var cliLine = r.cliente ? '<div class="at-ticket-cli">'+r.cliente+' · aberto em '+_atFmtDate(r.criado||r.aberto)+'</div>' : '<div class="at-ticket-cli">aberto em '+_atFmtDate(r.criado||r.aberto)+'</div>';
+    return '<div class="at-ticket at-ticket-rich">'
+      +'<div class="at-ticket-main">'
+        +'<div class="at-ticket-line1">'
+          +'<span class="at-ticket-num">#'+(r.ticket||r.numero||r.id||'?')+'</span>'
+          +'<span class="at-ticket-title">'+(r.assunto||r.titulo||'(sem título)')+'</span>'
+        +'</div>'
+        +cliLine
+        +slaBar
+      +'</div>'
+      +'<div class="at-ticket-tags">'
+        +'<span class="at-ticket-tag" style="background:rgba('+(nivel==='danger'?'239,68,68':nivel==='warn'?'245,158,11':'16,185,129')+',.15);color:'+cor+'">'+lbl+'</span>'
+        +'<span class="at-ticket-tag" style="background:rgba(40,54,69,.5);color:var(--muted)">'+(dias!==null&&dias!==undefined?dias+'d':'?')+'</span>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function renderAtEvolucao(){
+  var atend = sessionStorage.getItem('atendNome') || getCurrentAtendente();
+  if(!atend) return;
+  var canvas = document.getElementById('at-ev-chart');
+  if(!canvas || typeof Chart === 'undefined') return;
+  // Agrupa fechados por mês do histórico
+  var porMes = {};
+  try {
+    var H = (typeof _ATEND_HIST !== 'undefined' && _ATEND_HIST && _ATEND_HIST.rows) ? _ATEND_HIST.rows : [];
+    var atendN = atend.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    H.forEach(function(r){
+      var rAt = (r.atendente||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+      if(rAt !== atendN) return;
+      var estLow = (r.estado||'').toLowerCase();
+      if(estLow.indexOf('fechado')<0 && estLow.indexOf('resolvido')<0) return;
+      var dt = r.fechado ? new Date(r.fechado) : (r.criado ? new Date(r.criado) : (r.aberto ? new Date(r.aberto) : null));
+      if(!dt || isNaN(dt.getTime())) return;
+      var k = dt.getFullYear()+'-'+('0'+(dt.getMonth()+1)).slice(-2);
+      porMes[k] = (porMes[k]||0) + 1;
+    });
+  } catch(e){ console.warn('at-ev:',e); }
+  var labels = Object.keys(porMes).sort();
+  var data = labels.map(function(k){ return porMes[k]; });
+  if(canvas._atChart){ canvas._atChart.destroy(); }
+  if(!labels.length){
+    var ctxC = canvas.getContext('2d');
+    ctxC.clearRect(0,0,canvas.width,canvas.height);
+    canvas.parentNode.innerHTML = '<div class="at-empty">Sem histórico de chamados resolvidos.</div>';
+    return;
+  }
+  canvas._atChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Resolvidos', data: data, backgroundColor: 'rgba(79,142,247,0.6)', borderColor: 'rgba(79,142,247,1)', borderWidth: 1 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+  });
+}
+
+function renderAtendenteAba(secId){
+  if(secId === 'at-hoje'){
+    // Reusa a squad-view: holofote, pilha, atenção, SLA, blocos
+    if(typeof renderSquadView === 'function'){
+      try { renderSquadView(); } catch(e){ console.warn('renderSquadView:',e); }
+    }
+    return;
+  }
+  if(secId === 'at-dash')      renderAtDashboard();
+  else if(secId === 'at-ch')   renderAtChamados();
+  else if(secId === 'at-sl')   renderAtSla();
+  else if(secId === 'at-ev')   renderAtEvolucao();
+}
+window.renderCurrentAtendenteAba = function(){ renderAtendenteAba(AT_CUR_SEC); };
+
+function renderAtendenteHeader(){
+  var atend = sessionStorage.getItem('atendNome') || getCurrentAtendente() || '—';
+  var login = sessionStorage.getItem('atendLogin') || '';
+  var filas = (typeof _getAtendenteAllFilas === 'function') ? _getAtendenteAllFilas(atend) : [];
+  var hSub = document.getElementById('at-h-sub');
+  if(hSub) hSub.textContent = atend + (filas.length ? ' · Filas: ' + filas.join(' · ') : '');
+  var hTit = document.getElementById('at-h-title');
+  if(hTit) hTit.textContent = 'Olá, ' + (atend.split(' ')[0] || atend);
+  var per = document.getElementById('at-h-period');
+  if(per){
+    var d = new Date();
+    var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    per.textContent = meses[d.getMonth()] + '/' + String(d.getFullYear()).slice(-2);
+  }
+  var pillName = document.getElementById('at-user-name');
+  if(pillName) pillName.textContent = atend;
+  var av = document.getElementById('at-avatar');
+  if(av){
+    var parts = atend.split(' ').filter(Boolean);
+    av.textContent = (parts[0]||'?').charAt(0) + (parts.length>1 ? parts[parts.length-1].charAt(0) : '');
+  }
+}
+
+var _ATEND_HIST = null;
+function _atFetchHistorico(){
+  return fetch('/historico_completo.json?v='+Date.now())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(!d) return;
+      _ATEND_HIST = d;
+      try { renderAtendenteAba(AT_CUR_SEC); } catch(e){}
+    })
+    .catch(function(e){ console.warn('atend hist:',e); });
+}
+
+function bootAtendenteMode(){
+  if(!isAtendenteMode()) return false;
+  document.body.classList.add('atendente-mode');
+  document.body.classList.add('at-sec-hoje'); // aba padrão = Hoje (squad-view)
+  renderAtendenteHeader();
+  // Carrega histórico em paralelo (gráficos e KPIs históricos dependem dele)
+  _atFetchHistorico();
+  // Dispara fetches que a aba 'Hoje' (squad-view) precisa pro bloco "Olha quem voltou"
+  if(typeof fetchSilenciosos === 'function') fetchSilenciosos();
+  if(typeof fetchTriagem === 'function') fetchTriagem();
+  if(typeof fetchReaberturas === 'function') fetchReaberturas();
+  // Tenta renderizar tickets ativos; se ainda não carregaram, repete.
+  // Quando dados chegam, resolve o nome do atendente pelo login (_tryAutoIdentify
+  // faz match com o roster vindo dos próprios tickets), atualiza header e renderiza.
+  var tryRender = function(retries){
+    if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA){
+      if(typeof _tryAutoIdentify === 'function') _tryAutoIdentify();
+      renderAtendenteHeader();
+      renderAtendenteAba(AT_CUR_SEC);
+    } else if(retries > 0){
+      setTimeout(function(){ tryRender(retries-1); }, 300);
+    } else {
+      renderAtendenteAba(AT_CUR_SEC);
+    }
+  };
+  tryRender(20);
+  // Refresh visual a cada 1min (dados sincronizam a cada 10min via cron)
+  setInterval(function(){
+    if(isAtendenteMode()) renderAtendenteAba(AT_CUR_SEC);
+  }, 60*1000);
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════
+// MODO TRIAGEM — sidebar com 5 abas (Fila, Distribuição, Hoje, Padrões, Performance)
+// ════════════════════════════════════════════════════════════
+window.isTriagemMode = function(){
+  return getAppMode() === 'squad' && getSquadId() === 'triagem';
+};
+
+var TR_CUR_SEC = 'tr-fila';
+window.goSecTriagem = function(secId, el){
+  TR_CUR_SEC = secId;
+  // 'tr-fila' usa o visual da sq-triagem-shell original — controla via classe no body
+  if(secId === 'tr-fila'){
+    document.body.classList.add('tr-sec-fila');
+  } else {
+    document.body.classList.remove('tr-sec-fila');
+  }
+  ['tr-fila','tr-dist','tr-hoje','tr-pad','tr-perf'].forEach(function(id){
+    var s = document.getElementById(id);
+    if(s) s.style.display = (id===secId) ? 'block' : 'none';
+  });
+  var navs = document.querySelectorAll('#nav-triagem .nav');
+  navs.forEach(function(n){ n.classList.remove('on'); });
+  if(el) el.classList.add('on');
+  else {
+    var match = document.querySelector('#nav-triagem .nav[data-tr-sec="'+secId+'"]');
+    if(match) match.classList.add('on');
+  }
+  try { renderTriagemAba(secId); } catch(e){ console.warn('tr aba:',e); }
+};
+
+function _trGetTicketsAguardando(){
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows) return [];
+  var fNoc = (typeof FILA_TRIAGEM !== 'undefined') ? FILA_TRIAGEM : 'NOC';
+  var atPh = (typeof TRIAGEM_ATENDENTE_PLACEHOLDER !== 'undefined') ? TRIAGEM_ATENDENTE_PLACEHOLDER : '';
+  var stN  = (typeof TRIAGEM_ESTADO_NOVO !== 'undefined') ? TRIAGEM_ESTADO_NOVO : 'NEW';
+  return data.rows.filter(function(r){
+    if(r.fila !== fNoc) return false;
+    if(atPh && r.atendente !== atPh) return false;
+    return (r.estado||'').toUpperCase() === stN;
+  });
+}
+
+function renderTrFila(){
+  // Aba 'Fila Agora' reusa renderTriagemView original (visual "Pra onde vai?")
+  if(typeof renderTriagemView === 'function'){
+    try { renderTriagemView(); } catch(e){ console.warn('renderTriagemView:',e); }
+  }
+  // Atualiza apenas o badge no menu (KPIs dessa aba sumiram — vivem agora dentro da view antiga)
+  var tickets = _trGetTicketsAguardando();
+  var badge = document.getElementById('badge-tri-fila');
+  if(badge) badge.textContent = tickets.length;
+  return;
+}
+function _renderTrFilaCardsLegacy(){
+  // Mantido caso queiramos reativar — não usado por padrão
+  var tickets = _trGetTicketsAguardando();
+  tickets.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+  var el = document.getElementById('tr-fila-list');
+  if(!el) return;
+  if(!tickets.length){
+    el.innerHTML = '<div class="at-empty">Tudo triado! Fila zerada. 🎉</div>';
+    return;
+  }
+  el.innerHTML = tickets.map(function(r){
+    var dias = (typeof r.idade_dias === 'number') ? r.idade_dias : _atDiasDesde(r.criado||r.aberto);
+    var diasCor = dias > 2 ? 'rgba(239,68,68,.15);color:#ef4444' : (dias > 1 ? 'rgba(245,158,11,.15);color:#f59e0b' : 'rgba(16,185,129,.15);color:#10b981');
+    var prioCor = (r.prioridade||'').toLowerCase().indexOf('muito alta')>=0 ? 'rgba(239,68,68,.15);color:#ef4444' : '';
+    var prioTag = (r.prioridade && prioCor) ? '<span class="at-ticket-tag" style="background:'+prioCor+'">'+r.prioridade+'</span>' : '';
+    var cliLine = r.cliente ? '<div class="at-ticket-cli">'+r.cliente+' · '+_atFmtDate(r.criado)+'</div>' : '<div class="at-ticket-cli">'+_atFmtDate(r.criado)+'</div>';
+    return '<div class="at-ticket at-ticket-rich">'
+      +'<div class="at-ticket-main">'
+        +'<div class="at-ticket-line1">'
+          +'<span class="at-ticket-num">#'+(r.ticket||'?')+'</span>'
+          +'<span class="at-ticket-title">'+(r.assunto||'(sem título)')+'</span>'
+        +'</div>'
+        +cliLine
+      +'</div>'
+      +'<div class="at-ticket-tags">'
+        +prioTag
+        +'<span class="at-ticket-tag" style="background:'+diasCor+'">'+(dias!==null&&dias!==undefined?dias+'d':'?')+'</span>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function renderTrDist(){
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows) return;
+  var fNoc = (typeof FILA_TRIAGEM !== 'undefined') ? FILA_TRIAGEM : 'NOC';
+  var filaToSquad = {};
+  if(typeof SQUADS !== 'undefined'){
+    Object.keys(SQUADS).forEach(function(id){
+      if(SQUADS[id].tipo === 'triagem') return;
+      (SQUADS[id].filas||[]).forEach(function(f){ filaToSquad[f.toUpperCase()] = SQUADS[id].nome; });
+    });
+  }
+  var bySquad = {};
+  data.rows.forEach(function(r){
+    if(r.fila === fNoc) return;
+    var sq = filaToSquad[(r.fila||'').toUpperCase()] || 'Outras';
+    bySquad[sq] = (bySquad[sq]||0) + 1;
+  });
+  var labels = Object.keys(bySquad).sort(function(a,b){ return bySquad[b]-bySquad[a]; });
+  var counts = labels.map(function(k){ return bySquad[k]; });
+  var total = counts.reduce(function(s,v){return s+v;},0);
+  var colors = ['#FF6400','#4f8ef7','#22d3ee','#a855f7','#10b981','#f59e0b','#f43f5e','#94a3b8'];
+
+  var canvas = document.getElementById('tr-dist-chart');
+  if(canvas && typeof Chart !== 'undefined'){
+    if(canvas._trChart){ canvas._trChart.destroy(); }
+    canvas._trChart = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: counts, backgroundColor: colors, borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#a4b5cb', font: { size: 11 }, padding: 8, boxWidth: 12 } } } }
+    });
+  }
+
+  var listEl = document.getElementById('tr-dist-list');
+  if(listEl){
+    if(!labels.length){
+      listEl.innerHTML = '<div class="at-empty">Sem dados ainda.</div>';
+    } else {
+      listEl.innerHTML = labels.map(function(l, i){
+        var v = bySquad[l];
+        var pct = total ? Math.round((v/total)*100) : 0;
+        return '<div class="at-dist-row">'
+          +'<span class="at-dist-lbl">'+l+'</span>'
+          +'<span class="at-dist-bar"><span class="at-dist-bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+'"></span></span>'
+          +'<span class="at-dist-val">'+v+' · '+pct+'%</span>'
+        +'</div>';
+      }).join('');
+    }
+  }
+
+  var trendCanvas = document.getElementById('tr-dist-trend');
+  if(trendCanvas && typeof Chart !== 'undefined'){
+    if(trendCanvas._trChart){ trendCanvas._trChart.destroy(); }
+    var ctxT = trendCanvas.getContext('2d');
+    ctxT.clearRect(0, 0, trendCanvas.width, trendCanvas.height);
+    ctxT.fillStyle = '#7d8ba0';
+    ctxT.font = '12px Inter, system-ui, sans-serif';
+    ctxT.textAlign = 'center';
+    ctxT.fillText('Tendência diária — disponível com mais histórico de triagem', trendCanvas.width/2, trendCanvas.height/2);
+  }
+}
+
+function renderTrHoje(){
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows) return;
+  var fNoc = (typeof FILA_TRIAGEM !== 'undefined') ? FILA_TRIAGEM : 'NOC';
+  var atPh = (typeof TRIAGEM_ATENDENTE_PLACEHOLDER !== 'undefined') ? TRIAGEM_ATENDENTE_PLACEHOLDER : '';
+
+  var hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth(), dia = hoje.getDate();
+  var entradasHoje = 0, emFila = 0;
+  var porHora = new Array(24).fill(0);
+  data.rows.forEach(function(r){
+    var dt = r.criado ? new Date(r.criado) : null;
+    if(dt && dt.getFullYear()===ano && dt.getMonth()===mes && dt.getDate()===dia){
+      entradasHoje++;
+      porHora[dt.getHours()]++;
+    }
+    if(r.fila === fNoc && (!atPh || r.atendente === atPh)) emFila++;
+  });
+
+  document.getElementById('tr-hoje-ent').textContent = entradasHoje;
+  document.getElementById('tr-hoje-bkl').textContent = emFila;
+  document.getElementById('tr-hoje-vol').textContent = '—';
+  document.getElementById('tr-hoje-vel').textContent = '—';
+
+  var canvas = document.getElementById('tr-hoje-chart');
+  if(canvas && typeof Chart !== 'undefined'){
+    if(canvas._trChart){ canvas._trChart.destroy(); }
+    var labels = porHora.map(function(_, h){ return (h<10?'0':'')+h+'h'; });
+    canvas._trChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Entradas', data: porHora, backgroundColor: 'rgba(255,100,0,0.55)', borderColor: 'rgba(255,100,0,1)', borderWidth: 1, borderRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0, color: '#7d8ba0' } }, x: { ticks: { color: '#7d8ba0' } } } }
+    });
+  }
+}
+
+function renderTrPad(){
+  var data = (typeof TICKETS_ATIVOS_DATA !== 'undefined') ? TICKETS_ATIVOS_DATA : null;
+  if(!data || !data.rows) return;
+  var byCli = {};
+  data.rows.forEach(function(r){ if(r.cliente) byCli[r.cliente] = (byCli[r.cliente]||0)+1; });
+  var top = Object.keys(byCli).sort(function(a,b){return byCli[b]-byCli[a];}).slice(0,10);
+  var maxV = top.length ? byCli[top[0]] : 1;
+  var cliEl = document.getElementById('tr-pad-cli');
+  if(cliEl){
+    if(!top.length){
+      cliEl.innerHTML = '<div class="at-empty">Sem dados ainda.</div>';
+    } else {
+      cliEl.innerHTML = top.map(function(c){
+        var v = byCli[c];
+        var pct = Math.round((v/maxV)*100);
+        return '<div class="at-dist-row">'
+          +'<span class="at-dist-lbl">'+c+'</span>'
+          +'<span class="at-dist-bar"><span class="at-dist-bar-fill" style="width:'+pct+'%"></span></span>'
+          +'<span class="at-dist-val">'+v+'</span>'
+        +'</div>';
+      }).join('');
+    }
+  }
+  var tempoEl = document.getElementById('tr-pad-tempo');
+  if(tempoEl){
+    tempoEl.innerHTML = '<div class="at-empty">Métrica em construção — depende de timestamps detalhados de triagem.</div>';
+  }
+  // Heatmap horário — placeholder simples
+  var heatCanvas = document.getElementById('tr-pad-heat');
+  if(heatCanvas){
+    var ctxH = heatCanvas.getContext('2d');
+    ctxH.clearRect(0,0,heatCanvas.width,heatCanvas.height);
+    ctxH.fillStyle = '#7d8ba0';
+    ctxH.font = '12px Inter, system-ui, sans-serif';
+    ctxH.textAlign = 'center';
+    ctxH.fillText('Heatmap de pico — em construção', heatCanvas.width/2, heatCanvas.height/2);
+  }
+}
+
+function renderTrPerf(){
+  ['tr-perf-mes','tr-perf-vel','tr-perf-max','tr-perf-dias'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.textContent = '—';
+  });
+  var canvas = document.getElementById('tr-perf-chart');
+  if(canvas){
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#7d8ba0';
+    ctx.font = '12px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Performance histórica — disponível quando houver histórico de triagem', canvas.width/2, canvas.height/2);
+  }
+}
+
+function renderTriagemAba(secId){
+  if(secId === 'tr-fila')      renderTrFila();
+  else if(secId === 'tr-dist') renderTrDist();
+  else if(secId === 'tr-hoje') renderTrHoje();
+  else if(secId === 'tr-pad')  renderTrPad();
+  else if(secId === 'tr-perf') renderTrPerf();
+}
+window.renderCurrentTriagemAba = function(){ renderTriagemAba(TR_CUR_SEC); };
+
+function renderTriagemHeader(){
+  var per = document.getElementById('tr-h-period');
+  if(per){
+    var d = new Date();
+    var meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    per.textContent = meses[d.getMonth()] + '/' + String(d.getFullYear()).slice(-2);
+  }
+}
+
+function bootTriagemMode(){
+  if(!window.isTriagemMode()) return false;
+  document.body.classList.add('triagem-mode');
+  document.body.classList.add('tr-sec-fila'); // aba padrão = Fila Agora (visual bonito)
+  renderTriagemHeader();
+  if(typeof fetchTicketsAtivos === 'function') fetchTicketsAtivos();
+  // Dispara fetches que renderTriagemView precisa (sinais de alerta no rodapé)
+  if(typeof fetchSilenciosos === 'function') fetchSilenciosos();
+  if(typeof fetchTriagem === 'function') fetchTriagem();
+  if(typeof fetchReaberturas === 'function') fetchReaberturas();
+  var tryRender = function(retries){
+    if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA){
+      renderTriagemAba(TR_CUR_SEC);
+    } else if(retries > 0){
+      setTimeout(function(){ tryRender(retries-1); }, 300);
+    } else {
+      renderTriagemAba(TR_CUR_SEC);
+    }
+  };
+  tryRender(20);
+  setInterval(function(){
+    if(window.isTriagemMode()) renderTriagemAba(TR_CUR_SEC);
+  }, 60*1000);
+  return true;
+}
+
+// Inicializa após DOM pronto — direciona pra boot do modo ativo
+function _bootByMode(){
+  if(window.isTriagemMode()){ bootTriagemMode(); return; }
+  if(isAtendenteMode()){ bootAtendenteMode(); return; }
   bootSquadMode();
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', _bootByMode);
+} else {
+  _bootByMode();
 }
 })();
 </script>
