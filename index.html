@@ -875,7 +875,7 @@ body.atendente-mode .topbar,
 body.triagem-mode .topbar{display:flex!important}
 /* ── MODO TRIAGEM (sidebar + abas próprias) ────────────────── */
 body.triagem-mode .tb-mode,
-body.triagem-mode .tb-alerts,
+body.triagem-mode .tb-filter-chip,
 body.triagem-mode #notif-btn,
 body.triagem-mode .tb-ai-badge,
 body.triagem-mode #gw-user-pill,
@@ -962,11 +962,13 @@ body.triagem-mode.tr-sec-fila #sq-triagem-shell{display:block!important;padding:
 }
 /* ── MODO ATENDENTE INDIVIDUAL ──────────────────────────────── */
 body.atendente-mode .tb-mode,
-body.atendente-mode .tb-alerts,
+body.atendente-mode .tb-filter-chip,
 body.atendente-mode #notif-btn,
 body.atendente-mode .tb-ai-badge,
 body.atendente-mode #gw-user-pill,
 body.atendente-mode .tb-settings-btn{display:none!important}
+/* Bug fix: .tb-alerts é o wrapper que contém tb-clock, at-user-pill, theme, logout —
+   NÃO esconder o wrapper, apenas filhos específicos acima. */
 body.atendente-mode #nav-op,
 body.atendente-mode #nav-cli,
 body.atendente-mode #nav-cs,
