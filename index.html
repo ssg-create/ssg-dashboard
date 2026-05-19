@@ -9026,16 +9026,23 @@ function exportComparativePDF(scope){
     return {name:name,a:dispA,b:dispB,delta:deltaTxt,cls:cls,icon:icon,statusA:stA,statusB:stB,vA:vA,vB:vB,dVal:dVal,def:def||''};
   }
 
+  // Escalation Rate fica enviesado se o escopo já inclui filas de escalação
+  // (DBA, INFRAESTUTURA, SSG-MELHORIAS, GWMS). Nesse caso, ocultamos o KPI.
+  var ESCALATION_QUEUES_LIST=['DBA','INFRAESTUTURA','SSG-MELHORIAS','GWMS'];
+  var scopeFilasArr=(scope.filas&&Array.isArray(scope.filas)&&scope.filas.length)?scope.filas:(scope.fila&&scope.fila!=='all'?[scope.fila]:[]);
+  var escFiltradoNoEscopo=scopeFilasArr.some(function(f){return ESCALATION_QUEUES_LIST.indexOf(f)!==-1;});
+
   var compRows=[
     dr('1. Tempo de 1ª Resposta', k1A.val, k1B.val, fMin, 'lower', 'min', st_resp, 'Mediana do tempo até primeira resposta · meta ≤30min'),
-    dr('2. SLA Compliance (48h)', k2A.val, k2B.val, fPct, 'higher', 'pp', st_sla, '% chamados resolvidos dentro do SLA contratual'),
+    dr('2. SLA 1ª Resposta (OTRS)', k2A.val, k2B.val, fPct, 'higher', 'pp', st_sla, '% de chamados com 1ª resposta dentro do prazo OTRS por prioridade · regras AdminSLA'),
     dr('3. Tempo Médio Resolução', k3A.val, k3B.val, fH, 'lower', 'h', st_resol, 'Horas úteis entre abertura e fechamento'),
     dr('4. FCR (sem reabertura)', k4A.val, k4B.val, fPct, 'higher', 'pp', st_fcr, '% resolvido sem reabertura em 90d'),
     dr('5. Ticket Volume', k5A.val, k5B.val, fNum, 'neutral', '', null, 'Volume total de chamados no período'),
-    {name:'6. Utilization Rate', a:fPct(k6.val), b:fPct(k6.val), delta:'snapshot live', cls:'neu', icon:'⌖', statusA:st_util(k6.val), statusB:st_util(k6.val), vA:k6.val, vB:k6.val, dVal:0, snapshot:true, def:'Capacidade operacional em uso (estado atual — não histórico)'},
-    dr('7. Backlog Volume', k7A.val, k7B.val, fNum, 'lower', '', function(v){return st_bk(v, v==k7A.val?k7A.n:k7B.n);}, 'Tickets pendentes de resolução'),
-    dr('8. Escalation Rate', k8A.val, k8B.val, fPct, 'lower', 'pp', st_esc, '% encaminhado a filas especializadas')
+    dr('6. Backlog Volume', k7A.val, k7B.val, fNum, 'lower', '', function(v){return st_bk(v, v==k7A.val?k7A.n:k7B.n);}, 'Tickets pendentes de resolução')
   ];
+  if(!escFiltradoNoEscopo){
+    compRows.push(dr('7. Escalation Rate', k8A.val, k8B.val, fPct, 'lower', 'pp', st_esc, '% encaminhado a filas especializadas (DBA, Infra, GWMS, Melhorias)'));
+  }
 
   // Score por período (mesma lógica do executive)
   function _score(k1v,k2v,k3v,k4v,k6v,k8v){
@@ -9164,9 +9171,9 @@ function exportComparativePDF(scope){
   H+='<div class="cover-stamp">RELATÓRIO COMPARATIVO</div>';
   H+='</div>';
   H+='<div class="cover-body">';
-  H+='<div class="cover-tag">▸ Comparativo Mensal · 8 KPIs lado a lado</div>';
-  H+='<div class="cover-title">Performance · A vs B</div>';
-  H+='<div class="cover-sub">Análise comparativa de indicadores entre dois períodos</div>';
+  H+='<div class="cover-tag">▸ Comparativo Mensal · Indicadores OTRS</div>';
+  H+='<div class="cover-title">'+_rptEsc(labelA)+' <span style="color:#94a3b8;font-weight:500">vs</span> '+_rptEsc(labelB)+'</div>';
+  H+='<div class="cover-sub">'+_rptEsc(cliLabel)+' · '+_rptEsc(filaLabel)+'</div>';
   // VS — dois cards de período
   H+='<div class="cover-vs">';
   H+='<div class="cover-period a"><div class="cover-period-lbl">Período A</div><div class="cover-period-val">'+_rptEsc(labelA)+'</div><div class="cover-period-tickets">'+rowsA.length+' chamados</div></div>';
@@ -9191,45 +9198,44 @@ function exportComparativePDF(scope){
   H+='<div class="cover-ft"><span>Groundwork · www.groundwork.com.br</span><span>Gerado em '+nowStr+'</span></div>';
   H+='</div>'; // /cover
 
-  // ── CORPO: tabela comparativa
+  // ── CORPO: resumo executivo + tabela comparativa
   H+='<div class="body-page">';
+
+  // Resumo executivo (frase auto-gerada baseada em score + maior regressão + maior melhoria)
+  var scoreTxt;
+  if(scoreD===0)scoreTxt='Score estável em <strong>'+scoreB+'</strong> pts.';
+  else if(scoreD>0)scoreTxt='Score subiu <strong>+'+scoreD+' pts</strong> ('+scoreA+' → '+scoreB+').';
+  else scoreTxt='Score caiu <strong>'+scoreD+' pts</strong> ('+scoreA+' → '+scoreB+').';
+  var alertaTxt='';
+  if(regressoes.length){
+    var r0=regressoes[0];
+    alertaTxt=' Principal alerta: <strong>'+_rptEsc(r0.name.replace(/^\d+\.\s*/,''))+'</strong> ('+_rptEsc(r0.delta)+').';
+  }
+  var melhoriaTxt='';
+  if(melhorias.length){
+    var m0=melhorias[0];
+    melhoriaTxt=' Maior melhoria: <strong>'+_rptEsc(m0.name.replace(/^\d+\.\s*/,''))+'</strong> ('+_rptEsc(m0.delta)+').';
+  }
+  var resumoCor=scoreD<-2?'#dc2626':scoreD>2?'#16a34a':'#475569';
+  var resumoBg=scoreD<-2?'#fee2e2':scoreD>2?'#dcfce7':'#f1f5f9';
+  H+='<div style="background:'+resumoBg+';border-left:4px solid '+resumoCor+';padding:14px 18px;border-radius:10px;margin-bottom:24px">';
+  H+='<div style="font-size:10px;color:'+resumoCor+';text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:4px">▸ Resumo executivo</div>';
+  H+='<div style="font-size:13px;color:#283645;line-height:1.55">'+scoreTxt+alertaTxt+melhoriaTxt+'</div>';
+  H+='</div>';
+
   H+='<div class="body-hd"><div class="body-hd-icon">⇄</div><div class="body-hd-ttl">Comparativo de Indicadores</div><div class="body-hd-sub">'+rowsA.length+' (A) · '+rowsB.length+' (B) chamados · fonte GWMS (MySQL OTRS)</div></div>';
   H+='<table class="cmp-tbl">';
-  H+='<thead><tr><th style="width:30%">KPI</th><th class="a">'+_rptEsc(labelA)+'</th><th class="b">'+_rptEsc(labelB)+'</th><th class="d" style="width:18%">Δ B vs A</th></tr></thead>';
+  H+='<thead><tr><th style="width:32%">KPI</th><th class="a" style="width:18%">'+_rptEsc(labelA)+'</th><th class="b" style="width:18%">'+_rptEsc(labelB)+'</th><th class="d" style="width:18%">Δ B vs A</th><th class="d" style="width:14%">Status atual</th></tr></thead>';
   H+='<tbody>';
   compRows.forEach(function(r){
-    var stClsA=stCol(r.statusA), stBgA=stBg(r.statusA), stLA=stLbl(r.statusA);
     var stClsB=stCol(r.statusB), stBgB=stBg(r.statusB), stLB=stLbl(r.statusB);
-    var stPillA=r.statusA!=='none'?'<span class="cmp-status" style="background:'+stBgA+';color:'+stClsA+'">'+stLA+'</span>':'';
-    var stPillB=r.statusB!=='none'?'<span class="cmp-status" style="background:'+stBgB+';color:'+stClsB+'">'+stLB+'</span>':'';
+    var stPillB=r.statusB!=='none'?'<span class="cmp-status" style="background:'+stBgB+';color:'+stClsB+';font-size:10px;padding:3px 9px">'+stLB+'</span>':'<span style="color:#94a3b8;font-size:10px">—</span>';
     H+='<tr>';
     H+='<td><div class="cmp-name">'+_rptEsc(r.name)+'</div><div class="cmp-def">'+_rptEsc(r.def)+'</div></td>';
-    H+='<td><span class="cmp-val">'+r.a+'</span>'+stPillA+'</td>';
-    H+='<td><span class="cmp-val">'+r.b+'</span>'+stPillB+'</td>';
+    H+='<td><span class="cmp-val">'+r.a+'</span></td>';
+    H+='<td><span class="cmp-val">'+r.b+'</span></td>';
     H+='<td class="cmp-delta '+r.cls+'"><span class="cmp-icon">'+r.icon+'</span>'+_rptEsc(r.delta)+'</td>';
-    H+='</tr>';
-  });
-  H+='</tbody></table>';
-
-  // Barras visuais — só pra KPIs com dados numéricos comparáveis em A e B (excluindo snapshot e neutros sem dado)
-  H+='<div class="body-hd" style="margin-top:20px"><div class="body-hd-icon" style="background:linear-gradient(135deg,#ff7024,#f37633)">▦</div><div class="body-hd-ttl">Visão lado a lado (barras proporcionais)</div></div>';
-  H+='<table class="cmp-tbl">';
-  H+='<thead><tr><th style="width:28%">KPI</th><th colspan="2">Comparativo visual</th></tr></thead>';
-  H+='<tbody>';
-  compRows.forEach(function(r){
-    if(r.snapshot)return;
-    if(r.vA==null&&r.vB==null)return;
-    var maxV=Math.max(r.vA||0, r.vB||0, 0.01);
-    var pctA=r.vA!=null?Math.round((r.vA/maxV)*100):0;
-    var pctB=r.vB!=null?Math.round((r.vB/maxV)*100):0;
-    H+='<tr>';
-    H+='<td><div class="cmp-name">'+_rptEsc(r.name)+'</div></td>';
-    H+='<td colspan="2" class="cmp-bar-cell">';
-    H+='<div style="display:flex;flex-direction:column;gap:4px">';
-    H+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;color:#0891b2;font-weight:800;width:14px">A</span><div class="cmp-bar a" style="width:'+Math.max(8,pctA*2.6)+'px">'+r.a+'</div></div>';
-    H+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:9px;color:#ff7024;font-weight:800;width:14px">B</span><div class="cmp-bar b" style="width:'+Math.max(8,pctB*2.6)+'px">'+r.b+'</div></div>';
-    H+='</div>';
-    H+='</td>';
+    H+='<td style="text-align:center">'+stPillB+'</td>';
     H+='</tr>';
   });
   H+='</tbody></table>';
@@ -9265,8 +9271,21 @@ function exportComparativePDF(scope){
   }
   H+='</div>';
   H+='</div>';
-  // Nota explicativa sobre KPI 6
-  H+='<div class="note"><strong>Nota sobre KPI 6 (Utilization):</strong> capacidade operacional é medida em tempo real (snapshot live), portanto o valor é o mesmo nos dois períodos. Para comparativo histórico de carga, use KPI 5 (Volume) e KPI 7 (Backlog).</div>';
+
+  // Snapshot atual — KPI 6 (Utilization) movido pro rodapé porque é tempo real
+  var k6Val=k6.val!=null?k6.val+'%':'—';
+  var k6Lbl=k6.val==null?'sem dados':(k6.val<=70?'saudável':k6.val<=85?'apertada':'sobrecarga');
+  var k6Col=k6.val==null?'#94a3b8':(k6.val<=70?'#16a34a':k6.val<=85?'#d97706':'#dc2626');
+  H+='<div style="margin-top:20px;padding:14px 18px;background:linear-gradient(135deg,#f8fafc,#fff);border:1px solid #e2e8f0;border-left:4px solid '+k6Col+';border-radius:10px;display:flex;align-items:center;gap:18px">';
+  H+='<div style="flex:1"><div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:3px">Snapshot agora · Capacidade operacional</div>';
+  H+='<div style="font-size:12px;color:#475569">Utilization é medida em tempo real e não é histórica — por isso fica fora do comparativo A vs B. Para carga histórica use Volume e Backlog.</div></div>';
+  H+='<div style="text-align:right"><div style="font-size:28px;font-weight:900;color:'+k6Col+';line-height:1">'+k6Val+'</div><div style="font-size:10px;color:'+k6Col+';font-weight:700;text-transform:uppercase;letter-spacing:.06em">'+k6Lbl+'</div></div>';
+  H+='</div>';
+
+  // Nota sobre Escalation Rate quando ocultada
+  if(escFiltradoNoEscopo){
+    H+='<div class="note" style="margin-top:10px"><strong>Escalation Rate ocultada:</strong> o escopo selecionado já inclui filas de escalação ('+_rptEsc(scopeFilasArr.filter(function(f){return ESCALATION_QUEUES_LIST.indexOf(f)!==-1;}).join(', '))+'). Nesse contexto, a métrica não reflete escalação real — para analisá-la, gere o relatório com filas de entrada (DATASUL, GROUNDWORK, etc.).</div>';
+  }
 
   H+='</div>'; // /body-page
 
@@ -18320,12 +18339,45 @@ function setCurrentAtendente(nome){
 function _stripAccents(s){
   return (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 }
+// Coleta nomes de atendentes válidos pra resolução de login.
+// allowed_logins é a fonte AUTORAL — login só é válido se aparecer aí (a menos
+// que seja diretor, que bypassa). O NOME de exibição vem de qualquer fonte que
+// tiver: tickets ativos, RAW_DATA (histórico), ou — último recurso — derivado
+// do próprio login. Fix do bug: atendentes sem ticket ativo agora (ex: Marcelo
+// David na DBA quando não tem aberto) costumavam ser reportados como "login
+// não encontrado". Agora caem no fallback histórico/derivado.
+function _loginToTitleCase(login){
+  return (login||'').split('.').map(function(p){
+    if(!p) return '';
+    return p.charAt(0).toUpperCase()+p.slice(1).toLowerCase();
+  }).join(' ').trim();
+}
+function _collectKnownAtendNames(){
+  var set = {};
+  // 1) Atendentes com tickets ativos (lista enxuta usada no modal "Quem é você?")
+  _getSquadAtendentes().forEach(function(n){ set[n] = true; });
+  // 2) Atendentes do histórico (RAW_DATA) — cobre quem não tem ticket aberto agora
+  if(typeof RAW_DATA !== 'undefined' && RAW_DATA && RAW_DATA.length){
+    var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+    var filasSet = null;
+    if(cfg && cfg.filas){
+      filasSet = {};
+      cfg.filas.forEach(function(f){ filasSet[f.toUpperCase()] = true; });
+    }
+    RAW_DATA.forEach(function(d){
+      var a = (d && d.atend ? String(d.atend).trim() : '');
+      if(!a) return;
+      if(filasSet && !filasSet[(d.fila||'').toUpperCase()]) return;
+      set[a] = true;
+    });
+  }
+  return Object.keys(set);
+}
 function _resolveAtendByLogin(login){
   if(!login) return null;
-  var ats = _getSquadAtendentes();
-  if(!ats.length) return null;
   var loginN = _stripAccents(login).replace(/[._\-\s]+/g, ' ').trim();
   if(!loginN) return null;
+  var ats = _collectKnownAtendNames();
   // 1) Match exato: "primeiro.último" → "Primeiro Último"
   for(var i=0;i<ats.length;i++){
     var n = _stripAccents(ats[i]).replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
@@ -18345,6 +18397,17 @@ function _resolveAtendByLogin(login){
     return first === loginN;
   });
   if(matches.length === 1) return matches[0];
+  // 4) Fallback: login está em allowed_logins da squad atual? Aceita mesmo sem
+  // achar nome em nenhuma base de tickets — formata o login como nome.
+  // Cobre casos tipo Marcelo David sem ticket ativo nem histórico recente.
+  var cfg = (typeof getSquadCfg === 'function') ? getSquadCfg() : null;
+  var allow = cfg && cfg.allowed_logins;
+  if(allow && allow.length){
+    var loginLower = String(login).toLowerCase().trim();
+    if(allow.indexOf(loginLower) !== -1){
+      return _loginToTitleCase(loginLower);
+    }
+  }
   return null;
 }
 // Auto-identifica o atendente baseado no login digitado no gate.
