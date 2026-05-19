@@ -10297,29 +10297,99 @@ body{font-family:Arial,sans-serif;background:#f8fafc;color:#1a2744;font-size:13p
       H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">no fechamento de '+mesLabel+'</div>';
     }
     H+='</div>';
+    // C1 — Aging vs TMR dinâmico: quando 0 em aberto, os números já representam
+    // tempo de resolução (aging dos fechados = criação → fechamento). Só muda o rótulo.
+    var _carteiraResolvida = !_emAberto.length;
+    var _lblCard1 = _carteiraResolvida ? 'Resolução média (dias)' : 'Aging médio (dias)';
+    var _subCard1 = _carteiraResolvida ? 'da abertura até o fechamento' : 'tempo médio em aberto';
+    var _lblCard2 = _carteiraResolvida ? 'Maior resolução (dias)' : 'Aging máximo (dias)';
+    var _ticketMaxLabel = 'ticket #' + String(_ticketMax.num).slice(-8);
+    var _subCard2 = _carteiraResolvida
+      ? _ticketMaxLabel + ' — mais demorado'
+      : (_ticketMaxLabel + (_ticketMax.prioridade==='Muito Alta'?' — URGENTE':''));
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid #E8622A">';
     H+='<div style="font-size:36px;font-weight:900;color:#E8622A;line-height:1">'+_agingMed+'</div>';
-    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Aging médio (dias)</div>';
-    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">tempo médio em aberto</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">'+_lblCard1+'</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">'+_subCard1+'</div>';
     H+='</div>';
     var _agingMaxColor = _agingMax>90?'#dc2626':_agingMax>60?'#d97706':'#16a34a';
     H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_agingMaxColor+'">';
     H+='<div style="font-size:36px;font-weight:900;color:'+_agingMaxColor+';line-height:1">'+_agingMax+'</div>';
-    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Aging máximo (dias)</div>';
-    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">ticket #'+String(_ticketMax.num).slice(-8)+(_ticketMax.prioridade==='Muito Alta'?' — URGENTE':'')+'</div>';
+    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">'+_lblCard2+'</div>';
+    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">'+_subCard2+'</div>';
     H+='</div>';
-    var _govColor = _govForaPct>=70?'#d97706':'#1a2744';
-    H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_govColor+'">';
-    H+='<div style="font-size:36px;font-weight:900;color:'+_govColor+';line-height:1">'+_govForaPct+'%</div>';
-    H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Fora da governança GW</div>';
-    H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">aguarda cliente ou terceiros</div>';
-    H+='</div>';
+    // C2 — Card 4: SLA Cumprido (quando há resolvidos no escopo, métrica mais
+    // relevante pro cliente). Senão, mantém Fora da Governança.
+    var _temResolvidos = _resolvidos.length > 0;
+    var _slaPct = null;
+    if(_temResolvidos && _modoPeriodo && curData && curData.sla_pct!=null){
+      _slaPct = curData.sla_pct;
+    }
+    if(_slaPct!=null){
+      var _slaColor = _slaPct>=95?'#16a34a':_slaPct>=85?'#d97706':'#dc2626';
+      H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_slaColor+'">';
+      H+='<div style="font-size:36px;font-weight:900;color:'+_slaColor+';line-height:1">'+_slaPct+'%</div>';
+      H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">SLA cumprido</div>';
+      H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">1ª resposta dentro do prazo OTRS</div>';
+      H+='</div>';
+    } else {
+      var _govColor = _govForaPct>=70?'#d97706':'#1a2744';
+      H+='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 16px;text-align:center;border-top:4px solid '+_govColor+'">';
+      H+='<div style="font-size:36px;font-weight:900;color:'+_govColor+';line-height:1">'+_govForaPct+'%</div>';
+      H+='<div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;margin-top:6px">Fora da governança GW</div>';
+      H+='<div style="font-size:10px;color:#6b7280;margin-top:3px">aguarda cliente ou terceiros</div>';
+      H+='</div>';
+    }
     H+='</div>';
 
     // Leitura executiva (parágrafo narrativo)
     H+='<div style="background:#f8fafc;border-left:4px solid #1a2744;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:20px">';
     H+='<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a2744;margin-bottom:8px">📊 Leitura executiva</div>';
     H+='<div style="font-size:13px;line-height:1.7;color:#374151">'+_leitura+'</div>';
+
+    // C3 — Comparativo 1-linha com mês anterior (volume, TMR, SLA).
+    // Só faz sentido em modo período + mês anterior tem dados.
+    if(_modoPeriodo && curData && prevData && prevData.total > 0){
+      var _curVol = curData.total||0;
+      var _prevVol = prevData.total||0;
+      var _volDelta = _curVol - _prevVol;
+      var _volPct = _prevVol>0 ? Math.round((_volDelta/_prevVol)*100) : 0;
+      var _volTxt = _volDelta===0 ? 'volume estável' :
+        (_volDelta>0 ? '+'+_volPct+'% volume' : _volPct+'% volume');
+      var _volColor = _volDelta===0 ? '#6b7280' : (_volDelta>0 ? '#d97706' : '#16a34a');
+
+      var _curTmr = curData.sol_med!=null ? Math.round(curData.sol_med) : null;
+      var _prevTmr = prevData.sol_med!=null ? Math.round(prevData.sol_med) : null;
+      var _tmrParts = [];
+      if(_curTmr!=null && _prevTmr!=null){
+        var _tmrDelta = _curTmr - _prevTmr;
+        var _tmrTxt = _tmrDelta===0 ? 'TMR estável ('+_curTmr+'h)' :
+          'TMR '+_curTmr+'h vs '+_prevTmr+'h ('+(_tmrDelta>0?'+':'')+_tmrDelta+'h)';
+        var _tmrColor = _tmrDelta===0 ? '#6b7280' : (_tmrDelta>0 ? '#d97706' : '#16a34a');
+        _tmrParts.push('<span style="color:'+_tmrColor+';font-weight:600">'+_tmrTxt+'</span>');
+      }
+
+      var _curSla = curData.sla_pct;
+      var _prevSla = prevData.sla_pct;
+      var _slaParts = [];
+      if(_curSla!=null && _prevSla!=null){
+        var _slaDelta = _curSla - _prevSla;
+        var _slaTxt = _slaDelta===0 ? 'SLA estável ('+_curSla+'%)' :
+          'SLA '+_curSla+'% vs '+_prevSla+'% ('+(_slaDelta>0?'+':'')+_slaDelta+'pp)';
+        var _slaColor = _slaDelta===0 ? '#6b7280' : (_slaDelta>0 ? '#16a34a' : '#d97706');
+        _slaParts.push('<span style="color:'+_slaColor+';font-weight:600">'+_slaTxt+'</span>');
+      }
+
+      var _curMesLbl = mNamesFull[curMk2] || curMk2;
+      var _prevMesLbl = mNamesFull[prevMk2] || prevMk2;
+      var _compLinha = '<span style="color:'+_volColor+';font-weight:600">'+_volTxt+' ('+_curVol+' vs '+_prevVol+')</span>';
+      if(_tmrParts.length) _compLinha += ' · ' + _tmrParts.join('');
+      if(_slaParts.length) _compLinha += ' · ' + _slaParts.join('');
+
+      H+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed #cbd5e1;font-size:12px;color:#475569">';
+      H+='<strong>'+_curMesLbl+' vs '+_prevMesLbl+':</strong> '+_compLinha;
+      H+='</div>';
+    }
     H+='</div>';
 
     // Top 3 prioridades
