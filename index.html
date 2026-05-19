@@ -869,6 +869,10 @@ body.espelho-mode #notif-btn{display:none!important}
 body.espelho-mode #fs-btn,body.espelho-mode #rpt-btn{display:none!important}
 /* topbar bonita também pro modo atendente (já tinha o esqueleto) */
 body.atendente-mode .app{padding-top:60px!important}
+/* Garantia explícita: topbar sempre visível em atendente-mode e triagem-mode
+   (proteção caso outra regra body.X .topbar{display:none} venha a aplicar) */
+body.atendente-mode .topbar,
+body.triagem-mode .topbar{display:flex!important}
 /* ── MODO TRIAGEM (sidebar + abas próprias) ────────────────── */
 body.triagem-mode .tb-mode,
 body.triagem-mode .tb-alerts,
