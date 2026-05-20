@@ -1443,6 +1443,12 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-aviso-pill.crit{background:rgba(244,63,94,.15);color:var(--danger)}
 .bh-aviso-pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
 .bh-aviso-pill.ok{background:rgba(16,185,129,.12);color:var(--ok);opacity:.7}
+/* Bloco diferenciador "Risco de Consumo vs Comercial" no detalhe */
+.bh-det-riscos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)}
+.bh-det-risco-bloco{display:flex;flex-direction:column;gap:6px}
+.bh-det-risco-bloco label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+/* Aviso de estimativa no bloco trimestre */
+.bh-det-aviso-estimativa{font-size:11px;color:var(--muted);background:rgba(245,158,11,.06);border-left:3px solid var(--warn);padding:8px 12px;border-radius:4px;margin-bottom:10px;line-height:1.5;font-style:italic}
 @media(max-width:900px){.bh-det-grid{grid-template-columns:repeat(2,1fr)}.bh-hero-cards{grid-template-columns:repeat(2,1fr)}}
 /* Gate de visibilidade: nav-gestao-only só aparece em mode=gestao (script abaixo) */
 body[data-mode="squad"] .nav-gestao-only,
@@ -15073,6 +15079,21 @@ function _bhCardDetalhe(c, idx, full){
       + '</div>'
     + '</div>'
     + (c.motivo_risco ? '<div class="bh-det-motivo"><label>Motivo do risco</label><strong>' + c.motivo_risco + '</strong></div>' : '')
+    // Risco de Consumo vs Risco Comercial — diferenciados (Fabio spec item 4)
+    + (function(){
+        var riscoCons, riscoCom;
+        if(c.livre_h < 0 || (trim && trim.estourou) || c.pct_consumido_total >= 100) riscoCons = {cor:'crit', txt:'Crítico'};
+        else if(c.pct_consumido_total >= 85 || (trim && trim.tendencia)) riscoCons = {cor:'warn', txt:'Atenção'};
+        else if(c.pct_consumido_total >= 70) riscoCons = {cor:'warn', txt:'Aviso preventivo'};
+        else riscoCons = {cor:'ok', txt:'Saudável'};
+        if(c.dias_ate_fim >= 0 && c.dias_ate_fim <= 30) riscoCom = {cor:'crit', txt:'Crítico · vence em ' + c.dias_ate_fim + 'd'};
+        else if(c.dias_ate_fim >= 31 && c.dias_ate_fim <= 90) riscoCom = {cor:'warn', txt:'Atenção · vence em ' + c.dias_ate_fim + 'd'};
+        else riscoCom = {cor:'ok', txt:'Sem alerta · ' + c.dias_ate_fim + 'd até fim'};
+        return '<div class="bh-det-riscos">'
+          + '<div class="bh-det-risco-bloco"><label>Risco de consumo</label><span class="bh-aviso-pill ' + riscoCons.cor + '">' + riscoCons.txt + '</span></div>'
+          + '<div class="bh-det-risco-bloco"><label>Risco comercial</label><span class="bh-aviso-pill ' + riscoCom.cor + '">' + riscoCom.txt + '</span></div>'
+        + '</div>';
+    })()
     + '<div class="bh-det-section-lbl">📊 Pool e saldo</div>'
     + '<div class="bh-det-grid">'
       + '<div class="bh-det-cell"><label>Pool contratado</label><strong>' + _bhHToHHMM(c.pool_h) + ' h</strong></div>'
@@ -15081,13 +15102,18 @@ function _bhCardDetalhe(c, idx, full){
       + '<div class="bh-det-cell"><label>Pool mensal</label><strong>' + _bhHToHHMM(c.pool_mes_h) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>Vigência</label><strong>' + vigDisp + '</strong></div>'
     + '</div>'
-    + '<div class="bh-det-section-lbl">📅 Trimestre vigente <span class="bh-det-estimativa" title="Estimativa sem histórico — vira cálculo real quando API chegar">≈ estimativa</span></div>'
+    + '<div class="bh-det-section-lbl">📅 Trimestre vigente <span class="bh-det-estimativa">≈ estimativa</span></div>'
+    + '<div class="bh-det-aviso-estimativa">⚠ Projeção trimestral estimada com base no consumo do mês atual. Quando a API trouxer histórico real, vira soma dos meses do trimestre vigente.</div>'
     + '<div class="bh-det-grid">'
       + '<div class="bh-det-cell"><label>Pool trimestral</label><strong>' + _bhHToHHMM(trim.pool_trimestre||0) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>Consumo mês atual</label><strong class="' + trimClsAtual + '">' + _bhHToHHMM(trim.cons_mes_no_trim||0) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>Projeção trimestre</label><strong class="' + trimClsAtual + '">' + _bhHToHHMM(trim.projecao_trimestre||0) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>% trimestre projetado</label><strong class="' + trimClsAtual + '">' + (trim.pct_trimestre_projetado||0).toFixed(0) + '%</strong></div>'
-      + '<div class="bh-det-cell"><label>Estouro projetado</label><strong class="' + (trim.estourou?'crit':'') + '">' + (trim.estourou ? _bhHToHHMM(trim.estouro_atual) + ' h' : (trim.tendencia ? '~' + _bhHToHHMM(trim.projecao_trimestre - trim.pool_trimestre) + ' h' : '—')) + '</strong></div>'
+      + (trim.estourou
+          ? '<div class="bh-det-cell"><label>Excedente cobrável (confirmado)</label><strong class="crit">' + _bhHToHHMM(trim.estouro_atual) + ' h</strong></div>'
+          : (trim.tendencia
+              ? '<div class="bh-det-cell"><label>Tendência (projetada)</label><strong class="warn">~' + _bhHToHHMM(trim.projecao_trimestre - trim.pool_trimestre) + ' h se mantiver ritmo</strong></div>'
+              : '<div class="bh-det-cell"><label>Status do trimestre</label><strong class="ok">Dentro do esperado</strong></div>'))
     + '</div>'
     + '<div class="bh-det-section-lbl">💰 Cobrança e renovação</div>'
     + '<div class="bh-det-grid">'
