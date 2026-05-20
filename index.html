@@ -1342,6 +1342,15 @@ body.squad-mode #rpt-btn{display:none!important}
 .eq-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(79,142,247,.06)}
 .eq-btn.primary{background:linear-gradient(135deg,#FF6400,#f59e0b);border-color:transparent;color:#fff}
 .eq-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(255,100,0,.4)}
+/* Squads colapsáveis (Opção A: tem crítico → expandido, senão → fechado) */
+.eq-squad-hd{cursor:pointer;user-select:none}
+.eq-squad-hd:hover{filter:brightness(1.12)}
+.eq-squad-chev{display:inline-block;width:12px;color:var(--muted);transition:transform .25s ease;margin-right:8px;font-size:11px;vertical-align:middle}
+.eq-squad[data-collapsed="false"] .eq-squad-chev{transform:rotate(90deg)}
+.eq-squad-body{max-height:9000px;overflow:hidden;transition:max-height .4s ease}
+.eq-squad[data-collapsed="true"] .eq-squad-body{max-height:0}
+.eq-squad[data-collapsed="true"] .eq-squad-hd{border-bottom:none}
+.eq-toggle-all{display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -13934,8 +13943,14 @@ function renderEquipes(){
     byAtend[nome].tickets.push(t);
     byAtend[nome].estados[t.estado] = (byAtend[nome].estados[t.estado]||0) + 1;
   });
+  // Lê estado de colapso salvo (squads que o usuário escolheu abrir/fechar manualmente)
+  var _eqCollapsedState = {};
+  try { _eqCollapsedState = JSON.parse(localStorage.getItem('_eqCollapsedState')||'{}') || {}; } catch(e){ _eqCollapsedState = {}; }
   // Itera squads (exceto triagem) e monta cards
-  var html = '';
+  var html = '<div class="eq-toggle-all">'
+    + '<button class="eq-btn" onclick="_eqToggleAllSquads(\'expand\')" title="Abrir todos os squads">▼ Expandir todos</button>'
+    + '<button class="eq-btn" onclick="_eqToggleAllSquads(\'collapse\')" title="Fechar todos os squads">▶ Recolher todos</button>'
+  + '</div>';
   var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
   squadIds.forEach(function(sqId){
     var sqCfg = SQUADS[sqId];
@@ -13978,10 +13993,18 @@ function renderEquipes(){
     var ativosCount = consultores.length;
     var critCount = consultores.filter(function(c){return c.status.key==='crit';}).length;
     var warnCount = consultores.filter(function(c){return c.status.key==='warn';}).length;
-    html += '<div class="eq-squad">'
-      + '<div class="eq-squad-hd">'
+    // Estado de colapso inicial (Opção A): tem crítico → expandido · senão → fechado
+    // Se usuário já clicou pra abrir/fechar antes, respeita a escolha salva
+    var initialCollapsed;
+    if(_eqCollapsedState.hasOwnProperty(sqId)) {
+      initialCollapsed = !!_eqCollapsedState[sqId];
+    } else {
+      initialCollapsed = (critCount === 0);
+    }
+    html += '<div class="eq-squad" data-eq-sqid="'+sqId+'" data-collapsed="'+initialCollapsed+'">'
+      + '<div class="eq-squad-hd" onclick="_eqToggleSquad(\''+sqId+'\')">'
         + '<div>'
-          + '<div class="eq-squad-nome">'+sqCfg.nome+'</div>'
+          + '<div class="eq-squad-nome"><span class="eq-squad-chev">▶</span>'+sqCfg.nome+'</div>'
         + '</div>'
         + '<div class="eq-squad-stats">'
           + '<strong>'+ativosCount+'/'+rosterTotal+'</strong> consultores com carga · '
@@ -13989,8 +14012,9 @@ function renderEquipes(){
           + (critCount ? ' · <span style="color:var(--danger);font-weight:700">'+critCount+' 🔴</span>' : '')
           + (warnCount ? ' · <span style="color:var(--warn);font-weight:700">'+warnCount+' 🟡</span>' : '')
         + '</div>'
-        + (ativosCount > 0 ? '<button class="eq-btn primary" style="margin-left:14px" onclick="_eqCobrancaColetiva(\''+sqId+'\')" title="Mensagem pronta pra mandar no grupo da squad">📢 Cobrança coletiva</button>' : '')
-      + '</div>';
+        + (ativosCount > 0 ? '<button class="eq-btn primary" style="margin-left:14px" onclick="event.stopPropagation();_eqCobrancaColetiva(\''+sqId+'\')" title="Mensagem pronta pra mandar no grupo da squad">📢 Cobrança coletiva</button>' : '')
+      + '</div>'
+      + '<div class="eq-squad-body">';
     if(!consultores.length){
       html += '<div class="eq-squad-empty">Nenhum consultor com carga ativa nesta squad.</div>';
     } else {
@@ -14025,10 +14049,37 @@ function renderEquipes(){
         + '</div>';
       });
     }
-    html += '</div>';
+    html += '</div>';  // fecha eq-squad-body
+    html += '</div>';  // fecha eq-squad
   });
   el.innerHTML = html;
 }
+// Toggle individual de squad (clique no header)
+window._eqToggleSquad = function(sqId){
+  var sq = document.querySelector('[data-eq-sqid="'+sqId+'"]');
+  if(!sq) return;
+  var collapsed = sq.getAttribute('data-collapsed') === 'true';
+  var newState = !collapsed;
+  sq.setAttribute('data-collapsed', String(newState));
+  try {
+    var st = JSON.parse(localStorage.getItem('_eqCollapsedState')||'{}') || {};
+    st[sqId] = newState;
+    localStorage.setItem('_eqCollapsedState', JSON.stringify(st));
+  } catch(e){}
+};
+// Expandir / Recolher todos os squads de uma vez
+window._eqToggleAllSquads = function(action){
+  var newState = (action === 'collapse');
+  var all = document.querySelectorAll('.eq-squad[data-eq-sqid]');
+  var st = {};
+  try { st = JSON.parse(localStorage.getItem('_eqCollapsedState')||'{}') || {}; } catch(e){ st = {}; }
+  all.forEach(function(sq){
+    sq.setAttribute('data-collapsed', String(newState));
+    var sid = sq.getAttribute('data-eq-sqid');
+    if(sid) st[sid] = newState;
+  });
+  try { localStorage.setItem('_eqCollapsedState', JSON.stringify(st)); } catch(e){}
+};
 // Cobrança coletiva da squad — 1 mensagem com todos os consultores
 // empilhados (em vez de cobrar 1-a-1). Pra mandar no grupo da equipe.
 window._eqCobrancaColetiva = function(squadId){
