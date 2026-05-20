@@ -1351,6 +1351,55 @@ body.squad-mode #rpt-btn{display:none!important}
 .eq-squad[data-collapsed="true"] .eq-squad-body{max-height:0}
 .eq-squad[data-collapsed="true"] .eq-squad-hd{border-bottom:none}
 .eq-toggle-all{display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px}
+
+/* ─── Contratos · Banco de Horas (módulo MSP) ─── */
+.bh-hero{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:22px}
+.bh-hero-title{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:18px}
+.bh-hero-title h2{margin:0;font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
+.bh-hero-sub{font-size:11.5px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+.bh-hero-health{display:flex;align-items:baseline;gap:8px;padding:12px 18px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
+.bh-hero-health-num{font-family:var(--display);font-size:42px;font-weight:800;color:var(--teal);line-height:1}
+.bh-hero-health-lbl{font-size:10.5px;color:var(--muted);line-height:1.3;font-family:var(--mono)}
+.bh-hero-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.bh-hero-card{padding:14px 16px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);border-left-width:3px}
+.bh-hero-card.crit{border-left-color:var(--danger)}
+.bh-hero-card.warn{border-left-color:var(--warn)}
+.bh-hero-card.ok{border-left-color:var(--ok)}
+.bh-hero-card.receita{border-left-color:#a855f7}
+.bh-hero-card.renov{border-left-color:var(--blue)}
+.bh-hero-card-num{font-family:var(--display);font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:6px}
+.bh-hero-card.receita .bh-hero-card-num{font-size:20px}
+.bh-hero-card-lbl{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:4px}
+.bh-hero-card-sub{font-size:10px;color:var(--muted);font-family:var(--mono);line-height:1.3}
+.bh-section-title{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text);margin:0 0 12px 0;letter-spacing:-.01em}
+.bh-acoes-wrap{margin-bottom:22px}
+.bh-acoes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.bh-acao-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;border-left-width:3px}
+.bh-acao-card.crit{border-left-color:var(--danger);background:rgba(244,63,94,.04)}
+.bh-acao-card.warn{border-left-color:var(--warn);background:rgba(245,158,11,.04)}
+.bh-acao-hd{font-size:13px;color:var(--text);margin-bottom:6px}
+.bh-acao-motivo{font-size:11.5px;color:var(--muted);margin-bottom:4px;line-height:1.4}
+.bh-acao-tarefa{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;opacity:.7}
+.bh-acao-acao{font-size:11.5px;color:var(--text);font-weight:600}
+.bh-tab-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;overflow-x:auto}
+.bh-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.bh-table thead th{text-align:left;padding:8px 10px;background:var(--bg3);color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;font-family:inherit;white-space:nowrap}
+.bh-table th.r,.bh-table td.r{text-align:right}
+.bh-table tbody td{padding:10px;border-bottom:1px solid var(--border);color:var(--text)}
+.bh-table tbody tr:hover{background:rgba(255,255,255,.02)}
+.bh-table tbody tr.crit{background:rgba(244,63,94,.05)}
+.bh-table tbody tr.warn{background:rgba(245,158,11,.04)}
+.bh-table td.crit{color:var(--danger);font-weight:700}
+.bh-table td.warn{color:var(--warn);font-weight:600}
+.bh-vig{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.bh-health-pill{display:inline-block;padding:3px 9px;border-radius:10px;font-weight:700;font-size:11px;font-family:var(--display)}
+.bh-health-pill.crit{background:rgba(244,63,94,.15);color:var(--danger)}
+.bh-health-pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+.bh-health-pill.ok{background:rgba(16,185,129,.15);color:var(--ok)}
+/* Gate de visibilidade: nav-gestao-only só aparece em mode=gestao (script abaixo) */
+body[data-mode="squad"] .nav-gestao-only,
+body[data-mode="atendente"] .nav-gestao-only,
+body[data-mode="triagem"] .nav-gestao-only{display:none !important}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -2553,6 +2602,7 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="sb-head">Gestão</div>
     <div class="nav" onclick="goSec('op','s-sl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>SLA & Tempos</div>
     <div class="nav" onclick="goSec('op','s-ctr',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>Contratos SSG</div>
+    <div class="nav nav-gestao-only" onclick="goSec('op','s-bh',this)" title="Banco de Horas — pool, saldo e alertas de contratos MSP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity=".15"/></svg>Contratos BH</div>
     <div class="nav" onclick="goSec('op','s-eq',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>Equipes & Cobrança</div>
     <div class="nav" onclick="goSec('op','s-bl',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Em Espera</div>
     <div class="nav" onclick="goSec('op','s-fv',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="18" y1="2" x2="22" y2="6"/><line x1="22" y1="2" x2="18" y2="6"/></svg>Previsão de Volume</div>
@@ -3162,6 +3212,17 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <div class="page-body">
       <div id="ctr-hero" class="card card-mb"></div>
       <div id="ctr-list"></div>
+    </div>
+  </div>
+
+  <!-- CONTRATOS BANCO DE HORAS · pool/saldo dos contratos MSP (snapshot do apontamento) -->
+  <div id="s-bh" class="sec">
+    <div class="page-header">
+      <h1>Contratos · Banco de Horas</h1>
+      <p>Saúde dos contratos MSP de banco de horas · pool, saldo, consumo e alertas</p>
+    </div>
+    <div class="page-body">
+      <div id="bh-content"></div>
     </div>
   </div>
 
@@ -4522,6 +4583,16 @@ function getAppMode(){
   if(sessionStorage.getItem('k')!=='1') return null;
   return sessionStorage.getItem('mode') || 'gestao'; // legado: sessão sem mode = gestão
 }
+// Aplica data-mode no body assim que possível pra CSS gate da aba Contratos BH
+(function _applyBodyMode(){
+  try {
+    var m = sessionStorage.getItem('mode') || 'gestao';
+    if(document.body) document.body.setAttribute('data-mode', m);
+    else document.addEventListener('DOMContentLoaded', function(){
+      document.body.setAttribute('data-mode', sessionStorage.getItem('mode')||'gestao');
+    });
+  } catch(e){}
+})();
 function getSquadId(){ return sessionStorage.getItem('squadId') || null; }
 function getSquadCfg(){ var id=getSquadId(); return id?SQUADS[id]||null:null; }
 // Squad mode OU diretor OU espelho de gestor — renderizam a squad view com filtro.
@@ -4628,6 +4699,7 @@ function renderSec(id){
   else if(id==='s-bk')renderBacklog();
   else if(id==='s-fv')renderForecast();
   else if(id==='s-ctr')renderContratosSSG();
+  else if(id==='s-bh')renderContratosBH();
   else if(id==='s-eq')renderEquipes();
   else if(id==='c-inf')renderInf();
 }
@@ -7420,7 +7492,16 @@ function renderInf(){
 var COL_IMP={num:['número do chamado','número','chamado','ticket'],criado:['criado','data de abertura','abertura','created'],fechado:['fechado','data de fechamento','fechamento','closed'],estado:['estado','status','situação'],prior:['prioridade','priority'],atend:['atendente','assignee'],pnome:['primeironome','primeiro nome'],unome:['úlnome','últimonome','último nome'],cli_id:['id do cliente','customer id'],cli_nome:['nome do cliente','customer name','c_cliente','c cliente'],assunto:['assunto','subject'],servico:['serviço','service'],resp_min:['primeira resposta em minutos','first response in minutes'],sol_min:['tempo de solução em minutos','resolution time in minutes'],fila:['fila','queue']};
 var EM2={'fechado com êxito':'Fechado','fechado sem êxito (auto)':'Fechado s/ Êxito','fechado sem êxito':'Fechado s/ Êxito','aguardando cliente':'Aguardando Cliente','resolvido':'Resolvido','aguardando atendente (interno)':'Aguardando Interno','retorno cliente':'Retorno Cliente','em atendimento':'Em Atendimento','aberto':'Aberto','aguardando agentes externos':'Aguardando Externo','cancelado':'Fechado s/ Êxito','melhoria':'Em Atendimento','gmud':'Em Atendimento','agrupado':'Fechado s/ Êxito','novo':'Aberto'};
 var PM2={'1 very low':'Muito Baixa','2 low':'Baixa','3 normal':'Normal','4 high':'Alta','5 very high':'Muito Alta'};
-var ENM2={'ALMEIDA JR':'Almeida Junior','AUTOZONE':'AutoZone','GRUPO_METALNOX':'Grupo Metalnox','FINPEC':'Finpec','NSX':'NSX','CONTINENTAL':'Aumovio'};
+var ENM2={
+  // Existentes (clientes com squad SSG ativo)
+  'ALMEIDA JR':'Almeida Junior','AUTOZONE':'AutoZone','GRUPO_METALNOX':'Grupo Metalnox',
+  'FINPEC':'Finpec','NSX':'NSX','CONTINENTAL':'Aumovio',
+  // Novos (clientes só com banco de horas — aparecem em BH_CONTRATOS)
+  'AGROSUL':'Agrosul Máquinas','ASTRA':'Astra','ATITUS':'Atitus Educação','BUNTECH':'Buntech',
+  'ARCO':'Arco Educação','DKT':'DKT','DUAL':'Dual Duarte','ECAD':'ECAD','FADEL':'Fadel Transportes',
+  'HELMAG':'Helmag','IMCD':'IMCD Brasil','INTEGRADA':'Integrada Cooperativa','JATOBA':'Jatobá',
+  'PECVAL':'Pecval','PLASTIGLAS':'Plastiglas','SERVENG':'Serveng','TELETEX':'Teletex','TOTVS':'TOTVS'
+};
 var INTERNAL_DOMAINS=['groundwork.com.br','groundwork.com','ssg.com.br'];
 var EMAIL_DOM_MAP={'almeidajunior.com.br':'ALMEIDA JR','almeidajunior.com':'ALMEIDA JR','autozone.com':'AUTOZONE','autozone.com.br':'AUTOZONE','finpec.com.br':'FINPEC','finpec.com':'FINPEC','metalnox.com.br':'GRUPO_METALNOX','grupometalnox.com.br':'GRUPO_METALNOX','nsx.com.br':'NSX','nsx.com':'NSX'};
 function resolveCliId(raw){
@@ -14303,6 +14384,383 @@ var SSG_CONTRATOS = [
   { alias:'CONTINENTAL',    nome:'Aumovio',            limite_mes:16,  ativo:true, obs:'no OTRS aparece como CONTINENTAL (Aumovio é spin-off)' },
   { alias:'FINPEC',         nome:'Finpec',             limite_mes:6,   ativo:true }
 ];
+
+// ════════════════════════════════════════════════════════════
+// CONTRATOS BANCO DE HORAS — snapshot do apontamento.groundwork.com.br
+// Fonte: Relatórios > Financeiros > Estouro Banco de Horas (Maio/26)
+// Atualização: hoje manual (snapshot embutido) → futuro via API do Adriano
+// Visibilidade: aba "Contratos BH" só aparece em mode='gestao'
+// ════════════════════════════════════════════════════════════
+var BH_SNAPSHOT_DATE = '2026-05';
+var BH_FILTRO_NOMES = ['TESTE PROD','TESTE','TESTE_PROD'];
+// cliente cru do apontamento → cli_id do painel (case-insensitive trim)
+var BH_MAPA_APONTA = {
+  'AGROSUL MAQUINAS LTDA':'AGROSUL',
+  'ASTRA S A INDUSTRIA E COMERCIO':'ASTRA',
+  'ATITUS EDUCACAO S.A':'ATITUS',
+  'AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)':'CONTINENTAL',
+  'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.':'AUTOZONE',
+  'BUNTECH TECNOLOGIA EM INSUMOS LTDA':'BUNTECH',
+  'COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A':'ARCO',
+  'DKT DO BRASIL PRODUTOS DE USO PESSOAL':'DKT',
+  'DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA':'DUAL',
+  'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO':'ECAD',
+  'FADEL TRANSPORTES':'FADEL',
+  'FINPEC AGRONEGOCIOS LTDA':'FINPEC',
+  'HELMAG DO BRASIL MERCANTIL LTDA':'HELMAG',
+  'IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA':'IMCD',
+  'INTEGRADA COOPERATIVA AGROINDUSTRIAL':'INTEGRADA',
+  'JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI':'JATOBA',
+  'METALNOX INDUSTRIA E COMERCIO LTDA':'GRUPO_METALNOX',
+  'NSX BRASIL SA':'NSX',
+  'PECVAL INDUSTRIA LTDA':'PECVAL',
+  'PLASTIGLAS D MEXICO':'PLASTIGLAS',
+  'SERVENG CIVILSAN SA':'SERVENG',
+  'TELETEX COMPUTADORES E SISTEMAS LTDA':'TELETEX',
+  'TOTVS SA':'TOTVS'
+};
+// Valor/hora por chave "cli_apo + tarefa" — cruzamento com Horas Abertas (snapshot Mai/26)
+// Quando não tiver, usa fallback (média) ou marca como N/A
+var BH_VALOR_HORA = {
+  'AGROSUL MAQUINAS LTDA||Banco de horas 2025-2026': 128.50,
+  'ASTRA S A INDUSTRIA E COMERCIO||Banco de horas': 170.00,
+  'ATITUS EDUCACAO S.A||Banco de horas': null,
+  'AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)||Banco de horas': null,
+  'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||Atendimento Power Plataforms': 288.00,
+  'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||Banco de horas Cloud Infra DBA': 150.00,
+  'BUNTECH TECNOLOGIA EM INSUMOS LTDA||Banco de horas 2026': 158.51,
+  'COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A||Banco de horas': 135.08,
+  'DKT DO BRASIL PRODUTOS DE USO PESSOAL||Banco de horas': 45.00,
+  'DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA||Banco de horas': null,
+  'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO||Banco de horas 2026': null,
+  'FADEL TRANSPORTES||Banco de horas': 200.00,
+  'FINPEC AGRONEGOCIOS LTDA||Banco de horas': null,
+  'HELMAG DO BRASIL MERCANTIL LTDA||Banco de horas': null,
+  'IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||Banco de horas 26-27': 150.00,
+  'INTEGRADA COOPERATIVA AGROINDUSTRIAL||Banco de horas 2025-2026': null,
+  'JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI||Banco de horas': null,
+  'METALNOX INDUSTRIA E COMERCIO LTDA||Banco de horas DBA 2025-2026': null,
+  'NSX BRASIL SA||Banco de horas': 150.21,
+  'PECVAL INDUSTRIA LTDA||Banco de horas de desenvolvimento (Inativo)': 135.00,
+  'PECVAL INDUSTRIA LTDA||Banco de horas de sustentação (Inativo)': 135.00,
+  'PLASTIGLAS D MEXICO||Sustentação Datasul': null,
+  'SERVENG CIVILSAN SA||Banco de horas 2026-2027': 125.22,
+  'TELETEX COMPUTADORES E SISTEMAS LTDA||Banco de horas GWMS e DBA': null,
+  'TOTVS SA||Atendimento Totvs RS Fluig': null,
+  'TOTVS SA||Sustentação do ambiente - Comercial': null,
+  'TOTVS SA||Sustentação do ambiente - Extras': null
+};
+// Snapshot dos 28 contratos. Tempos em "HH:MM" (do apontamento). %mes é decimal.
+var BH_CONTRATOS = [
+  {cli:'AGROSUL MAQUINAS LTDA',projeto:'PBH202106-02A - Banco de horas',tarefa:'Banco de horas 2025-2026',inicio:'2025-07-01',fim:'2026-06-30',meses:12,pool:'344:00',livre:'113:56',max_exc:'00:00',pool_mes:'28:40',cons_mes:'05:15',pct_mes:18.31,saldo_mes:'23:25'},
+  {cli:'ASTRA S A INDUSTRIA E COMERCIO',projeto:'PHA202602-02A - Horas abertas atuação datasul',tarefa:'Banco de horas',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'500:00',livre:'500:00',max_exc:'00:00',pool_mes:'41:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'41:40'},
+  {cli:'ATITUS EDUCACAO S.A',projeto:'PBH202502-06A - Banco de horas 2026',tarefa:'Banco de horas',inicio:'2026-03-01',fim:'2027-02-28',meses:12,pool:'456:00',livre:'382:30',max_exc:'00:00',pool_mes:'38:00',cons_mes:'03:00',pct_mes:7.89,saldo_mes:'35:00'},
+  {cli:'AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)',projeto:'PSG202512-02A - Banco de horas Datasul',tarefa:'Banco de horas',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'432:00',livre:'332:00',max_exc:'00:00',pool_mes:'36:00',cons_mes:'03:00',pct_mes:8.33,saldo_mes:'33:00'},
+  {cli:'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.',projeto:'PAMS20231212-01E - Sustentação do ambiente',tarefa:'Atendimento Power Plataforms',inicio:'2024-07-01',fim:'2027-01-31',meses:31,pool:'240:00',livre:'-453:15',max_exc:'500:00',pool_mes:'23:52',cons_mes:'07:00',pct_mes:29.32,saldo_mes:'16:52'},
+  {cli:'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.',projeto:'PAMS20231212-01E - Sustentação do ambiente',tarefa:'Banco de horas Cloud Infra DBA',inicio:'2024-02-01',fim:'2027-01-31',meses:36,pool:'840:00',livre:'-1295:39',max_exc:'500:00',pool_mes:'59:26',cons_mes:'89:15',pct_mes:150.14,saldo_mes:'-29:48'},
+  {cli:'BUNTECH TECNOLOGIA EM INSUMOS LTDA',projeto:'PBH202012-6A - Banco de horas',tarefa:'Banco de horas 2026',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'600:00',livre:'404:30',max_exc:'00:00',pool_mes:'50:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'50:00'},
+  {cli:'COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A',projeto:'POT202512-01A - Sustentação do ambiente 2026',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'600:00',livre:'292:30',max_exc:'00:00',pool_mes:'50:00',cons_mes:'09:15',pct_mes:18.50,saldo_mes:'40:45'},
+  {cli:'DKT DO BRASIL PRODUTOS DE USO PESSOAL',projeto:'PBH202510-04A - Banco de horas PROTHEUS',tarefa:'Banco de horas',inicio:'2025-12-01',fim:'2026-11-30',meses:12,pool:'480:00',livre:'147:00',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
+  {cli:'DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA',projeto:'PBH202207-04A - Banco de horas 25-26',tarefa:'Banco de horas',inicio:'2025-08-01',fim:'2026-07-31',meses:12,pool:'180:00',livre:'79:00',max_exc:'00:00',pool_mes:'15:00',cons_mes:'08:00',pct_mes:53.33,saldo_mes:'07:00'},
+  {cli:'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO',projeto:'PBH202410-05A - Banco de horas',tarefa:'Banco de horas 2026',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'480:00',livre:'334:30',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
+  {cli:'FADEL TRANSPORTES',projeto:'PBH202512-01A - Atendimentos gerais',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'180:00',livre:'163:00',max_exc:'00:00',pool_mes:'15:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'15:00'},
+  {cli:'FINPEC AGRONEGOCIOS LTDA',projeto:'PSG202512-01A - Sustentação Protheus',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'288:00',livre:'241:00',max_exc:'00:00',pool_mes:'24:00',cons_mes:'06:00',pct_mes:25.00,saldo_mes:'18:00'},
+  {cli:'HELMAG DO BRASIL MERCANTIL LTDA',projeto:'PBH202307-01A - Banco de horas 25-26',tarefa:'Banco de horas',inicio:'2025-09-01',fim:'2026-08-31',meses:12,pool:'240:00',livre:'65:15',max_exc:'00:00',pool_mes:'20:00',cons_mes:'12:00',pct_mes:60.00,saldo_mes:'08:00'},
+  {cli:'IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA',projeto:'PBH202203-01A - Banco de horas infra Totvs Datasul',tarefa:'Banco de horas 26-27',inicio:'2026-05-01',fim:'2027-04-30',meses:12,pool:'240:00',livre:'240:00',max_exc:'00:00',pool_mes:'20:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'20:00'},
+  {cli:'INTEGRADA COOPERATIVA AGROINDUSTRIAL',projeto:'PBH202410-01A - Banco de horas',tarefa:'Banco de horas 2025-2026',inicio:'2025-11-01',fim:'2026-10-31',meses:12,pool:'480:00',livre:'250:00',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
+  {cli:'JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI',projeto:'PBH202508-05A - Sustentação banco de dados',tarefa:'Banco de horas',inicio:'2025-08-15',fim:'2026-08-14',meses:12,pool:'180:00',livre:'72:30',max_exc:'00:00',pool_mes:'15:00',cons_mes:'08:00',pct_mes:53.33,saldo_mes:'07:00'},
+  {cli:'METALNOX INDUSTRIA E COMERCIO LTDA',projeto:'PBH202312-03A - Banco de horas DBA',tarefa:'Banco de horas DBA 2025-2026',inicio:'2025-07-01',fim:'2026-06-30',meses:12,pool:'240:00',livre:'62:52',max_exc:'00:00',pool_mes:'20:00',cons_mes:'08:00',pct_mes:40.00,saldo_mes:'12:00'},
+  {cli:'NSX BRASIL SA',projeto:'PBH202506-01A - Banco de Horas Sustentação Protheus',tarefa:'Banco de horas',inicio:'2025-06-01',fim:'2026-05-31',meses:12,pool:'5000:00',livre:'1558:15',max_exc:'00:00',pool_mes:'416:40',cons_mes:'284:45',pct_mes:68.34,saldo_mes:'131:55'},
+  {cli:'PECVAL INDUSTRIA LTDA',projeto:'PBH202404-04F - Sustentação do ambiente (Inativo)',tarefa:'Banco de horas de desenvolvimento (Inativo)',inicio:'2025-05-21',fim:'2026-05-20',meses:12,pool:'128:00',livre:'80:30',max_exc:'00:00',pool_mes:'10:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'10:40'},
+  {cli:'PECVAL INDUSTRIA LTDA',projeto:'PBH202404-04F - Sustentação do ambiente (Inativo)',tarefa:'Banco de horas de sustentação (Inativo)',inicio:'2025-05-21',fim:'2026-05-20',meses:12,pool:'680:00',livre:'172:30',max_exc:'00:00',pool_mes:'56:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'56:40'},
+  {cli:'PLASTIGLAS D MEXICO',projeto:'PBH202406-01A Suporte Datasul',tarefa:'Sustentação Datasul',inicio:'2024-11-01',fim:'2026-10-31',meses:24,pool:'1200:00',livre:'325:45',max_exc:'00:00',pool_mes:'50:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'50:00'},
+  {cli:'SERVENG CIVILSAN SA',projeto:'PBH202403-01A - Suporte infraestrutura Totvs',tarefa:'Banco de horas 2026-2027',inicio:'2026-04-01',fim:'2027-03-31',meses:12,pool:'840:00',livre:'705:30',max_exc:'00:00',pool_mes:'70:00',cons_mes:'50:00',pct_mes:71.43,saldo_mes:'20:00'},
+  {cli:'TELETEX COMPUTADORES E SISTEMAS LTDA',projeto:'PBH202112-01A - Banco de horas GWMS e DBA',tarefa:'Banco de horas GWMS e DBA',inicio:'2025-03-01',fim:'2027-02-28',meses:24,pool:'1536:00',livre:'737:30',max_exc:'00:00',pool_mes:'64:00',cons_mes:'31:30',pct_mes:49.22,saldo_mes:'32:30'},
+  {cli:'TOTVS SA',projeto:'Clientes do contrato de parceiro',tarefa:'Atendimento Totvs RS Fluig',inicio:'2024-11-01',fim:'2026-10-31',meses:24,pool:'1536:00',livre:'554:00',max_exc:'00:00',pool_mes:'64:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'64:00'},
+  {cli:'TOTVS SA',projeto:'Projeto Fadel',tarefa:'Sustentação do ambiente - Comercial',inicio:'2024-04-01',fim:'2027-03-31',meses:36,pool:'3000:00',livre:'982:00',max_exc:'00:00',pool_mes:'83:20',cons_mes:'00:00',pct_mes:0,saldo_mes:'83:20'},
+  {cli:'TOTVS SA',projeto:'Projeto Fadel',tarefa:'Sustentação do ambiente - Extras',inicio:'2024-04-01',fim:'2027-03-31',meses:36,pool:'1440:00',livre:'545:30',max_exc:'00:00',pool_mes:'43:20',cons_mes:'18:00',pct_mes:41.54,saldo_mes:'25:20'}
+];
+
+// ── Helpers ─────────────────────────────────────────────────
+// "344:30" → 344.5 horas decimais. Suporta negativo "-29:48" → -29.8
+function _bhHHMMtoH(s){
+  if(s==null) return 0;
+  var str = String(s).trim();
+  if(!str) return 0;
+  var neg = false;
+  if(str.charAt(0)==='-'){ neg = true; str = str.slice(1); }
+  var p = str.split(':');
+  if(p.length<2) return neg?-parseFloat(p[0]||0):parseFloat(p[0]||0);
+  var h = parseInt(p[0],10)||0;
+  var m = parseInt(p[1],10)||0;
+  var v = h + m/60;
+  return neg ? -v : v;
+}
+// 344.5 → "344:30" · -29.8 → "-29:48"
+function _bhHToHHMM(h){
+  if(h==null||isNaN(h)) return '0:00';
+  var neg = h<0; if(neg) h = -h;
+  var hh = Math.floor(h);
+  var mm = Math.round((h-hh)*60);
+  if(mm===60){ hh++; mm=0; }
+  return (neg?'-':'') + hh + ':' + (mm<10?'0':'') + mm;
+}
+// Display cliente: cli_apo → display via BH_MAPA_APONTA + ENM2
+function _bhDispCli(cli_apo){
+  var cliId = BH_MAPA_APONTA[cli_apo];
+  if(!cliId) return cli_apo;
+  return (typeof ENM2 !== 'undefined' && ENM2[cliId]) ? ENM2[cliId] : cliId;
+}
+// Status visual baseado em regras:
+//   crit: pct_mes >= 100% OU livre < 0 OU livre < pool_mes
+//   warn: pct_mes entre 70-99% OU livre < 2×pool_mes OU vigência termina em < 60d
+//   ok:   demais
+function _bhCalcStatus(c){
+  var livre = _bhHHMMtoH(c.livre);
+  var poolMes = _bhHHMMtoH(c.pool_mes);
+  var pctMes = c.pct_mes || 0;
+  // Crítico
+  if(pctMes >= 100) return 'crit';
+  if(livre < 0) return 'crit';
+  if(poolMes > 0 && livre < poolMes) return 'crit';
+  // Atenção
+  if(pctMes >= 70) return 'warn';
+  if(poolMes > 0 && livre < 2*poolMes) return 'warn';
+  // Vigência vencendo em <60d
+  var fim = new Date(c.fim + 'T00:00:00');
+  if(!isNaN(fim.getTime())){
+    var diasFim = Math.floor((fim.getTime() - Date.now())/(86400000));
+    if(diasFim >= 0 && diasFim < 60) return 'warn';
+  }
+  return 'ok';
+}
+// Health Score 0-100. Pondera: saldo%, consumo%, meses restantes
+function _bhCalcHealth(c){
+  var pool = _bhHHMMtoH(c.pool);
+  var livre = _bhHHMMtoH(c.livre);
+  var pctMes = c.pct_mes || 0;
+  // Saldo % (40% peso)
+  var saldoPct = pool > 0 ? Math.max(0, Math.min(100, (livre/pool)*100)) : 0;
+  // Consumo do mês inverso (30% peso) — quanto menor pct_mes, melhor
+  var consInv = Math.max(0, Math.min(100, 100 - pctMes));
+  // Meses restantes do contrato (30% peso)
+  var fim = new Date(c.fim + 'T00:00:00');
+  var mesesRest = 0;
+  if(!isNaN(fim.getTime())){
+    mesesRest = Math.max(0, Math.round((fim.getTime() - Date.now())/(86400000)/30));
+  }
+  var mesesScore = Math.min(100, (mesesRest / Math.max(1, c.meses)) * 100);
+  var score = saldoPct*0.4 + consInv*0.3 + mesesScore*0.3;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+// Filtra contratos (remove TESTE PROD etc) e enriquece com cálculos
+function _bhGetContratos(){
+  var filtroUp = BH_FILTRO_NOMES.map(function(n){return n.toUpperCase();});
+  return BH_CONTRATOS.filter(function(c){
+    var u = (c.cli||'').toUpperCase();
+    for(var i=0;i<filtroUp.length;i++) if(u.indexOf(filtroUp[i])!==-1) return false;
+    return true;
+  }).map(function(c){
+    var status = _bhCalcStatus(c);
+    var health = _bhCalcHealth(c);
+    var cliId = BH_MAPA_APONTA[c.cli] || '';
+    var disp = _bhDispCli(c.cli);
+    var valHora = BH_VALOR_HORA[c.cli + '||' + c.tarefa] || null;
+    var pool = _bhHHMMtoH(c.pool);
+    var livre = _bhHHMMtoH(c.livre);
+    var consumido = pool - livre;
+    var pctConsumidoTotal = pool > 0 ? Math.round((consumido/pool)*100*10)/10 : 0;
+    // Forecast: meses restantes vs ritmo médio
+    var poolMes = _bhHHMMtoH(c.pool_mes);
+    var consMes = _bhHHMMtoH(c.cons_mes);
+    var mesesAteAcabar = consMes > 0 ? Math.round((livre/consMes)*10)/10 : null;
+    var fim = new Date(c.fim + 'T00:00:00');
+    var mesesContrato = !isNaN(fim.getTime()) ? Math.round((fim.getTime()-Date.now())/(86400000)/30) : 0;
+    // Receita excedente (se estourou)
+    var receitaExc = 0;
+    if(livre < 0 && valHora) receitaExc = Math.abs(livre) * valHora;
+    return {
+      _raw: c,
+      cli_apo: c.cli,
+      cli_id: cliId,
+      display: disp,
+      projeto: c.projeto,
+      tarefa: c.tarefa,
+      inicio: c.inicio,
+      fim: c.fim,
+      meses_contrato: c.meses,
+      pool_h: pool,
+      livre_h: livre,
+      max_exc_h: _bhHHMMtoH(c.max_exc),
+      pool_mes_h: poolMes,
+      cons_mes_h: consMes,
+      pct_mes: c.pct_mes,
+      saldo_mes_h: _bhHHMMtoH(c.saldo_mes),
+      consumido_h: consumido,
+      pct_consumido_total: pctConsumidoTotal,
+      meses_ate_acabar: mesesAteAcabar,
+      meses_restantes_contrato: mesesContrato,
+      valor_hora: valHora,
+      receita_excedente: receitaExc,
+      status: status,
+      health: health
+    };
+  });
+}
+// Agregação geral (Termômetro)
+function _bhAggregate(){
+  var contratos = _bhGetContratos();
+  var crit = 0, warn = 0, ok = 0;
+  var horasExc = 0, receitaExc = 0;
+  var renovacoes90d = 0;
+  contratos.forEach(function(c){
+    if(c.status === 'crit') crit++;
+    else if(c.status === 'warn') warn++;
+    else ok++;
+    if(c.livre_h < 0) horasExc += Math.abs(c.livre_h);
+    receitaExc += c.receita_excedente;
+    if(c.meses_restantes_contrato >= 0 && c.meses_restantes_contrato < 3) renovacoes90d++;
+  });
+  var healthMedia = contratos.length ? Math.round(contratos.reduce(function(s,c){return s+c.health;},0) / contratos.length) : 0;
+  return {
+    total: contratos.length,
+    crit: crit, warn: warn, ok: ok,
+    horas_excedentes: horasExc,
+    receita_excedente_total: receitaExc,
+    renovacoes_em_90d: renovacoes90d,
+    health_media: healthMedia
+  };
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER da aba Contratos BH — hero + cards de ação + tabela
+// ════════════════════════════════════════════════════════════
+function renderContratosBH(){
+  var el = document.getElementById('bh-content');
+  if(!el) return;
+  var agg = _bhAggregate();
+  var contratos = _bhGetContratos().sort(function(a,b){
+    var rank = {crit:0,warn:1,ok:2};
+    if(rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
+    return a.health - b.health;
+  });
+  // Formatter moeda BR
+  var fmtBRL = function(v){
+    if(!v || isNaN(v)) return 'R$ 0,00';
+    return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  };
+  // ── Hero / Termômetro Geral ──
+  var snapLabel = (function(){
+    var mes = parseInt((BH_SNAPSHOT_DATE||'').slice(5),10);
+    var ano = (BH_SNAPSHOT_DATE||'').slice(2,4);
+    var nomes = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return (nomes[mes]||'?') + '/' + ano;
+  })();
+  var heroHTML = '<div class="bh-hero">'
+    + '<div class="bh-hero-title">'
+      + '<div><h2>Saúde do parque MSP</h2>'
+      + '<div class="bh-hero-sub">Snapshot ' + snapLabel + ' · ' + agg.total + ' contratos ativos · atualização manual (API em desenvolvimento)</div></div>'
+      + '<div class="bh-hero-health"><div class="bh-hero-health-num">' + agg.health_media + '</div><div class="bh-hero-health-lbl">/100<br>Saúde média</div></div>'
+    + '</div>'
+    + '<div class="bh-hero-cards">'
+      + '<div class="bh-hero-card crit">'
+        + '<div class="bh-hero-card-num">' + agg.crit + '</div>'
+        + '<div class="bh-hero-card-lbl">🔴 Crítico</div>'
+        + '<div class="bh-hero-card-sub">' + _bhHToHHMM(agg.horas_excedentes) + ' h estouradas</div>'
+      + '</div>'
+      + '<div class="bh-hero-card warn">'
+        + '<div class="bh-hero-card-num">' + agg.warn + '</div>'
+        + '<div class="bh-hero-card-lbl">🟡 Atenção</div>'
+        + '<div class="bh-hero-card-sub">monitorar este mês</div>'
+      + '</div>'
+      + '<div class="bh-hero-card ok">'
+        + '<div class="bh-hero-card-num">' + agg.ok + '</div>'
+        + '<div class="bh-hero-card-lbl">🟢 Saudável</div>'
+        + '<div class="bh-hero-card-sub">consumo dentro do esperado</div>'
+      + '</div>'
+      + '<div class="bh-hero-card receita">'
+        + '<div class="bh-hero-card-num">' + fmtBRL(agg.receita_excedente_total) + '</div>'
+        + '<div class="bh-hero-card-lbl">💸 Receita Excedente</div>'
+        + '<div class="bh-hero-card-sub">horas estouradas × valor/hora (a recuperar)</div>'
+      + '</div>'
+      + '<div class="bh-hero-card renov">'
+        + '<div class="bh-hero-card-num">' + agg.renovacoes_em_90d + '</div>'
+        + '<div class="bh-hero-card-lbl">📅 Renovações em 90d</div>'
+        + '<div class="bh-hero-card-sub">contratos próximos do fim</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  // ── Cards de Ação (clientes em crit/warn — top 6) ──
+  var emRisco = contratos.filter(function(c){return c.status !== 'ok';}).slice(0, 6);
+  var cardsHTML = '';
+  if(emRisco.length){
+    cardsHTML = '<div class="bh-acoes-wrap">'
+      + '<h3 class="bh-section-title">🎯 Cards de ação (top ' + emRisco.length + ' em risco)</h3>'
+      + '<div class="bh-acoes-grid">'
+      + emRisco.map(function(c){
+        var statusCls = c.status;
+        var emoji = c.status==='crit' ? '🔴' : '🟡';
+        var motivo = '';
+        if(c.pct_mes >= 100) motivo = 'Excedeu pool mensal em ' + (c.pct_mes-100).toFixed(0) + '%';
+        else if(c.livre_h < 0) motivo = 'Saldo total negativo — ' + _bhHToHHMM(c.livre_h) + 'h acumulado';
+        else if(c.livre_h < c.pool_mes_h) motivo = 'Saldo restante < 1 mês de pool';
+        else if(c.livre_h < 2*c.pool_mes_h) motivo = 'Saldo restante ~' + (c.livre_h/c.pool_mes_h).toFixed(1) + ' meses';
+        else if(c.pct_mes >= 70) motivo = 'Consumo mensal alto (' + c.pct_mes.toFixed(0) + '%)';
+        else if(c.meses_restantes_contrato < 60/30) motivo = 'Vence em ~' + c.meses_restantes_contrato + ' meses';
+        var acao = '';
+        if(c.livre_h < 0) acao = 'Renegociar / faturar excedente ' + fmtBRL(c.receita_excedente);
+        else if(c.pct_mes >= 100) acao = 'Acompanhar — pode renegociar pool mensal';
+        else if(c.livre_h < c.pool_mes_h*2) acao = 'Antecipar conversa de renovação';
+        else if(c.pct_mes >= 70) acao = 'Monitorar — risco de estouro mensal';
+        else acao = 'Avaliar tendência';
+        return '<div class="bh-acao-card ' + statusCls + '">'
+          + '<div class="bh-acao-hd">' + emoji + ' <strong>' + c.display + '</strong> · health ' + c.health + '</div>'
+          + '<div class="bh-acao-motivo">' + motivo + '</div>'
+          + '<div class="bh-acao-tarefa">' + c.tarefa + '</div>'
+          + '<div class="bh-acao-acao">→ ' + acao + '</div>'
+        + '</div>';
+      }).join('')
+      + '</div></div>';
+  }
+
+  // ── Tabela completa ──
+  var tabelaHTML = '<div class="bh-tab-wrap">'
+    + '<h3 class="bh-section-title">📋 Todos os contratos (ordenados por risco)</h3>'
+    + '<table class="bh-table">'
+    + '<thead><tr>'
+      + '<th>Status</th><th>Cliente</th><th>Tarefa</th><th>Health</th>'
+      + '<th class="r">Pool</th><th class="r">Saldo</th><th class="r">Pool/mês</th>'
+      + '<th class="r">Cons. mês</th><th class="r">%mês</th><th class="r">Saldo mês</th>'
+      + '<th>Vigência</th><th class="r">R$/h</th>'
+    + '</tr></thead><tbody>'
+    + contratos.map(function(c){
+      var emoji = c.status==='crit'?'🔴':(c.status==='warn'?'🟡':'🟢');
+      var pctCls = c.pct_mes >= 100 ? 'crit' : (c.pct_mes >= 70 ? 'warn' : '');
+      var saldoCls = c.livre_h < 0 ? 'crit' : (c.livre_h < c.pool_mes_h*2 ? 'warn' : '');
+      var healthCls = c.health < 30 ? 'crit' : (c.health < 60 ? 'warn' : 'ok');
+      var vigDisp = c.inicio.slice(8,10) + '/' + c.inicio.slice(5,7) + '/' + c.inicio.slice(2,4)
+                  + ' → ' + c.fim.slice(8,10) + '/' + c.fim.slice(5,7) + '/' + c.fim.slice(2,4);
+      var valHora = c.valor_hora ? ('R$ ' + c.valor_hora.toFixed(2).replace('.',',')) : '—';
+      return '<tr class="bh-row ' + c.status + '">'
+        + '<td>' + emoji + '</td>'
+        + '<td><strong>' + c.display + '</strong></td>'
+        + '<td title="' + c.projeto + '">' + c.tarefa + '</td>'
+        + '<td><span class="bh-health-pill ' + healthCls + '">' + c.health + '</span></td>'
+        + '<td class="r">' + _bhHToHHMM(c.pool_h) + '</td>'
+        + '<td class="r ' + saldoCls + '">' + _bhHToHHMM(c.livre_h) + '</td>'
+        + '<td class="r">' + _bhHToHHMM(c.pool_mes_h) + '</td>'
+        + '<td class="r">' + _bhHToHHMM(c.cons_mes_h) + '</td>'
+        + '<td class="r ' + pctCls + '">' + c.pct_mes.toFixed(2) + '%</td>'
+        + '<td class="r">' + _bhHToHHMM(c.saldo_mes_h) + '</td>'
+        + '<td class="bh-vig">' + vigDisp + '</td>'
+        + '<td class="r">' + valHora + '</td>'
+      + '</tr>';
+    }).join('')
+    + '</tbody></table></div>';
+
+  el.innerHTML = heroHTML + cardsHTML + tabelaHTML;
+}
 // "Ticket conta" = criado no mês. Considera APENAS tickets criados a
 // partir de 2026-01-01 (corte combinado — não traz histórico antigo).
 var SSG_CTR_START = new Date('2026-01-01T00:00:00');
