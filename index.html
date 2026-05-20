@@ -1396,6 +1396,44 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-health-pill.crit{background:rgba(244,63,94,.15);color:var(--danger)}
 .bh-health-pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
 .bh-health-pill.ok{background:rgba(16,185,129,.15);color:var(--ok)}
+/* Cards/linhas clicáveis */
+.bh-hero-card.clickable,.bh-acao-card.clickable{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.bh-hero-card.clickable:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.bh-acao-card.clickable:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.bh-table tr.clickable{cursor:pointer}
+.bh-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}
+.bh-section-head .bh-section-title{margin:0}
+/* Status badge na tabela */
+.bh-status-badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10.5px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;white-space:nowrap}
+.bh-status-badge.crit{background:rgba(244,63,94,.15);color:var(--danger)}
+.bh-status-badge.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+.bh-status-badge.ok{background:rgba(16,185,129,.15);color:var(--ok)}
+.bh-acao-cell{font-size:11px;color:var(--sub);max-width:240px}
+/* Modal de drill-down */
+.bh-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px 20px;overflow-y:auto;backdrop-filter:blur(4px)}
+.bh-modal-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px 32px;max-width:1100px;width:100%;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.5);max-height:calc(100vh - 100px);overflow-y:auto}
+.bh-modal-card h2{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);margin:0 0 18px 0;letter-spacing:-.01em;padding-right:40px}
+.bh-modal-close{position:absolute;top:18px;right:18px;width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:18px;cursor:pointer;font-family:inherit;transition:all .15s}
+.bh-modal-close:hover{background:var(--danger);border-color:var(--danger);color:#fff}
+.bh-modal-empty{padding:30px;text-align:center;color:var(--muted);font-style:italic}
+.bh-drill-list{display:grid;gap:12px}
+/* Card de detalhe (usado no modal) */
+.bh-detalhe-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 18px;border-left-width:4px}
+.bh-detalhe-card.crit{border-left-color:var(--danger)}
+.bh-detalhe-card.warn{border-left-color:var(--warn)}
+.bh-detalhe-card.ok{border-left-color:var(--ok)}
+.bh-det-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}
+.bh-det-cli{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px}
+.bh-det-tarefa{font-size:11px;color:var(--muted)}
+.bh-det-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px 14px;margin-bottom:12px;font-family:var(--mono)}
+.bh-det-cell label{display:block;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.bh-det-cell strong{font-size:12px;color:var(--text);font-weight:700}
+.bh-det-cell strong.crit{color:var(--danger)}
+.bh-det-cell strong.warn{color:var(--warn)}
+.bh-det-acao{padding:10px 12px;background:var(--bg2);border-radius:6px;font-size:12.5px;color:var(--text)}
+.bh-det-acao-lbl{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+.bh-det-projeto{font-size:10.5px;color:var(--muted);margin-top:10px;font-family:var(--mono)}
+@media(max-width:900px){.bh-det-grid{grid-template-columns:repeat(2,1fr)}.bh-hero-cards{grid-template-columns:repeat(2,1fr)}}
 /* Gate de visibilidade: nav-gestao-only só aparece em mode=gestao (script abaixo) */
 body[data-mode="squad"] .nav-gestao-only,
 body[data-mode="atendente"] .nav-gestao-only,
@@ -14511,28 +14549,58 @@ function _bhDispCli(cli_apo){
   if(!cliId) return cli_apo;
   return (typeof ENM2 !== 'undefined' && ENM2[cliId]) ? ENM2[cliId] : cliId;
 }
-// Status visual baseado em regras:
-//   crit: pct_mes >= 100% OU livre < 0 OU livre < pool_mes
-//   warn: pct_mes entre 70-99% OU livre < 2×pool_mes OU vigência termina em < 60d
-//   ok:   demais
+// Classificação de risco (regras Fabio 2026-05):
+//   CRÍTICO: saldo<0 · OU pct_mes≥150% · OU vence em ≤30d
+//   ATENÇÃO: vence 31-90d · OU pct_mes 120-149% · OU saldo<2×pool_mes (tendência estouro) · OU health<50
+//   SAUDÁVEL: demais
 function _bhCalcStatus(c){
   var livre = _bhHHMMtoH(c.livre);
   var poolMes = _bhHHMMtoH(c.pool_mes);
   var pctMes = c.pct_mes || 0;
-  // Crítico
-  if(pctMes >= 100) return 'crit';
-  if(livre < 0) return 'crit';
-  if(poolMes > 0 && livre < poolMes) return 'crit';
-  // Atenção
-  if(pctMes >= 70) return 'warn';
-  if(poolMes > 0 && livre < 2*poolMes) return 'warn';
-  // Vigência vencendo em <60d
+  // Dias até fim do contrato
   var fim = new Date(c.fim + 'T00:00:00');
-  if(!isNaN(fim.getTime())){
-    var diasFim = Math.floor((fim.getTime() - Date.now())/(86400000));
-    if(diasFim >= 0 && diasFim < 60) return 'warn';
-  }
+  var diasFim = !isNaN(fim.getTime()) ? Math.floor((fim.getTime() - Date.now())/86400000) : 999;
+  // ── CRÍTICO ──
+  if(livre < 0) return 'crit';                            // saldo negativo
+  if(pctMes >= 150) return 'crit';                        // consumo muito acima do esperado
+  if(diasFim >= 0 && diasFim <= 30) return 'crit';        // vencendo em ≤30d
+  // ── ATENÇÃO ──
+  if(diasFim >= 31 && diasFim <= 90) return 'warn';       // vence 31-90d
+  if(pctMes >= 120) return 'warn';                        // consumo 120-149%
+  if(poolMes > 0 && livre < 2*poolMes) return 'warn';     // tendência clara de estouro
+  if(pctMes > 100 && livre > 0) return 'warn';            // saldo positivo mas superando ritmo
   return 'ok';
+}
+// Ação recomendada por contrato (string pronta pra exibir)
+function _bhGetAcao(c){
+  var livre = _bhHHMMtoH(c.livre);
+  var poolMes = _bhHHMMtoH(c.pool_mes);
+  var pctMes = c.pct_mes || 0;
+  var fim = new Date(c.fim + 'T00:00:00');
+  var diasFim = !isNaN(fim.getTime()) ? Math.floor((fim.getTime() - Date.now())/86400000) : 999;
+  // Saldo negativo + vencimento crítico
+  if(livre < 0 && diasFim >= 0 && diasFim <= 30){
+    return 'Renovação crítica + cobrança de excedente';
+  }
+  if(livre < 0){
+    return 'Renegociar / faturar excedente';
+  }
+  if(diasFim >= 0 && diasFim <= 30){
+    return 'Priorizar renovação';
+  }
+  if(diasFim >= 31 && diasFim <= 90){
+    return 'Iniciar renovação';
+  }
+  if(pctMes >= 120){
+    return 'Monitorar — risco de estouro mensal';
+  }
+  if(pctMes > 100){
+    return 'Monitorar consumo — superando ritmo esperado';
+  }
+  if(poolMes > 0 && livre < 2*poolMes){
+    return 'Antecipar renovação — saldo baixo';
+  }
+  return 'Sem ação necessária';
 }
 // Health Score 0-100. Pondera: saldo%, consumo%, meses restantes
 function _bhCalcHealth(c){
@@ -14603,7 +14671,12 @@ function _bhGetContratos(){
       valor_hora: valHora,
       receita_excedente: receitaExc,
       status: status,
-      health: health
+      health: health,
+      acao: _bhGetAcao(c),
+      dias_ate_fim: (function(){
+        var fim = new Date(c.fim + 'T00:00:00');
+        return !isNaN(fim.getTime()) ? Math.floor((fim.getTime() - Date.now())/86400000) : 999;
+      })()
     };
   });
 }
@@ -14633,57 +14706,70 @@ function _bhAggregate(){
 }
 
 // ════════════════════════════════════════════════════════════
-// RENDER da aba Contratos BH — hero + cards de ação + tabela
+// RENDER da aba Contratos BH — hero clicável + cards de ação + tabela com drill-down
 // ════════════════════════════════════════════════════════════
+// Formatador moeda BR (reusado)
+function _bhFmtBRL(v){
+  if(!v || isNaN(v)) return 'R$ 0,00';
+  return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+// Prioridade de ordenação dos cards de ação (per spec Fabio):
+// 1. Estourado com maior receita excedente
+// 2. Vence ≤30d
+// 3. Tendência de estouro (consumo > esperado)
+// 4. Vence 31-90d
+// 5. Atenção preventiva (saldo baixo, health baixo)
+function _bhPrioRisco(c){
+  if(c.livre_h < 0) return 100 - Math.min(99, Math.round((c.receita_excedente||0)/10000));
+  if(c.dias_ate_fim >= 0 && c.dias_ate_fim <= 30) return 200 + c.dias_ate_fim;
+  if(c.pct_mes >= 120) return 250 + (200 - Math.min(200, c.pct_mes));
+  if(c.dias_ate_fim >= 31 && c.dias_ate_fim <= 90) return 400 + c.dias_ate_fim;
+  if(c.status === 'warn') return 500 + c.health;
+  return 1000 + c.health;
+}
 function renderContratosBH(){
   var el = document.getElementById('bh-content');
   if(!el) return;
   var agg = _bhAggregate();
   var contratos = _bhGetContratos().sort(function(a,b){
-    var rank = {crit:0,warn:1,ok:2};
-    if(rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
-    return a.health - b.health;
+    return _bhPrioRisco(a) - _bhPrioRisco(b);
   });
-  // Formatter moeda BR
-  var fmtBRL = function(v){
-    if(!v || isNaN(v)) return 'R$ 0,00';
-    return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  };
-  // ── Hero / Termômetro Geral ──
+  // Snapshot label legível
   var snapLabel = (function(){
     var mes = parseInt((BH_SNAPSHOT_DATE||'').slice(5),10);
     var ano = (BH_SNAPSHOT_DATE||'').slice(2,4);
     var nomes = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     return (nomes[mes]||'?') + '/' + ano;
   })();
+  // ── Hero ──
   var heroHTML = '<div class="bh-hero">'
     + '<div class="bh-hero-title">'
-      + '<div><h2>Saúde do parque MSP</h2>'
-      + '<div class="bh-hero-sub">Snapshot ' + snapLabel + ' · ' + agg.total + ' contratos ativos · atualização manual (API em desenvolvimento)</div></div>'
+      + '<div><h2>Saúde dos contratos de Banco de Horas</h2>'
+      + '<div class="bh-hero-sub">Snapshot ' + snapLabel + ' · ' + agg.total + ' contratos ativos · atualização manual (API em desenvolvimento) · <em>clique nos cards pra ver detalhes</em></div></div>'
       + '<div class="bh-hero-health"><div class="bh-hero-health-num">' + agg.health_media + '</div><div class="bh-hero-health-lbl">/100<br>Saúde média</div></div>'
     + '</div>'
     + '<div class="bh-hero-cards">'
-      + '<div class="bh-hero-card crit">'
+      + '<div class="bh-hero-card crit clickable" onclick="_bhDrillDown(\'crit\')">'
         + '<div class="bh-hero-card-num">' + agg.crit + '</div>'
         + '<div class="bh-hero-card-lbl">🔴 Crítico</div>'
         + '<div class="bh-hero-card-sub">' + _bhHToHHMM(agg.horas_excedentes) + ' h estouradas</div>'
       + '</div>'
-      + '<div class="bh-hero-card warn">'
+      + '<div class="bh-hero-card warn clickable" onclick="_bhDrillDown(\'warn\')">'
         + '<div class="bh-hero-card-num">' + agg.warn + '</div>'
         + '<div class="bh-hero-card-lbl">🟡 Atenção</div>'
         + '<div class="bh-hero-card-sub">monitorar este mês</div>'
       + '</div>'
-      + '<div class="bh-hero-card ok">'
+      + '<div class="bh-hero-card ok clickable" onclick="_bhDrillDown(\'ok\')">'
         + '<div class="bh-hero-card-num">' + agg.ok + '</div>'
         + '<div class="bh-hero-card-lbl">🟢 Saudável</div>'
         + '<div class="bh-hero-card-sub">consumo dentro do esperado</div>'
       + '</div>'
-      + '<div class="bh-hero-card receita">'
-        + '<div class="bh-hero-card-num">' + fmtBRL(agg.receita_excedente_total) + '</div>'
+      + '<div class="bh-hero-card receita clickable" onclick="_bhDrillDown(\'receita\')">'
+        + '<div class="bh-hero-card-num">' + _bhFmtBRL(agg.receita_excedente_total) + '</div>'
         + '<div class="bh-hero-card-lbl">💸 Receita Excedente</div>'
         + '<div class="bh-hero-card-sub">horas estouradas × valor/hora (a recuperar)</div>'
       + '</div>'
-      + '<div class="bh-hero-card renov">'
+      + '<div class="bh-hero-card renov clickable" onclick="_bhDrillDown(\'renov90d\')">'
         + '<div class="bh-hero-card-num">' + agg.renovacoes_em_90d + '</div>'
         + '<div class="bh-hero-card-lbl">📅 Renovações em 90d</div>'
         + '<div class="bh-hero-card-sub">contratos próximos do fim</div>'
@@ -14691,34 +14777,33 @@ function renderContratosBH(){
     + '</div>'
   + '</div>';
 
-  // ── Cards de Ação (clientes em crit/warn — top 6) ──
-  var emRisco = contratos.filter(function(c){return c.status !== 'ok';}).slice(0, 6);
+  // ── Cards de Ação (só problemas — ordenados por prioridade) ──
+  var emRisco = contratos.filter(function(c){return c.status !== 'ok';});
+  var top6 = emRisco.slice(0, 6);
   var cardsHTML = '';
-  if(emRisco.length){
+  if(top6.length){
     cardsHTML = '<div class="bh-acoes-wrap">'
-      + '<h3 class="bh-section-title">🎯 Cards de ação (top ' + emRisco.length + ' em risco)</h3>'
+      + '<div class="bh-section-head">'
+        + '<h3 class="bh-section-title">🎯 Ações prioritárias (top ' + top6.length + ' de ' + emRisco.length + ' em risco)</h3>'
+        + (emRisco.length > 6 ? '<button class="eq-btn" onclick="_bhDrillDown(\'risco\')">Ver todos os ' + emRisco.length + ' em risco →</button>' : '')
+      + '</div>'
       + '<div class="bh-acoes-grid">'
-      + emRisco.map(function(c){
-        var statusCls = c.status;
+      + top6.map(function(c){
         var emoji = c.status==='crit' ? '🔴' : '🟡';
         var motivo = '';
-        if(c.pct_mes >= 100) motivo = 'Excedeu pool mensal em ' + (c.pct_mes-100).toFixed(0) + '%';
-        else if(c.livre_h < 0) motivo = 'Saldo total negativo — ' + _bhHToHHMM(c.livre_h) + 'h acumulado';
-        else if(c.livre_h < c.pool_mes_h) motivo = 'Saldo restante < 1 mês de pool';
-        else if(c.livre_h < 2*c.pool_mes_h) motivo = 'Saldo restante ~' + (c.livre_h/c.pool_mes_h).toFixed(1) + ' meses';
-        else if(c.pct_mes >= 70) motivo = 'Consumo mensal alto (' + c.pct_mes.toFixed(0) + '%)';
-        else if(c.meses_restantes_contrato < 60/30) motivo = 'Vence em ~' + c.meses_restantes_contrato + ' meses';
-        var acao = '';
-        if(c.livre_h < 0) acao = 'Renegociar / faturar excedente ' + fmtBRL(c.receita_excedente);
-        else if(c.pct_mes >= 100) acao = 'Acompanhar — pode renegociar pool mensal';
-        else if(c.livre_h < c.pool_mes_h*2) acao = 'Antecipar conversa de renovação';
-        else if(c.pct_mes >= 70) acao = 'Monitorar — risco de estouro mensal';
-        else acao = 'Avaliar tendência';
-        return '<div class="bh-acao-card ' + statusCls + '">'
+        if(c.livre_h < 0) motivo = 'Saldo negativo: ' + _bhHToHHMM(c.livre_h) + 'h';
+        else if(c.pct_mes >= 150) motivo = 'Consumo muito acima — ' + c.pct_mes.toFixed(0) + '% do mensal';
+        else if(c.dias_ate_fim >= 0 && c.dias_ate_fim <= 30) motivo = 'Vence em ' + c.dias_ate_fim + ' dias';
+        else if(c.dias_ate_fim >= 31 && c.dias_ate_fim <= 90) motivo = 'Vence em ' + c.dias_ate_fim + ' dias';
+        else if(c.pct_mes >= 120) motivo = 'Consumo ' + c.pct_mes.toFixed(0) + '% do mensal (acima de 120%)';
+        else if(c.pct_mes > 100) motivo = 'Consumo superando ritmo (' + c.pct_mes.toFixed(0) + '%)';
+        else if(c.pool_mes_h > 0 && c.livre_h < 2*c.pool_mes_h) motivo = 'Saldo ~' + (c.livre_h/c.pool_mes_h).toFixed(1) + ' meses no ritmo atual';
+        else motivo = 'Health ' + c.health + '/100';
+        return '<div class="bh-acao-card ' + c.status + ' clickable" onclick="_bhDrillDownContrato(' + contratos.indexOf(c) + ')">'
           + '<div class="bh-acao-hd">' + emoji + ' <strong>' + c.display + '</strong> · health ' + c.health + '</div>'
           + '<div class="bh-acao-motivo">' + motivo + '</div>'
           + '<div class="bh-acao-tarefa">' + c.tarefa + '</div>'
-          + '<div class="bh-acao-acao">→ ' + acao + '</div>'
+          + '<div class="bh-acao-acao">→ ' + c.acao + (c.receita_excedente > 0 ? ' · ' + _bhFmtBRL(c.receita_excedente) : '') + '</div>'
         + '</div>';
       }).join('')
       + '</div></div>';
@@ -14726,40 +14811,134 @@ function renderContratosBH(){
 
   // ── Tabela completa ──
   var tabelaHTML = '<div class="bh-tab-wrap">'
-    + '<h3 class="bh-section-title">📋 Todos os contratos (ordenados por risco)</h3>'
+    + '<h3 class="bh-section-title">📋 Todos os contratos · ordenados por risco · clique numa linha pra detalhe</h3>'
     + '<table class="bh-table">'
     + '<thead><tr>'
       + '<th>Status</th><th>Cliente</th><th>Tarefa</th><th>Health</th>'
-      + '<th class="r">Pool</th><th class="r">Saldo</th><th class="r">Pool/mês</th>'
-      + '<th class="r">Cons. mês</th><th class="r">%mês</th><th class="r">Saldo mês</th>'
-      + '<th>Vigência</th><th class="r">R$/h</th>'
+      + '<th class="r">Pool</th><th class="r">Saldo</th>'
+      + '<th class="r">Cons. mês</th><th class="r">%mês</th>'
+      + '<th>Vigência</th><th class="r">Dias</th><th class="r">R$/h</th><th>Ação recomendada</th>'
     + '</tr></thead><tbody>'
     + contratos.map(function(c){
       var emoji = c.status==='crit'?'🔴':(c.status==='warn'?'🟡':'🟢');
-      var pctCls = c.pct_mes >= 100 ? 'crit' : (c.pct_mes >= 70 ? 'warn' : '');
-      var saldoCls = c.livre_h < 0 ? 'crit' : (c.livre_h < c.pool_mes_h*2 ? 'warn' : '');
+      var pctCls = c.pct_mes >= 150 ? 'crit' : (c.pct_mes >= 120 ? 'warn' : '');
+      var saldoCls = c.livre_h < 0 ? 'crit' : (c.pool_mes_h > 0 && c.livre_h < 2*c.pool_mes_h ? 'warn' : '');
       var healthCls = c.health < 30 ? 'crit' : (c.health < 60 ? 'warn' : 'ok');
+      var diasCls = c.dias_ate_fim >= 0 && c.dias_ate_fim <= 30 ? 'crit' : (c.dias_ate_fim >= 31 && c.dias_ate_fim <= 90 ? 'warn' : '');
       var vigDisp = c.inicio.slice(8,10) + '/' + c.inicio.slice(5,7) + '/' + c.inicio.slice(2,4)
                   + ' → ' + c.fim.slice(8,10) + '/' + c.fim.slice(5,7) + '/' + c.fim.slice(2,4);
       var valHora = c.valor_hora ? ('R$ ' + c.valor_hora.toFixed(2).replace('.',',')) : '—';
-      return '<tr class="bh-row ' + c.status + '">'
-        + '<td>' + emoji + '</td>'
+      var idx = contratos.indexOf(c);
+      return '<tr class="bh-row ' + c.status + ' clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
+        + '<td><span class="bh-status-badge ' + c.status + '">' + emoji + ' ' + (c.status==='crit'?'CRÍ':c.status==='warn'?'ATE':'OK') + '</span></td>'
         + '<td><strong>' + c.display + '</strong></td>'
         + '<td title="' + c.projeto + '">' + c.tarefa + '</td>'
         + '<td><span class="bh-health-pill ' + healthCls + '">' + c.health + '</span></td>'
         + '<td class="r">' + _bhHToHHMM(c.pool_h) + '</td>'
         + '<td class="r ' + saldoCls + '">' + _bhHToHHMM(c.livre_h) + '</td>'
-        + '<td class="r">' + _bhHToHHMM(c.pool_mes_h) + '</td>'
         + '<td class="r">' + _bhHToHHMM(c.cons_mes_h) + '</td>'
         + '<td class="r ' + pctCls + '">' + c.pct_mes.toFixed(2) + '%</td>'
-        + '<td class="r">' + _bhHToHHMM(c.saldo_mes_h) + '</td>'
         + '<td class="bh-vig">' + vigDisp + '</td>'
+        + '<td class="r ' + diasCls + '">' + c.dias_ate_fim + 'd</td>'
         + '<td class="r">' + valHora + '</td>'
+        + '<td class="bh-acao-cell">' + c.acao + '</td>'
       + '</tr>';
     }).join('')
     + '</tbody></table></div>';
 
-  el.innerHTML = heroHTML + cardsHTML + tabelaHTML;
+  // Container do modal (vazio inicial — populado no drill-down)
+  el.innerHTML = heroHTML + cardsHTML + tabelaHTML + '<div id="bh-modal" class="bh-modal-overlay" style="display:none" onclick="if(event.target===this)_bhFecharDrill()"><div class="bh-modal-card" id="bh-modal-card"></div></div>';
+}
+
+// ════════════════════════════════════════════════════════════
+// DRILL-DOWN — modal mostrando contratos relacionados ao filtro
+// tipo: 'crit' | 'warn' | 'ok' | 'receita' | 'renov90d' | 'risco'
+// ════════════════════════════════════════════════════════════
+window._bhDrillDown = function(tipo){
+  var contratos = _bhGetContratos().sort(function(a,b){return _bhPrioRisco(a) - _bhPrioRisco(b);});
+  var titulo = '', icone = '', filtered = [];
+  if(tipo === 'crit'){
+    titulo = 'Contratos Críticos'; icone = '🔴';
+    filtered = contratos.filter(function(c){return c.status === 'crit';});
+  } else if(tipo === 'warn'){
+    titulo = 'Contratos em Atenção'; icone = '🟡';
+    filtered = contratos.filter(function(c){return c.status === 'warn';});
+  } else if(tipo === 'ok'){
+    titulo = 'Contratos Saudáveis'; icone = '🟢';
+    filtered = contratos.filter(function(c){return c.status === 'ok';});
+  } else if(tipo === 'receita'){
+    titulo = 'Receita Excedente a Recuperar'; icone = '💸';
+    filtered = contratos.filter(function(c){return c.receita_excedente > 0;});
+  } else if(tipo === 'renov90d'){
+    titulo = 'Renovações em até 90 dias'; icone = '📅';
+    filtered = contratos.filter(function(c){return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90;});
+  } else if(tipo === 'risco'){
+    titulo = 'Todos os contratos em risco'; icone = '🎯';
+    filtered = contratos.filter(function(c){return c.status !== 'ok';});
+  }
+  if(!filtered.length){
+    _bhMontarModal('<h2>' + icone + ' ' + titulo + '</h2><p class="bh-modal-empty">Nenhum contrato neste filtro.</p>');
+    return;
+  }
+  var totalReceita = filtered.reduce(function(s,c){return s + (c.receita_excedente||0);}, 0);
+  var body = '<h2>' + icone + ' ' + titulo + ' · ' + filtered.length + ' contrato' + (filtered.length!==1?'s':'') + (totalReceita>0?' · ' + _bhFmtBRL(totalReceita):'') + '</h2>'
+    + '<div class="bh-drill-list">'
+    + filtered.map(function(c){return _bhCardDetalhe(c, contratos.indexOf(c));}).join('')
+    + '</div>';
+  _bhMontarModal(body);
+};
+window._bhDrillDownContrato = function(idx){
+  var contratos = _bhGetContratos().sort(function(a,b){return _bhPrioRisco(a) - _bhPrioRisco(b);});
+  var c = contratos[idx];
+  if(!c) return;
+  _bhMontarModal('<h2>📄 Detalhe do contrato</h2>' + _bhCardDetalhe(c, idx, true));
+};
+window._bhFecharDrill = function(){
+  var m = document.getElementById('bh-modal');
+  if(m) m.style.display = 'none';
+};
+function _bhMontarModal(htmlBody){
+  var m = document.getElementById('bh-modal');
+  var card = document.getElementById('bh-modal-card');
+  if(!m || !card) return;
+  card.innerHTML = '<button class="bh-modal-close" onclick="_bhFecharDrill()" title="Fechar (Esc)">×</button>' + htmlBody;
+  m.style.display = 'flex';
+}
+// Tecla Esc fecha o modal
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var m = document.getElementById('bh-modal');
+    if(m && m.style.display !== 'none') _bhFecharDrill();
+  }
+});
+// Card de detalhe completo de 1 contrato — usado em listas e drill-down individual
+function _bhCardDetalhe(c, idx, full){
+  var emoji = c.status==='crit'?'🔴':(c.status==='warn'?'🟡':'🟢');
+  var vigDisp = c.inicio.slice(8,10) + '/' + c.inicio.slice(5,7) + '/' + c.inicio.slice(0,4)
+              + ' → ' + c.fim.slice(8,10) + '/' + c.fim.slice(5,7) + '/' + c.fim.slice(0,4);
+  var valHora = c.valor_hora ? _bhFmtBRL(c.valor_hora) : 'N/A';
+  var diasFimDisp = c.dias_ate_fim >= 0 ? c.dias_ate_fim + ' dias' : 'expirado há ' + Math.abs(c.dias_ate_fim) + 'd';
+  return '<div class="bh-detalhe-card ' + c.status + '">'
+    + '<div class="bh-det-hd">'
+      + '<div><div class="bh-det-cli">' + emoji + ' ' + c.display + '</div>'
+      + '<div class="bh-det-tarefa">' + c.tarefa + '</div></div>'
+      + '<span class="bh-health-pill ' + (c.health<30?'crit':c.health<60?'warn':'ok') + '">' + c.health + '</span>'
+    + '</div>'
+    + '<div class="bh-det-grid">'
+      + '<div class="bh-det-cell"><label>Pool contratado</label><strong>' + _bhHToHHMM(c.pool_h) + ' h</strong></div>'
+      + '<div class="bh-det-cell"><label>Saldo atual</label><strong class="' + (c.livre_h<0?'crit':'') + '">' + _bhHToHHMM(c.livre_h) + ' h</strong></div>'
+      + '<div class="bh-det-cell"><label>Pool mensal</label><strong>' + _bhHToHHMM(c.pool_mes_h) + ' h</strong></div>'
+      + '<div class="bh-det-cell"><label>Consumo mês</label><strong>' + _bhHToHHMM(c.cons_mes_h) + ' h</strong></div>'
+      + '<div class="bh-det-cell"><label>% do mês</label><strong class="' + (c.pct_mes>=150?'crit':c.pct_mes>=120?'warn':'') + '">' + c.pct_mes.toFixed(2) + '%</strong></div>'
+      + '<div class="bh-det-cell"><label>Saldo do mês</label><strong>' + _bhHToHHMM(c.saldo_mes_h) + ' h</strong></div>'
+      + '<div class="bh-det-cell"><label>Vigência</label><strong>' + vigDisp + '</strong></div>'
+      + '<div class="bh-det-cell"><label>Dias até fim</label><strong class="' + (c.dias_ate_fim<=30?'crit':c.dias_ate_fim<=90?'warn':'') + '">' + diasFimDisp + '</strong></div>'
+      + '<div class="bh-det-cell"><label>Valor/hora</label><strong>' + valHora + '</strong></div>'
+      + '<div class="bh-det-cell"><label>Receita excedente</label><strong class="' + (c.receita_excedente>0?'crit':'') + '">' + _bhFmtBRL(c.receita_excedente) + '</strong></div>'
+    + '</div>'
+    + '<div class="bh-det-acao"><span class="bh-det-acao-lbl">Ação:</span> <strong>' + c.acao + '</strong></div>'
+    + (full ? '<div class="bh-det-projeto">Projeto: ' + c.projeto + ' · cliente apontamento: <em>' + c.cli_apo + '</em></div>' : '')
+  + '</div>';
 }
 // "Ticket conta" = criado no mês. Considera APENAS tickets criados a
 // partir de 2026-01-01 (corte combinado — não traz histórico antigo).
