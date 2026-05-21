@@ -15353,7 +15353,21 @@ function _bhGetContratos(){
       financeiro: fin,   // {valor_venda, margem_venda, lucro_liquido, margem_proj_vs_real, ...} ou null
       ultimo_snap: c.ultimo_snap || BH_SNAPSHOT_DATE,
       // v4.1 — tendência do pool (ritmo médio dos últimos 3 meses, quando pool zera)
-      tendencia_pool: tendPool
+      tendencia_pool: tendPool,
+      // v4.3 — campos da API live preservados (necessários pro Radar Financeiro)
+      _api_sale_value: c._api_sale_value,
+      _api_sale_margin: c._api_sale_margin,
+      _api_apto_h: c._api_apto_h,
+      _api_apto_bruto_h: c._api_apto_bruto_h,
+      _api_pct_consumido: c._api_pct_consumido,
+      _api_factor_hour: c._api_factor_hour,
+      _api_status: c._api_status,
+      _api_em_vigencia: c._api_em_vigencia,
+      _api_inativo_recente: c._api_inativo_recente,
+      _api_cli_alias: c._api_cli_alias,
+      _api_cli_id: c._api_cli_id,
+      _api_proj_id: c._api_proj_id,
+      _api_tarefa_id: c._api_tarefa_id
     };
   });
 }
