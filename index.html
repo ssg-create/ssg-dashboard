@@ -7055,6 +7055,9 @@ function renderHm(){
   var cw=46,ch=20,pL=40,pT=26,W=pL+7*cw,H=pT+24*ch;
   var cv=document.getElementById('heatmap-canvas');
   cv.width=W;cv.height=H;cv.style.width=W+'px';cv.style.height=H+'px';
+  // Drill-down: cursor + handlers (interativo a partir de Mai/2026)
+  cv.style.cursor = 'crosshair';
+  cv.title = 'Clique numa célula pra ver os chamados criados naquele dia da semana × hora';
   var ctx=cv.getContext('2d');
   ctx.fillStyle='#0e1117';ctx.fillRect(0,0,W,H);
   ctx.font="500 10px 'JetBrains Mono'";ctx.fillStyle=TK;ctx.textAlign='center';
@@ -7068,7 +7071,113 @@ function renderHm(){
     ctx.fillRect(pL+d*cw+1,pT+h*ch+1,cw-2,ch-2);
     if(v>0){ctx.fillStyle=p2>.45?'#fff':'rgba(255,255,255,.5)';ctx.font="9px 'JetBrains Mono'";ctx.textAlign='center';ctx.fillText(v,pL+d*cw+cw/2,pT+h*ch+ch/2+3);}
   }
+  // Click handler: detecta célula clicada e abre modal de drill-down
+  cv.onclick = function(ev){
+    var rect = cv.getBoundingClientRect();
+    var x = ev.clientX - rect.left;
+    var y = ev.clientY - rect.top;
+    // Considera escala se canvas foi redimensionado pelo CSS
+    var scaleX = cv.width / rect.width;
+    var scaleY = cv.height / rect.height;
+    x = x * scaleX;
+    y = y * scaleY;
+    var dd = Math.floor((x - pL) / cw);
+    var hh = Math.floor((y - pT) / ch);
+    if(dd < 0 || dd > 6 || hh < 0 || hh > 23) return;
+    _hmAbrirDrillHora(dd, hh);
+  };
+  // Move o cursor pra mostrar visualmente qual célula vai abrir
+  cv.onmousemove = function(ev){
+    var rect = cv.getBoundingClientRect();
+    var x = ev.clientX - rect.left;
+    var y = ev.clientY - rect.top;
+    var scaleX = cv.width / rect.width;
+    var scaleY = cv.height / rect.height;
+    x = x * scaleX; y = y * scaleY;
+    var dd = Math.floor((x - pL) / cw);
+    var hh = Math.floor((y - pT) / ch);
+    if(dd >= 0 && dd <= 6 && hh >= 0 && hh <= 23){
+      var v = _oph.heat[dd+'_'+hh] || 0;
+      cv.title = dias[dd] + ' às ' + hh + 'h — ' + v + ' chamados (clique pra detalhar)';
+    }
+  };
 }
+// Drill-down do Mapa de Calor: filtra RAW_DATA por dia da semana + hora
+window._hmAbrirDrillHora = function(dd, hh){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA) return;
+  var dias = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'];
+  var diaLbl = dias[dd];
+  // Filtra tickets criados naquele dia da semana + hora (respeitando filtros ativos)
+  var tickets = RAW_DATA.filter(function(t){
+    if(!t || !t.criado) return false;
+    var dt = t.criado instanceof Date ? t.criado : new Date(String(t.criado).replace(' ','T'));
+    if(isNaN(dt.getTime())) return false;
+    // dia da semana: 0=dom, 1=seg, ..., 6=sab → nosso heat usa 0=seg
+    var dow = dt.getDay();
+    var mapped = dow === 0 ? 6 : dow - 1;
+    if(mapped !== dd) return false;
+    if(dt.getHours() !== hh) return false;
+    // Respeita filtros ativos
+    if(typeof activeCliente !== 'undefined' && activeCliente && t.cli_id !== activeCliente) return false;
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(t)) return false;
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return false;
+    return true;
+  });
+  // Ordena por criação descendente (mais recente primeiro)
+  tickets.sort(function(a,b){
+    var da = a.criado instanceof Date ? a.criado : new Date(String(a.criado).replace(' ','T'));
+    var db = b.criado instanceof Date ? b.criado : new Date(String(b.criado).replace(' ','T'));
+    return db.getTime() - da.getTime();
+  });
+  // Monta modal
+  var ov = document.getElementById('hm-drill-overlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'hm-drill-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:60px 20px 20px;overflow-y:auto';
+    ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
+    document.body.appendChild(ov);
+  } else { ov.innerHTML = ''; ov.style.display = 'flex'; }
+  var card = document.createElement('div');
+  card.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-width:920px;width:100%;max-height:calc(100vh - 100px);overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5)';
+  var html = '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:18px;gap:12px">'
+    + '<div><h2 style="margin:0;font-size:18px;font-weight:800;color:var(--text)">🗓 ' + diaLbl + ' às ' + hh + 'h</h2>'
+    + '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + tickets.length + ' chamados criados nesta hora · respeita os filtros ativos</div></div>'
+    + '<button onclick="document.getElementById(\'hm-drill-overlay\').remove()" style="width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:18px;cursor:pointer">×</button>'
+    + '</div>';
+  if(!tickets.length){
+    html += '<div style="padding:30px;text-align:center;color:var(--muted);font-style:italic">Nenhum chamado encontrado nessa hora (talvez os filtros estejam limitando).</div>';
+  } else {
+    html += '<table class="tbl" style="width:100%;font-size:12px"><thead><tr>'
+      + '<th style="text-align:left;padding:8px 10px">Número</th>'
+      + '<th style="text-align:left;padding:8px 10px">Cliente</th>'
+      + '<th style="text-align:left;padding:8px 10px">Assunto</th>'
+      + '<th style="text-align:left;padding:8px 10px">Estado</th>'
+      + '<th style="text-align:left;padding:8px 10px">Prioridade</th>'
+      + '<th style="text-align:left;padding:8px 10px">Atendente</th>'
+      + '<th style="text-align:left;padding:8px 10px">Criado</th>'
+      + '</tr></thead><tbody>';
+    tickets.slice(0, 200).forEach(function(t){
+      var cliDisp = (typeof ENM2 !== 'undefined' && ENM2[t.cli_id]) ? ENM2[t.cli_id] : (t.cli_id||'—');
+      var dtStr = t.criado instanceof Date ? t.criado.toISOString().slice(0,16).replace('T',' ') : String(t.criado||'');
+      html += '<tr style="border-bottom:1px solid var(--border)">'
+        + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10.5px;color:var(--muted)">' + (t.ticket||'—') + '</td>'
+        + '<td style="padding:8px 10px"><strong>' + cliDisp + '</strong></td>'
+        + '<td style="padding:8px 10px;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + (t.assunto||'').replace(/"/g,'&quot;') + '">' + (t.assunto||'—') + '</td>'
+        + '<td style="padding:8px 10px;font-size:11px;color:var(--sub)">' + (t.estado||'—') + '</td>'
+        + '<td style="padding:8px 10px;font-size:11px">' + (t.prioridade||t.prior||'—') + '</td>'
+        + '<td style="padding:8px 10px;font-size:11px">' + (t.atendente||'—') + '</td>'
+        + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10.5px;color:var(--muted)">' + dtStr + '</td>'
+        + '</tr>';
+    });
+    html += '</tbody></table>';
+    if(tickets.length > 200){
+      html += '<div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Mostrando 200 de ' + tickets.length + ' — refine os filtros pra ver menos.</div>';
+    }
+  }
+  card.innerHTML = html;
+  ov.appendChild(card);
+};
 
 function renderSl(){
   if(!TRI_DATA||(Date.now()/1000-TRI_DATA.generated_at)>300) fetchTriagem();
