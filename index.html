@@ -14820,6 +14820,147 @@ function _bhDispCli(cli_apo){
   if(!cliId) return cli_apo;
   return (typeof ENM2 !== 'undefined' && ENM2[cliId]) ? ENM2[cliId] : cliId;
 }
+// ════════════════════════════════════════════════════════════
+// API LIVE — Banco de Horas (proxy /api/banco-horas)
+// Substitui o snapshot BH_CONTRATOS embutido por dados em tempo real.
+// Snapshot embutido continua existindo como FALLBACK (caso a API falhe)
+// e como referência pra BH_HISTORICO (Jan→Mai/26 que a API ainda não tem).
+// ════════════════════════════════════════════════════════════
+var BH_API_STATE = { data: null, ts: null, loading: false, error: null };
+var BH_API_CACHE_KEY = '_bh_api_cache_v1';
+var BH_API_CACHE_MS = 10 * 60 * 1000; // 10 min
+
+// Restaura cache do localStorage no boot (snapshot anterior pra mostrar enquanto carrega)
+(function _bhRestoreCache(){
+  try {
+    var raw = localStorage.getItem(BH_API_CACHE_KEY);
+    if(!raw) return;
+    var c = JSON.parse(raw);
+    if(c && c.contratos && c.ts && (Date.now() - c.ts < 24*60*60*1000)){
+      BH_API_STATE.data = c.contratos;
+      BH_API_STATE.ts = c.ts;
+    }
+  } catch(e){}
+})();
+
+// Fetch da API. force=true ignora cache. Retorna Promise.
+function _bhFetchAPI(force){
+  if(BH_API_STATE.loading) return Promise.resolve();
+  // Cache válido? Usa
+  if(!force && BH_API_STATE.data && BH_API_STATE.ts && (Date.now() - BH_API_STATE.ts < BH_API_CACHE_MS)){
+    return Promise.resolve(BH_API_STATE.data);
+  }
+  BH_API_STATE.loading = true;
+  BH_API_STATE.error = null;
+  return fetch('/api/banco-horas', { cache: 'no-store' })
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(payload){
+      if(!payload || !payload.success) throw new Error('API retornou success=false');
+      BH_API_STATE.data = payload.contratos || [];
+      BH_API_STATE.ts = Date.now();
+      BH_API_STATE.loading = false;
+      // Salva cache local
+      try {
+        localStorage.setItem(BH_API_CACHE_KEY, JSON.stringify({
+          contratos: BH_API_STATE.data, ts: BH_API_STATE.ts
+        }));
+      } catch(e){}
+      // Re-renderiza se a aba estiver visível
+      var sec = document.getElementById('s-bh');
+      if(sec && sec.classList.contains('on') && typeof renderContratosBH === 'function'){
+        renderContratosBH();
+      }
+      return BH_API_STATE.data;
+    })
+    .catch(function(err){
+      BH_API_STATE.loading = false;
+      BH_API_STATE.error = err.message;
+      console.warn('_bhFetchAPI falhou (vai usar fallback):', err.message);
+      return null;
+    });
+}
+
+// Helper: transforma um contrato da API (formato banco-horas.js) no formato
+// esperado por _bhGetContratos / regras de negócio (mesmo schema do snapshot embutido).
+function _bhContratoFromAPI(apiC){
+  // Reconverte horas → "HH:MM" pro pipeline existente
+  var poolH = apiC.pool_h;
+  var aptH  = apiC.apto_h;
+  var livreH = apiC.livre_h;
+  // pool_mes esperado = pool ÷ meses_contrato
+  var poolMesH = apiC.meses > 0 ? (poolH / apiC.meses) : poolH/12;
+  return {
+    cli: apiC.cli_name || apiC.cli_alias,
+    projeto: apiC.proj_name,
+    tarefa: apiC.tarefa_name,
+    inicio: apiC.inicio,
+    fim: apiC.fim,
+    meses: apiC.meses,
+    pool: _bhHToHHMM(poolH),
+    livre: _bhHToHHMM(livreH),
+    max_exc: '00:00',
+    pool_mes: _bhHToHHMM(poolMesH),
+    // cons_mes / pct_mes / saldo_mes: API não dá; usar último mês do histórico se houver
+    cons_mes: '00:00',
+    pct_mes: 0,
+    saldo_mes: _bhHToHHMM(poolMesH),
+    ultimo_snap: apiC.em_vigencia ? new Date().toISOString().slice(0,7) : (apiC.fim||'').slice(0,7),
+    // Campos extras da API (preservar pra UI usar)
+    _api_status: apiC.status,
+    _api_em_vigencia: apiC.em_vigencia,
+    _api_sale_value: apiC.sale_value,
+    _api_sale_margin: apiC.sale_margin,
+    _api_pct_consumido: apiC.pct_consumido,
+    _api_apto_h: apiC.apto_h,
+    _api_apto_bruto_h: apiC.apto_bruto_h,
+    _api_factor_hour: apiC.factor_hour_active,
+    _api_cli_alias: apiC.cli_alias,
+    _api_cli_id: apiC.cli_id,
+    _api_proj_id: apiC.proj_id,
+    _api_tarefa_id: apiC.tarefa_id
+  };
+}
+
+// Tenta enriquecer cons_mes/pct_mes do contrato da API usando o BH_HISTORICO
+// (que tem Jan→Mai/26 embutido). Casa pela combinação cli+projeto+tarefa.
+function _bhEnriquecerComHistorico(c){
+  if(!c) return c;
+  var chave = c.cli + '||' + c.projeto + '||' + c.tarefa;
+  var hist = (typeof BH_HISTORICO !== 'undefined') ? BH_HISTORICO[chave] : null;
+  if(hist && hist.length){
+    // Pega último mês com dado
+    for(var i = hist.length - 1; i >= 0; i--){
+      var h = hist[i];
+      if(h && h.cons != null){
+        c.cons_mes = h.cons;
+        c.pct_mes = h.pct;
+        // saldo_mes = pool_mes - cons_mes
+        var poolMesH = _bhHHMMtoH(c.pool_mes);
+        var consMesH = _bhHHMMtoH(h.cons);
+        c.saldo_mes = _bhHToHHMM(poolMesH - consMesH);
+        break;
+      }
+    }
+  }
+  return c;
+}
+
+// Retorna a lista de contratos pra usar: API (se disponível) OU snapshot embutido
+function _bhSourceData(){
+  if(BH_API_STATE.data && BH_API_STATE.data.length){
+    return BH_API_STATE.data.map(_bhContratoFromAPI).map(_bhEnriquecerComHistorico);
+  }
+  return BH_CONTRATOS; // fallback (snapshot Mai/26)
+}
+
+// Dispara fetch silencioso no boot
+if(typeof window !== 'undefined'){
+  setTimeout(function(){ try { _bhFetchAPI(); } catch(e){} }, 1500);
+}
+
 // ── Régua de % consumido (consumido total ÷ pool total) ──
 // 0-69%: saudável · 70-84%: aviso preventivo · 85-99%: risco alto · 100%+: estourado
 function _bhPctConsumido(c){
@@ -15049,7 +15190,8 @@ function _bhCalcHealth(c){
 // Filtra contratos (remove TESTE PROD etc) e enriquece com cálculos
 function _bhGetContratos(){
   var filtroUp = BH_FILTRO_NOMES.map(function(n){return n.toUpperCase();});
-  return BH_CONTRATOS.filter(function(c){
+  var fonte = _bhSourceData(); // API se disponível, senão snapshot embutido
+  return fonte.filter(function(c){
     var u = (c.cli||'').toUpperCase();
     for(var i=0;i<filtroUp.length;i++) if(u.indexOf(filtroUp[i])!==-1) return false;
     return true;
@@ -15221,7 +15363,21 @@ function renderContratosBH(){
   var heroHTML = '<div class="bh-hero">'
     + '<div class="bh-hero-title">'
       + '<div><h2>Saúde do Banco de Horas</h2>'
-      + '<div class="bh-hero-sub">Controle de consumo, saldo, excedentes, alertas e renovações · Histórico Jan→' + snapLabel + ' · ' + agg.total + ' contratos · trimestre real (3 meses) + dados financeiros · <em>clique nos cards e linhas</em></div></div>'
+      + '<div class="bh-hero-sub">' + (function(){
+          var fonteHTML;
+          if(BH_API_STATE.data && BH_API_STATE.data.length){
+            var min = Math.floor((Date.now() - BH_API_STATE.ts) / 60000);
+            fonteHTML = '🟢 <strong>Live</strong> · API apontamento · sync há ' + (min < 1 ? 'menos de 1 min' : min + ' min')
+              + ' · <button onclick="_bhFetchAPI(true).then(function(){if(typeof renderContratosBH===\'function\')renderContratosBH();})" style="background:transparent;border:1px solid var(--border);color:var(--teal);padding:2px 8px;border-radius:4px;font-size:10.5px;cursor:pointer;font-family:inherit">🔄 Atualizar</button>';
+          } else if(BH_API_STATE.loading){
+            fonteHTML = '⏳ Carregando da API...';
+          } else if(BH_API_STATE.error){
+            fonteHTML = '⚠ API indisponível · usando snapshot ' + snapLabel + ' embutido';
+          } else {
+            fonteHTML = '📦 Snapshot ' + snapLabel + ' · iniciando sync...';
+          }
+          return 'Controle de consumo, saldo, excedentes, alertas e renovações · ' + fonteHTML + ' · ' + agg.total + ' contratos · <em>clique nos cards e linhas</em>';
+        })() + '</div></div>'
       + '<div class="bh-hero-health"><div class="bh-hero-health-num">' + agg.health_media + '</div><div class="bh-hero-health-lbl">/100<br>Saúde média</div></div>'
     + '</div>'
     + '<div class="bh-hero-cards">'
