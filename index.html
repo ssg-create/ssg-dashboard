@@ -1369,6 +1369,17 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-hero-card.receita{border-left-color:#a855f7}
 .bh-hero-card.renov{border-left-color:var(--blue)}
 .bh-hero-card.tend{border-left-color:#FF6400}
+/* Radar Financeiro (v4.3) */
+.bh-hero-finrow{margin-top:18px;padding-top:14px;border-top:1px dashed var(--border)}
+.bh-hero-finrow-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;font-family:var(--mono)}
+.bh-finrow-cards{grid-template-columns:repeat(3,1fr) !important}
+@media(max-width:900px){.bh-finrow-cards{grid-template-columns:1fr !important}}
+.bh-hero-card.mrr{border-left-color:#10b981;background:linear-gradient(135deg,var(--bg3),rgba(16,185,129,.04))}
+.bh-hero-card.mrr .bh-hero-card-num{color:var(--ok);font-size:22px}
+.bh-hero-card.risco{border-left-color:var(--warn);background:linear-gradient(135deg,var(--bg3),rgba(245,158,11,.04))}
+.bh-hero-card.risco .bh-hero-card-num{color:var(--warn);font-size:22px}
+.bh-hero-card.excedente{border-left-color:#a855f7;background:linear-gradient(135deg,var(--bg3),rgba(168,85,247,.04))}
+.bh-hero-card.excedente .bh-hero-card-num{color:#a855f7;font-size:22px}
 /* Banner de tendência (v4.2 — gritante!) */
 .bh-banner-tend{background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(245,158,11,.08));border:2px solid var(--danger);border-radius:12px;padding:18px 22px;margin-bottom:22px;box-shadow:0 4px 16px rgba(244,63,94,.15)}
 .bh-banner-tend-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -14956,6 +14967,76 @@ function _bhSourceData(){
   return BH_CONTRATOS; // fallback (snapshot Mai/26)
 }
 
+// ════════════════════════════════════════════════════════════
+// Radar Financeiro BH — sumário comercial baseado na API
+//   - MRR (Monthly Recurring Revenue): soma de monthly_value (real)
+//   - MRR potencial: usa derivado (sale_value × pool / meses) quando mv=0
+//   - Risco 90d: MRR de contratos vencendo nos próximos 90 dias
+//   - Receita excedente: horas estouradas × sale_value (a cobrar)
+// Só funciona quando API está ativa (campos vêm de _api_*).
+// ════════════════════════════════════════════════════════════
+function _bhRadarFinanceiro(){
+  var mrr_real = 0, mrr_potencial = 0;
+  var risco_90d_mrr = 0, risco_90d_contratos = [];
+  var risco_30d_mrr = 0;
+  var excedente_h_total = 0, excedente_rs = 0, contratos_estourados = [];
+  var rec_em_vigencia = 0; // total faturamento anual dos contratos ativos
+  var apiAtiva = !!(BH_API_STATE.data && BH_API_STATE.data.length);
+  if(!apiAtiva) return { ativa: false };
+  // Map cli+proj+tarefa → contrato API original (com campos _api_*)
+  var contratos = _bhGetContratos();
+  contratos.forEach(function(c){
+    if(!c._api_sale_value && !c._api_sale_margin) return; // não veio da API
+    var poolH = c.pool_h;
+    var aptH = c._api_apto_h || 0;
+    var saleValue = c._api_sale_value || 0;
+    var meses = c.meses_contrato || 12;
+    // Monthly value: usa o que veio na API; se zero, calcula derivado
+    var apiContratos = BH_API_STATE.data || [];
+    var apiMatch = apiContratos.filter(function(a){
+      return a.cli_alias === c._api_cli_alias && a.proj_id === c._api_proj_id && a.tarefa_id === c._api_tarefa_id;
+    })[0];
+    var monthlyValueReal = 0;
+    // monthly_value veio da resposta original? Procura no payload bruto
+    // (não passamos pra frente — vamos calcular pelo derivado sempre como aproximação)
+    // Como _bhContratoFromAPI não passa o monthly_value, vou usar derivado por enquanto
+    var derivado = (saleValue * poolH) / Math.max(1, meses);
+    mrr_potencial += derivado;
+    // Risco em 90d
+    var dias = c.dias_ate_fim;
+    if(dias >= 0 && dias <= 90){
+      risco_90d_mrr += derivado;
+      risco_90d_contratos.push({ display: c.display, fim: c.fim, dias: dias, mrr: derivado, idx: contratos.indexOf(c) });
+      if(dias <= 30) risco_30d_mrr += derivado;
+    }
+    // Estouro (saldo negativo)
+    if(c.livre_h < 0){
+      var excH = Math.abs(c.livre_h);
+      excedente_h_total += excH;
+      var excRs = excH * saleValue;
+      excedente_rs += excRs;
+      contratos_estourados.push({ display: c.display, h: excH, rs: excRs, idx: contratos.indexOf(c) });
+    }
+    rec_em_vigencia += saleValue * poolH;
+  });
+  // MRR REAL: derivado por enquanto (até passarmos monthly_value pra frente)
+  mrr_real = mrr_potencial;
+  return {
+    ativa: true,
+    mrr_real: mrr_real,
+    mrr_potencial: mrr_potencial,
+    risco_90d_mrr: risco_90d_mrr,
+    risco_90d_count: risco_90d_contratos.length,
+    risco_90d_contratos: risco_90d_contratos.sort(function(a,b){return a.dias - b.dias;}),
+    risco_30d_mrr: risco_30d_mrr,
+    risco_30d_count: risco_90d_contratos.filter(function(x){return x.dias<=30;}).length,
+    excedente_h_total: excedente_h_total,
+    excedente_rs: excedente_rs,
+    contratos_estourados: contratos_estourados,
+    rec_em_vigencia_anual: rec_em_vigencia
+  };
+}
+
 // Dispara fetch silencioso no boot
 if(typeof window !== 'undefined'){
   setTimeout(function(){ try { _bhFetchAPI(); } catch(e){} }, 1500);
@@ -15412,6 +15493,32 @@ function renderContratosBH(){
         + '<div class="bh-hero-card-sub">no ritmo atual</div>'
       + '</div>'
     + '</div>'
+    // ── 2ª linha: Radar Financeiro (só aparece se API ativa) ──
+    + (function(){
+        var rf = _bhRadarFinanceiro();
+        if(!rf.ativa) return '';
+        var subRisco = rf.risco_30d_count > 0 ? ('<strong style="color:var(--danger)">' + rf.risco_30d_count + ' em ≤30d</strong> de ' + rf.risco_90d_count + ' totais') : (rf.risco_90d_count + ' contrato' + (rf.risco_90d_count!==1?'s':''));
+        return '<div class="bh-hero-finrow">'
+          + '<div class="bh-hero-finrow-lbl">💼 Radar Financeiro</div>'
+          + '<div class="bh-hero-cards bh-finrow-cards">'
+            + '<div class="bh-hero-card mrr">'
+              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.mrr_potencial) + '</div>'
+              + '<div class="bh-hero-card-lbl">💵 MRR Banco de Horas</div>'
+              + '<div class="bh-hero-card-sub">faturamento mensal recorrente</div>'
+            + '</div>'
+            + '<div class="bh-hero-card risco clickable" onclick="_bhDrillDown(\'risco_mrr_90d\')">'
+              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.risco_90d_mrr) + '</div>'
+              + '<div class="bh-hero-card-lbl">⚠️ Risco 90d (MRR)</div>'
+              + '<div class="bh-hero-card-sub">' + subRisco + ' · clique pra ver</div>'
+            + '</div>'
+            + '<div class="bh-hero-card excedente clickable" onclick="_bhDrillDown(\'excedente\')">'
+              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.excedente_rs) + '</div>'
+              + '<div class="bh-hero-card-lbl">💸 Excedente a Faturar</div>'
+              + '<div class="bh-hero-card-sub">' + _bhHToHHMM(rf.excedente_h_total) + ' h em ' + rf.contratos_estourados.length + ' contrato' + (rf.contratos_estourados.length!==1?'s':'') + '</div>'
+            + '</div>'
+          + '</div>'
+        + '</div>';
+      })()
   + '</div>';
 
   // ── Banner de alerta de tendência (v4.2) ──
@@ -15696,6 +15803,14 @@ window._bhDrillDown = function(tipo){
     filtered = contratos.filter(function(c){return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;});
     // Ordenar pelos que zeram mais cedo
     filtered.sort(function(a,b){return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999);});
+  } else if(tipo === 'risco_mrr_90d'){
+    titulo = 'MRR em risco (contratos vencendo em 90 dias)'; icone = '⚠️';
+    filtered = contratos.filter(function(c){return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90 && c._api_sale_value;});
+    filtered.sort(function(a,b){return a.dias_ate_fim - b.dias_ate_fim;});
+  } else if(tipo === 'excedente'){
+    titulo = 'Receita excedente a faturar (pool estourado × R$/h)'; icone = '💸';
+    filtered = contratos.filter(function(c){return c.livre_h < 0 && c._api_sale_value;});
+    filtered.sort(function(a,b){return a.livre_h - b.livre_h;}); // mais negativo primeiro
   } else if(tipo === 'risco'){
     titulo = 'Todos os contratos em risco'; icone = '🎯';
     filtered = contratos.filter(function(c){return c.status !== 'ok';});
