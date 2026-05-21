@@ -7062,19 +7062,59 @@ function renderSl(){
   var atend=(getActiveOP().atend||OP.atend).slice(0,10);
   var op=getActiveOP();
   try{populateSlHero(op);}catch(e){console.warn('sl hero:',e);}
+  // ── Sprint 1 (2026-05-21): SLA fiel ao OTRS por atendente ──
+  // Antes: cores e barras usavam META_RESP fixo (30min) e a.rm (média simples).
+  // Agora: usa calcSLAOtrsPerAtendente — % real de tickets dentro do SLA OTRS
+  // (varia por prioridade/serviço/cliente). Tickets sem SLA cadastrado
+  // (Monitoramento etc) são EXCLUÍDOS do cálculo.
+  var _slRows=(typeof RAW_DATA!=='undefined'&&RAW_DATA)?RAW_DATA.filter(function(d){
+    if(!d||!d.criado)return false;
+    if(typeof activeCliente!=='undefined'&&activeCliente&&d.cli_id!==activeCliente)return false;
+    if(typeof ticketInFilter==='function'&&!ticketInFilter(d))return false;
+    if(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
+    return true;
+  }):[];
+  var slaPerAt = (typeof calcSLAOtrsPerAtendente==='function') ? calcSLAOtrsPerAtendente(_slRows) : {};
+  // Helper: pega métricas OTRS reais do atendente (ou fallback pro valor antigo)
+  var getAtMetric = function(a){
+    var m = slaPerAt[a.n];
+    if(m && m.sample_size > 0){
+      return { rm_otrs: m.avg_resp_min, pct_otrs: m.pct_within_sla, n: m.sample_size };
+    }
+    // Fallback: média simples (legado), sem % OTRS
+    return { rm_otrs: a.rm, pct_otrs: null, n: 0 };
+  };
   var N=atend.map(function(a){return a.n.split('.')[0]||a.n.split(' ')[0];});
-  // META_RESP, META_SOL — usando variáveis globais configuráveis
-  var rC=atend.map(function(a){return a.rm==null?'#5a6278':a.rm<=META_RESP?'#10b981':a.rm<=120?'#f59e0b':'#f43f5e';});
+  // Cores baseadas no % dentro do SLA OTRS (não em META_RESP fixo)
+  var rC = atend.map(function(a){
+    var m = getAtMetric(a);
+    if(m.pct_otrs == null) return '#5a6278'; // sem dados OTRS
+    if(m.pct_otrs >= 80) return '#10b981';   // verde
+    if(m.pct_otrs >= 50) return '#f59e0b';   // amarelo
+    return '#f43f5e';                         // vermelho
+  });
   var nLen=N.length||1;
   // ── Linhas de benchmark ITSM ────────────────────────────────────────
   var refLine=function(val,lbl,color,dash){return{type:'line',data:new Array(nLen).fill(val),label:lbl,borderColor:color,borderDash:dash,borderWidth:1.5,pointRadius:0,fill:false,tension:0,order:0};};
   var lgndOpts={display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:10,filter:function(item){return item.datasetIndex>0;}}};
+  // Gráfico c-resp: valor agora é AVG_RESP_MIN dos tickets com SLA (não a.rm bruto)
+  var dataResp = atend.map(function(a){var m=getAtMetric(a);return m.rm_otrs?Math.round(m.rm_otrs):0;});
+  // Linha de referência: META_RESP (Groundwork) é interna. Linhas OTRS por prioridade são contextuais.
   mk('c-resp','bar',N,[
-    {data:atend.map(function(a){return a.rm?Math.round(a.rm):0;}),backgroundColor:rC,borderRadius:4},
-    refLine(META_RESP,'≤'+fmtRespTxt(META_RESP)+' — meta GW','rgba(245,158,11,.9)',[6,4]),
-    refLine(15,'≤15min — ITSM excelente','rgba(16,185,129,.7)',[3,5])
+    {data:dataResp,backgroundColor:rC,borderRadius:4},
+    refLine(META_RESP,'≤'+fmtRespTxt(META_RESP)+' — meta GW interna','rgba(245,158,11,.9)',[6,4]),
+    refLine(60,'≤1h — SLA Sustentação Alta','rgba(79,142,247,.6)',[3,5]),
+    refLine(120,'≤2h — SLA Sustentação Normal','rgba(139,92,246,.5)',[3,5])
   ],{scales:xy('Tempo (min)'),plugins:{
-    tooltip:{callbacks:{label:function(c){return c.datasetIndex===0?fmtRespTxt(c.raw):c.dataset.label||'';}}},
+    tooltip:{callbacks:{
+      label:function(c){
+        if(c.datasetIndex!==0) return c.dataset.label||'';
+        var a = atend[c.dataIndex];
+        var m = getAtMetric(a);
+        if(m.pct_otrs!=null) return fmtRespTxt(c.raw) + ' médio · ' + m.pct_otrs + '% dentro do SLA OTRS (n=' + m.n + ')';
+        return fmtRespTxt(c.raw);
+      }
+    }},
     legend:lgndOpts
   }});
   var sC=atend.map(function(a){return a.tm==null?'#5a6278':a.tm<=META_SOL?'#10b981':a.tm<=96?'#f59e0b':'#f43f5e';});
@@ -7087,20 +7127,20 @@ function renderSl(){
     legend:lgndOpts
   }});
   // ── KPIs reais (sem mock × 10.5 ou × 0.68) ──
-  // 1ª Resposta: mediana de op.resp_med + média calculada do escopo ativo
-  // Solução: média e mediana via op.sla (calcSLA — fonte única, BH, exclui auto-fechados)
+  // 1ª Resp: mediana global (op.resp_med) + média do escopo ATIVO filtrando só tickets com SLA cadastrado
+  // Solução: via op.sla (calcSLA — BH, exclui auto-fechados)
   var rm=op.resp_med!=null?op.resp_med:0;
-  // Calcula 1ª Resp média real do escopo ativo (sem mock)
-  var _slRows=(typeof RAW_DATA!=='undefined'&&RAW_DATA)?RAW_DATA.filter(function(d){
-    if(!d||!d.criado)return false;
-    if(typeof activeCliente!=='undefined'&&activeCliente&&d.cli_id!==activeCliente)return false;
-    if(typeof ticketInFilter==='function'&&!ticketInFilter(d))return false;
-    if(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all'&&d.fila!==activeFilaOP)return false;
-    return true;
-  }):[];
-  var _rmsAll=_slRows.map(function(d){return d.resp_min;}).filter(function(v){return v!=null&&!isNaN(v)&&v>=0;});
-  var rmAvg=_rmsAll.length?Math.round(_rmsAll.reduce(function(a,b){return a+b;},0)/_rmsAll.length):null;
+  // Média SÓ dos tickets com SLA cadastrado (alinhado com calcSLAOtrs)
+  var _rmsEligible = _slRows.filter(function(d){
+    if(d.resp_min == null || isNaN(d.resp_min) || d.resp_min < 0) return false;
+    var th = (typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0)
+      ? d.sla_first_response_min
+      : getOTRSSLAThreshold(d.servico_full||d.servico, d.prior||d.prioridade, d.cli_id);
+    return th !== null; // só com SLA cadastrado
+  }).map(function(d){return d.resp_min;});
+  var rmAvg=_rmsEligible.length?Math.round(_rmsEligible.reduce(function(a,b){return a+b;},0)/_rmsEligible.length):null;
   var _opSla=op.sla||calcSLA(_slRows);
+  var _opSlaOtrs = (typeof calcSLAOtrs==='function') ? calcSLAOtrs(_slRows) : null;
   var sm=(_opSla&&_opSla.avg_h!=null)?_opSla.avg_h:(op.sol_med||0);
   var smMed=(_opSla&&_opSla.median_h!=null)?_opSla.median_h:null;
   var kpis=document.querySelectorAll('#s-sl .kpi');
@@ -7113,32 +7153,59 @@ function renderSl(){
     ];
     var subN=_opSla&&_opSla.sample_size?_opSla.sample_size:0;
     var subAuto=_opSla&&_opSla.auto_closed_count?_opSla.auto_closed_count:0;
+    var pctOk = _opSlaOtrs && _opSlaOtrs.pct_within_sla != null ? _opSlaOtrs.pct_within_sla : null;
     var subs=[
-      rm<=META_RESP?'<span style="color:var(--ok)">✓ dentro da meta</span>':'<span style="color:var(--danger)">⚠ acima de '+fmtRespTxt(META_RESP)+'</span>',
-      'média (sensível a outliers)',
+      pctOk != null
+        ? (pctOk >= 80 ? '<span style="color:var(--ok)">✓ '+pctOk+'% dentro do SLA OTRS</span>'
+           : '<span style="color:var(--danger)">⚠ apenas '+pctOk+'% dentro do SLA OTRS</span>')
+        : 'sem amostra com SLA cadastrado',
+      'só tickets com SLA OTRS · n='+_rmsEligible.length,
       'base: '+subN+' resolvidos · '+subAuto+' auto-fechados',
       'mais representativa (típico)'
     ];
     htmlVals.forEach(function(html,i){var v=kpis[i]&&kpis[i].querySelector('.kpi-val'),s=kpis[i]&&kpis[i].querySelector('.kpi-sub');if(v)v.innerHTML=html;if(s)s.innerHTML=subs[i];});
   }
-  // Barras de meta
+  // ── Barras de cumprimento de meta (Sprint 1: agora usa % OTRS real, não META_RESP fixo) ──
   var metaEl=document.getElementById('sla-metas-bars');
   if(metaEl){
-    var pR=atend.filter(function(a){return a.rm!=null&&a.rm<=META_RESP;}).length;
+    // 1ª Resposta: média ponderada do % OTRS de cada atendente (do top 10)
+    var totSample=0, totWithin=0;
+    atend.forEach(function(a){
+      var m = slaPerAt[a.n];
+      if(m && m.sample_size > 0){
+        totSample += m.sample_size;
+        totWithin += Math.round(m.sample_size * (m.pct_within_sla/100));
+      }
+    });
+    var pRP = totSample > 0 ? Math.round(totWithin/totSample*100) : 0;
+    // Solução: mantém META_SOL (48h) — sem regra OTRS por serviço
     var pS=atend.filter(function(a){return a.tm!=null&&a.tm<=META_SOL;}).length;
-    var tR=atend.filter(function(a){return a.rm!=null;}).length||1;
     var tS=atend.filter(function(a){return a.tm!=null;}).length||1;
-    var pRP=Math.round(pR/tR*100),pSP=Math.round(pS/tS*100);
+    var pSP=Math.round(pS/tS*100);
     var cR=pRP>=80?'var(--ok)':pRP>=50?'var(--warn)':'var(--danger)';
     var cS=pSP>=80?'var(--ok)':pSP>=50?'var(--warn)':'var(--danger)';
-    function mBar(lbl,pct2,col,meta){return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px"><span>'+lbl+'</span><span style="font-family:var(--mono);font-weight:600;color:'+col+'">'+pct2+'% dentro da meta</span></div><div style="position:relative;height:8px;background:rgba(255,255,255,.06);border-radius:6px"><div style="height:100%;width:'+pct2+'%;background:'+col+';border-radius:6px"></div><div style="position:absolute;left:80%;top:-3px;width:2px;height:14px;background:rgba(255,255,255,.25);border-radius:1px"></div></div></div>';}
-    metaEl.innerHTML=mBar('1ª Resposta ≤'+fmtRespTxt(META_RESP),pRP,cR)+mBar('Solução ≤'+META_SOL+'h',pSP,cS)+'<div style="font-size:10px;color:var(--muted);margin-top:4px">Base: '+atend.length+' atendentes · Linha branca = meta 80%</div>';
+    function mBar(lbl,pct2,col,sub){return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px"><span>'+lbl+'</span><span style="font-family:var(--mono);font-weight:600;color:'+col+'">'+pct2+'%</span></div><div style="position:relative;height:8px;background:rgba(255,255,255,.06);border-radius:6px"><div style="height:100%;width:'+pct2+'%;background:'+col+';border-radius:6px"></div><div style="position:absolute;left:80%;top:-3px;width:2px;height:14px;background:rgba(255,255,255,.25);border-radius:1px"></div></div>'+(sub?'<div style="font-size:10px;color:var(--muted);margin-top:4px">'+sub+'</div>':'')+'</div>';}
+    metaEl.innerHTML=mBar('1ª Resposta dentro do SLA OTRS', pRP, cR, 'base: '+totSample+' tickets do top 10 com SLA cadastrado · prioridade/serviço/cliente')
+      + mBar('Solução ≤'+META_SOL+'h (meta GW)', pSP, cS, 'base: '+tS+' atendentes')
+      + '<div style="font-size:10px;color:var(--muted);margin-top:6px">Linha branca = referência 80% · 1ª Resposta usa thresholds OTRS (não META_RESP fixo)</div>';
   }
-  // Atualiza label de meta no card-title
+  // Atualiza label de meta no card-title (agora mostra a regra OTRS quando há cliente filtrado)
   var metaLblEl=document.getElementById('sl-resp-meta-lbl');
-  if(metaLblEl) metaLblEl.innerHTML='meta: &lt;'+fmtRespTxt(META_RESP);
-  // SLA Financeiro removido em 2026-05-07 — Groundwork não trabalha com
-  // exposição financeira por SLA.
+  if(metaLblEl){
+    // Se há cliente filtrado, tenta inferir o SLA OTRS dele (usando prioridade Alta como padrão)
+    var lbl = 'meta GW: &lt;'+fmtRespTxt(META_RESP);
+    if(typeof activeCliente !== 'undefined' && activeCliente){
+      var thAlta = getOTRSSLAThreshold('Serviço de Sustentação Groundwork', 'Alta', activeCliente);
+      var thMuitoAlta = getOTRSSLAThreshold('Serviço de Sustentação Groundwork', 'Muito Alta', activeCliente);
+      if(thAlta != null || thMuitoAlta != null){
+        var parts = [];
+        if(thMuitoAlta != null) parts.push('M.Alta '+fmtRespTxt(thMuitoAlta));
+        if(thAlta != null) parts.push('Alta '+fmtRespTxt(thAlta));
+        lbl = 'SLA OTRS · ' + parts.join(' · ');
+      }
+    }
+    metaLblEl.innerHTML = lbl;
+  }
 }
 
 // removida 2026-05-07: computeSLAFinanceiro / renderSLAFinanceiro — Groundwork
@@ -8671,6 +8738,45 @@ function calcSLAOtrs(rows) {
     sample_size:    eligible.length,
     violations:     eligible.length - within
   };
+}
+
+// ════════════════════════════════════════════════════════════
+// SLA OTRS POR ATENDENTE (Sprint 1 - 2026-05-21)
+// Replica calcSLAOtrs agrupando por atendente. Resultado por nome:
+//   { pct_within_sla, sample_size, violations, avg_resp_min_eligible }
+// Exclui tickets sem SLA cadastrado (Monitoramento etc) — eles NÃO contam
+// nem como dentro nem como fora da meta. Antes eram médias simples.
+// ════════════════════════════════════════════════════════════
+function calcSLAOtrsPerAtendente(rows){
+  var byA = {};
+  (rows||[]).forEach(function(d){
+    var a = (d && d.atend) ? String(d.atend).trim() : '';
+    if(!a || a === '—' || a === 'Admin OTRS') return;
+    var threshold = null;
+    if(typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0){
+      threshold = d.sla_first_response_min;
+    } else {
+      threshold = getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+    }
+    if(threshold === null) return; // sem SLA cadastrado → não conta
+    if(d.resp_min == null || isNaN(d.resp_min)) return;
+    if(!byA[a]) byA[a] = { sample:0, within:0, resps:[] };
+    byA[a].sample++;
+    byA[a].resps.push(d.resp_min);
+    if(d.resp_min <= threshold) byA[a].within++;
+  });
+  var out = {};
+  Object.keys(byA).forEach(function(a){
+    var s = byA[a];
+    var avg = s.resps.length ? Math.round(s.resps.reduce(function(x,y){return x+y;},0)/s.resps.length) : null;
+    out[a] = {
+      pct_within_sla: s.sample ? Math.round((s.within/s.sample)*100) : null,
+      sample_size:    s.sample,
+      violations:     s.sample - s.within,
+      avg_resp_min:   avg
+    };
+  });
+  return out;
 }
 
 // Helper canônico: o ticket conta como "fechado com sucesso" pra fins de SLA?
