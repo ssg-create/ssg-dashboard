@@ -1383,6 +1383,40 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Badge "Inativo este mês" — destaque pra contratos que ficaram inativos no mês corrente */
 .bh-badge-inativo-recente{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(245,158,11,.15);color:var(--warn);font-size:10.5px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;margin-left:8px;vertical-align:middle}
 .bh-badge-inativo-recente.bh-badge-sm{padding:1px 5px;font-size:11px;margin-left:4px}
+
+/* ─── Bloco Banco de Horas na Visão Cliente (Fase 2) ─── */
+/* Linguagem executiva pro cliente: simples, claro, sem jargão */
+.cli-bh-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:18px}
+.cli-bh-titulo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);margin-bottom:14px;letter-spacing:-.01em}
+.cli-bh-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;border-left-width:4px}
+.cli-bh-card:last-child{margin-bottom:0}
+.cli-bh-card.crit{border-left-color:var(--danger)}
+.cli-bh-card.warn{border-left-color:var(--warn)}
+.cli-bh-card.ok{border-left-color:var(--ok)}
+.cli-bh-card-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed var(--border)}
+.cli-bh-card-titulo{font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px}
+.cli-bh-card-sub{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+.cli-bh-card-sub strong{color:var(--text)}
+.cli-bh-status{font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;padding-top:2px}
+.cli-bh-secao{margin-bottom:16px}
+.cli-bh-secao:last-child{margin-bottom:0}
+.cli-bh-secao-titulo{font-size:11.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+.cli-bh-num-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}
+.cli-bh-num{text-align:center;padding:10px 8px;background:rgba(255,255,255,.02);border-radius:8px}
+.cli-bh-num-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.cli-bh-num-lbl{font-size:10.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.cli-bh-bar{height:10px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;margin:8px 0}
+.cli-bh-bar-fill{height:100%;border-radius:6px;transition:width .3s ease}
+.cli-bh-mes-info{font-size:13px;color:var(--text);margin-bottom:6px}
+.cli-bh-mes-info strong{color:var(--text);font-weight:700}
+.cli-bh-mes-msg{font-size:12px;font-style:italic;margin-top:6px}
+.cli-bh-tend{padding:14px 16px;background:rgba(255,255,255,.025);border-radius:8px;border-left:3px solid var(--border)}
+.cli-bh-tend.crit{border-left-color:var(--danger);background:rgba(244,63,94,.04)}
+.cli-bh-tend.warn{border-left-color:var(--warn);background:rgba(245,158,11,.04)}
+.cli-bh-tend.ok{border-left-color:var(--ok);background:rgba(16,185,129,.04)}
+.cli-bh-tend-msg{font-size:13px;line-height:1.6;color:var(--text)}
+.cli-bh-tend-msg strong{color:var(--text);font-weight:700}
+@media(max-width:700px){.cli-bh-num-row{grid-template-columns:1fr;gap:8px}}
 /* Banner de tendência (v4.2 — gritante!) */
 .bh-banner-tend{background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(245,158,11,.08));border:2px solid var(--danger);border-radius:12px;padding:18px 22px;margin-bottom:22px;box-shadow:0 4px 16px rgba(244,63,94,.15)}
 .bh-banner-tend-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -3514,6 +3548,8 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
             <div class="co-kpi"><div class="co-kpi-lbl">Solução média</div><div class="co-kpi-val" id="co-sol" style="color:var(--blue)"></div></div>
           </div>
         </div>
+        <!-- 🕐 Bloco Banco de Horas (Fase 2) — só aparece se cliente tem contrato BH ativo -->
+        <div id="co-bh-bloco" style="display:none"></div>
         <div class="grid2">
           <div class="card"><div class="card-title">Chamados por mês</div><div class="cw" style="height:160px"><canvas id="c-comensal"></canvas></div></div>
           <div class="card"><div class="card-title">Por estado</div><div id="co-estados"></div></div>
@@ -7472,6 +7508,128 @@ function _cliUpdateHeros(d){
   if(infSub) infSub.textContent = 'indicadores agregados da operação inteira — sem dados internos de outras empresas';
 }
 
+// ════════════════════════════════════════════════════════════
+// Bloco Banco de Horas na Visão Cliente — Fase 2
+// LINGUAGEM EXECUTIVA pro cliente. Sem jargão técnico ("factor_hour" etc).
+// 3 informações principais por contrato BH ativo:
+//   1. Visão geral (consumido · disponível · % do contrato)
+//   2. Este mês (consumo do mês vs limite mensal)
+//   3. Tendência até o fim do contrato (vai chegar ao fim ou não)
+// Se cliente não tem contrato BH ativo, bloco fica oculto.
+// ════════════════════════════════════════════════════════════
+function _renderBHBlocoCliente(cliId){
+  var el = document.getElementById('co-bh-bloco');
+  if(!el) return;
+  if(!cliId){ el.style.display = 'none'; return; }
+  // Busca contratos BH do cliente
+  if(typeof _bhGetContratos !== 'function'){ el.style.display = 'none'; return; }
+  var todos = _bhGetContratos();
+  // Filtra contratos do cliente (via cli_id mapeado em BH_MAPA_APONTA → ENM2)
+  var contratos = todos.filter(function(c){ return c.cli_id === cliId; });
+  if(!contratos.length){ el.style.display = 'none'; return; }
+  // Apenas contratos em vigência hoje
+  var ativos = contratos.filter(function(c){ return !c._api_status || c._api_status === 'ativo' || c._api_status === 'inativo_recente'; });
+  if(!ativos.length){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  // Helper formatos
+  var fmtH = function(h){ if(h == null) return '0h'; var n = Math.round(Math.abs(h)); return (h<0?'-':'') + n + 'h'; };
+  var fmtPct = function(p){ return (p||0).toFixed(0) + '%'; };
+  var nomesMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var hoje = new Date();
+  var mesAtualNome = nomesMes[hoje.getMonth()] + '/' + hoje.getFullYear();
+  // Render dos cards (1 por contrato BH)
+  var html = '<div class="cli-bh-wrap"><div class="cli-bh-titulo">🕐 Banco de Horas</div>';
+  ativos.forEach(function(c){
+    var poolH = c.pool_h, livreH = c.livre_h, consumidoH = c.consumido_h;
+    var pctTotal = c.pct_consumido_total || 0;
+    var poolMesH = c.pool_mes_h;
+    var consMesH = c.cons_mes_h;
+    var pctMes = c.pct_mes || 0;
+    // Tendência (pool zera antes do prazo?)
+    var t = c.tendencia_pool || {};
+    // Status visual
+    var statusCls, statusBadge;
+    if(pctTotal >= 100 || livreH < 0){
+      statusCls = 'crit'; statusBadge = '🔴 Pool estourado';
+    } else if(pctTotal >= 85){
+      statusCls = 'warn'; statusBadge = '🟡 Atenção · próximo do limite';
+    } else if(pctTotal >= 70){
+      statusCls = 'warn'; statusBadge = '🟡 Aviso preventivo';
+    } else {
+      statusCls = 'ok'; statusBadge = '🟢 Dentro do esperado';
+    }
+    // Bar de progresso geral
+    var barWidth = Math.min(100, pctTotal);
+    var barColor = pctTotal >= 100 ? 'var(--danger)' : (pctTotal >= 85 ? 'var(--danger)' : (pctTotal >= 70 ? 'var(--warn)' : 'var(--ok)'));
+    // Bar de mês
+    var barMesWidth = Math.min(100, pctMes);
+    var barMesColor = pctMes >= 100 ? 'var(--danger)' : (pctMes >= 70 ? 'var(--warn)' : 'var(--ok)');
+    var mesMsg = '';
+    if(pctMes >= 100) mesMsg = '<span style="color:var(--danger)">⚠ Consumo acima do limite mensal este mês</span>';
+    else if(pctMes >= 70) mesMsg = '<span style="color:var(--warn)">⚠ Consumo elevado neste mês</span>';
+    else if(pctMes > 0) mesMsg = '<span style="color:var(--ok)">✓ Dentro do limite mensal</span>';
+    else mesMsg = '<span style="color:var(--muted)">Sem consumo registrado neste mês</span>';
+    // Tendência (linguagem amigável)
+    var tendMsg = '', tendIcon = '', tendCls = '';
+    var fimContrato = new Date(c.fim + 'T00:00:00');
+    var fimLbl = isNaN(fimContrato.getTime()) ? c.fim : (nomesMes[fimContrato.getMonth()].slice(0,3) + '/' + (fimContrato.getFullYear() + '').slice(2));
+    if(livreH < 0){
+      tendIcon = '🔴'; tendCls = 'crit';
+      tendMsg = '<strong>Pool já estourado em ' + fmtH(Math.abs(livreH)) + '.</strong> Recomendamos alinhar aditivo de horas.';
+    } else if(t.zera_antes_do_prazo){
+      tendIcon = '🔴'; tendCls = 'crit';
+      tendMsg = '<strong>No ritmo atual, o pool acaba em ~' + t.meses_ate_zerar + ' ' + (t.meses_ate_zerar==1?'mês':'meses') + '</strong>'
+        + ' — antes do fim do contrato em ' + fimLbl + '.<br>'
+        + 'Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+    } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 999){
+      tendIcon = '🟢'; tendCls = 'ok';
+      var pctProjetadoFim = c.meses_restantes_contrato > 0 && t.ritmo_medio_h > 0 ?
+        Math.min(100, Math.round(((consumidoH + t.ritmo_medio_h * c.meses_restantes_contrato) / poolH) * 100)) :
+        Math.round(pctTotal);
+      tendMsg = '<strong>No ritmo atual, vocês vão usar ~' + fmtPct(pctProjetadoFim) + ' do pool</strong> até o fim do contrato em ' + fimLbl + '.<br>'
+        + 'Pool durando até o fim do contrato com folga.';
+    } else {
+      tendIcon = '🟢'; tendCls = 'ok';
+      tendMsg = '<strong>Sem consumo nos últimos meses.</strong> Pool inteiro disponível até ' + fimLbl + '.';
+    }
+    // Inicio/Fim formatados
+    var ini = c.inicio ? (c.inicio.slice(8,10)+'/'+c.inicio.slice(5,7)+'/'+c.inicio.slice(0,4)) : '';
+    var fim = c.fim    ? (c.fim.slice(8,10)+'/'+c.fim.slice(5,7)+'/'+c.fim.slice(0,4)) : '';
+    html += '<div class="cli-bh-card ' + statusCls + '">'
+      + '<div class="cli-bh-card-hd">'
+        + '<div><div class="cli-bh-card-titulo">' + c.tarefa + '</div>'
+        + '<div class="cli-bh-card-sub">Contrato: <strong>' + poolH + 'h</strong> em <strong>' + c.meses_contrato + ' meses</strong> · vigência ' + ini + ' → ' + fim + '</div></div>'
+        + '<div class="cli-bh-status">' + statusBadge + '</div>'
+      + '</div>'
+      // ── 1. Visão geral ──
+      + '<div class="cli-bh-secao">'
+        + '<div class="cli-bh-num-row">'
+          + '<div class="cli-bh-num"><div class="cli-bh-num-val">' + fmtH(consumidoH) + '</div><div class="cli-bh-num-lbl">consumido</div></div>'
+          + '<div class="cli-bh-num"><div class="cli-bh-num-val">' + fmtH(livreH) + '</div><div class="cli-bh-num-lbl">disponível</div></div>'
+          + '<div class="cli-bh-num"><div class="cli-bh-num-val">' + fmtPct(pctTotal) + '</div><div class="cli-bh-num-lbl">do contrato</div></div>'
+        + '</div>'
+        + '<div class="cli-bh-bar"><div class="cli-bh-bar-fill" style="width:' + barWidth + '%;background:' + barColor + '"></div></div>'
+      + '</div>'
+      // ── 2. Este mês ──
+      + '<div class="cli-bh-secao">'
+        + '<div class="cli-bh-secao-titulo">📅 Este mês (' + mesAtualNome + ')</div>'
+        + '<div class="cli-bh-mes-info">'
+          + '<strong>' + fmtH(consMesH) + '</strong> usado · limite mensal: <strong>' + fmtH(poolMesH) + '</strong>'
+        + '</div>'
+        + '<div class="cli-bh-bar"><div class="cli-bh-bar-fill" style="width:' + barMesWidth + '%;background:' + barMesColor + '"></div></div>'
+        + '<div class="cli-bh-mes-msg">' + mesMsg + '</div>'
+      + '</div>'
+      // ── 3. Tendência ──
+      + '<div class="cli-bh-secao cli-bh-tend ' + tendCls + '">'
+        + '<div class="cli-bh-secao-titulo">📊 Tendência até o fim do contrato</div>'
+        + '<div class="cli-bh-tend-msg">' + tendIcon + ' ' + tendMsg + '</div>'
+      + '</div>'
+    + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
 function renderPainel(d){
   var empty=document.getElementById('co-empty'),content=document.getElementById('co-content');
   if(!d){empty.style.display='block';content.style.display='none';return;}
@@ -7515,6 +7673,8 @@ function renderPainel(d){
       filasBtns._d=d;
     } else { filasBtns.innerHTML=''; }
   }
+  // 🕐 Bloco Banco de Horas (Fase 2) — só aparece se cliente tem contrato BH
+  try { _renderBHBlocoCliente(d.id); } catch(e){ console.warn('bh bloco cliente:', e); }
 }
 
 function renderTimeline(d){
