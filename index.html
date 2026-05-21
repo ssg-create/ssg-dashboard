@@ -16297,36 +16297,49 @@ function renderBacklog() {
   // Estados considerados "abertos" / backlog
   var estadosAbertos = ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Aguardando Externo','Retorno Cliente'];
 
-  // Coletar tickets abertos de todas as empresas
+  // Coletar tickets abertos diretamente do RAW_DATA (não mais lista hardcoded)
+  // Antes: var EMPS = ['Almeida Junior','AutoZone',...] — perdia clientes novos
+  // Agora: agrega TODOS clientes que têm ticket aberto, usa ENM2 pra display name
   var rows = [];
-  var EMPS = ['Almeida Junior','AutoZone','Grupo Metalnox','Finpec','NSX'];
-  EMPS.forEach(function(emp) {
-    if (activeCliente && emp !== activeCliente) return;
-    var e = EMPRESAS[emp];
-    if (!e || !e.tickets) return;
-    e.tickets.forEach(function(t) {
-      if (estadosAbertos.indexOf(t.estado) !== -1) {
-        if(!ticketInFilter(t)) return;
-        if(activeFilaOP!=='all'&&t.fila!==activeFilaOP) return;
-        // Calcular aging em dias a partir da data de criação
-        var aging = calcAging(t.criado);
-        rows.push({
-          num: t.num || '—',
-          assunto: t.assunto || '—',
-          estado: t.estado || '—',
-          prioridade: t.prioridade || '—',
-          criado: t.criado || '—',
-          servico: t.servico || t.svc || '—',
-          cliente: emp,
-          aging: aging,
-          resp_min: t.resp_min != null ? t.resp_min : null
-        });
+  if(typeof RAW_DATA !== 'undefined' && RAW_DATA && RAW_DATA.length){
+    RAW_DATA.forEach(function(t){
+      // Aceita tanto t.estado (formato RAW) quanto comparação canônica
+      var estado = t.estado;
+      // Filtro de estado aberto: usa lista ou função canônica se existir
+      var aberto = false;
+      if(typeof isOpenState === 'function') aberto = isOpenState(estado);
+      else aberto = estadosAbertos.indexOf(estado) !== -1;
+      if(!aberto) return;
+      // Filtro por cliente ativo (via cli_id)
+      if(activeCliente && t.cli_id !== activeCliente) return;
+      // Filtros de mês / fila
+      if(typeof ticketInFilter === 'function' && !ticketInFilter(t)) return;
+      if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
+      // Resolve display do cliente via ENM2 (com fallback pro cli_id cru)
+      var cliDisp = (typeof ENM2 !== 'undefined' && ENM2[t.cli_id]) ? ENM2[t.cli_id] : (t.cli_id || '—');
+      // Aging em dias
+      var criadoStr = '';
+      if(t.criado){
+        if(t.criado instanceof Date) criadoStr = t.criado.toISOString().slice(0,16).replace('T',' ');
+        else criadoStr = String(t.criado);
       }
+      var aging = calcAging(criadoStr);
+      rows.push({
+        num: t.ticket || t.num || '—',
+        assunto: t.assunto || '—',
+        estado: estado || '—',
+        prioridade: t.prioridade || t.prior || '—',
+        criado: criadoStr || '—',
+        servico: t.servico || t.svc || '—',
+        cliente: cliDisp,
+        aging: aging,
+        resp_min: t.resp_min != null ? t.resp_min : null
+      });
     });
-  });
+  }
 
-  // Complementar com dados agregados do OP para totais
-  var totalAbertos = op.abertos || 101;
+  // Total real: pode usar agregado op.abertos (cobre quando RAW_DATA não chegou)
+  var totalAbertos = (rows.length > 0) ? rows.length : (op.abertos || 0);
 
   // Sort por aging desc (mais antigos primeiro)
   rows.sort(function(a, b) { return b.aging - a.aging; });
@@ -16341,8 +16354,8 @@ function renderBacklog() {
   var agingVals = rows.map(function(r) { return r.aging; }).filter(function(v) { return v >= 0; });
   var agingMed = agingVals.length ? Math.round(agingVals.reduce(function(a,b){return a+b;},0)/agingVals.length * 10)/10 : '—';
 
-  document.getElementById('bk-total').textContent = totalAbertos;
-  document.getElementById('bk-total-sub').textContent = totalRows > 0 ? totalRows + ' com detalhe' : 'chamados pendentes';
+  document.getElementById('bk-total').textContent = totalAbertos || '—';
+  document.getElementById('bk-total-sub').textContent = totalRows > 0 ? (totalRows + ' chamados detalhados') : 'aguardando carregamento';
   document.getElementById('bk-criticos').textContent = criticos || '—';
   document.getElementById('bk-criticos-sub').textContent = criticos > 0 ? 'requerem atenção imediata' : 'nenhum crítico detectado';
   document.getElementById('bk-aging').textContent = agingMed !== '—' ? agingMed + '<span>d</span>' : '—';
