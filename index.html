@@ -1380,6 +1380,9 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-hero-card.risco .bh-hero-card-num{color:var(--warn);font-size:22px}
 .bh-hero-card.excedente{border-left-color:#a855f7;background:linear-gradient(135deg,var(--bg3),rgba(168,85,247,.04))}
 .bh-hero-card.excedente .bh-hero-card-num{color:#a855f7;font-size:22px}
+/* Badge "Inativo este mês" — destaque pra contratos que ficaram inativos no mês corrente */
+.bh-badge-inativo-recente{display:inline-block;padding:2px 8px;border-radius:6px;background:rgba(245,158,11,.15);color:var(--warn);font-size:10.5px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;margin-left:8px;vertical-align:middle}
+.bh-badge-inativo-recente.bh-badge-sm{padding:1px 5px;font-size:11px;margin-left:4px}
 /* Banner de tendência (v4.2 — gritante!) */
 .bh-banner-tend{background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(245,158,11,.08));border:2px solid var(--danger);border-radius:12px;padding:18px 22px;margin-bottom:22px;box-shadow:0 4px 16px rgba(244,63,94,.15)}
 .bh-banner-tend-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -14922,6 +14925,7 @@ function _bhContratoFromAPI(apiC){
     // Campos extras da API (preservar pra UI usar)
     _api_status: apiC.status,
     _api_em_vigencia: apiC.em_vigencia,
+    _api_inativo_recente: apiC.inativo_recente,
     _api_sale_value: apiC.sale_value,
     _api_sale_margin: apiC.sale_margin,
     _api_pct_consumido: apiC.pct_consumido,
@@ -15704,7 +15708,7 @@ function renderContratosBH(){
       }
       return '<tr class="bh-row ' + c.status + ' clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
         + '<td><span class="bh-status-badge ' + c.status + '">' + emoji + ' ' + (c.status==='crit'?'CRÍ':c.status==='warn'?'ATE':'OK') + '</span></td>'
-        + '<td><strong>' + c.display + '</strong></td>'
+        + '<td><strong>' + c.display + '</strong>' + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente bh-badge-sm" title="Contrato ficou inativo neste mês">📌</span>' : '') + '</td>'
         + '<td title="' + c.projeto + '">' + c.tarefa + '</td>'
         + '<td><span class="bh-health-pill ' + healthCls + '">' + c.health + '</span></td>'
         + '<td class="r">' + _bhHToHHMM(c.pool_h) + '</td>'
@@ -15861,7 +15865,9 @@ function _bhCardDetalhe(c, idx, full){
   var trimClsAtual = trim.estourou ? 'crit' : (trim.tendencia ? 'warn' : '');
   return '<div class="bh-detalhe-card ' + c.status + '">'
     + '<div class="bh-det-hd">'
-      + '<div><div class="bh-det-cli">' + emoji + ' ' + c.display + '</div>'
+      + '<div><div class="bh-det-cli">' + emoji + ' ' + c.display
+          + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente">📌 inativo este mês</span>' : '')
+        + '</div>'
       + '<div class="bh-det-tarefa">' + c.tarefa + ' · <em>' + c.tipo_banco + '</em></div></div>'
       + '<div class="bh-det-hd-right">'
         + '<span class="bh-aviso-pill ' + c.avisar_cliente.cor + '">' + c.avisar_cliente.texto + '</span>'

@@ -56,6 +56,9 @@ export default async function handler(req, res) {
     // Transformação: data.{cli_id} → contratos[] no formato BH_CONTRATOS
     const contratos = [];
     const nowTs = Date.now() / 1000;
+    // Início do mês atual (UTC) — pra detectar "ficou inativo no mês corrente"
+    const _now = new Date();
+    const inicioMesAtualTs = Date.UTC(_now.getUTCFullYear(), _now.getUTCMonth(), 1) / 1000;
     const clientes = data.data || {};
     Object.keys(clientes).forEach(function (cliId) {
       const cli = clientes[cliId];
@@ -84,11 +87,21 @@ export default async function handler(req, res) {
           const emVigencia = dFrom > 0 && dTo > 0 && dFrom < nowTs && nowTs < dTo;
           const expirado = dTo > 0 && nowTs > dTo;
           const inativoFlag = !tk.active;
+          // "Inativo recente" = ficou inativo (expirou ou foi desativado) DENTRO do mês corrente
+          // Critério: date_to está entre o início do mês atual e hoje
+          const expirouNoMesAtual = expirado && dTo >= inicioMesAtualTs;
+          // Também considera "desativado recente": active=0 mas date_to ainda no futuro,
+          // assumindo que desativação aconteceu no mês corrente (sem updated_at na API).
+          const desativadoNoMesAtual = inativoFlag && !expirado && dTo >= inicioMesAtualTs;
+          const inativoRecente = expirouNoMesAtual || desativadoNoMesAtual;
           let status = 'ativo';
-          if (expirado) status = 'expirado';
+          if (expirouNoMesAtual) status = 'inativo_recente';
+          else if (desativadoNoMesAtual) status = 'inativo_recente';
+          else if (expirado) status = 'expirado';
           else if (inativoFlag) status = 'inativo';
-          // Filtro padrão: só em vigência + ativo. Se include=all, traz tudo.
-          if (!includeAll && (expirado || inativoFlag)) return;
+          // Filtro padrão: em vigência + ativo OU inativo no mês corrente.
+          // ?include=all → traz tudo (incluindo expirados antigos / inativos antigos)
+          if (!includeAll && !emVigencia && !inativoRecente) return;
           const livreH = poolH - aptH;
           const pctConsumido = poolH ? Math.round((aptH / poolH) * 1000) / 10 : 0;
           // Estimativa de meses do contrato (date_to - date_from em meses)
@@ -118,6 +131,7 @@ export default async function handler(req, res) {
             recurrent: !!tk.recurrent,
             active: !!tk.active,
             em_vigencia: emVigencia,
+            inativo_recente: inativoRecente,
             status: status
           });
         });
