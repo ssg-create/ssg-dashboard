@@ -1438,11 +1438,46 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-det-motivo label{font-size:10px;color:var(--muted);text-transform:uppercase;margin-right:8px}
 .bh-det-section-lbl{font-size:11px;font-weight:700;color:var(--sub);margin:14px 0 8px 0;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:8px}
 .bh-det-estimativa{font-size:9.5px;font-weight:400;color:var(--muted);font-style:italic;text-transform:none;letter-spacing:0}
+.bh-det-real{font-size:9.5px;font-weight:600;color:var(--ok);text-transform:none;letter-spacing:0}
 /* Badge "Avisar cliente?" */
 .bh-aviso-pill{display:inline-block;padding:3px 9px;border-radius:10px;font-weight:700;font-size:10.5px;font-family:var(--mono);white-space:nowrap}
 .bh-aviso-pill.crit{background:rgba(244,63,94,.15);color:var(--danger)}
 .bh-aviso-pill.warn{background:rgba(245,158,11,.15);color:var(--warn)}
 .bh-aviso-pill.ok{background:rgba(16,185,129,.12);color:var(--ok);opacity:.7}
+/* Heatmap Cliente × Mês */
+.bh-heatmap-wrap{margin-bottom:22px}
+.bh-heatmap-legend{display:flex;gap:14px;font-size:10.5px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.bh-heatmap-legend span{display:inline-flex;align-items:center;gap:5px}
+.bh-cel{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--border)}
+.bh-cel.ok{background:rgba(16,185,129,.25)}
+.bh-cel.mid{background:rgba(79,142,247,.25)}
+.bh-cel.warn{background:rgba(245,158,11,.4)}
+.bh-cel.crit{background:rgba(244,63,94,.55)}
+.bh-cel.na{background:rgba(255,255,255,.04)}
+.bh-heatmap-tab-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow-x:auto;padding:0}
+.bh-heatmap-tab{width:100%;border-collapse:collapse;font-size:11.5px;font-family:var(--mono)}
+.bh-heatmap-tab thead th{background:var(--bg3);color:var(--muted);font-weight:700;padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;font-family:inherit}
+.bh-heatmap-tab th.c, .bh-heatmap-tab td.c{text-align:center}
+.bh-heatmap-tab tbody td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.bh-heatmap-tab tbody tr.clickable{cursor:pointer;transition:background .12s}
+.bh-heatmap-tab tbody tr.clickable:hover{background:rgba(255,255,255,.025)}
+.bh-hm-cel{font-weight:700;font-size:11px;min-width:48px}
+.bh-hm-cel.ok{background:rgba(16,185,129,.18);color:var(--ok)}
+.bh-hm-cel.mid{background:rgba(79,142,247,.18);color:var(--blue)}
+.bh-hm-cel.warn{background:rgba(245,158,11,.22);color:var(--warn)}
+.bh-hm-cel.crit{background:rgba(244,63,94,.28);color:var(--danger)}
+.bh-hm-cel.na{color:var(--muted);opacity:.5}
+.bh-hm-cli{min-width:280px}
+.bh-hm-tarefa{color:var(--muted);font-size:10.5px;font-family:var(--mono)}
+/* Filtros chips */
+.bh-filtros-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:14px;padding:10px 12px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)}
+.bh-filtros-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:4px}
+.bh-filtros-sep{color:var(--muted);opacity:.5;margin:0 2px}
+.bh-chip{padding:5px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.bh-chip:hover{border-color:var(--blue);color:var(--blue)}
+.bh-chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.bh-chip-reset{margin-left:auto;background:transparent;border-color:var(--muted)}
+.bh-chip-reset:hover{background:var(--danger);border-color:var(--danger);color:#fff}
 /* Bloco diferenciador "Risco de Consumo vs Comercial" no detalhe */
 .bh-det-riscos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)}
 .bh-det-risco-bloco{display:flex;flex-direction:column;gap:6px}
@@ -7552,9 +7587,10 @@ var ENM2={
   'FINPEC':'Finpec','NSX':'NSX','CONTINENTAL':'Aumovio',
   // Novos (clientes só com banco de horas — aparecem em BH_CONTRATOS)
   'AGROSUL':'Agrosul Máquinas','ASTRA':'Astra','ATITUS':'Atitus Educação','BUNTECH':'Buntech',
-  'ARCO':'Arco Educação','DKT':'DKT','DUAL':'Dual Duarte','ECAD':'ECAD','FADEL':'Fadel Transportes',
-  'HELMAG':'Helmag','IMCD':'IMCD Brasil','INTEGRADA':'Integrada Cooperativa','JATOBA':'Jatobá',
-  'PECVAL':'Pecval','PLASTIGLAS':'Plastiglas','SERVENG':'Serveng','TELETEX':'Teletex','TOTVS':'TOTVS'
+  'CNN':'Cal Norte Nordeste','ARCO':'Arco Educação','DKT':'DKT','DUAL':'Dual Duarte','ECAD':'ECAD',
+  'FADEL':'Fadel Transportes','HELMAG':'Helmag','IMCD':'IMCD Brasil','INTEGRADA':'Integrada Cooperativa',
+  'JATOBA':'Jatobá','PAMPLASTICOS':'PAM Plásticos','PECVAL':'Pecval','PLASTIGLAS':'Plastiglas',
+  'SERVENG':'Serveng','TELETEX':'Teletex','TOTVS':'TOTVS'
 };
 var INTERNAL_DOMAINS=['groundwork.com.br','groundwork.com','ssg.com.br'];
 var EMAIL_DOM_MAP={'almeidajunior.com.br':'ALMEIDA JR','almeidajunior.com':'ALMEIDA JR','autozone.com':'AUTOZONE','autozone.com.br':'AUTOZONE','finpec.com.br':'FINPEC','finpec.com':'FINPEC','metalnox.com.br':'GRUPO_METALNOX','grupometalnox.com.br':'GRUPO_METALNOX','nsx.com.br':'NSX','nsx.com':'NSX'};
@@ -14446,6 +14482,7 @@ var SSG_CONTRATOS = [
 // Visibilidade: aba "Contratos BH" só aparece em mode='gestao'
 // ════════════════════════════════════════════════════════════
 var BH_SNAPSHOT_DATE = '2026-05';
+var BH_HISTORICO_MESES = ['2026-01','2026-02','2026-03','2026-04','2026-05'];
 var BH_FILTRO_NOMES = ['TESTE PROD','TESTE','TESTE_PROD'];
 // cliente cru do apontamento → cli_id do painel (case-insensitive trim)
 var BH_MAPA_APONTA = {
@@ -14455,10 +14492,12 @@ var BH_MAPA_APONTA = {
   'AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)':'CONTINENTAL',
   'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.':'AUTOZONE',
   'BUNTECH TECNOLOGIA EM INSUMOS LTDA':'BUNTECH',
+  'CAL NORTE NORDESTE S/A':'CNN',
   'COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A':'ARCO',
   'DKT DO BRASIL PRODUTOS DE USO PESSOAL':'DKT',
   'DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA':'DUAL',
   'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO':'ECAD',
+  'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO ECAD':'ECAD',
   'FADEL TRANSPORTES':'FADEL',
   'FINPEC AGRONEGOCIOS LTDA':'FINPEC',
   'HELMAG DO BRASIL MERCANTIL LTDA':'HELMAG',
@@ -14467,6 +14506,7 @@ var BH_MAPA_APONTA = {
   'JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI':'JATOBA',
   'METALNOX INDUSTRIA E COMERCIO LTDA':'GRUPO_METALNOX',
   'NSX BRASIL SA':'NSX',
+  'PAM INDUSTRIA DE PLASTICOS INJETADOS LTDA':'PAMPLASTICOS',
   'PECVAL INDUSTRIA LTDA':'PECVAL',
   'PLASTIGLAS D MEXICO':'PLASTIGLAS',
   'SERVENG CIVILSAN SA':'SERVENG',
@@ -14504,36 +14544,120 @@ var BH_VALOR_HORA = {
   'TOTVS SA||Sustentação do ambiente - Comercial': null,
   'TOTVS SA||Sustentação do ambiente - Extras': null
 };
-// Snapshot dos 28 contratos. Tempos em "HH:MM" (do apontamento). %mes é decimal.
+// ════════════════════════════════════════════════════════════
+// SNAPSHOT BH v4 — Jan→Mai/26 (5 meses) + dados financeiros casados
+// Fonte: Estouro Banco de Horas + Análise Projeto do apontamento
+// ════════════════════════════════════════════════════════════
 var BH_CONTRATOS = [
-  {cli:'AGROSUL MAQUINAS LTDA',projeto:'PBH202106-02A - Banco de horas',tarefa:'Banco de horas 2025-2026',inicio:'2025-07-01',fim:'2026-06-30',meses:12,pool:'344:00',livre:'113:56',max_exc:'00:00',pool_mes:'28:40',cons_mes:'05:15',pct_mes:18.31,saldo_mes:'23:25'},
-  {cli:'ASTRA S A INDUSTRIA E COMERCIO',projeto:'PHA202602-02A - Horas abertas atuação datasul',tarefa:'Banco de horas',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'500:00',livre:'500:00',max_exc:'00:00',pool_mes:'41:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'41:40'},
-  {cli:'ATITUS EDUCACAO S.A',projeto:'PBH202502-06A - Banco de horas 2026',tarefa:'Banco de horas',inicio:'2026-03-01',fim:'2027-02-28',meses:12,pool:'456:00',livre:'382:30',max_exc:'00:00',pool_mes:'38:00',cons_mes:'03:00',pct_mes:7.89,saldo_mes:'35:00'},
-  {cli:'AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)',projeto:'PSG202512-02A - Banco de horas Datasul',tarefa:'Banco de horas',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'432:00',livre:'332:00',max_exc:'00:00',pool_mes:'36:00',cons_mes:'03:00',pct_mes:8.33,saldo_mes:'33:00'},
-  {cli:'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.',projeto:'PAMS20231212-01E - Sustentação do ambiente',tarefa:'Atendimento Power Plataforms',inicio:'2024-07-01',fim:'2027-01-31',meses:31,pool:'240:00',livre:'-453:15',max_exc:'500:00',pool_mes:'23:52',cons_mes:'07:00',pct_mes:29.32,saldo_mes:'16:52'},
-  {cli:'AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.',projeto:'PAMS20231212-01E - Sustentação do ambiente',tarefa:'Banco de horas Cloud Infra DBA',inicio:'2024-02-01',fim:'2027-01-31',meses:36,pool:'840:00',livre:'-1295:39',max_exc:'500:00',pool_mes:'59:26',cons_mes:'89:15',pct_mes:150.14,saldo_mes:'-29:48'},
-  {cli:'BUNTECH TECNOLOGIA EM INSUMOS LTDA',projeto:'PBH202012-6A - Banco de horas',tarefa:'Banco de horas 2026',inicio:'2026-02-01',fim:'2027-01-31',meses:12,pool:'600:00',livre:'404:30',max_exc:'00:00',pool_mes:'50:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'50:00'},
-  {cli:'COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A',projeto:'POT202512-01A - Sustentação do ambiente 2026',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'600:00',livre:'292:30',max_exc:'00:00',pool_mes:'50:00',cons_mes:'09:15',pct_mes:18.50,saldo_mes:'40:45'},
-  {cli:'DKT DO BRASIL PRODUTOS DE USO PESSOAL',projeto:'PBH202510-04A - Banco de horas PROTHEUS',tarefa:'Banco de horas',inicio:'2025-12-01',fim:'2026-11-30',meses:12,pool:'480:00',livre:'147:00',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
-  {cli:'DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA',projeto:'PBH202207-04A - Banco de horas 25-26',tarefa:'Banco de horas',inicio:'2025-08-01',fim:'2026-07-31',meses:12,pool:'180:00',livre:'79:00',max_exc:'00:00',pool_mes:'15:00',cons_mes:'08:00',pct_mes:53.33,saldo_mes:'07:00'},
-  {cli:'ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO',projeto:'PBH202410-05A - Banco de horas',tarefa:'Banco de horas 2026',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'480:00',livre:'334:30',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
-  {cli:'FADEL TRANSPORTES',projeto:'PBH202512-01A - Atendimentos gerais',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'180:00',livre:'163:00',max_exc:'00:00',pool_mes:'15:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'15:00'},
-  {cli:'FINPEC AGRONEGOCIOS LTDA',projeto:'PSG202512-01A - Sustentação Protheus',tarefa:'Banco de horas',inicio:'2026-01-01',fim:'2026-12-31',meses:12,pool:'288:00',livre:'241:00',max_exc:'00:00',pool_mes:'24:00',cons_mes:'06:00',pct_mes:25.00,saldo_mes:'18:00'},
-  {cli:'HELMAG DO BRASIL MERCANTIL LTDA',projeto:'PBH202307-01A - Banco de horas 25-26',tarefa:'Banco de horas',inicio:'2025-09-01',fim:'2026-08-31',meses:12,pool:'240:00',livre:'65:15',max_exc:'00:00',pool_mes:'20:00',cons_mes:'12:00',pct_mes:60.00,saldo_mes:'08:00'},
-  {cli:'IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA',projeto:'PBH202203-01A - Banco de horas infra Totvs Datasul',tarefa:'Banco de horas 26-27',inicio:'2026-05-01',fim:'2027-04-30',meses:12,pool:'240:00',livre:'240:00',max_exc:'00:00',pool_mes:'20:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'20:00'},
-  {cli:'INTEGRADA COOPERATIVA AGROINDUSTRIAL',projeto:'PBH202410-01A - Banco de horas',tarefa:'Banco de horas 2025-2026',inicio:'2025-11-01',fim:'2026-10-31',meses:12,pool:'480:00',livre:'250:00',max_exc:'00:00',pool_mes:'40:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'40:00'},
-  {cli:'JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI',projeto:'PBH202508-05A - Sustentação banco de dados',tarefa:'Banco de horas',inicio:'2025-08-15',fim:'2026-08-14',meses:12,pool:'180:00',livre:'72:30',max_exc:'00:00',pool_mes:'15:00',cons_mes:'08:00',pct_mes:53.33,saldo_mes:'07:00'},
-  {cli:'METALNOX INDUSTRIA E COMERCIO LTDA',projeto:'PBH202312-03A - Banco de horas DBA',tarefa:'Banco de horas DBA 2025-2026',inicio:'2025-07-01',fim:'2026-06-30',meses:12,pool:'240:00',livre:'62:52',max_exc:'00:00',pool_mes:'20:00',cons_mes:'08:00',pct_mes:40.00,saldo_mes:'12:00'},
-  {cli:'NSX BRASIL SA',projeto:'PBH202506-01A - Banco de Horas Sustentação Protheus',tarefa:'Banco de horas',inicio:'2025-06-01',fim:'2026-05-31',meses:12,pool:'5000:00',livre:'1558:15',max_exc:'00:00',pool_mes:'416:40',cons_mes:'284:45',pct_mes:68.34,saldo_mes:'131:55'},
-  {cli:'PECVAL INDUSTRIA LTDA',projeto:'PBH202404-04F - Sustentação do ambiente (Inativo)',tarefa:'Banco de horas de desenvolvimento (Inativo)',inicio:'2025-05-21',fim:'2026-05-20',meses:12,pool:'128:00',livre:'80:30',max_exc:'00:00',pool_mes:'10:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'10:40'},
-  {cli:'PECVAL INDUSTRIA LTDA',projeto:'PBH202404-04F - Sustentação do ambiente (Inativo)',tarefa:'Banco de horas de sustentação (Inativo)',inicio:'2025-05-21',fim:'2026-05-20',meses:12,pool:'680:00',livre:'172:30',max_exc:'00:00',pool_mes:'56:40',cons_mes:'00:00',pct_mes:0,saldo_mes:'56:40'},
-  {cli:'PLASTIGLAS D MEXICO',projeto:'PBH202406-01A Suporte Datasul',tarefa:'Sustentação Datasul',inicio:'2024-11-01',fim:'2026-10-31',meses:24,pool:'1200:00',livre:'325:45',max_exc:'00:00',pool_mes:'50:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'50:00'},
-  {cli:'SERVENG CIVILSAN SA',projeto:'PBH202403-01A - Suporte infraestrutura Totvs',tarefa:'Banco de horas 2026-2027',inicio:'2026-04-01',fim:'2027-03-31',meses:12,pool:'840:00',livre:'705:30',max_exc:'00:00',pool_mes:'70:00',cons_mes:'50:00',pct_mes:71.43,saldo_mes:'20:00'},
-  {cli:'TELETEX COMPUTADORES E SISTEMAS LTDA',projeto:'PBH202112-01A - Banco de horas GWMS e DBA',tarefa:'Banco de horas GWMS e DBA',inicio:'2025-03-01',fim:'2027-02-28',meses:24,pool:'1536:00',livre:'737:30',max_exc:'00:00',pool_mes:'64:00',cons_mes:'31:30',pct_mes:49.22,saldo_mes:'32:30'},
-  {cli:'TOTVS SA',projeto:'Clientes do contrato de parceiro',tarefa:'Atendimento Totvs RS Fluig',inicio:'2024-11-01',fim:'2026-10-31',meses:24,pool:'1536:00',livre:'554:00',max_exc:'00:00',pool_mes:'64:00',cons_mes:'00:00',pct_mes:0,saldo_mes:'64:00'},
-  {cli:'TOTVS SA',projeto:'Projeto Fadel',tarefa:'Sustentação do ambiente - Comercial',inicio:'2024-04-01',fim:'2027-03-31',meses:36,pool:'3000:00',livre:'982:00',max_exc:'00:00',pool_mes:'83:20',cons_mes:'00:00',pct_mes:0,saldo_mes:'83:20'},
-  {cli:'TOTVS SA',projeto:'Projeto Fadel',tarefa:'Sustentação do ambiente - Extras',inicio:'2024-04-01',fim:'2027-03-31',meses:36,pool:'1440:00',livre:'545:30',max_exc:'00:00',pool_mes:'43:20',cons_mes:'18:00',pct_mes:41.54,saldo_mes:'25:20'}
+  {cli:"AGROSUL MAQUINAS LTDA",projeto:"PBH202106-02A - Banco de horas",tarefa:"Banco de horas 2025-2026",inicio:"2025-07-01",fim:"2026-06-30",meses:12,pool:"344:00",livre:"113:56",max_exc:"00:00",pool_mes:"28:40",cons_mes:"30:15",pct_mes:105.52,saldo_mes:"-01:35",ultimo_snap:"2026-05"},
+  {cli:"ASTRA S A INDUSTRIA E COMERCIO",projeto:"PHA202602-02A - Horas abertas atuação datasul",tarefa:"Banco de horas",inicio:"2026-02-01",fim:"2027-01-31",meses:12,pool:"500:00",livre:"500:00",max_exc:"00:00",pool_mes:"41:40",cons_mes:"00:00",pct_mes:0.0,saldo_mes:"41:40",ultimo_snap:"2026-04"},
+  {cli:"ATITUS EDUCACAO S.A",projeto:"PBH202201-02A - Banco de horas 2025 (Inativo)",tarefa:"PBH202201-02A - Banco de horas 2025 (Inativo)",inicio:"2025-03-01",fim:"2026-02-28",meses:12,pool:"456:00",livre:"30:15",max_exc:"00:00",pool_mes:"38:00",cons_mes:"59:30",pct_mes:156.58,saldo_mes:"-21:30",ultimo_snap:"2026-05"},
+  {cli:"ATITUS EDUCACAO S.A",projeto:"PBH202502-06A - Banco de horas 2026",tarefa:"Banco de horas",inicio:"2026-03-01",fim:"2027-02-28",meses:12,pool:"456:00",livre:"382:30",max_exc:"00:00",pool_mes:"38:00",cons_mes:"48:45",pct_mes:128.29,saldo_mes:"-10:45",ultimo_snap:"2026-04"},
+  {cli:"AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)",projeto:"PSG202512-02A - Banco de horas Datasul",tarefa:"Banco de horas",inicio:"2026-02-01",fim:"2027-01-31",meses:12,pool:"432:00",livre:"332:00",max_exc:"00:00",pool_mes:"36:00",cons_mes:"61:00",pct_mes:169.44,saldo_mes:"-25:00",ultimo_snap:"2026-04"},
+  {cli:"AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.",projeto:"PAMS20231212-01E - Sustentação do ambiente",tarefa:"Atendimento Power Plataforms",inicio:"2024-07-01",fim:"2027-01-31",meses:31,pool:"240:00",livre:"-453:15",max_exc:"500:00",pool_mes:"23:52",cons_mes:"60:00",pct_mes:251.35,saldo_mes:"-36:07",ultimo_snap:"2026-05"},
+  {cli:"AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.",projeto:"PAMS20231212-01E - Sustentação do ambiente",tarefa:"Banco de horas Cloud Infra DBA",inicio:"2024-02-01",fim:"2027-01-31",meses:36,pool:"840:00",livre:"-1297:39",max_exc:"1300:00",pool_mes:"59:26",cons_mes:"149:00",pct_mes:250.65,saldo_mes:"-89:33",ultimo_snap:"2026-05"},
+  {cli:"BUNTECH TECNOLOGIA EM INSUMOS LTDA",projeto:"PBH202012-6A - Banco de horas",tarefa:"Banco de horas 2026",inicio:"2026-02-01",fim:"2027-01-31",meses:12,pool:"600:00",livre:"357:30",max_exc:"00:00",pool_mes:"50:00",cons_mes:"68:15",pct_mes:136.5,saldo_mes:"-18:15",ultimo_snap:"2026-04"},
+  {cli:"CAL NORTE NORDESTE S/A",projeto:"BH202503-02A - Banco de horas",tarefa:"Banco de Horas 2025 (Inativo)",inicio:"2025-04-01",fim:"2026-03-31",meses:12,pool:"180:00",livre:"68:00",max_exc:"00:00",pool_mes:"15:00",cons_mes:"08:00",pct_mes:53.33,saldo_mes:"07:00",ultimo_snap:"2026-05"},
+  {cli:"COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A",projeto:"POT202512-01A - Sustentação do ambiente 2026",tarefa:"Banco de horas",inicio:"2026-01-01",fim:"2026-12-31",meses:12,pool:"600:00",livre:"290:30",max_exc:"00:00",pool_mes:"50:00",cons_mes:"81:00",pct_mes:162.0,saldo_mes:"-31:00",ultimo_snap:"2026-05"},
+  {cli:"DKT DO BRASIL PRODUTOS DE USO PESSOAL",projeto:"PBH202510-04A - Banco de horas PROTHEUS",tarefa:"Banco de horas",inicio:"2025-12-01",fim:"2026-11-30",meses:12,pool:"480:00",livre:"147:00",max_exc:"00:00",pool_mes:"40:00",cons_mes:"56:00",pct_mes:140.0,saldo_mes:"-16:00",ultimo_snap:"2026-05"},
+  {cli:"DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA",projeto:"PBH202207-04A - Banco de horas 25-26",tarefa:"Banco de horas",inicio:"2025-08-01",fim:"2026-07-31",meses:12,pool:"180:00",livre:"79:00",max_exc:"00:00",pool_mes:"15:00",cons_mes:"14:30",pct_mes:96.67,saldo_mes:"00:30",ultimo_snap:"2026-05"},
+  {cli:"ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO ECAD",projeto:"PBH202410-05A - Banco de horas",tarefa:"Banco de horas 2026",inicio:"2026-01-01",fim:"2026-12-31",meses:12,pool:"480:00",livre:"334:30",max_exc:"00:00",pool_mes:"40:00",cons_mes:"08:00",pct_mes:20.0,saldo_mes:"32:00",ultimo_snap:"2026-05"},
+  {cli:"FADEL TRANSPORTES",projeto:"PBH202512-01A - Atendimentos gerais",tarefa:"Banco de horas",inicio:"2026-01-01",fim:"2026-12-31",meses:12,pool:"180:00",livre:"163:00",max_exc:"00:00",pool_mes:"15:00",cons_mes:"00:00",pct_mes:0.0,saldo_mes:"15:00",ultimo_snap:"2026-05"},
+  {cli:"FINPEC AGRONEGOCIOS LTDA",projeto:"PSG202512-01A - Sustentação Protheus",tarefa:"Banco de horas",inicio:"2026-01-01",fim:"2026-12-31",meses:12,pool:"288:00",livre:"241:00",max_exc:"00:00",pool_mes:"24:00",cons_mes:"07:00",pct_mes:29.17,saldo_mes:"17:00",ultimo_snap:"2026-05"},
+  {cli:"HELMAG DO BRASIL MERCANTIL LTDA",projeto:"PBH202307-01A - Banco de horas 25-26",tarefa:"Banco de horas",inicio:"2025-09-01",fim:"2026-08-31",meses:12,pool:"240:00",livre:"65:15",max_exc:"00:00",pool_mes:"20:00",cons_mes:"21:30",pct_mes:107.5,saldo_mes:"-01:30",ultimo_snap:"2026-05"},
+  {cli:"IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA",projeto:"PBH202203-01A - Banco de horas infra Totvs DBA",tarefa:"Banco de horas 25-26 (Inativo)",inicio:"2025-05-01",fim:"2026-04-30",meses:12,pool:"240:00",livre:"91:30",max_exc:"00:00",pool_mes:"20:00",cons_mes:"14:00",pct_mes:70.0,saldo_mes:"06:00",ultimo_snap:"2026-05"},
+  {cli:"IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA",projeto:"PBH202203-01A - Banco de horas infra Totvs DBA",tarefa:"Banco de horas 26-27",inicio:"2026-05-01",fim:"2027-04-30",meses:12,pool:"240:00",livre:"240:00",max_exc:"00:00",pool_mes:"20:00",cons_mes:"00:00",pct_mes:0.0,saldo_mes:"20:00",ultimo_snap:"2026-01"},
+  {cli:"INTEGRADA COOPERATIVA AGROINDUSTRIAL",projeto:"PBH202410-01A - Banco de horas",tarefa:"Banco de horas 2025-2026",inicio:"2025-11-01",fim:"2026-10-31",meses:12,pool:"480:00",livre:"250:00",max_exc:"00:00",pool_mes:"40:00",cons_mes:"43:00",pct_mes:107.5,saldo_mes:"-03:00",ultimo_snap:"2026-05"},
+  {cli:"JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI",projeto:"PBH202508-05A - Sustentação banco de dados",tarefa:"Banco de horas",inicio:"2025-08-15",fim:"2026-08-14",meses:12,pool:"180:00",livre:"72:30",max_exc:"00:00",pool_mes:"15:00",cons_mes:"10:30",pct_mes:70.0,saldo_mes:"04:30",ultimo_snap:"2026-05"},
+  {cli:"METALNOX INDUSTRIA E COMERCIO LTDA",projeto:"PBH202312-03A - Banco de horas DBA",tarefa:"Banco de horas DBA 2025-2026",inicio:"2025-07-01",fim:"2026-06-30",meses:12,pool:"240:00",livre:"62:52",max_exc:"00:00",pool_mes:"20:00",cons_mes:"23:37",pct_mes:118.13,saldo_mes:"-03:37",ultimo_snap:"2026-05"},
+  {cli:"NSX BRASIL SA",projeto:"PBH202506-01A - Banco de Horas Sustentação Protheus",tarefa:"Banco de horas",inicio:"2025-06-01",fim:"2026-05-31",meses:12,pool:"5000:00",livre:"1541:15",max_exc:"00:00",pool_mes:"416:40",cons_mes:"265:00",pct_mes:63.6,saldo_mes:"151:40",ultimo_snap:"2026-05"},
+  {cli:"PAM INDUSTRIA DE PLASTICOS INJETADOS LTDA",projeto:"PBH202304-02A - Banco de horas",tarefa:"Banco de horas 2025-2026 (Inativo)",inicio:"2025-04-19",fim:"2026-04-18",meses:12,pool:"673:00",livre:"123:40",max_exc:"00:00",pool_mes:"56:05",cons_mes:"18:45",pct_mes:33.43,saldo_mes:"37:20",ultimo_snap:"2026-05"},
+  {cli:"PECVAL INDUSTRIA LTDA",projeto:"PBH202404-04F - Sustentação de ambiente (Inativo)",tarefa:"Banco de horas de desenvolvimento (Inativo)",inicio:"2025-05-21",fim:"2026-05-20",meses:12,pool:"128:00",livre:"80:30",max_exc:"00:00",pool_mes:"10:40",cons_mes:"00:00",pct_mes:0.0,saldo_mes:"10:40",ultimo_snap:"2026-05"},
+  {cli:"PECVAL INDUSTRIA LTDA",projeto:"PBH202404-04F - Sustentação de ambiente (Inativo)",tarefa:"Banco de horas de sustentação (Inativo)",inicio:"2025-05-21",fim:"2026-05-20",meses:12,pool:"680:00",livre:"172:30",max_exc:"00:00",pool_mes:"56:40",cons_mes:"84:45",pct_mes:149.56,saldo_mes:"-28:05",ultimo_snap:"2026-05"},
+  {cli:"PLASTIGLAS D MEXICO",projeto:"PBH202406-01A Suporte Datasul",tarefa:"Sustentação Datasul",inicio:"2024-11-01",fim:"2026-10-31",meses:24,pool:"1200:00",livre:"325:45",max_exc:"00:00",pool_mes:"50:00",cons_mes:"52:15",pct_mes:104.5,saldo_mes:"-02:15",ultimo_snap:"2026-05"},
+  {cli:"SERVENG CIVILSAN SA",projeto:"PBH202403-01A - Suporte infraestrutura Totvs",tarefa:"Banco de horas 2025-2026 (Inativo)",inicio:"2025-04-01",fim:"2026-03-31",meses:12,pool:"940:00",livre:"00:18",max_exc:"00:00",pool_mes:"78:20",cons_mes:"60:15",pct_mes:76.91,saldo_mes:"18:05",ultimo_snap:"2026-05"},
+  {cli:"SERVENG CIVILSAN SA",projeto:"PBH202403-01A - Suporte infraestrutura Totvs",tarefa:"Banco de horas 2026-2027",inicio:"2026-04-01",fim:"2027-03-31",meses:12,pool:"840:00",livre:"702:30",max_exc:"00:00",pool_mes:"70:00",cons_mes:"84:30",pct_mes:120.71,saldo_mes:"-14:30",ultimo_snap:"2026-03"},
+  {cli:"SERVENG CIVILSAN SA",projeto:"PBH202403-01A - Suporte infraestrutura Totvs",tarefa:"Banco de horas de estouro (Inativo)",inicio:"2026-03-01",fim:"2026-03-31",meses:1,pool:"100:00",livre:"46:30",max_exc:"00:00",pool_mes:"100:00",cons_mes:"54:30",pct_mes:54.5,saldo_mes:"45:30",ultimo_snap:"2026-04"},
+  {cli:"TELETEX COMPUTADORES E SISTEMAS LTDA",projeto:"PBH202112-01A - Banco de horas GWMS e DBA 2025-27",tarefa:"Banco de horas GWMS e DBA",inicio:"2025-03-01",fim:"2027-02-28",meses:24,pool:"1536:00",livre:"737:30",max_exc:"00:00",pool_mes:"64:00",cons_mes:"66:30",pct_mes:103.91,saldo_mes:"-02:30",ultimo_snap:"2026-05"},
+  {cli:"TOTVS SA",projeto:"Clientes do contrato de parceiro",tarefa:"Atendimento Totvs RS Fluig",inicio:"2024-11-01",fim:"2026-10-31",meses:24,pool:"1536:00",livre:"554:00",max_exc:"00:00",pool_mes:"64:00",cons_mes:"32:00",pct_mes:50.0,saldo_mes:"32:00",ultimo_snap:"2026-05"},
+  {cli:"TOTVS SA",projeto:"Projeto Fadel",tarefa:"Sustentação do ambiente - Comercial",inicio:"2024-04-01",fim:"2027-03-31",meses:36,pool:"3000:00",livre:"982:00",max_exc:"00:00",pool_mes:"83:20",cons_mes:"00:00",pct_mes:0.0,saldo_mes:"83:20",ultimo_snap:"2026-05"},
+  {cli:"TOTVS SA",projeto:"Projeto Fadel",tarefa:"Sustentação do ambiente - Extras",inicio:"2024-04-01",fim:"2027-03-31",meses:36,pool:"1440:00",livre:"537:30",max_exc:"120:00",pool_mes:"43:20",cons_mes:"34:00",pct_mes:78.46,saldo_mes:"09:20",ultimo_snap:"2026-05"},
 ];
+
+// Histórico mensal por contrato (chave = cli||projeto||tarefa)
+var BH_HISTORICO = {
+  "AGROSUL MAQUINAS LTDA||PBH202106-02A - Banco de horas||Banco de horas 2025-2026": [{m:"2026-01",cons:"05:15",pct:18.31}, {m:"2026-02",cons:"14:45",pct:51.45}, {m:"2026-03",cons:"22:00",pct:76.74}, {m:"2026-04",cons:"27:03",pct:94.4}, {m:"2026-05",cons:"30:15",pct:105.52}],
+  "ASTRA S A INDUSTRIA E COMERCIO||PHA202602-02A - Horas abertas atuação datasul||Banco de horas": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"00:00",pct:0.0}, {m:"2026-04",cons:"00:00",pct:0.0}, {m:"2026-05",cons:null,pct:null}],
+  "ATITUS EDUCACAO S.A||PBH202201-02A - Banco de horas 2025 (Inativo)||PBH202201-02A - Banco de horas 2025 (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:"23:30",pct:61.84}, {m:"2026-03",cons:null,pct:null}, {m:"2026-04",cons:null,pct:null}, {m:"2026-05",cons:"59:30",pct:156.58}],
+  "ATITUS EDUCACAO S.A||PBH202502-06A - Banco de horas 2026||Banco de horas": [{m:"2026-01",cons:"03:00",pct:7.89}, {m:"2026-02",cons:null,pct:null}, {m:"2026-03",cons:"21:45",pct:57.24}, {m:"2026-04",cons:"48:45",pct:128.29}, {m:"2026-05",cons:null,pct:null}],
+  "AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)||PSG202512-02A - Banco de horas Datasul||Banco de horas": [{m:"2026-01",cons:"03:00",pct:8.33}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"36:00",pct:100.0}, {m:"2026-04",cons:"61:00",pct:169.44}, {m:"2026-05",cons:null,pct:null}],
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Atendimento Power Plataforms": [{m:"2026-01",cons:"07:00",pct:29.32}, {m:"2026-02",cons:"89:00",pct:372.84}, {m:"2026-03",cons:"22:00",pct:92.16}, {m:"2026-04",cons:"36:00",pct:150.81}, {m:"2026-05",cons:"60:00",pct:251.35}],
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Banco de horas Cloud Infra DBA": [{m:"2026-01",cons:"91:15",pct:153.5}, {m:"2026-02",cons:"68:30",pct:115.23}, {m:"2026-03",cons:"123:00",pct:206.92}, {m:"2026-04",cons:"183:30",pct:308.69}, {m:"2026-05",cons:"149:00",pct:250.65}],
+  "BUNTECH TECNOLOGIA EM INSUMOS LTDA||PBH202012-6A - Banco de horas||Banco de horas 2026": [{m:"2026-01",cons:"47:00",pct:94.0}, {m:"2026-02",cons:"56:00",pct:112.0}, {m:"2026-03",cons:"71:15",pct:142.5}, {m:"2026-04",cons:"68:15",pct:136.5}, {m:"2026-05",cons:null,pct:null}],
+  "CAL NORTE NORDESTE S/A||BH202503-02A - Banco de horas||Banco de Horas 2025 (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:"04:00",pct:26.67}, {m:"2026-03",cons:null,pct:null}, {m:"2026-04",cons:"14:00",pct:93.33}, {m:"2026-05",cons:"08:00",pct:53.33}],
+  "COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A||POT202512-01A - Sustentação do ambiente 2026||Banco de horas": [{m:"2026-01",cons:"11:15",pct:22.5}, {m:"2026-02",cons:"91:22",pct:182.75}, {m:"2026-03",cons:"64:15",pct:128.5}, {m:"2026-04",cons:"61:37",pct:123.25}, {m:"2026-05",cons:"81:00",pct:162.0}],
+  "DKT DO BRASIL PRODUTOS DE USO PESSOAL||PBH202510-04A - Banco de horas PROTHEUS||Banco de horas": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"56:00",pct:140.0}, {m:"2026-03",cons:"80:00",pct:200.0}, {m:"2026-04",cons:"111:00",pct:277.5}, {m:"2026-05",cons:"56:00",pct:140.0}],
+  "DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA||PBH202207-04A - Banco de horas 25-26||Banco de horas": [{m:"2026-01",cons:"08:00",pct:53.33}, {m:"2026-02",cons:"11:00",pct:73.33}, {m:"2026-03",cons:"10:00",pct:66.67}, {m:"2026-04",cons:"11:00",pct:73.33}, {m:"2026-05",cons:"14:30",pct:96.67}],
+  "ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO ECAD||PBH202410-05A - Banco de horas||Banco de horas 2026": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"17:00",pct:42.5}, {m:"2026-03",cons:"30:30",pct:76.25}, {m:"2026-04",cons:"90:00",pct:225.0}, {m:"2026-05",cons:"08:00",pct:20.0}],
+  "FADEL TRANSPORTES||PBH202512-01A - Atendimentos gerais||Banco de horas": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"14:00",pct:93.33}, {m:"2026-04",cons:"03:00",pct:20.0}, {m:"2026-05",cons:"00:00",pct:0.0}],
+  "FINPEC AGRONEGOCIOS LTDA||PSG202512-01A - Sustentação Protheus||Banco de horas": [{m:"2026-01",cons:"06:00",pct:25.0}, {m:"2026-02",cons:"12:00",pct:50.0}, {m:"2026-03",cons:"18:00",pct:75.0}, {m:"2026-04",cons:"04:00",pct:16.67}, {m:"2026-05",cons:"07:00",pct:29.17}],
+  "HELMAG DO BRASIL MERCANTIL LTDA||PBH202307-01A - Banco de horas 25-26||Banco de horas": [{m:"2026-01",cons:"12:00",pct:60.0}, {m:"2026-02",cons:"26:15",pct:131.25}, {m:"2026-03",cons:"08:00",pct:40.0}, {m:"2026-04",cons:"20:00",pct:100.0}, {m:"2026-05",cons:"21:30",pct:107.5}],
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 25-26 (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"08:00",pct:40.0}, {m:"2026-04",cons:"12:00",pct:60.0}, {m:"2026-05",cons:"14:00",pct:70.0}],
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 26-27": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:null,pct:null}, {m:"2026-03",cons:null,pct:null}, {m:"2026-04",cons:null,pct:null}, {m:"2026-05",cons:null,pct:null}],
+  "INTEGRADA COOPERATIVA AGROINDUSTRIAL||PBH202410-01A - Banco de horas||Banco de horas 2025-2026": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"33:00",pct:82.5}, {m:"2026-04",cons:"72:00",pct:180.0}, {m:"2026-05",cons:"43:00",pct:107.5}],
+  "JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI||PBH202508-05A - Sustentação banco de dados||Banco de horas": [{m:"2026-01",cons:"08:00",pct:53.33}, {m:"2026-02",cons:"12:30",pct:83.33}, {m:"2026-03",cons:"14:30",pct:96.67}, {m:"2026-04",cons:"10:30",pct:70.0}, {m:"2026-05",cons:"10:30",pct:70.0}],
+  "METALNOX INDUSTRIA E COMERCIO LTDA||PBH202312-03A - Banco de horas DBA||Banco de horas DBA 2025-2026": [{m:"2026-01",cons:"08:00",pct:40.0}, {m:"2026-02",cons:"13:45",pct:68.75}, {m:"2026-03",cons:"00:00",pct:0.0}, {m:"2026-04",cons:"08:00",pct:40.0}, {m:"2026-05",cons:"23:37",pct:118.13}],
+  "NSX BRASIL SA||PBH202506-01A - Banco de Horas Sustentação Protheus||Banco de horas": [{m:"2026-01",cons:"301:45",pct:72.42}, {m:"2026-02",cons:"830:45",pct:199.38}, {m:"2026-03",cons:"655:00",pct:157.2}, {m:"2026-04",cons:"897:30",pct:215.4}, {m:"2026-05",cons:"265:00",pct:63.6}],
+  "PAM INDUSTRIA DE PLASTICOS INJETADOS LTDA||PBH202304-02A - Banco de horas||Banco de horas 2025-2026 (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:"13:00",pct:23.18}, {m:"2026-03",cons:"74:15",pct:132.39}, {m:"2026-04",cons:"28:45",pct:51.26}, {m:"2026-05",cons:"18:45",pct:33.43}],
+  "PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de desenvolvimento (Inativo)": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"00:00",pct:0.0}, {m:"2026-04",cons:"00:00",pct:0.0}, {m:"2026-05",cons:"00:00",pct:0.0}],
+  "PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de sustentação (Inativo)": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"19:30",pct:34.41}, {m:"2026-03",cons:"00:00",pct:0.0}, {m:"2026-04",cons:"64:00",pct:112.94}, {m:"2026-05",cons:"84:45",pct:149.56}],
+  "PLASTIGLAS D MEXICO||PBH202406-01A Suporte Datasul||Sustentação Datasul": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"40:00",pct:80.0}, {m:"2026-03",cons:"63:30",pct:127.0}, {m:"2026-04",cons:"74:30",pct:149.0}, {m:"2026-05",cons:"52:15",pct:104.5}],
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2025-2026 (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:"81:00",pct:103.4}, {m:"2026-03",cons:null,pct:null}, {m:"2026-04",cons:"32:30",pct:41.49}, {m:"2026-05",cons:"60:15",pct:76.91}],
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2026-2027": [{m:"2026-01",cons:"53:00",pct:75.71}, {m:"2026-02",cons:null,pct:null}, {m:"2026-03",cons:"84:30",pct:120.71}, {m:"2026-04",cons:null,pct:null}, {m:"2026-05",cons:null,pct:null}],
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas de estouro (Inativo)": [{m:"2026-01",cons:null,pct:null}, {m:"2026-02",cons:null,pct:null}, {m:"2026-03",cons:null,pct:null}, {m:"2026-04",cons:"54:30",pct:54.5}, {m:"2026-05",cons:null,pct:null}],
+  "TELETEX COMPUTADORES E SISTEMAS LTDA||PBH202112-01A - Banco de horas GWMS e DBA 2025-27||Banco de horas GWMS e DBA": [{m:"2026-01",cons:"31:30",pct:49.22}, {m:"2026-02",cons:"52:45",pct:82.42}, {m:"2026-03",cons:"56:30",pct:88.28}, {m:"2026-04",cons:"115:00",pct:179.69}, {m:"2026-05",cons:"66:30",pct:103.91}],
+  "TOTVS SA||Clientes do contrato de parceiro||Atendimento Totvs RS Fluig": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"28:00",pct:43.75}, {m:"2026-03",cons:"24:00",pct:37.5}, {m:"2026-04",cons:"28:00",pct:43.75}, {m:"2026-05",cons:"32:00",pct:50.0}],
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Comercial": [{m:"2026-01",cons:"00:00",pct:0.0}, {m:"2026-02",cons:"00:00",pct:0.0}, {m:"2026-03",cons:"00:00",pct:0.0}, {m:"2026-04",cons:"00:00",pct:0.0}, {m:"2026-05",cons:"00:00",pct:0.0}],
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Extras": [{m:"2026-01",cons:"26:00",pct:60.0}, {m:"2026-02",cons:"45:00",pct:103.85}, {m:"2026-03",cons:"37:00",pct:85.38}, {m:"2026-04",cons:"41:00",pct:94.62}, {m:"2026-05",cons:"34:00",pct:78.46}],
+};
+
+// Dados financeiros casados (Análise Projeto do apontamento)
+// Chave = cli||projeto||tarefa (mesma do BH)
+var BH_FINANCEIRO = {
+  "AGROSUL MAQUINAS LTDA||PBH202106-02A - Banco de horas||Banco de horas 2025-2026": {valor_venda:111405.44,total_horas:920,valor_hora:121.09,horas_apontadas:"491:30",horas_com_fator:"629:38",pct_utilizado:68.44,custo_horas:14148.08,lucro_liquido:78816.51,margem_venda:30.00,margem_projeto:70.75,lucro_projetado:33421.63,margem_proj_vs_real:40.75},
+  "ASTRA S A INDUSTRIA E COMERCIO||PHA202602-02A - Horas abertas atuação datasul||Banco de horas": {valor_venda:85000.00,total_horas:500,valor_hora:170.00,horas_apontadas:"00:00",horas_com_fator:"00:00",pct_utilizado:0.0,custo_horas:0.00,lucro_liquido:65875.00,margem_venda:39.27,margem_projeto:77.50,lucro_projetado:33379.50,margem_proj_vs_real:38.23},
+  // Sem match financeiro: ATITUS EDUCACAO S.A||PBH202201-02A - Banco de horas 2025 (Inativo)||PBH202201-02A - Banco de horas 2025 (Inativo)
+  "ATITUS EDUCACAO S.A||PBH202502-06A - Banco de horas 2026||Banco de horas": {valor_venda:59480.64,total_horas:456,valor_hora:130.44,horas_apontadas:"63:15",horas_com_fator:"73:30",pct_utilizado:16.12,custo_horas:1591.80,lucro_liquido:46587.52,margem_venda:33.50,margem_projeto:78.32,lucro_projetado:19926.01,margem_proj_vs_real:44.82},
+  "AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)||PSG202512-02A - Banco de horas Datasul||Banco de horas": {valor_venda:64800.00,total_horas:432,valor_hora:150.00,horas_apontadas:"100:00",horas_com_fator:"100:00",pct_utilizado:23.15,custo_horas:21854.98,lucro_liquido:29337.02,margem_venda:32.00,margem_projeto:45.27,lucro_projetado:20736.00,margem_proj_vs_real:13.27},
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Atendimento Power Plataforms": {valor_venda:696000.00,total_horas:2790,valor_hora:249.46,horas_apontadas:"3691:39",horas_com_fator:"3696:39",pct_utilizado:80.54,custo_horas:171258.00,lucro_liquido:405357.03,margem_venda:28.80,margem_projeto:58.24,lucro_projetado:200448.00,margem_proj_vs_real:29.44},
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Banco de horas Cloud Infra DBA": {valor_venda:696000.00,total_horas:2790,valor_hora:249.46,horas_apontadas:"3691:39",horas_com_fator:"3696:39",pct_utilizado:80.54,custo_horas:171258.00,lucro_liquido:405357.03,margem_venda:28.80,margem_projeto:58.24,lucro_projetado:200448.00,margem_proj_vs_real:29.44},
+  "BUNTECH TECNOLOGIA EM INSUMOS LTDA||PBH202012-6A - Banco de horas||Banco de horas 2026": {valor_venda:299741.50,total_horas:1940,valor_hora:154.51,horas_apontadas:"1072:15",horas_com_fator:"1532:52",pct_utilizado:79.01,custo_horas:31569.96,lucro_liquido:214896.44,margem_venda:32.56,margem_projeto:71.69,lucro_projetado:97595.83,margem_proj_vs_real:39.13},
+  "CAL NORTE NORDESTE S/A||BH202503-02A - Banco de horas||Banco de Horas 2025 (Inativo)": {valor_venda:32764.80,total_horas:300,valor_hora:109.22,horas_apontadas:"96:00",horas_com_fator:"113:30",pct_utilizado:37.83,custo_horas:3853.39,lucro_liquido:22568.31,margem_venda:21.50,margem_projeto:68.88,lucro_projetado:7044.43,margem_proj_vs_real:47.38},
+  "COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A||POT202512-01A - Sustentação do ambiente 2026||Banco de horas": {valor_venda:1892724.00,total_horas:600,valor_hora:3154.54,horas_apontadas:"275:00",horas_com_fator:"309:30",pct_utilizado:51.58,custo_horas:349208.29,lucro_liquido:1396979.81,margem_venda:26.25,margem_projeto:73.81,lucro_projetado:496840.05,margem_proj_vs_real:47.56},
+  "DKT DO BRASIL PRODUTOS DE USO PESSOAL||PBH202510-04A - Banco de horas PROTHEUS||Banco de horas": {valor_venda:60000.00,total_horas:480,valor_hora:125.00,horas_apontadas:"333:00",horas_com_fator:"333:00",pct_utilizado:69.38,custo_horas:20860.00,lucro_liquido:26296.00,margem_venda:27.60,margem_projeto:43.83,lucro_projetado:16560.00,margem_proj_vs_real:16.23},
+  "DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA||PBH202207-04A - Banco de horas 25-26||Banco de horas": {valor_venda:22800.60,total_horas:180,valor_hora:126.67,horas_apontadas:"78:30",horas_com_fator:"101:00",pct_utilizado:56.11,custo_horas:2109.52,lucro_liquido:16465.37,margem_venda:33.23,margem_projeto:72.21,lucro_projetado:7576.64,margem_proj_vs_real:38.98},
+  "ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO ECAD||PBH202410-05A - Banco de horas||Banco de horas 2026": {valor_venda:128788.80,total_horas:960,valor_hora:134.16,horas_apontadas:"616:30",horas_com_fator:"617:30",pct_utilizado:64.32,custo_horas:38873.25,lucro_liquido:65207.36,margem_venda:30.22,margem_projeto:50.63,lucro_projetado:38913.54,margem_proj_vs_real:20.42},
+  "FADEL TRANSPORTES||PBH202512-01A - Atendimentos gerais||Banco de horas": {valor_venda:27037.80,total_horas:180,valor_hora:150.21,horas_apontadas:"17:00",horas_com_fator:"17:00",pct_utilizado:9.44,custo_horas:1295.00,lucro_liquido:19929.67,margem_venda:36.33,margem_projeto:73.71,lucro_projetado:9822.83,margem_proj_vs_real:37.38},
+  "FINPEC AGRONEGOCIOS LTDA||PSG202512-01A - Sustentação Protheus||Banco de horas": {valor_venda:36276.48,total_horas:288,valor_hora:125.96,horas_apontadas:"47:00",horas_com_fator:"47:00",pct_utilizado:16.32,custo_horas:2550.00,lucro_liquido:25564.27,margem_venda:13.50,margem_projeto:70.47,lucro_projetado:4897.32,margem_proj_vs_real:56.97},
+  "HELMAG DO BRASIL MERCANTIL LTDA||PBH202307-01A - Banco de horas 25-26||Banco de horas": {valor_venda:36895.20,total_horas:240,valor_hora:153.73,horas_apontadas:"174:45",horas_com_fator:"174:45",pct_utilizado:72.81,custo_horas:8737.50,lucro_liquido:21285.35,margem_venda:41.57,margem_projeto:57.69,lucro_projetado:15337.33,margem_proj_vs_real:16.12},
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 25-26 (Inativo)": {valor_venda:144061.20,total_horas:1200,valor_hora:120.05,horas_apontadas:"647:15",horas_com_fator:"678:12",pct_utilizado:56.52,custo_horas:96663.91,lucro_liquido:22908.42,margem_venda:30.00,margem_projeto:15.90,lucro_projetado:43218.36,margem_proj_vs_real:-14.10},
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 26-27": {valor_venda:144061.20,total_horas:1200,valor_hora:120.05,horas_apontadas:"647:15",horas_com_fator:"678:12",pct_utilizado:56.52,custo_horas:96663.91,lucro_liquido:22908.42,margem_venda:30.00,margem_projeto:15.90,lucro_projetado:43218.36,margem_proj_vs_real:-14.10},
+  "INTEGRADA COOPERATIVA AGROINDUSTRIAL||PBH202410-01A - Banco de horas||Banco de horas 2025-2026": {valor_venda:222134.40,total_horas:1440,valor_hora:154.26,horas_apontadas:"1071:00",horas_com_fator:"1071:00",pct_utilizado:74.38,custo_horas:90796.72,lucro_liquido:85005.38,margem_venda:33.12,margem_projeto:38.27,lucro_projetado:73570.91,margem_proj_vs_real:5.15},
+  "JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI||PBH202508-05A - Sustentação banco de dados||Banco de horas": {valor_venda:24406.20,total_horas:180,valor_hora:135.59,horas_apontadas:"67:30",horas_com_fator:"107:30",pct_utilizado:59.72,custo_horas:1869.52,lucro_liquido:17638.54,margem_venda:36.35,margem_projeto:72.27,lucro_projetado:8871.65,margem_proj_vs_real:35.92},
+  "METALNOX INDUSTRIA E COMERCIO LTDA||PBH202312-03A - Banco de horas DBA||Banco de horas DBA 2025-2026": {valor_venda:85281.60,total_horas:496,valor_hora:171.94,horas_apontadas:"330:00",horas_com_fator:"410:22",pct_utilizado:82.74,custo_horas:10510.00,lucro_liquido:58005.24,margem_venda:34.67,margem_projeto:68.02,lucro_projetado:29564.29,margem_proj_vs_real:33.35},
+  "NSX BRASIL SA||PBH202506-01A - Banco de Horas Sustentação Protheus||Banco de horas": {valor_venda:2305723.50,total_horas:15350,valor_hora:150.21,horas_apontadas:"8465:15",horas_com_fator:"8465:15",pct_utilizado:55.15,custo_horas:602754.30,lucro_liquido:1213923.00,margem_venda:33.00,margem_projeto:52.65,lucro_projetado:760888.76,margem_proj_vs_real:19.65},
+  "PAM INDUSTRIA DE PLASTICOS INJETADOS LTDA||PBH202304-02A - Banco de horas||Banco de horas 2025-2026 (Inativo)": {valor_venda:436862.70,total_horas:3373,valor_hora:129.52,horas_apontadas:"2218:30",horas_com_fator:"2226:00",pct_utilizado:65.99,custo_horas:180550.80,lucro_liquido:181099.15,margem_venda:30.00,margem_projeto:41.45,lucro_projetado:131058.81,margem_proj_vs_real:11.45},
+  // Sem match financeiro: PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de desenvolvimento (Inativo)
+  // Sem match financeiro: PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de sustentação (Inativo)
+  "PLASTIGLAS D MEXICO||PBH202406-01A Suporte Datasul||Sustentação Datasul": {valor_venda:208934.72,total_horas:1216,valor_hora:171.82,horas_apontadas:"890:15",horas_com_fator:"890:15",pct_utilizado:73.21,custo_horas:82595.44,lucro_liquido:80726.08,margem_venda:32.70,margem_projeto:38.64,lucro_projetado:68311.21,margem_proj_vs_real:5.94},
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2025-2026 (Inativo)": {valor_venda:345571.20,total_horas:2720,valor_hora:127.05,horas_apontadas:"1838:30",horas_com_fator:"1882:00",pct_utilizado:69.19,custo_horas:91420.00,lucro_liquido:185851.57,margem_venda:27.00,margem_projeto:53.78,lucro_projetado:93304.22,margem_proj_vs_real:26.78},
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2026-2027": {valor_venda:345571.20,total_horas:2720,valor_hora:127.05,horas_apontadas:"1838:30",horas_com_fator:"1882:00",pct_utilizado:69.19,custo_horas:91420.00,lucro_liquido:185851.57,margem_venda:27.00,margem_projeto:53.78,lucro_projetado:93304.22,margem_proj_vs_real:26.78},
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas de estouro (Inativo)": {valor_venda:345571.20,total_horas:2720,valor_hora:127.05,horas_apontadas:"1838:30",horas_com_fator:"1882:00",pct_utilizado:69.19,custo_horas:91420.00,lucro_liquido:185851.57,margem_venda:27.00,margem_projeto:53.78,lucro_projetado:93304.22,margem_proj_vs_real:26.78},
+  "TELETEX COMPUTADORES E SISTEMAS LTDA||PBH202112-01A - Banco de horas GWMS e DBA 2025-27||Banco de horas GWMS e DBA": {valor_venda:240629.76,total_horas:1536,valor_hora:156.66,horas_apontadas:"763:30",horas_com_fator:"798:30",pct_utilizado:51.99,custo_horas:33532.50,lucro_liquido:162500.54,margem_venda:10.00,margem_projeto:67.53,lucro_projetado:24062.98,margem_proj_vs_real:57.53},
+  "TOTVS SA||Clientes do contrato de parceiro||Atendimento Totvs RS Fluig": {valor_venda:4120117.83,total_horas:29855,valor_hora:138.00,horas_apontadas:"18805:15",horas_com_fator:"18898:35",pct_utilizado:63.25,custo_horas:1537221.96,lucro_liquido:1927104.09,margem_venda:30.09,margem_projeto:46.77,lucro_projetado:1239780.91,margem_proj_vs_real:16.68},
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Comercial": {valor_venda:1162512.80,total_horas:4940,valor_hora:235.33,horas_apontadas:"3421:00",horas_com_fator:"3421:00",pct_utilizado:67.61,custo_horas:982720.38,lucro_liquido:-12684.40,margem_venda:14.80,margem_projeto:-1.09,lucro_projetado:172051.89,margem_proj_vs_real:-15.89},
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Extras": {valor_venda:1162512.80,total_horas:4940,valor_hora:235.33,horas_apontadas:"3421:00",horas_com_fator:"3421:00",pct_utilizado:67.61,custo_horas:982720.38,lucro_liquido:-12684.40,margem_venda:14.80,margem_projeto:-1.09,lucro_projetado:172051.89,margem_proj_vs_real:-15.89},
+};
 
 // ── Helpers ─────────────────────────────────────────────────
 // "344:30" → 344.5 horas decimais. Suporta negativo "-29:48" → -29.8
@@ -14573,36 +14697,44 @@ function _bhPctConsumido(c){
   var consumido = pool - _bhHHMMtoH(c.livre);
   return Math.round((consumido/pool)*100*10)/10;
 }
-// ── Análise trimestral ──
-// REGRA DE NEGÓCIO (Fabio 2026-05): cobrança é TRIMESTRAL, mesmo que o cliente
-// pague mensalmente. Pool trimestral = pool_mensal × 3.
-//
-// Ex: pool mensal 100h → pool trimestre 300h. Se no 1º mês cliente usa 350h,
-// já passou do pool trimestral inteiro → cobramos 50h (mesmo com saldo positivo).
-//
-// LIMITAÇÃO ATUAL: sem histórico mensal, projeção usa cons_mes × 3 (estimativa).
-// Quando API do Adriano chegar com histórico, somamos consumo real do trimestre.
-//
-// Retorna {pool_trimestre, projecao_trimestre, estouro_atual, tendencia,
-//          estourou, pct_trimestre_realizado, pct_trimestre_projetado, estimativa}
+// ── Análise trimestral (v4: usa histórico real dos últimos 3 meses) ──
+// REGRA DE NEGÓCIO (Fabio 2026-05): cobrança é TRIMESTRAL pra BH.
+// pool_trimestre = pool_mensal × 3 · consumo = SOMA dos 3 últimos meses do hist
 function _bhAnaliseTrimestre(c){
   var poolMes = _bhHHMMtoH(c.pool_mes);
-  var consMes = _bhHHMMtoH(c.cons_mes);
   var poolTrim = poolMes * 3;
-  var projTrim = consMes * 3; // estimativa simples — vira soma real quando vier API
-  var estouroAtual = consMes > poolTrim ? consMes - poolTrim : 0;
-  var pctRealizado = poolTrim > 0 ? Math.round((consMes/poolTrim)*100*10)/10 : 0;
-  var pctProjetado = poolTrim > 0 ? Math.round((projTrim/poolTrim)*100*10)/10 : 0;
+  var chave = (c.cli||'') + '||' + (c.projeto||'') + '||' + (c.tarefa||'');
+  var hist = (typeof BH_HISTORICO !== 'undefined') ? BH_HISTORICO[chave] : null;
+  var consTrim = 0, mesesUsados = 0, eReal = false;
+  if(hist && hist.length){
+    var ult3 = hist.slice(-3);
+    ult3.forEach(function(h){
+      if(h && h.cons != null){ consTrim += _bhHHMMtoH(h.cons); mesesUsados++; }
+    });
+    eReal = mesesUsados >= 2;
+  }
+  if(!eReal){
+    // fallback: cons_mes × 3 (estimativa)
+    consTrim = _bhHHMMtoH(c.cons_mes) * 3;
+    mesesUsados = 0;
+  }
+  var estouroAtual = consTrim > poolTrim ? consTrim - poolTrim : 0;
+  var pctReal = poolTrim > 0 ? Math.round((consTrim/poolTrim)*100*10)/10 : 0;
+  // Tendência: se < 3 meses de dado e ritmo extrapolado estoura
+  var ritmoMedio = mesesUsados > 0 ? consTrim/mesesUsados : 0;
+  var projeçãoFinal = ritmoMedio * 3;
   return {
     pool_trimestre: poolTrim,
-    cons_mes_no_trim: consMes,
-    projecao_trimestre: projTrim,
+    cons_trimestre_real: Math.round(consTrim*100)/100,
+    cons_mes_no_trim: _bhHHMMtoH(c.cons_mes),
+    projecao_trimestre: Math.round(projeçãoFinal*100)/100,
     estouro_atual: Math.round(estouroAtual*100)/100,
     estourou: estouroAtual > 0,
-    tendencia: (estouroAtual === 0) && (projTrim > poolTrim), // ainda não estourou mas vai
-    pct_trimestre_realizado: pctRealizado,
-    pct_trimestre_projetado: pctProjetado,
-    estimativa: true // marca pra UI mostrar como "≈"
+    tendencia: (estouroAtual === 0) && (mesesUsados > 0) && (mesesUsados < 3) && (projeçãoFinal > poolTrim),
+    pct_trimestre_realizado: pctReal,
+    pct_trimestre_projetado: poolTrim > 0 ? Math.round((projeçãoFinal/poolTrim)*100*10)/10 : 0,
+    meses_usados: mesesUsados,
+    real: eReal // true = soma do histórico · false = estimativa fallback
   };
 }
 // ── Tipo de banco (inferido por meses_contrato — só rótulo) ──
@@ -14742,7 +14874,11 @@ function _bhGetContratos(){
     // ── Helpers básicos ──
     var cliId = BH_MAPA_APONTA[c.cli] || '';
     var disp = _bhDispCli(c.cli);
-    var valHora = BH_VALOR_HORA[c.cli + '||' + c.tarefa] || null;
+    // v4: valor/hora vem do BH_FINANCEIRO (real, do CSV Análise Projeto)
+    // fallback pra BH_VALOR_HORA antigo se não casou no financeiro
+    var chaveFin = c.cli + '||' + c.projeto + '||' + c.tarefa;
+    var fin = (typeof BH_FINANCEIRO !== 'undefined') ? BH_FINANCEIRO[chaveFin] : null;
+    var valHora = (fin && fin.valor_hora) ? fin.valor_hora : (BH_VALOR_HORA[c.cli + '||' + c.tarefa] || null);
     var pool = _bhHHMMtoH(c.pool);
     var livre = _bhHHMMtoH(c.livre);
     var consumido = pool - livre;
@@ -14801,7 +14937,10 @@ function _bhGetContratos(){
       motivo_risco: motivo,
       avisar_cliente: avisar,
       // v3 — análise trimestral (regra de cobrança da Groundwork)
-      trimestre: trim   // {pool_trimestre, projecao_trimestre, estouro_atual, tendencia, estourou, pct_*, estimativa}
+      trimestre: trim,   // {pool_trimestre, projecao_trimestre, estouro_atual, tendencia, estourou, pct_*, real, meses_usados}
+      // v4 — dados financeiros do Análise Projeto + último snapshot disponível
+      financeiro: fin,   // {valor_venda, margem_venda, lucro_liquido, margem_proj_vs_real, ...} ou null
+      ultimo_snap: c.ultimo_snap || BH_SNAPSHOT_DATE
     };
   });
 }
@@ -14893,7 +15032,7 @@ function renderContratosBH(){
   var heroHTML = '<div class="bh-hero">'
     + '<div class="bh-hero-title">'
       + '<div><h2>Saúde do Banco de Horas</h2>'
-      + '<div class="bh-hero-sub">Controle de consumo, saldo, excedentes, alertas e renovações · Snapshot ' + snapLabel + ' · ' + agg.total + ' contratos ativos · <em>clique nos cards pra detalhar</em></div></div>'
+      + '<div class="bh-hero-sub">Controle de consumo, saldo, excedentes, alertas e renovações · Histórico Jan→' + snapLabel + ' · ' + agg.total + ' contratos · trimestre real (3 meses) + dados financeiros · <em>clique nos cards e linhas</em></div></div>'
       + '<div class="bh-hero-health"><div class="bh-hero-health-num">' + agg.health_media + '</div><div class="bh-hero-health-lbl">/100<br>Saúde média</div></div>'
     + '</div>'
     + '<div class="bh-hero-cards">'
@@ -14950,9 +15089,77 @@ function renderContratosBH(){
       + '</div></div>';
   }
 
+  // ── Heatmap Cliente × Mês (5 meses do histórico) ──
+  var heatmapHTML = '';
+  if(typeof BH_HISTORICO !== 'undefined' && typeof BH_HISTORICO_MESES !== 'undefined'){
+    var mesLbl = function(m){
+      var nomes = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      var p = m.split('-');
+      return (nomes[parseInt(p[1],10)]||'?') + '/' + p[0].slice(2);
+    };
+    var celCls = function(pct){
+      if(pct == null) return 'na';
+      if(pct >= 100) return 'crit';
+      if(pct >= 70) return 'warn';
+      if(pct >= 30) return 'mid';
+      return 'ok';
+    };
+    heatmapHTML = '<div class="bh-heatmap-wrap">'
+      + '<h3 class="bh-section-title">🔥 Heatmap consumo mensal · % do pool mensal por contrato</h3>'
+      + '<div class="bh-heatmap-legend">'
+        + '<span><i class="bh-cel ok"></i> ≤30%</span>'
+        + '<span><i class="bh-cel mid"></i> 30-69%</span>'
+        + '<span><i class="bh-cel warn"></i> 70-99%</span>'
+        + '<span><i class="bh-cel crit"></i> ≥100% (estouro)</span>'
+        + '<span><i class="bh-cel na"></i> sem dado</span>'
+      + '</div>'
+      + '<div class="bh-heatmap-tab-wrap"><table class="bh-heatmap-tab">'
+      + '<thead><tr><th>Cliente · Contrato</th>'
+      + BH_HISTORICO_MESES.map(function(m){return '<th class="c">' + mesLbl(m) + '</th>';}).join('')
+      + '<th class="c">Status</th></tr></thead><tbody>'
+      + contratos.map(function(c){
+          var chave = c.cli_apo + '||' + c.projeto + '||' + c.tarefa;
+          var hist = BH_HISTORICO[chave] || [];
+          var emoji = c.status==='crit'?'🔴':(c.status==='warn'?'🟡':'🟢');
+          var cels = BH_HISTORICO_MESES.map(function(m, idx){
+            var d = hist[idx];
+            if(!d || d.cons == null) return '<td class="c bh-hm-cel na" title="' + mesLbl(m) + ': sem dado">—</td>';
+            var pct = d.pct;
+            return '<td class="c bh-hm-cel ' + celCls(pct) + '" title="' + mesLbl(m) + ': ' + d.cons + 'h (' + pct.toFixed(0) + '%)">' + pct.toFixed(0) + '%</td>';
+          }).join('');
+          var idx = contratos.indexOf(c);
+          return '<tr class="clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
+            + '<td class="bh-hm-cli"><strong>' + c.display + '</strong> · <span class="bh-hm-tarefa">' + c.tarefa + '</span></td>'
+            + cels
+            + '<td class="c">' + emoji + '</td>'
+          + '</tr>';
+        }).join('')
+      + '</tbody></table></div></div>';
+  }
+
+  // ── Filtros chips pra tabela completa ──
+  var filtrosHTML = '<div class="bh-filtros-wrap">'
+    + '<span class="bh-filtros-lbl">Filtrar:</span>'
+    + '<button class="bh-chip" data-bh-filtro="status:crit" onclick="_bhToggleFiltro(this)">🔴 Críticos</button>'
+    + '<button class="bh-chip" data-bh-filtro="status:warn" onclick="_bhToggleFiltro(this)">🟡 Atenção</button>'
+    + '<button class="bh-chip" data-bh-filtro="status:ok" onclick="_bhToggleFiltro(this)">🟢 Saudáveis</button>'
+    + '<span class="bh-filtros-sep">·</span>'
+    + '<button class="bh-chip" data-bh-filtro="aviso:formal" onclick="_bhToggleFiltro(this)">Avisar formal</button>'
+    + '<button class="bh-chip" data-bh-filtro="aviso:urgente" onclick="_bhToggleFiltro(this)">Avisar urgente</button>'
+    + '<button class="bh-chip" data-bh-filtro="aviso:preventivo" onclick="_bhToggleFiltro(this)">Avisar preventivo</button>'
+    + '<span class="bh-filtros-sep">·</span>'
+    + '<button class="bh-chip" data-bh-filtro="venc:30" onclick="_bhToggleFiltro(this)">Vence ≤30d</button>'
+    + '<button class="bh-chip" data-bh-filtro="venc:90" onclick="_bhToggleFiltro(this)">Vence ≤90d</button>'
+    + '<span class="bh-filtros-sep">·</span>'
+    + '<button class="bh-chip" data-bh-filtro="margem:prejuizo" onclick="_bhToggleFiltro(this)" title="Margem realizada < 10%">📉 Margem baixa</button>'
+    + '<span class="bh-filtros-sep">·</span>'
+    + '<button class="bh-chip bh-chip-reset" onclick="_bhLimparFiltros()">✕ Limpar</button>'
+  + '</div>';
+
   // ── Tabela completa ──
   var tabelaHTML = '<div class="bh-tab-wrap">'
     + '<h3 class="bh-section-title">📋 Todos os contratos · ordenados por risco · clique numa linha pra detalhe</h3>'
+    + filtrosHTML
     + '<table class="bh-table">'
     + '<thead><tr>'
       + '<th>Status</th><th>Cliente</th><th>Tarefa</th><th>Health</th>'
@@ -14996,7 +15203,56 @@ function renderContratosBH(){
     + '</tbody></table></div>';
 
   // Container do modal (vazio inicial — populado no drill-down)
-  el.innerHTML = heroHTML + cardsHTML + tabelaHTML + '<div id="bh-modal" class="bh-modal-overlay" style="display:none" onclick="if(event.target===this)_bhFecharDrill()"><div class="bh-modal-card" id="bh-modal-card"></div></div>';
+  el.innerHTML = heroHTML + cardsHTML + heatmapHTML + tabelaHTML + '<div id="bh-modal" class="bh-modal-overlay" style="display:none" onclick="if(event.target===this)_bhFecharDrill()"><div class="bh-modal-card" id="bh-modal-card"></div></div>';
+}
+// ── Filtros chips da tabela ──
+window._bhFiltrosAtivos = window._bhFiltrosAtivos || {};
+window._bhToggleFiltro = function(btn){
+  var key = btn.getAttribute('data-bh-filtro');
+  if(!key) return;
+  if(window._bhFiltrosAtivos[key]){
+    delete window._bhFiltrosAtivos[key];
+    btn.classList.remove('on');
+  } else {
+    window._bhFiltrosAtivos[key] = true;
+    btn.classList.add('on');
+  }
+  _bhAplicarFiltros();
+};
+window._bhLimparFiltros = function(){
+  window._bhFiltrosAtivos = {};
+  document.querySelectorAll('.bh-chip.on').forEach(function(b){b.classList.remove('on');});
+  _bhAplicarFiltros();
+};
+function _bhAplicarFiltros(){
+  var ativos = Object.keys(window._bhFiltrosAtivos);
+  var contratos = _bhGetContratos().sort(function(a,b){return _bhPrioRisco(a) - _bhPrioRisco(b);});
+  var rows = document.querySelectorAll('.bh-table tbody tr.bh-row');
+  if(!ativos.length){
+    rows.forEach(function(r){r.style.display='';});
+    return;
+  }
+  rows.forEach(function(r, i){
+    var c = contratos[i];
+    if(!c) return;
+    var mostra = true;
+    for(var j=0; j<ativos.length; j++){
+      var f = ativos[j];
+      var p = f.split(':');
+      var tipo = p[0], val = p[1];
+      if(tipo === 'status' && c.status !== val) { mostra = false; break; }
+      if(tipo === 'aviso' && (!c.avisar_cliente || c.avisar_cliente.nivel !== val)) { mostra = false; break; }
+      if(tipo === 'venc'){
+        var limite = parseInt(val,10);
+        if(!(c.dias_ate_fim >= 0 && c.dias_ate_fim <= limite)) { mostra = false; break; }
+      }
+      if(tipo === 'margem' && val === 'prejuizo'){
+        var m = c.financeiro ? c.financeiro.margem_projeto : null;
+        if(m == null || m >= 10) { mostra = false; break; }
+      }
+    }
+    r.style.display = mostra ? '' : 'none';
+  });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -15102,8 +15358,10 @@ function _bhCardDetalhe(c, idx, full){
       + '<div class="bh-det-cell"><label>Pool mensal</label><strong>' + _bhHToHHMM(c.pool_mes_h) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>Vigência</label><strong>' + vigDisp + '</strong></div>'
     + '</div>'
-    + '<div class="bh-det-section-lbl">📅 Trimestre vigente <span class="bh-det-estimativa">≈ estimativa</span></div>'
-    + '<div class="bh-det-aviso-estimativa">⚠ Projeção trimestral estimada com base no consumo do mês atual. Quando a API trouxer histórico real, vira soma dos meses do trimestre vigente.</div>'
+    + '<div class="bh-det-section-lbl">📅 Trimestre vigente '
+      + (trim.real ? '<span class="bh-det-real" title="Soma dos últimos ' + trim.meses_usados + ' meses do histórico">✓ histórico real (' + trim.meses_usados + ' meses)</span>'
+                  : '<span class="bh-det-estimativa">≈ estimativa</span>') + '</div>'
+    + (trim.real ? '' : '<div class="bh-det-aviso-estimativa">⚠ Projeção trimestral estimada (sem histórico mensal disponível pra esse contrato).</div>')
     + '<div class="bh-det-grid">'
       + '<div class="bh-det-cell"><label>Pool trimestral</label><strong>' + _bhHToHHMM(trim.pool_trimestre||0) + ' h</strong></div>'
       + '<div class="bh-det-cell"><label>Consumo mês atual</label><strong class="' + trimClsAtual + '">' + _bhHToHHMM(trim.cons_mes_no_trim||0) + ' h</strong></div>'
@@ -15122,8 +15380,21 @@ function _bhCardDetalhe(c, idx, full){
       + '<div class="bh-det-cell"><label>Dias até fim</label><strong class="' + (c.dias_ate_fim<=30?'crit':c.dias_ate_fim<=90?'warn':'') + '">' + diasFimDisp + '</strong></div>'
       + '<div class="bh-det-cell"><label>Avisar cliente?</label><strong>' + c.avisar_cliente.texto + '</strong></div>'
     + '</div>'
+    + (c.financeiro ? (function(f){
+        var margemCls = f.margem_projeto < 0 ? 'crit' : (f.margem_projeto < 20 ? 'warn' : 'ok');
+        var dvCls = f.margem_proj_vs_real < 0 ? 'crit' : (f.margem_proj_vs_real < 10 ? 'warn' : '');
+        return '<div class="bh-det-section-lbl">💼 Rentabilidade do projeto <span class="bh-det-real">✓ do Análise Projeto</span></div>'
+          + '<div class="bh-det-grid">'
+            + '<div class="bh-det-cell"><label>Valor de venda</label><strong>' + _bhFmtBRL(f.valor_venda) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Custo das horas</label><strong>' + _bhFmtBRL(f.custo_horas) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Lucro líquido</label><strong class="' + (f.lucro_liquido<0?'crit':'') + '">' + _bhFmtBRL(f.lucro_liquido) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Margem do projeto</label><strong class="' + margemCls + '">' + f.margem_projeto.toFixed(2) + '%</strong></div>'
+            + '<div class="bh-det-cell"><label>Lucro projetado</label><strong>' + _bhFmtBRL(f.lucro_projetado) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Margem proj. vs real</label><strong class="' + dvCls + '">' + (f.margem_proj_vs_real>=0?'+':'') + f.margem_proj_vs_real.toFixed(2) + 'pp</strong></div>'
+          + '</div>';
+      })(c.financeiro) : '')
     + '<div class="bh-det-acao"><span class="bh-det-acao-lbl">Ação recomendada:</span> <strong>' + c.acao + '</strong></div>'
-    + (full ? '<div class="bh-det-projeto">Projeto: ' + c.projeto + ' · cliente apontamento: <em>' + c.cli_apo + '</em></div>' : '')
+    + (full ? '<div class="bh-det-projeto">Projeto: ' + c.projeto + ' · cliente apontamento: <em>' + c.cli_apo + '</em> · último snapshot: ' + (c.ultimo_snap||'?') + '</div>' : '')
   + '</div>';
 }
 // "Ticket conta" = criado no mês. Considera APENAS tickets criados a
