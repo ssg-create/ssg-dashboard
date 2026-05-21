@@ -10386,6 +10386,147 @@ function _pdfTop3Prioridades(tix, acoes){
 // ════════════════════════════════════════════════════════════
 // PDF EXPORT
 // ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// PDF Banco de Horas — relatório executivo pro cliente
+// Linguagem simples, sem jargão técnico. Foco em: quanto usou,
+// o que usou no mês, probabilidade de chegar ao fim do contrato.
+// Aciona via botão "PDF Banco de Horas" no bloco BH da Visão Cliente.
+// ════════════════════════════════════════════════════════════
+function exportPDFBancoHoras(cliId){
+  if(!cliId){ alert('Cliente não selecionado.'); return; }
+  if(typeof _bhGetContratos !== 'function'){ alert('Dados de Banco de Horas não carregados.'); return; }
+  try { if(typeof gwLogActivity === 'function') gwLogActivity('exportou_pdf_bh', cliId); } catch(e){}
+  var todos = _bhGetContratos();
+  var contratos = todos.filter(function(c){
+    return c.cli_id === cliId &&
+      (!c._api_status || c._api_status === 'ativo' || c._api_status === 'inativo_recente');
+  });
+  if(!contratos.length){
+    alert('Cliente não possui contratos de Banco de Horas ativos.');
+    return;
+  }
+  // Helpers
+  var fmtH = function(h){ if(h == null) return '0h'; var n = Math.round(Math.abs(h)); return (h<0?'-':'') + n + 'h'; };
+  var fmtPct = function(p){ return (p||0).toFixed(0) + '%'; };
+  var fmtData = function(iso){ if(!iso) return ''; var p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+  var nomesMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  var hoje = new Date();
+  var mesAtualNome = nomesMes[hoje.getMonth()] + '/' + hoje.getFullYear();
+  var nowStr = hoje.toLocaleDateString('pt-BR');
+  // Nome do cliente
+  var nomeCli = (typeof ENM2 !== 'undefined' && ENM2[cliId]) ? ENM2[cliId] : cliId;
+  // Bloco HTML pra cada contrato
+  function blocoContrato(c){
+    var poolH = c.pool_h, livreH = c.livre_h, consumidoH = c.consumido_h;
+    var pctTotal = c.pct_consumido_total || 0;
+    var poolMesH = c.pool_mes_h, consMesH = c.cons_mes_h;
+    var pctMes = c.pct_mes || 0;
+    var t = c.tendencia_pool || {};
+    var fimContrato = new Date(c.fim + 'T00:00:00');
+    var fimLbl = isNaN(fimContrato.getTime()) ? c.fim : (nomesMes[fimContrato.getMonth()].slice(0,3) + '/' + (fimContrato.getFullYear()+'').slice(2));
+    var barCor = pctTotal>=100?'#dc2626':pctTotal>=85?'#dc2626':pctTotal>=70?'#d97706':'#16a34a';
+    var statusTxt, statusColor;
+    if(pctTotal>=100||livreH<0){statusTxt='Pool estourado'; statusColor='#dc2626';}
+    else if(pctTotal>=85){statusTxt='Atenção — próximo do limite'; statusColor='#d97706';}
+    else if(pctTotal>=70){statusTxt='Aviso preventivo'; statusColor='#d97706';}
+    else {statusTxt='Dentro do esperado'; statusColor='#16a34a';}
+    var barMesCor = pctMes>=100?'#dc2626':pctMes>=70?'#d97706':'#16a34a';
+    var mesMsg='', mesColor='#16a34a';
+    if(pctMes>=100){mesMsg='⚠ Consumo acima do limite mensal este mês'; mesColor='#dc2626';}
+    else if(pctMes>=70){mesMsg='⚠ Consumo elevado neste mês'; mesColor='#d97706';}
+    else if(pctMes>0){mesMsg='✓ Dentro do limite mensal'; mesColor='#16a34a';}
+    else {mesMsg='Sem consumo registrado neste mês'; mesColor='#6b7280';}
+    var tendMsg, tendColor='#16a34a';
+    if(livreH<0){
+      tendColor='#dc2626';
+      tendMsg='<strong>Pool já estourado em '+fmtH(Math.abs(livreH))+'.</strong> Recomendamos alinhar aditivo de horas pra continuidade do atendimento.';
+    } else if(t.zera_antes_do_prazo){
+      tendColor='#dc2626';
+      tendMsg='<strong>No ritmo atual, o pool acaba em ~'+t.meses_ate_zerar+' '+(t.meses_ate_zerar==1?'mês':'meses')+'</strong>, antes do fim do contrato em '+fimLbl+'. '
+        +'Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+    } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 999){
+      var pctProjFim = c.meses_restantes_contrato>0 && t.ritmo_medio_h>0 ?
+        Math.min(100, Math.round(((consumidoH + t.ritmo_medio_h * c.meses_restantes_contrato)/poolH)*100)) :
+        Math.round(pctTotal);
+      tendMsg='<strong>No ritmo atual, vocês vão usar ~'+fmtPct(pctProjFim)+' do pool</strong> até o fim do contrato em '+fimLbl+'. '
+        +'Pool durando até o fim do contrato com folga.';
+    } else {
+      tendMsg='<strong>Sem consumo nos últimos meses.</strong> Pool inteiro disponível até '+fimLbl+'.';
+    }
+    return '<div class="bh-pdf-card">'
+      +'<div class="bh-pdf-card-hd">'
+        +'<div><div class="bh-pdf-card-titulo">'+c.tarefa+'</div>'
+        +'<div class="bh-pdf-card-sub">Contrato: <strong>'+poolH+'h</strong> em <strong>'+c.meses_contrato+' meses</strong> · vigência '+fmtData(c.inicio)+' a '+fmtData(c.fim)+'</div></div>'
+        +'<div class="bh-pdf-status" style="color:'+statusColor+'">'+statusTxt+'</div>'
+      +'</div>'
+      // Visão geral
+      +'<div class="bh-pdf-secao">'
+        +'<div class="bh-pdf-num-row">'
+          +'<div class="bh-pdf-num"><div class="bh-pdf-num-val">'+fmtH(consumidoH)+'</div><div class="bh-pdf-num-lbl">CONSUMIDO</div></div>'
+          +'<div class="bh-pdf-num"><div class="bh-pdf-num-val">'+fmtH(livreH)+'</div><div class="bh-pdf-num-lbl">DISPONÍVEL</div></div>'
+          +'<div class="bh-pdf-num"><div class="bh-pdf-num-val">'+fmtPct(pctTotal)+'</div><div class="bh-pdf-num-lbl">DO CONTRATO</div></div>'
+        +'</div>'
+        +'<div class="bh-pdf-bar"><div class="bh-pdf-bar-fill" style="width:'+Math.min(100,pctTotal)+'%;background:'+barCor+'"></div></div>'
+      +'</div>'
+      // Este mês
+      +'<div class="bh-pdf-secao">'
+        +'<div class="bh-pdf-secao-titulo">📅 Este mês ('+mesAtualNome+')</div>'
+        +'<div class="bh-pdf-mes-info"><strong>'+fmtH(consMesH)+'</strong> usado · limite mensal: <strong>'+fmtH(poolMesH)+'</strong></div>'
+        +'<div class="bh-pdf-bar"><div class="bh-pdf-bar-fill" style="width:'+Math.min(100,pctMes)+'%;background:'+barMesCor+'"></div></div>'
+        +'<div class="bh-pdf-mes-msg" style="color:'+mesColor+'">'+mesMsg+'</div>'
+      +'</div>'
+      // Tendência
+      +'<div class="bh-pdf-tend" style="border-left-color:'+tendColor+'">'
+        +'<div class="bh-pdf-secao-titulo">📊 Tendência até o fim do contrato</div>'
+        +'<div class="bh-pdf-tend-msg" style="color:#1a2744">'+tendMsg+'</div>'
+      +'</div>'
+    +'</div>';
+  }
+  // HTML completo
+  var H = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório Banco de Horas — '+nomeCli+'</title><style>'
+    +'@page{size:A4;margin:14mm}'
+    +'body{font-family:Arial,sans-serif;background:#fff;color:#1a2744;font-size:13px;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    +'.bh-pdf-wrap{max-width:760px;margin:0 auto;padding:18px 4px}'
+    +'.bh-pdf-header{border-bottom:3px solid #00d4a8;padding-bottom:14px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-end}'
+    +'.bh-pdf-header h1{margin:0;font-size:24px;color:#1a2744;font-weight:800}'
+    +'.bh-pdf-header h2{margin:6px 0 0 0;font-size:14px;color:#4f6286;font-weight:500}'
+    +'.bh-pdf-header .meta{font-size:11px;color:#6b7280;text-align:right}'
+    +'.bh-pdf-card{border:1px solid #d1d5db;border-radius:10px;padding:18px 22px;margin-bottom:18px;page-break-inside:avoid;background:#fff}'
+    +'.bh-pdf-card-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed #d1d5db}'
+    +'.bh-pdf-card-titulo{font-size:16px;font-weight:700;color:#1a2744;margin-bottom:4px}'
+    +'.bh-pdf-card-sub{font-size:11px;color:#6b7280}'
+    +'.bh-pdf-status{font-size:12px;font-weight:700;white-space:nowrap;padding-top:2px}'
+    +'.bh-pdf-secao{margin-bottom:14px}'
+    +'.bh-pdf-secao-titulo{font-size:11px;font-weight:700;color:#4f6286;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}'
+    +'.bh-pdf-num-row{display:flex;gap:14px;margin-bottom:10px}'
+    +'.bh-pdf-num{flex:1;text-align:center;padding:14px 8px;background:#f8fafc;border-radius:8px;border:1px solid #e5e7eb}'
+    +'.bh-pdf-num-val{font-size:26px;font-weight:800;color:#1a2744;line-height:1}'
+    +'.bh-pdf-num-lbl{font-size:10px;color:#6b7280;margin-top:5px;letter-spacing:.05em;font-weight:600}'
+    +'.bh-pdf-bar{height:10px;background:#f1f5f9;border-radius:6px;overflow:hidden;margin:8px 0;border:1px solid #e5e7eb}'
+    +'.bh-pdf-bar-fill{height:100%;border-radius:6px}'
+    +'.bh-pdf-mes-info{font-size:13px;color:#1a2744;margin-bottom:6px}'
+    +'.bh-pdf-mes-msg{font-size:12px;font-style:italic;margin-top:6px;font-weight:600}'
+    +'.bh-pdf-tend{padding:14px 16px;border-left:4px solid #d1d5db;background:#f8fafc;border-radius:6px;margin-top:10px}'
+    +'.bh-pdf-tend-msg{font-size:13px;line-height:1.6;color:#1a2744}'
+    +'.bh-pdf-footer{margin-top:24px;padding-top:14px;border-top:1px solid #d1d5db;font-size:10px;color:#6b7280;text-align:center}'
+    +'</style></head><body><div class="bh-pdf-wrap">'
+    +'<div class="bh-pdf-header"><div>'
+      +'<h1>Relatório de Banco de Horas</h1>'
+      +'<h2>'+nomeCli+'</h2>'
+    +'</div><div class="meta">'
+      +'Referência: <strong>'+mesAtualNome+'</strong><br>'
+      +'Emitido em: '+nowStr
+    +'</div></div>'
+    + contratos.map(blocoContrato).join('')
+    +'<div class="bh-pdf-footer">Groundwork · Soluções em Tecnologia · gw-command.vercel.app · Documento confidencial</div>'
+    +'</div></body></html>';
+  var win = window.open('', '_blank');
+  if(!win){ alert('Permita pop-ups pra gerar o PDF.'); return; }
+  win.document.write(H);
+  win.document.close();
+  setTimeout(function(){ win.print(); }, 700);
+}
+
 function exportPDF(){
   var key=document.getElementById('sel-empresa').value;
   if(!key){alert('Selecione uma empresa primeiro.');return;}
