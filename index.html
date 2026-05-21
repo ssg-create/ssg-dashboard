@@ -1387,7 +1387,8 @@ body.squad-mode #rpt-btn{display:none!important}
 /* ─── Bloco Banco de Horas na Visão Cliente (Fase 2) ─── */
 /* Linguagem executiva pro cliente: simples, claro, sem jargão */
 .cli-bh-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:18px}
-.cli-bh-titulo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);margin-bottom:14px;letter-spacing:-.01em}
+.cli-bh-titulo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.cli-bh-titulo-row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
 .cli-bh-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;border-left-width:4px}
 .cli-bh-card:last-child{margin-bottom:0}
 .cli-bh-card.crit{border-left-color:var(--danger)}
@@ -1417,6 +1418,17 @@ body.squad-mode #rpt-btn{display:none!important}
 .cli-bh-tend-msg{font-size:13px;line-height:1.6;color:var(--text)}
 .cli-bh-tend-msg strong{color:var(--text);font-weight:700}
 @media(max-width:700px){.cli-bh-num-row{grid-template-columns:1fr;gap:8px}}
+/* Modo BH-only: cliente sem tickets SSG. Esconde cards SSG vazios e mostra aviso. */
+#co-content.bh-only-mode .co-kpis,
+#co-content.bh-only-mode .grid2,
+#co-content.bh-only-mode > .card{display:none}
+#co-content.bh-only-mode #co-bh-bloco{display:block !important}
+#co-content.bh-only-mode .co-hero::after{
+  content:"📌 Este cliente possui apenas contrato de Banco de Horas — sem chamados SSG no período.";
+  display:block;margin-top:10px;padding:10px 14px;
+  background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:8px;
+  font-size:12px;color:var(--blue);font-weight:600
+}
 /* Banner de tendência (v4.2 — gritante!) */
 .bh-banner-tend{background:linear-gradient(135deg,rgba(244,63,94,.12),rgba(245,158,11,.08));border:2px solid var(--danger);border-radius:12px;padding:18px 22px;margin-bottom:22px;box-shadow:0 4px 16px rgba(244,63,94,.15)}
 .bh-banner-tend-hd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -7469,14 +7481,64 @@ function initCli(){
   if(rendered['cli-init'])return;rendered['cli-init']=true;
   var sel=document.getElementById('sel-empresa');
   while(sel.options.length>1)sel.remove(1);
-  var empIds=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
-  empIds.sort(function(a,b){return EMPRESAS[b].total-EMPRESAS[a].total;});
-  empIds.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=ENM2[k]||k;sel.appendChild(o);});
+  // 1) Clientes com tickets SSG (fonte tradicional — OTRS)
+  var empIdsSSG=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+  // 2) Clientes com contrato BH (fonte: API apontamento) — pode ter clientes BH-only
+  var bhCliIds = [];
+  if(typeof _bhGetContratos === 'function'){
+    try {
+      _bhGetContratos().forEach(function(c){
+        if(c.cli_id && bhCliIds.indexOf(c.cli_id) === -1) bhCliIds.push(c.cli_id);
+      });
+    } catch(e){ console.warn('init cli bh:', e); }
+  }
+  // União: SSG primeiro (ordem volume), depois BH-only (alfabético) com badge
+  var ssgSet = {}; empIdsSSG.forEach(function(k){ ssgSet[k]=true; });
+  var bhOnly = bhCliIds.filter(function(k){ return !ssgSet[k]; });
+  bhOnly.sort(function(a,b){ return (ENM2[a]||a).localeCompare(ENM2[b]||b); });
+  // SSG: ordem por volume desc
+  empIdsSSG.sort(function(a,b){return EMPRESAS[b].total-EMPRESAS[a].total;});
+  // Adiciona SSG no dropdown
+  empIdsSSG.forEach(function(k){
+    var o=document.createElement('option');
+    o.value=k;
+    o.textContent=ENM2[k]||k;
+    sel.appendChild(o);
+  });
+  // Adiciona BH-only (com badge "(só BH)" pra deixar claro)
+  if(bhOnly.length){
+    var sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '─── só Banco de Horas ───';
+    sel.appendChild(sep);
+    bhOnly.forEach(function(k){
+      var o = document.createElement('option');
+      o.value = k;
+      o.textContent = (ENM2[k]||k) + ' (só BH)';
+      sel.appendChild(o);
+    });
+  }
   renderInf();
+}
+// Helper: retorna EMPRESAS[key] OU stub pra cliente só-BH (sem tickets SSG)
+function _getEmpresaOrBHStub(key){
+  if(!key) return null;
+  if(EMPRESAS[key]) return EMPRESAS[key];
+  // Cliente só-BH: monta stub mínimo pra renderPainel funcionar
+  return {
+    id: key,
+    nome: ENM2[key] || key,
+    total: 0, abertos: 0, fechados: 0,
+    resp_med: null, solucao_med_h: null,
+    by_mes: {}, estados: {}, servicos: {}, tickets: [], filas: {},
+    _bh_only: true // flag pra UI mostrar mensagem específica
+  };
 }
 
 function loadEmpresa(key){
-  var d=key?getFilteredEmpresa(EMPRESAS[key]):null;
+  // Suporta cliente "só BH" (sem tickets SSG): usa stub do _getEmpresaOrBHStub
+  var emp = key ? _getEmpresaOrBHStub(key) : null;
+  var d = emp ? (emp._bh_only ? emp : getFilteredEmpresa(emp)) : null;
   // Atualiza filtro de mês com totais da empresa selecionada
   buildMonthFilter();
   // Atualiza scope strip do header e heros das sub-abas
@@ -7538,7 +7600,11 @@ function _renderBHBlocoCliente(cliId){
   var hoje = new Date();
   var mesAtualNome = nomesMes[hoje.getMonth()] + '/' + hoje.getFullYear();
   // Render dos cards (1 por contrato BH)
-  var html = '<div class="cli-bh-wrap"><div class="cli-bh-titulo">🕐 Banco de Horas</div>';
+  var html = '<div class="cli-bh-wrap">'
+    + '<div class="cli-bh-titulo-row">'
+      + '<div class="cli-bh-titulo">🕐 Banco de Horas</div>'
+      + '<button class="export-btn" onclick="exportPDFBancoHoras(\'' + cliId + '\')" title="Gerar PDF executivo do banco de horas pra enviar pro cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF Banco de Horas</button>'
+    + '</div>';
   ativos.forEach(function(c){
     var poolH = c.pool_h, livreH = c.livre_h, consumidoH = c.consumido_h;
     var pctTotal = c.pct_consumido_total || 0;
@@ -7634,6 +7700,8 @@ function renderPainel(d){
   var empty=document.getElementById('co-empty'),content=document.getElementById('co-content');
   if(!d){empty.style.display='block';content.style.display='none';return;}
   empty.style.display='none';content.style.display='block';
+  // Marca o container quando cliente é BH-only (CSS esconde KPIs SSG e adiciona aviso)
+  content.classList.toggle('bh-only-mode', !!d._bh_only);
   document.getElementById('co-name').textContent=d.nome;
   // Subheader dinâmico: ID + sistema(s) derivado(s) de servicos + período do escopo
   var sistemas = _cliSistemasLabel(d);
