@@ -1360,13 +1360,15 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-hero-health{display:flex;align-items:baseline;gap:8px;padding:12px 18px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)}
 .bh-hero-health-num{font-family:var(--display);font-size:42px;font-weight:800;color:var(--teal);line-height:1}
 .bh-hero-health-lbl{font-size:10.5px;color:var(--muted);line-height:1.3;font-family:var(--mono)}
-.bh-hero-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.bh-hero-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+@media(max-width:1400px){.bh-hero-cards{grid-template-columns:repeat(3,1fr)}}
 .bh-hero-card{padding:14px 16px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);border-left-width:3px}
 .bh-hero-card.crit{border-left-color:var(--danger)}
 .bh-hero-card.warn{border-left-color:var(--warn)}
 .bh-hero-card.ok{border-left-color:var(--ok)}
 .bh-hero-card.receita{border-left-color:#a855f7}
 .bh-hero-card.renov{border-left-color:var(--blue)}
+.bh-hero-card.tend{border-left-color:#FF6400}
 .bh-hero-card-num{font-family:var(--display);font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:6px}
 .bh-hero-card.receita .bh-hero-card-num{font-size:20px}
 .bh-hero-card-lbl{font-size:11.5px;font-weight:700;color:var(--text);margin-bottom:4px}
@@ -1433,6 +1435,9 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-det-acao{padding:10px 12px;background:var(--bg2);border-radius:6px;font-size:12.5px;color:var(--text)}
 .bh-det-acao-lbl{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
 .bh-det-projeto{font-size:10.5px;color:var(--muted);margin-top:10px;font-family:var(--mono)}
+.bh-det-tendencia{padding:10px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-top:8px;margin-bottom:10px;text-align:center;font-family:var(--mono)}
+.bh-det-tendencia.crit{background:rgba(244,63,94,.12);color:var(--danger);border:1px solid rgba(244,63,94,.3)}
+.bh-det-tendencia.ok{background:rgba(16,185,129,.08);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
 .bh-det-hd-right{display:flex;gap:8px;align-items:center}
 .bh-det-motivo{padding:8px 12px;background:rgba(255,255,255,.03);border-left:3px solid var(--warn);border-radius:4px;margin-bottom:12px;font-size:12px}
 .bh-det-motivo label{font-size:10px;color:var(--muted);text-transform:uppercase;margin-right:8px}
@@ -14737,6 +14742,58 @@ function _bhAnaliseTrimestre(c){
     real: eReal // true = soma do histórico · false = estimativa fallback
   };
 }
+// ── Análise de tendência do pool (v4.1) ──
+// Pergunta: "no ritmo atual, quando o pool vai zerar? antes ou depois do fim do contrato?"
+// Ex: pool 100h/mês, cliente usa 130h/mês de média → pool zera antes do contrato terminar
+function _bhTendenciaPool(c){
+  var poolMes = _bhHHMMtoH(c.pool_mes);
+  var livre = _bhHHMMtoH(c.livre);
+  var chave = (c.cli||'') + '||' + (c.projeto||'') + '||' + (c.tarefa||'');
+  var hist = (typeof BH_HISTORICO !== 'undefined') ? BH_HISTORICO[chave] : null;
+  // Calcula ritmo médio (últimos 3 meses com dado)
+  var ritmoMedio = 0, mesesUsados = 0;
+  if(hist && hist.length){
+    var ult3 = hist.slice(-3);
+    ult3.forEach(function(h){
+      if(h && h.cons != null){
+        ritmoMedio += _bhHHMMtoH(h.cons);
+        mesesUsados++;
+      }
+    });
+    if(mesesUsados > 0) ritmoMedio = ritmoMedio / mesesUsados;
+  }
+  if(mesesUsados === 0) ritmoMedio = _bhHHMMtoH(c.cons_mes); // fallback
+  // % do pool mensal sendo consumido
+  var pctRitmo = poolMes > 0 ? Math.round((ritmoMedio/poolMes)*100*10)/10 : 0;
+  // Meses até zerar o pool no ritmo atual
+  var mesesAteZerar = null;
+  var dataExaustao = null;
+  if(ritmoMedio > 0 && livre > 0){
+    mesesAteZerar = Math.round((livre/ritmoMedio)*10)/10;
+    dataExaustao = new Date(Date.now() + mesesAteZerar*30*86400000);
+  }
+  // Data fim contrato e dias até fim
+  var fim = new Date((c.fim||'') + 'T00:00:00');
+  var diasAteFim = !isNaN(fim.getTime()) ? Math.floor((fim.getTime() - Date.now())/86400000) : 0;
+  var mesesAteFim = Math.round((diasAteFim/30)*10)/10;
+  // Pool zera ANTES do contrato?
+  var zeraAntes = (mesesAteZerar != null) && (mesesAteZerar < mesesAteFim) && (mesesAteFim > 0);
+  var antecipaMeses = zeraAntes ? Math.round((mesesAteFim - mesesAteZerar)*10)/10 : 0;
+  return {
+    ritmo_medio_h: Math.round(ritmoMedio*100)/100,
+    pct_do_pool_mensal: pctRitmo,
+    meses_ate_zerar: mesesAteZerar,
+    data_exaustao: dataExaustao,
+    meses_ate_fim: mesesAteFim,
+    zera_antes_do_prazo: zeraAntes,
+    antecipa_meses: antecipaMeses,
+    meses_usados_calculo: mesesUsados,
+    // Já zerado?
+    pool_ja_zerado: livre <= 0,
+    // Classificação textual (pra UI)
+    intensidade: pctRitmo > 150 ? 'extrema' : (pctRitmo > 120 ? 'alta' : (pctRitmo > 100 ? 'acima' : (pctRitmo > 70 ? 'normal' : 'baixa')))
+  };
+}
 // ── Tipo de banco (inferido por meses_contrato — só rótulo) ──
 function _bhTipoBanco(c){
   var m = c.meses || 0;
@@ -14893,6 +14950,7 @@ function _bhGetContratos(){
     // ── Novos cálculos v3 (lógica trimestral) ──
     var pctCons = _bhPctConsumido(c);
     var trim = _bhAnaliseTrimestre(c);
+    var tendPool = _bhTendenciaPool(c);
     var tipoBanco = _bhTipoBanco(c);
     // Receita excedente:
     //   1) Se pool total negativo → todo o excedente × valor_hora (cobrança final)
@@ -14940,7 +14998,9 @@ function _bhGetContratos(){
       trimestre: trim,   // {pool_trimestre, projecao_trimestre, estouro_atual, tendencia, estourou, pct_*, real, meses_usados}
       // v4 — dados financeiros do Análise Projeto + último snapshot disponível
       financeiro: fin,   // {valor_venda, margem_venda, lucro_liquido, margem_proj_vs_real, ...} ou null
-      ultimo_snap: c.ultimo_snap || BH_SNAPSHOT_DATE
+      ultimo_snap: c.ultimo_snap || BH_SNAPSHOT_DATE,
+      // v4.1 — tendência do pool (ritmo médio dos últimos 3 meses, quando pool zera)
+      tendencia_pool: tendPool
     };
   });
 }
@@ -14952,6 +15012,7 @@ function _bhAggregate(){
   var renovacoes90d = 0, vence30d = 0;
   var estouroTrim = 0, tendenciaTrim = 0;
   var avisarFormal = 0, avisarUrgente = 0, avisarPreventivo = 0;
+  var poolZeraAntes = 0; // v4.1: pool zera antes do contrato terminar
   contratos.forEach(function(c){
     if(c.status === 'crit') crit++;
     else if(c.status === 'warn') warn++;
@@ -14969,6 +15030,7 @@ function _bhAggregate(){
       else if(c.avisar_cliente.nivel === 'urgente' || c.avisar_cliente.nivel === 'tendencia') avisarUrgente++;
       else if(c.avisar_cliente.nivel === 'preventivo') avisarPreventivo++;
     }
+    if(c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo) poolZeraAntes++;
   });
   var healthMedia = contratos.length ? Math.round(contratos.reduce(function(s,c){return s+c.health;},0) / contratos.length) : 0;
   return {
@@ -14983,6 +15045,7 @@ function _bhAggregate(){
     avisar_formal: avisarFormal,
     avisar_urgente: avisarUrgente,
     avisar_preventivo: avisarPreventivo,
+    pool_zera_antes_prazo: poolZeraAntes,
     health_media: healthMedia
   };
 }
@@ -15060,6 +15123,11 @@ function renderContratosBH(){
         + '<div class="bh-hero-card-num">' + agg.renovacoes_em_90d + '</div>'
         + '<div class="bh-hero-card-lbl">📅 Renovações em 90d</div>'
         + '<div class="bh-hero-card-sub">contratos próximos do fim</div>'
+      + '</div>'
+      + '<div class="bh-hero-card tend clickable" onclick="_bhDrillDown(\'pool_zera\')">'
+        + '<div class="bh-hero-card-num">' + agg.pool_zera_antes_prazo + '</div>'
+        + '<div class="bh-hero-card-lbl">📉 Pool zera antes do prazo</div>'
+        + '<div class="bh-hero-card-sub">no ritmo atual</div>'
       + '</div>'
     + '</div>'
   + '</div>';
@@ -15152,6 +15220,7 @@ function renderContratosBH(){
     + '<button class="bh-chip" data-bh-filtro="venc:90" onclick="_bhToggleFiltro(this)">Vence ≤90d</button>'
     + '<span class="bh-filtros-sep">·</span>'
     + '<button class="bh-chip" data-bh-filtro="margem:prejuizo" onclick="_bhToggleFiltro(this)" title="Margem realizada < 10%">📉 Margem baixa</button>'
+    + '<button class="bh-chip" data-bh-filtro="pool:zera_antes" onclick="_bhToggleFiltro(this)" title="No ritmo atual, pool acaba antes do contrato">📉 Pool zera antes</button>'
     + '<span class="bh-filtros-sep">·</span>'
     + '<button class="bh-chip bh-chip-reset" onclick="_bhLimparFiltros()">✕ Limpar</button>'
   + '</div>';
@@ -15250,6 +15319,9 @@ function _bhAplicarFiltros(){
         var m = c.financeiro ? c.financeiro.margem_projeto : null;
         if(m == null || m >= 10) { mostra = false; break; }
       }
+      if(tipo === 'pool' && val === 'zera_antes'){
+        if(!c.tendencia_pool || !c.tendencia_pool.zera_antes_do_prazo) { mostra = false; break; }
+      }
     }
     r.style.display = mostra ? '' : 'none';
   });
@@ -15277,6 +15349,11 @@ window._bhDrillDown = function(tipo){
   } else if(tipo === 'renov90d'){
     titulo = 'Renovações em até 90 dias'; icone = '📅';
     filtered = contratos.filter(function(c){return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90;});
+  } else if(tipo === 'pool_zera'){
+    titulo = 'Pool zera antes do fim do contrato'; icone = '📉';
+    filtered = contratos.filter(function(c){return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;});
+    // Ordenar pelos que zeram mais cedo
+    filtered.sort(function(a,b){return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999);});
   } else if(tipo === 'risco'){
     titulo = 'Todos os contratos em risco'; icone = '🎯';
     filtered = contratos.filter(function(c){return c.status !== 'ok';});
@@ -15380,6 +15457,28 @@ function _bhCardDetalhe(c, idx, full){
       + '<div class="bh-det-cell"><label>Dias até fim</label><strong class="' + (c.dias_ate_fim<=30?'crit':c.dias_ate_fim<=90?'warn':'') + '">' + diasFimDisp + '</strong></div>'
       + '<div class="bh-det-cell"><label>Avisar cliente?</label><strong>' + c.avisar_cliente.texto + '</strong></div>'
     + '</div>'
+    // 📉 Tendência do pool (v4.1)
+    + (c.tendencia_pool ? (function(t){
+        var pctCls = t.pct_do_pool_mensal > 150 ? 'crit' : (t.pct_do_pool_mensal > 120 ? 'crit' : (t.pct_do_pool_mensal > 100 ? 'warn' : ''));
+        var zeraCls = t.zera_antes_do_prazo ? 'crit' : '';
+        var statusLbl = '';
+        if(t.pool_ja_zerado) statusLbl = '🔴 Pool já zerado';
+        else if(t.zera_antes_do_prazo) statusLbl = '🔴 Pool zera ' + t.antecipa_meses + ' meses ANTES do fim do contrato';
+        else if(t.meses_ate_zerar != null) statusLbl = '🟢 Pool dura até o fim (' + t.meses_ate_zerar + 'm restantes no ritmo atual)';
+        else statusLbl = '— sem consumo recente';
+        var dataExaustaoStr = t.data_exaustao ? (('0'+t.data_exaustao.getDate()).slice(-2) + '/' + ('0'+(t.data_exaustao.getMonth()+1)).slice(-2) + '/' + t.data_exaustao.getFullYear()) : '—';
+        return '<div class="bh-det-section-lbl">📉 Tendência do pool '
+          + (t.meses_usados_calculo > 0 ? '<span class="bh-det-real">✓ baseado em ' + t.meses_usados_calculo + ' meses de histórico</span>' : '<span class="bh-det-estimativa">≈ sem histórico — usa snapshot atual</span>')
+          + '</div>'
+          + '<div class="bh-det-grid">'
+            + '<div class="bh-det-cell"><label>Ritmo médio mensal</label><strong class="' + pctCls + '">' + _bhHToHHMM(t.ritmo_medio_h) + ' h</strong></div>'
+            + '<div class="bh-det-cell"><label>% do pool mensal</label><strong class="' + pctCls + '">' + t.pct_do_pool_mensal.toFixed(0) + '%</strong></div>'
+            + '<div class="bh-det-cell"><label>Pool zera em</label><strong class="' + zeraCls + '">' + (t.pool_ja_zerado ? 'JÁ ZEROU' : (t.meses_ate_zerar != null ? t.meses_ate_zerar + ' meses' : '—')) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Data prevista exaustão</label><strong class="' + zeraCls + '">' + (t.pool_ja_zerado ? '—' : dataExaustaoStr) + '</strong></div>'
+            + '<div class="bh-det-cell"><label>Contrato termina em</label><strong>' + t.meses_ate_fim + ' meses</strong></div>'
+          + '</div>'
+          + '<div class="bh-det-tendencia ' + (t.zera_antes_do_prazo || t.pool_ja_zerado ? 'crit' : 'ok') + '">' + statusLbl + '</div>';
+      })(c.tendencia_pool) : '')
     + (c.financeiro ? (function(f){
         var margemCls = f.margem_projeto < 0 ? 'crit' : (f.margem_projeto < 20 ? 'warn' : 'ok');
         var dvCls = f.margem_proj_vs_real < 0 ? 'crit' : (f.margem_proj_vs_real < 10 ? 'warn' : '');
