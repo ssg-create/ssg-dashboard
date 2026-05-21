@@ -226,12 +226,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .tb-alert-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;transition:all .2s}
 .tb-alert-pill:hover{opacity:.8}
 /* K13: chip de filtros ativos — visível em todas as abas, clique reseta */
-.tb-filter-chip{display:none;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,rgba(232,98,42,.18),rgba(232,98,42,.08));border:1px solid rgba(232,98,42,.4);color:#E8622A;transition:all .15s;white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+.tb-filter-chip{display:none;align-items:center;gap:6px;padding:4px 10px 4px 8px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,rgba(232,98,42,.18),rgba(232,98,42,.08));border:1px solid rgba(232,98,42,.4);color:#E8622A;transition:all .15s;white-space:nowrap;max-width:380px;overflow:hidden;text-overflow:ellipsis}
 .tb-filter-chip.on{display:inline-flex}
 .tb-filter-chip:hover{background:linear-gradient(135deg,rgba(232,98,42,.28),rgba(232,98,42,.14));transform:translateY(-1px)}
 .tb-filter-chip .tb-fc-icon{font-size:11px;line-height:1}
 .tb-filter-chip .tb-fc-x{margin-left:4px;opacity:.6;font-size:10px;font-weight:700;line-height:1}
 .tb-filter-chip:hover .tb-fc-x{opacity:1}
+/* Fix QA #4: quando filtro de cliente está ativo, chip vira destaque vermelho pulsante */
+.tb-filter-chip.tb-fc-cli-on{background:linear-gradient(135deg,rgba(220,38,38,.28),rgba(220,38,38,.14));border-color:rgba(220,38,38,.65);color:#fca5a5;font-weight:700;animation:tbFcPulse 2.4s ease-in-out infinite;box-shadow:0 0 0 0 rgba(220,38,38,.5)}
+.tb-filter-chip.tb-fc-cli-on:hover{background:linear-gradient(135deg,rgba(220,38,38,.4),rgba(220,38,38,.22));animation:none}
+.tb-filter-chip.tb-fc-cli-on .tb-fc-x{opacity:.9}
+@keyframes tbFcPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}
+  50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}
+}
 .tap-danger{background:rgba(244,63,94,.12);color:var(--danger);border:1px solid rgba(244,63,94,.2)}
 .tap-warn{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
 .tap-ok{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
@@ -2988,13 +2996,26 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
           </div>
         </div>
       </div>
-      <!-- ── SLA COUNTDOWN BANNER ── -->
-      <div id="sla-countdown-banner" style="display:none;margin-bottom:16px;border-radius:var(--r2);overflow:hidden;border:1px solid rgba(244,63,94,.25)">
-        <div style="background:rgba(244,63,94,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(244,63,94,.15)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span style="font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.08em">SLA em risco — tickets vencendo nas próximas horas</span>
+      <!-- ── SLA COUNTDOWN BANNER (Fix QA #3: desmembrado em 2 blocos) ── -->
+      <div id="sla-countdown-banner" style="display:none;margin-bottom:16px">
+        <!-- Bloco A: 1ª resposta vencendo (regra OTRS por prioridade/cliente) -->
+        <div id="sla-cd-block-resp" style="display:none;margin-bottom:10px;border-radius:var(--r2);overflow:hidden;border:1px solid rgba(244,63,94,.25)">
+          <div style="background:rgba(244,63,94,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(244,63,94,.15)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span style="font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.08em">1ª resposta vencendo — regra OTRS por prioridade</span>
+            <span id="sla-cd-resp-count" style="font-size:10px;color:var(--muted);font-weight:600;margin-left:4px"></span>
+          </div>
+          <div id="sla-countdown-list-resp" style="padding:8px 0"></div>
         </div>
-        <div id="sla-countdown-list" style="padding:8px 0"></div>
+        <!-- Bloco B: Solução vencendo (tickets já respondidos, perto do limite de 16h úteis) -->
+        <div id="sla-cd-block-sol" style="display:none;border-radius:var(--r2);overflow:hidden;border:1px solid rgba(245,158,11,.3)">
+          <div style="background:rgba(245,158,11,.1);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(245,158,11,.15)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.08em">Solução vencendo — chamados já respondidos perto do limite</span>
+            <span id="sla-cd-sol-count" style="font-size:10px;color:var(--muted);font-weight:600;margin-left:4px"></span>
+          </div>
+          <div id="sla-countdown-list-sol" style="padding:8px 0"></div>
+        </div>
       </div>
       <div class="kpi-row kpi-row-3">
         <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)" id="kpi-ma-abertos">37</div><div class="kpi-sub" id="kpi-ma-sub">exige atenção imediata</div></div>
@@ -5335,7 +5356,12 @@ function buildAgingData() {
   var now=new Date();
   var openSt=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
   var tix=(RAW_DATA||[]).filter(function(d){
-    return d.criado&&openSt.indexOf(d.estado)!==-1&&ticketInFilter(d)&&(!activeCliente||d.cli_id===activeCliente);
+    if(!d.criado || openSt.indexOf(d.estado)===-1) return false;
+    if(!ticketInFilter(d)) return false;
+    if(activeCliente && d.cli_id!==activeCliente) return false;
+    // Fix QA #1: respeitar filtro de Fila ativo
+    if(activeFilaOP && activeFilaOP!=='all' && d.fila!==activeFilaOP) return false;
+    return true;
   }).map(function(d){
     var ageDays=Math.floor((now-d.criado)/864e5);
     var bucket=ageDays>=15?'15+':ageDays>=8?'8-14':ageDays>=4?'4-7':'0-3';
@@ -7492,12 +7518,12 @@ function initCli(){
       });
     } catch(e){ console.warn('init cli bh:', e); }
   }
-  // União: SSG primeiro (ordem volume), depois BH-only (alfabético) com badge
+  // União: SSG primeiro (alfa), depois BH-only (alfa) com badge
+  // Fix QA #5b: ordem alfabética em vez de volume desc
   var ssgSet = {}; empIdsSSG.forEach(function(k){ ssgSet[k]=true; });
   var bhOnly = bhCliIds.filter(function(k){ return !ssgSet[k]; });
-  bhOnly.sort(function(a,b){ return (ENM2[a]||a).localeCompare(ENM2[b]||b); });
-  // SSG: ordem por volume desc
-  empIdsSSG.sort(function(a,b){return EMPRESAS[b].total-EMPRESAS[a].total;});
+  bhOnly.sort(function(a,b){ return (ENM2[a]||a).localeCompare(ENM2[b]||b,'pt-BR'); });
+  empIdsSSG.sort(function(a,b){ return (ENM2[a]||EMPRESAS[a].nome||a).localeCompare(ENM2[b]||EMPRESAS[b].nome||b,'pt-BR'); });
   // Adiciona SSG no dropdown
   empIdsSSG.forEach(function(k){
     var o=document.createElement('option');
@@ -8068,13 +8094,16 @@ function buildBloqEntry(estadoObj){
 function updateFilterChip(){
   var chip = document.getElementById('tb-filter-chip');
   var txt  = document.getElementById('tb-fc-text');
+  var icon = chip ? chip.querySelector('.tb-fc-icon') : null;
   if(!chip || !txt) return;
   var parts = [];
   // Cliente
-  if(typeof activeCliente!=='undefined' && activeCliente){
+  var hasCli = (typeof activeCliente!=='undefined' && activeCliente);
+  if(hasCli){
     var nm = (typeof EMPRESAS!=='undefined' && EMPRESAS[activeCliente] && EMPRESAS[activeCliente].nome)
             || (typeof ENM2!=='undefined' && ENM2[activeCliente]) || activeCliente;
-    parts.push(nm);
+    // Fix QA #4: rótulo explícito quando há cliente filtrado em todas as abas
+    parts.push('Filtrando por <strong style="color:#fff">'+nm+'</strong>');
   }
   // Mês ou range customizado
   if(typeof activeRangeStart!=='undefined' && activeRangeStart && activeRangeEnd){
@@ -8088,7 +8117,7 @@ function updateFilterChip(){
   }
   // Fila
   if(typeof activeFilaOP!=='undefined' && activeFilaOP && activeFilaOP!=='all'){
-    parts.push(activeFilaOP);
+    parts.push('Fila: '+activeFilaOP);
   }
   // Modo (LIVE vs HISTÓRICO) — indicador da fonte dos KPIs ao vivo (Em aberto, Em espera, Sem atendente).
   // Quem usa XLSX (Total, Fechados, etc) é sempre escopado pelo filtro acima.
@@ -8103,8 +8132,19 @@ function updateFilterChip(){
   if(parts.length){
     txt.innerHTML = parts.join(' · ') + modoTag;
     chip.classList.add('on');
+    // Fix QA #4: destacar visualmente quando filtro de cliente está ativo
+    if(hasCli){
+      chip.classList.add('tb-fc-cli-on');
+      if(icon) icon.textContent = '🎯';
+      chip.title = 'Filtrando por cliente em todas as abas — clique para limpar';
+    } else {
+      chip.classList.remove('tb-fc-cli-on');
+      if(icon) icon.textContent = '📍';
+      chip.title = 'Clique para limpar todos os filtros';
+    }
   } else {
     chip.classList.remove('on');
+    chip.classList.remove('tb-fc-cli-on');
   }
   // Sincroniza o scope strip do painel CS (também muda quando o filtro muda)
   if(typeof renderCSScopeStrip==='function') try{renderCSScopeStrip();}catch(e){}
@@ -8414,7 +8454,11 @@ function rebuildAll(data){
         var csSelEl=document.getElementById('cs-sel-empresa');
         if(csSelEl){
           csSelEl.innerHTML='<option value="">— Selecione a conta —</option>';
-          Object.keys(EMPRESAS).forEach(function(k){
+          // Fix QA #5c: ordem alfabética pt-BR
+          var _csKeysImp = Object.keys(EMPRESAS).sort(function(a,b){
+            return (EMPRESAS[a].nome||a).localeCompare(EMPRESAS[b].nome||b,'pt-BR');
+          });
+          _csKeysImp.forEach(function(k){
             var o=document.createElement('option');
             o.value=k;o.textContent=EMPRESAS[k].nome;
             if(k===csCurrentKey)o.selected=true;
@@ -8427,7 +8471,8 @@ function rebuildAll(data){
         if(selGlobal){
           selGlobal.innerHTML='<option value="">Todos os clientes</option>';
           var empIds2=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
-          empIds2.sort(function(a,b){return EMPRESAS[b].total-EMPRESAS[a].total;});
+          // Fix QA #5a: ordem alfabética pelo nome (pt-BR)
+          empIds2.sort(function(a,b){return (EMPRESAS[a].nome||a).localeCompare(EMPRESAS[b].nome||b,'pt-BR');});
           empIds2.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=EMPRESAS[k].nome;if(k===activeCliente)o.selected=true;selGlobal.appendChild(o);});
         }
         // update meta
@@ -8652,7 +8697,9 @@ function _rptSyncOpts(){
   var go=document.getElementById('rpt-btn-go');
   if(go){
     if(type==='cli'){
-      var ec=document.getElementById('sel-empresa');
+      // Fix QA #2: usar o select interno do modal (rpt-f-cli), não o global sel-empresa.
+      // Antes o botão ficava trancado se Visão Cliente não estivesse pré-selecionada.
+      var ec=document.getElementById('rpt-f-cli');
       go.disabled=!ec||!ec.value;
       go.textContent=go.disabled?'Selecione uma empresa':'Gerar PDF';
     }else if(type==='comp'){
@@ -8705,6 +8752,8 @@ function _rptPopulateFilters(){
     if(typeof EMPRESAS==='object'&&EMPRESAS){
       clis=Object.keys(EMPRESAS).map(function(k){return {k:k,l:(EMPRESAS[k]&&EMPRESAS[k].nome)||k};});
     }
+    // Fix QA #5: ordem alfabética pt-BR
+    clis.sort(function(a,b){return (a.l||'').localeCompare(b.l||'','pt-BR');});
     cSel.innerHTML='<option value="">Todos os clientes</option>'+
       clis.map(function(o){return '<option value="'+_rptEsc(o.k)+'">'+_rptEsc(o.l)+'</option>';}).join('');
     var curCli=(typeof activeCliente!=='undefined'&&activeCliente)?activeCliente:'';
@@ -12517,107 +12566,175 @@ var _CFG_DEFAULTS = {metaResp:30, metaSol:48, metaTaxa:70, slaBH:16, custoHoraSL
 var SLA_LIMIT_H = 48;    // fallback calendário (não usado no countdown)
 // SLA_LIMIT_BH_H já declarado acima via configuração
 
+// Fix QA #3: desmembrado em 2 buckets — 1ª resposta vs Solução
+// • primResp: tickets SEM 1ª resposta, perto/passados do SLA OTRS (por prioridade/cliente)
+// • solucao:  tickets JÁ RESPONDIDOS, perto do limite operacional de solução (SLA_LIMIT_BH_H úteis)
+// Exclui filas de projeto/desenvolvimento (Melhorias) — esses não têm SLA operacional.
 function getSLACountdown() {
-  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return [];
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return { primResp:[], solucao:[] };
   var abertosStates = ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+  var FILAS_PROJETO_EXATAS = ['SSG-MELHORIAS']; // filas de projeto sem SLA operacional
   var now = new Date();
-  var result = [];
+  var primResp = [], solucao = [];
   RAW_DATA.forEach(function(d) {
     if(!d.criado || !(d.criado instanceof Date) || isNaN(d.criado)) return;
     if(abertosStates.indexOf(d.estado) === -1) return;
-    // filtro de mês/fila/cliente ativos
+    // filtros ativos
     if(activeCliente && d.cli_id !== activeCliente) return;
     if(!ticketInFilter(d)) return;
     if(activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
-    // ── HORAS ÚTEIS: conta apenas Seg-Sex 8h-18h ──
-    var elapsedH = calcBusinessHoursH(d.criado, now);
-    var remainH = SLA_LIMIT_BH_H - elapsedH;
-    if(remainH > 0 && remainH <= 4) {
-      result.push({
-        num: d.num,
-        assunto: d.assunto,
-        atend: d.atend,
-        estado: d.estado,
-        remainH: remainH,
-        elapsedH: elapsedH
-      });
-    } else if(remainH <= 0) {
-      // já violou — inclui como "vencido"
-      result.push({
-        num: d.num,
-        assunto: d.assunto,
-        atend: d.atend,
-        estado: d.estado,
-        remainH: remainH,
-        elapsedH: elapsedH,
-        vencido: true
-      });
+    // exclui filas de projeto/melhorias do countdown
+    var filaUp = String(d.fila||'').toUpperCase();
+    var isProjeto = FILAS_PROJETO_EXATAS.indexOf(d.fila) !== -1 ||
+                    filaUp.indexOf('MELHORIA') !== -1 ||
+                    filaUp.indexOf('PROJETO') !== -1 ||
+                    filaUp.indexOf('DESENVOLVIMENTO') !== -1;
+    if(isProjeto) return;
+
+    var elapsedMin  = Math.floor((now - d.criado) / 60000);
+    var elapsedH_ut = (typeof calcBusinessHoursH==='function') ? calcBusinessHoursH(d.criado, now) : ((now - d.criado)/3600000);
+    var jaRespondido = (d.resp_min != null && !isNaN(d.resp_min));
+
+    // ─── Bloco A: 1ª resposta vencendo (só sem resp ainda) ──
+    if(!jaRespondido){
+      var thRespMin = null;
+      if(typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0){
+        thRespMin = d.sla_first_response_min;
+      } else if(typeof getOTRSSLAThreshold === 'function'){
+        thRespMin = getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+      }
+      if(thRespMin && thRespMin > 0){
+        var remainRespMin = thRespMin - elapsedMin;
+        var thrPctRest = remainRespMin / thRespMin; // janela de aviso proporcional ao SLA
+        // Janela: ≤25% restante ou vencido (cap 30min em SLAs curtos pra não disparar tudo)
+        var dispara = remainRespMin <= 0 || thrPctRest <= 0.25 || remainRespMin <= 30;
+        if(dispara){
+          primResp.push({
+            num: d.num, assunto: d.assunto, atend: d.atend, estado: d.estado,
+            remainMin: remainRespMin, threshold: thRespMin,
+            vencido: remainRespMin <= 0,
+            prior: d.prior || d.prioridade || '—'
+          });
+        }
+      }
+    }
+
+    // ─── Bloco B: solução vencendo (só pra tickets já com 1ª resp) ──
+    if(jaRespondido){
+      var remainSolH = SLA_LIMIT_BH_H - elapsedH_ut;
+      if(remainSolH <= 4){
+        solucao.push({
+          num: d.num, assunto: d.assunto, atend: d.atend, estado: d.estado,
+          remainH: remainSolH, elapsedH: elapsedH_ut,
+          vencido: remainSolH <= 0,
+          prior: d.prior || d.prioridade || '—'
+        });
+      }
     }
   });
-  // ordena: vencidos primeiro, depois por menor tempo restante
-  result.sort(function(a,b){ return a.remainH - b.remainH; });
-  return result;
+  primResp.sort(function(a,b){ return a.remainMin - b.remainMin; });
+  solucao.sort(function(a,b){ return a.remainH - b.remainH; });
+  return { primResp: primResp, solucao: solucao };
 }
 
 function renderSLACountdown() {
-  var items = getSLACountdown();
+  var bk = getSLACountdown();
   var banner = document.getElementById('sla-countdown-banner');
-  var list   = document.getElementById('sla-countdown-list');
+  var blockResp = document.getElementById('sla-cd-block-resp');
+  var blockSol  = document.getElementById('sla-cd-block-sol');
+  var listResp  = document.getElementById('sla-countdown-list-resp');
+  var listSol   = document.getElementById('sla-countdown-list-sol');
+  var cntResp   = document.getElementById('sla-cd-resp-count');
+  var cntSol    = document.getElementById('sla-cd-sol-count');
   var pill   = document.getElementById('pill-sla-vencendo');
   var pillTxt= document.getElementById('pill-sla-txt');
 
-  if(!items.length) {
+  var totalRisco = bk.primResp.length + bk.solucao.length;
+  if(!totalRisco){
     if(banner) banner.style.display = 'none';
     if(pill)   pill.style.display   = 'none';
     return;
   }
+  if(banner) banner.style.display = 'block';
 
-  var vencidos  = items.filter(function(i){ return i.vencido; });
-  var em4h      = items.filter(function(i){ return !i.vencido && i.remainH <= 4; });
-  var em2h      = items.filter(function(i){ return !i.vencido && i.remainH <= 2; });
-  var em1h      = items.filter(function(i){ return !i.vencido && i.remainH <= 1; });
-  var totalRisco= items.length;
-
-  // Topbar pill
-  if(pill && pillTxt) {
+  // Topbar pill — prioriza 1ª resposta (mais crítico operacionalmente)
+  if(pill && pillTxt){
     pill.style.display = 'flex';
-    var urgLabel = vencidos.length
-      ? vencidos.length + ' vencido' + (vencidos.length>1?'s':'')
-      : em1h.length
-        ? em1h.length + ' vence em <1h'
-        : em2h.length
-          ? em2h.length + ' vence em <2h'
-          : totalRisco + ' vencendo';
-    pillTxt.textContent = urgLabel;
+    var vencR = bk.primResp.filter(function(i){return i.vencido;}).length;
+    var vencS = bk.solucao.filter(function(i){return i.vencido;}).length;
+    var lbl;
+    if(vencR) lbl = vencR + ' 1ª resp vencida' + (vencR>1?'s':'');
+    else if(vencS) lbl = vencS + ' solução vencida' + (vencS>1?'s':'');
+    else if(bk.primResp.length) lbl = bk.primResp.length + ' 1ª resp vencendo';
+    else lbl = bk.solucao.length + ' solução vencendo';
+    pillTxt.textContent = lbl;
   }
 
-  // Banner na seção Alertas
-  if(banner) banner.style.display = 'block';
-  if(list) {
-    list.innerHTML = items.slice(0,10).map(function(it) {
-      var hLeft = it.remainH;
-      var isVenc = it.vencido;
-      var urgColor = isVenc ? 'var(--danger)' : hLeft<=1 ? '#ef4444' : hLeft<=2 ? '#f97316' : 'var(--warn)';
-      var urgBg    = isVenc ? 'rgba(244,63,94,.1)' : hLeft<=1 ? 'rgba(239,68,68,.07)' : hLeft<=2 ? 'rgba(249,115,22,.07)' : 'rgba(245,158,11,.07)';
-      var timeLabel;
-      if(isVenc) {
-        var ov = Math.abs(hLeft);
-        timeLabel = '⚠ VENCIDO há ' + (ov>=1 ? Math.floor(ov)+'h'+(Math.round((ov%1)*60)>0?Math.round((ov%1)*60)+'min':'') : Math.round(ov*60)+'min');
-      } else {
-        var hR = Math.floor(hLeft), mR = Math.round((hLeft - hR) * 60);
-        timeLabel = 'Vence em ' + (hR>0 ? hR+'h':'') + (mR>0 ? mR+'min':'');
-      }
-      var nom = it.atend ? it.atend.split('.')[0] : '—';
-      var numAttr = String(it.num||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
-      return '<div class="sla-row-clickable" role="button" tabindex="0" onclick="openTicketDetail(\''+numAttr+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openTicketDetail(\''+numAttr+'\');}" title="Clique para ver o chamado" style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:'+urgBg+';border-bottom:1px solid rgba(255,255,255,.04)">'
-        +'<div style="min-width:72px;text-align:center;padding:4px 8px;border-radius:20px;background:'+urgColor+';color:#fff;font-size:9px;font-weight:700;font-family:var(--mono);white-space:nowrap">'+timeLabel+'</div>'
-        +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.assunto+'</div>'
-          +'<div style="font-size:10px;color:var(--muted);margin-top:1px">#'+it.num.slice(-8)+' &nbsp;·&nbsp; '+nom+'</div>'
-        +'</div>'
-        +'<div style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</div>'
-      +'</div>';
-    }).join('');
+  // ─── Bloco A render: 1ª resposta ───
+  if(bk.primResp.length){
+    if(blockResp) blockResp.style.display = 'block';
+    if(cntResp)   cntResp.textContent = '· ' + bk.primResp.length + ' chamado' + (bk.primResp.length>1?'s':'');
+    if(listResp){
+      listResp.innerHTML = bk.primResp.slice(0,10).map(function(it){
+        var mLeft = it.remainMin;
+        var isVenc = it.vencido;
+        var urgColor = isVenc ? 'var(--danger)' : mLeft<=15 ? '#ef4444' : mLeft<=30 ? '#f97316' : 'var(--warn)';
+        var urgBg    = isVenc ? 'rgba(244,63,94,.1)' : mLeft<=15 ? 'rgba(239,68,68,.07)' : mLeft<=30 ? 'rgba(249,115,22,.07)' : 'rgba(245,158,11,.07)';
+        var timeLabel;
+        if(isVenc){
+          var ov = Math.abs(mLeft);
+          timeLabel = '⚠ VENCIDO há ' + (ov>=60 ? Math.floor(ov/60)+'h'+(ov%60?(ov%60)+'min':'') : ov+'min');
+        } else {
+          timeLabel = 'Vence em ' + (mLeft>=60 ? Math.floor(mLeft/60)+'h'+(mLeft%60?(mLeft%60)+'min':'') : mLeft+'min');
+        }
+        var nom = it.atend ? it.atend.split('.')[0] : '—';
+        var numAttr = String(it.num||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+        return '<div class="sla-row-clickable" role="button" tabindex="0" onclick="openTicketDetail(\''+numAttr+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openTicketDetail(\''+numAttr+'\');}" title="Clique para ver o chamado" style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:'+urgBg+';border-bottom:1px solid rgba(255,255,255,.04)">'
+          +'<div style="min-width:84px;text-align:center;padding:4px 8px;border-radius:20px;background:'+urgColor+';color:#fff;font-size:9px;font-weight:700;font-family:var(--mono);white-space:nowrap">'+timeLabel+'</div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.assunto+'</div>'
+            +'<div style="font-size:10px;color:var(--muted);margin-top:1px">#'+String(it.num).slice(-8)+' &nbsp;·&nbsp; '+nom+' &nbsp;·&nbsp; <span style="color:var(--sub)">'+it.prior+'</span> &nbsp;·&nbsp; <span style="color:var(--muted)">SLA '+it.threshold+'min</span></div>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</div>'
+        +'</div>';
+      }).join('');
+    }
+  } else {
+    if(blockResp) blockResp.style.display = 'none';
+  }
+
+  // ─── Bloco B render: solução ───
+  if(bk.solucao.length){
+    if(blockSol) blockSol.style.display = 'block';
+    if(cntSol)   cntSol.textContent = '· ' + bk.solucao.length + ' chamado' + (bk.solucao.length>1?'s':'');
+    if(listSol){
+      listSol.innerHTML = bk.solucao.slice(0,10).map(function(it){
+        var hLeft = it.remainH;
+        var isVenc = it.vencido;
+        var urgColor = isVenc ? 'var(--danger)' : hLeft<=1 ? '#ef4444' : hLeft<=2 ? '#f97316' : 'var(--warn)';
+        var urgBg    = isVenc ? 'rgba(244,63,94,.1)' : hLeft<=1 ? 'rgba(239,68,68,.07)' : hLeft<=2 ? 'rgba(249,115,22,.07)' : 'rgba(245,158,11,.07)';
+        var timeLabel;
+        if(isVenc){
+          var ov = Math.abs(hLeft);
+          timeLabel = '⚠ VENCIDO há ' + (ov>=1 ? Math.floor(ov)+'h'+(Math.round((ov%1)*60)>0?Math.round((ov%1)*60)+'min':'') : Math.round(ov*60)+'min');
+        } else {
+          var hR = Math.floor(hLeft), mR = Math.round((hLeft - hR) * 60);
+          timeLabel = 'Vence em ' + (hR>0 ? hR+'h':'') + (mR>0 ? mR+'min':'');
+        }
+        var nom = it.atend ? it.atend.split('.')[0] : '—';
+        var numAttr = String(it.num||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+        return '<div class="sla-row-clickable" role="button" tabindex="0" onclick="openTicketDetail(\''+numAttr+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openTicketDetail(\''+numAttr+'\');}" title="Clique para ver o chamado" style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:'+urgBg+';border-bottom:1px solid rgba(255,255,255,.04)">'
+          +'<div style="min-width:84px;text-align:center;padding:4px 8px;border-radius:20px;background:'+urgColor+';color:#fff;font-size:9px;font-weight:700;font-family:var(--mono);white-space:nowrap">'+timeLabel+'</div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.assunto+'</div>'
+            +'<div style="font-size:10px;color:var(--muted);margin-top:1px">#'+String(it.num).slice(-8)+' &nbsp;·&nbsp; '+nom+' &nbsp;·&nbsp; <span style="color:var(--sub)">'+it.prior+'</span></div>'
+          +'</div>'
+          +'<div style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</div>'
+        +'</div>';
+      }).join('');
+    }
+  } else {
+    if(blockSol) blockSol.style.display = 'none';
   }
 }
 
@@ -13384,7 +13501,11 @@ function initCS() {
   var sel = document.getElementById('cs-sel-empresa');
   if (sel.options.length <= 1) {
     sel.innerHTML = '<option value="">— Selecione a conta —</option>';
-    Object.keys(EMPRESAS).forEach(function(k) {
+    // Fix QA #5c: ordem alfabética pt-BR pelo nome do cliente
+    var _csKeys = Object.keys(EMPRESAS).sort(function(a,b){
+      return (EMPRESAS[a].nome||a).localeCompare(EMPRESAS[b].nome||b,'pt-BR');
+    });
+    _csKeys.forEach(function(k) {
       var o = document.createElement('option');
       o.value = k;
       o.textContent = EMPRESAS[k].nome;
@@ -19400,7 +19521,7 @@ function renderIA(){
         </div>
         <div class="rpt-fld">
           <span class="rpt-fld-lbl">Cliente</span>
-          <select id="rpt-f-cli"></select>
+          <select id="rpt-f-cli" onchange="_rptSyncOpts()"></select>
           <span class="rpt-fld-inherit" id="rpt-f-cli-tag" style="display:none">da tela</span>
         </div>
         <div class="rpt-fld rpt-fld-chips">
