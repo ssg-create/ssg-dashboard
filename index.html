@@ -17811,23 +17811,56 @@ function _restoreFilters(snap){
     if(typeof rendered!=='undefined') Object.keys(rendered).forEach(function(k){ rendered[k]=false; });
     if(typeof CH!=='undefined') Object.keys(CH).forEach(function(k){ if(CH[k]){CH[k].destroy();CH[k]=null;} });
   } catch(e){console.warn('[restore] cache:',e);}
-  // 5) Re-render da aba ativa — independente de qual view (op/cli/cs)
+  // 5) Re-render da aba ativa — cobre TODAS as 9 views (op/cli/cs/acoes/rg/ia/sq/atend/triagem)
   try {
+    // 5a — view-op (renderSec dispatcher)
     var aOp  = document.querySelector('#view-op .sec.on');
+    if(aOp && typeof renderSec==='function'){ rendered[aOp.id]=true; renderSec(aOp.id); }
+    // 5b — view-cli (renderSec dispatcher também trata c-*)
     var aCli = document.querySelector('#view-cli .sec.on');
+    if(aCli && typeof renderSec==='function'){ rendered[aCli.id]=true; renderSec(aCli.id); }
+    // 5c — view-cs (Customer Success usa renderCSSection)
     var aCS  = document.querySelector('#view-cs .sec.on');
-    if(aOp  && typeof renderSec    ==='function'){ rendered[aOp.id]=true;  renderSec(aOp.id); }
-    if(aCli && typeof renderSec    ==='function'){ rendered[aCli.id]=true; renderSec(aCli.id); }
-    if(aCS  && typeof renderCSSection==='function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]){
+    if(aCS && typeof renderCSSection==='function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]){
       renderCSSection(aCS.id, EMPRESAS[snap.activeCliente]);
     }
+    // 5d — view-acoes (Painel de Ações)
+    var vAcoes = document.getElementById('view-acoes');
+    if(vAcoes && vAcoes.classList.contains('on') && typeof renderAcoes==='function'){
+      renderAcoes();
+    }
+    // 5e — view-rg (Resumo Gestão)
+    var vRG = document.getElementById('view-rg');
+    if(vRG && vRG.classList.contains('on') && typeof renderResumo==='function'){
+      renderResumo();
+    }
+    // 5f — view-ia (Inteligência)
+    var vIA = document.getElementById('view-ia');
+    if(vIA && vIA.classList.contains('on') && typeof renderIA==='function'){
+      renderIA();
+    }
+    // 5g — view-sq / squad mode
+    if(typeof isSquadMode==='function' && isSquadMode() && typeof renderSquadView==='function'){
+      try { renderSquadView(); } catch(e){console.warn('[restore] squad:',e);}
+    }
+    // 5h — view-atend / modo atendente
+    if(typeof isAtendenteMode==='function' && isAtendenteMode() && typeof window.renderCurrentAtendenteAba==='function'){
+      try { window.renderCurrentAtendenteAba(); } catch(e){console.warn('[restore] atend:',e);}
+    }
+    // 5i — view-triagem
+    if(typeof window.isTriagemMode==='function' && window.isTriagemMode() && typeof window.renderCurrentTriagemAba==='function'){
+      try { window.renderCurrentTriagemAba(); } catch(e){console.warn('[restore] triagem:',e);}
+    }
   } catch(e){console.warn('[restore] re-render:',e);}
-  // 6) Re-render dos blocos sempre presentes
+  // 6) Re-render dos blocos sempre presentes (independente de view)
   try { if(typeof renderAlertas    === 'function') renderAlertas(); }    catch(e){console.warn('[restore] renderAlertas:',e);}
   try { if(typeof computeInsights  === 'function') computeInsights(); }  catch(e){console.warn('[restore] computeInsights:',e);}
   try { if(typeof updateFilterChip === 'function') updateFilterChip(); } catch(e){console.warn('[restore] filterChip:',e);}
   try { if(typeof _refreshAllHeroes=== 'function') _refreshAllHeroes(); }catch(e){console.warn('[restore] heroes:',e);}
+  try { if(typeof applyLiveKPIs    === 'function') applyLiveKPIs(); }    catch(e){console.warn('[restore] applyLiveKPIs:',e);}
+  try { if(typeof refreshNotifBadge==='function') refreshNotifBadge(); } catch(e){console.warn('[restore] notif badge:',e);}
   try { if(typeof loadEmpresa      === 'function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]) loadEmpresa(snap.activeCliente); } catch(e){console.warn('[restore] loadEmpresa:',e);}
+  try { if(typeof loadCS           === 'function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]) loadCS(snap.activeCliente); } catch(e){console.warn('[restore] loadCS:',e);}
 }
 
 function autoFetchJSON(){
