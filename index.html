@@ -5266,6 +5266,32 @@ function populateSlHero(op){
   var respArr = rs.map(function(t){return t.resp_min;}).filter(function(v){return v!=null&&!isNaN(v);}).sort(function(a,b){return a-b;});
   var respMedian = respArr.length ? respArr[Math.floor(respArr.length/2)] : 0;
 
+  // Fix QA · 22/05 (Fabio): "2 de 4 chamados" criava confusão. Adiciona
+  // contexto sobre quem entra na amostra do SLA OTRS vs quem NÃO entra.
+  // Categorias (sobre rs do escopo):
+  //   total       — todos os chamados do escopo (período + cliente + fila)
+  //   comSLA      — chamados em serviço que tem SLA cadastrado (Sustentação/BH)
+  //   semSLA      — Monitoramento, Melhorias, etc — sem SLA OTRS
+  //   respondidos — comSLA com resp_min preenchido (=sampleN do calcSLAOtrs)
+  //   aguardando  — comSLA sem resp_min ainda
+  var totalEsc=0, comSLA=0, semSLA=0, respondidos=0, aguardando=0;
+  rs.forEach(function(t){
+    totalEsc++;
+    var th = null;
+    if(typeof t.sla_first_response_min === 'number' && t.sla_first_response_min > 0){
+      th = t.sla_first_response_min;
+    } else if(typeof getOTRSSLAThreshold === 'function'){
+      th = getOTRSSLAThreshold(t.servico_full || t.servico, t.prior || t.prioridade, t.cli_id);
+    }
+    if(th === null){
+      semSLA++;
+    } else {
+      comSLA++;
+      if(t.resp_min == null || isNaN(t.resp_min)) aguardando++;
+      else respondidos++;
+    }
+  });
+
   var statusLbl = pctSla + '% DOS CHAMADOS · DENTRO DO SLA OTRS';
   var cls;
   if(pctSla>=80){cls='';}
@@ -5276,11 +5302,19 @@ function populateSlHero(op){
   var abertosAbr=atend.reduce(function(s,a){return s+(a.ab||0);},0);
   if(sub){
     var mediana=Math.round(respMedian);
+    // Linha 1: o que a régua calcula (amostra elegível)
     sub.innerHTML=
-      '<strong>'+(sampleN-violations)+'</strong> de <strong>'+sampleN+'</strong> chamados dentro do SLA · '
+      '<strong>'+(sampleN-violations)+'</strong> de <strong>'+sampleN+'</strong> com SLA OTRS respondidos · '
       +'mediana 1ª resp <strong>'+mediana+'min</strong> · '
       +'<strong>'+violations+'</strong> violações · '
-      +'<strong>'+abertosAbr+'</strong> em aberto agora';
+      +'<strong>'+abertosAbr+'</strong> em aberto agora'
+    // Linha 2: contexto do escopo total (quem ficou fora e por quê)
+    + '<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.5">'
+      +'Escopo: <strong>'+totalEsc+'</strong> chamados · '
+      +'<strong style="color:#10b981">'+comSLA+'</strong> com SLA OTRS '
+      +'<span style="opacity:.6">('+respondidos+' respondidos / '+aguardando+' aguardando)</span>'
+      +(semSLA>0 ? ' · <strong style="color:#a78bfa">'+semSLA+'</strong> sem SLA cadastrado <span style="opacity:.6">(Monitoramento, Melhorias)</span>' : '')
+    + '</div>';
   }
   if(meta)meta.textContent='regras OTRS: Sustentação=30/60/120min · Banco de Horas=60/240/480/720/1440min · solução <48h';
   if(ringNum)ringNum.textContent=pctSla+'%';
