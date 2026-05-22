@@ -17750,6 +17750,86 @@ function _adaptJsonRowToXlsx(r){
     'Tempo de solução em minutos': r.sol_min_bh!=null?r.sol_min_bh:''
   };
 }
+// ════════════════════════════════════════════════════════════
+// Snapshot/Restore de filtros (fix 22/05: refresh perdia filtro)
+// ════════════════════════════════════════════════════════════
+// Antes: o restore pós-sync (a cada 10min) tinha 3 problemas:
+//   (1) só checava se algum filtro era ≠ default — ignorava activeFilaCli
+//   (2) não rebuildava botões de fila (ficavam desincronizados visualmente)
+//   (3) só re-renderizava view-op — se estava em Visão Cliente / CS, perdia
+//   (4) não atualizava o chip persistente nem o select de cliente da topbar
+// Agora: snapshot completo + restore que SEMPRE roda + rerender da view ativa.
+function _snapshotFilters(){
+  var snap = {
+    activeMonth:       (typeof activeMonth!=='undefined')      ? activeMonth      : 'all',
+    activeFilaOP:      (typeof activeFilaOP!=='undefined')     ? activeFilaOP     : 'all',
+    activeFilaCli:     (typeof activeFilaCli!=='undefined')    ? activeFilaCli    : 'all',
+    activeCliente:     (typeof activeCliente!=='undefined')    ? activeCliente    : '',
+    activeRangeStart:  (typeof activeRangeStart!=='undefined') ? activeRangeStart : null,
+    activeRangeEnd:    (typeof activeRangeEnd!=='undefined')   ? activeRangeEnd   : null
+  };
+  // Snapshot da aba ativa em CADA view (pra restaurar a que estava aberta)
+  try { snap.opSec  = document.querySelector('#view-op .sec.on');  snap.opSecId  = snap.opSec  ? snap.opSec.id  : null; } catch(e){}
+  try { snap.cliSec = document.querySelector('#view-cli .sec.on'); snap.cliSecId = snap.cliSec ? snap.cliSec.id : null; } catch(e){}
+  try { snap.csSec  = document.querySelector('#view-cs .sec.on');  snap.csSecId  = snap.csSec  ? snap.csSec.id  : null; } catch(e){}
+  // View ativa (op/cli/cs/...) — pra restaurar foco correto
+  try {
+    var vOp=document.getElementById('view-op'), vCli=document.getElementById('view-cli'), vCS=document.getElementById('view-cs');
+    if(vOp && vOp.classList.contains('on')) snap.activeView='op';
+    else if(vCli && vCli.classList.contains('on')) snap.activeView='cli';
+    else if(vCS && vCS.classList.contains('on')) snap.activeView='cs';
+  } catch(e){}
+  return snap;
+}
+function _restoreFilters(snap){
+  if(!snap) return;
+  // 1) Restaurar variáveis globais (incluindo activeFilaCli que antes não era restaurado)
+  if(typeof activeMonth!=='undefined')      activeMonth      = snap.activeMonth;
+  if(typeof activeFilaOP!=='undefined')     activeFilaOP     = snap.activeFilaOP;
+  if(typeof activeFilaCli!=='undefined')    activeFilaCli    = snap.activeFilaCli;
+  if(typeof activeCliente!=='undefined')    activeCliente    = snap.activeCliente;
+  if(typeof activeRangeStart!=='undefined') activeRangeStart = snap.activeRangeStart;
+  if(typeof activeRangeEnd!=='undefined')   activeRangeEnd   = snap.activeRangeEnd;
+  // 2) Rebuild botões de fila e mês (visual sincronizado)
+  try { if(typeof buildMonthFilter==='function') buildMonthFilter(); } catch(e){console.warn('[restore] buildMonthFilter:',e);}
+  try {
+    if(typeof buildFilaBtns==='function'){
+      buildFilaBtns('fila-btns-op', activeFilaOP, setFilaOP);
+      buildFilaBtns('fila-btns-cli', activeFilaCli, setFilaCli);
+    }
+  } catch(e){console.warn('[restore] buildFilaBtns:',e);}
+  // 3) Re-sync dos selects de cliente (sel-empresa, cs-sel-empresa, sel-cliente-global)
+  try {
+    if(snap.activeCliente){
+      var s1=document.getElementById('sel-empresa');       if(s1) s1.value = snap.activeCliente;
+      var s2=document.getElementById('cs-sel-empresa');    if(s2) s2.value = snap.activeCliente;
+      var s3=document.getElementById('sel-cliente-global');if(s3) s3.value = snap.activeCliente;
+    }
+  } catch(e){console.warn('[restore] sel cliente:',e);}
+  // 4) Limpar cache de render pra forçar redraw com filtros corretos
+  try {
+    if(typeof rendered!=='undefined') Object.keys(rendered).forEach(function(k){ rendered[k]=false; });
+    if(typeof CH!=='undefined') Object.keys(CH).forEach(function(k){ if(CH[k]){CH[k].destroy();CH[k]=null;} });
+  } catch(e){console.warn('[restore] cache:',e);}
+  // 5) Re-render da aba ativa — independente de qual view (op/cli/cs)
+  try {
+    var aOp  = document.querySelector('#view-op .sec.on');
+    var aCli = document.querySelector('#view-cli .sec.on');
+    var aCS  = document.querySelector('#view-cs .sec.on');
+    if(aOp  && typeof renderSec    ==='function'){ rendered[aOp.id]=true;  renderSec(aOp.id); }
+    if(aCli && typeof renderSec    ==='function'){ rendered[aCli.id]=true; renderSec(aCli.id); }
+    if(aCS  && typeof renderCSSection==='function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]){
+      renderCSSection(aCS.id, EMPRESAS[snap.activeCliente]);
+    }
+  } catch(e){console.warn('[restore] re-render:',e);}
+  // 6) Re-render dos blocos sempre presentes
+  try { if(typeof renderAlertas    === 'function') renderAlertas(); }    catch(e){console.warn('[restore] renderAlertas:',e);}
+  try { if(typeof computeInsights  === 'function') computeInsights(); }  catch(e){console.warn('[restore] computeInsights:',e);}
+  try { if(typeof updateFilterChip === 'function') updateFilterChip(); } catch(e){console.warn('[restore] filterChip:',e);}
+  try { if(typeof _refreshAllHeroes=== 'function') _refreshAllHeroes(); }catch(e){console.warn('[restore] heroes:',e);}
+  try { if(typeof loadEmpresa      === 'function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]) loadEmpresa(snap.activeCliente); } catch(e){console.warn('[restore] loadEmpresa:',e);}
+}
+
 function autoFetchJSON(){
   if(_autoFetching)return;
   _autoFetching=true;
@@ -17791,17 +17871,14 @@ function autoFetchJSON(){
           }
         }catch(e){console.warn('default month boot:',e);}
       }
-      var _sm=activeMonth,_sf=activeFilaOP,_sfc=activeFilaCli,_sc=activeCliente,_srs=activeRangeStart,_sre=activeRangeEnd;
+      // Fix 22/05: snapshot/restore completo (antes perdia activeFilaCli e
+      // não rerenderava Visão Cliente / CS / banner persistente)
+      var _filterSnap = (typeof _snapshotFilters==='function') ? _snapshotFilters() : null;
       rebuildAll(parseR(rows));
-      if(typeof _refreshAllHeroes==='function') _refreshAllHeroes();
-      if(_sm!=='all'||_sf!=='all'||_sc||_srs){
-        activeMonth=_sm;activeFilaOP=_sf;activeFilaCli=_sfc;activeCliente=_sc;activeRangeStart=_srs;activeRangeEnd=_sre;
-        buildMonthFilter();
-        Object.keys(rendered).forEach(function(k){rendered[k]=false;});
-        Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});
-        var _aOp=document.querySelector('#view-op .sec.on');
-        if(_aOp){rendered[_aOp.id]=true;renderSec(_aOp.id);}
-        renderAlertas();computeInsights();
+      if(_filterSnap && typeof _restoreFilters==='function'){
+        _restoreFilters(_filterSnap);
+      } else if(typeof _refreshAllHeroes==='function'){
+        _refreshAllHeroes();
       }
       var hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
       if(dot)dot.style.background='var(--ok)';
@@ -17853,16 +17930,12 @@ function autoFetchXLS(){
       var w=XLSX.read(new Uint8Array(b),{type:"array",cellDates:true});
       var s=w.Sheets[w.SheetNames[0]];
       var rows=XLSX.utils.sheet_to_json(s,{defval:""});
-      var _sm=activeMonth,_sf=activeFilaOP,_sfc=activeFilaCli,_sc=activeCliente,_srs=activeRangeStart,_sre=activeRangeEnd;
+      // Fix 22/05: snapshot/restore completo (antes perdia activeFilaCli e
+      // não rerenderava Visão Cliente / CS / banner persistente)
+      var _filterSnap = (typeof _snapshotFilters==='function') ? _snapshotFilters() : null;
       rebuildAll(parseR(rows));
-      if(_sm!=='all'||_sf!=='all'||_sc||_srs){
-        activeMonth=_sm;activeFilaOP=_sf;activeFilaCli=_sfc;activeCliente=_sc;activeRangeStart=_srs;activeRangeEnd=_sre;
-        buildMonthFilter();
-        Object.keys(rendered).forEach(function(k){rendered[k]=false;});
-        Object.keys(CH).forEach(function(k){if(CH[k]){CH[k].destroy();CH[k]=null;}});
-        var _aOp=document.querySelector('#view-op .sec.on');
-        if(_aOp){rendered[_aOp.id]=true;renderSec(_aOp.id);}
-        renderAlertas();computeInsights();
+      if(_filterSnap && typeof _restoreFilters==='function'){
+        _restoreFilters(_filterSnap);
       }
       var now=new Date();
       var hm=now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
