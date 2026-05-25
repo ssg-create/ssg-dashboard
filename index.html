@@ -2689,7 +2689,9 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 // ════════════════════════════════════════════════════════════
 var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");
 // Hashes legados (gestão / squads / triagem) — back-compat
-var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";
+// _H_GEST (gestão geral legada, login vazio + ssg2026) removido em 22/05 —
+// fabio.tavares entra como admin pelo novo sistema (_USERS). Squads e triagem
+// legados mantidos pra modo squad / atendente funcionarem.
 var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";
 var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";
 var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";
@@ -2766,7 +2768,6 @@ if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}
 async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
 async function _chkRaw(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v||""));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
 function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("mode","atendente");sessionStorage.setItem("atendLogin",login);try{sessionStorage.removeItem("atendNome");}catch(e){}try{localStorage.removeItem("sq.atendente");}catch(e){}}else{sessionStorage.setItem("mode","squad");sessionStorage.removeItem("atendLogin");}location.reload();}
-function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}
 function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}
 // Login por usuário — perfil/filas vêm de _USERS
 function _enterAsUser(login, u){
@@ -2793,10 +2794,10 @@ document.getElementById("lb").addEventListener("click",async function(){
     var hRaw = await _chkRaw(pwd);
     if(hRaw === u.hash){ _enterAsUser(loginN, u); return; }
   }
-  // 2) Hashes legados (back-compat: senha sem login = gestão/squad antigos)
+  // 2) Hashes legados (back-compat: squad/triagem antigos)
+  // _H_GEST removido — admin agora é só via fabio.tavares no _USERS
   var h=await _chk(pwd);
-  if(h===_H_GEST){_enterGestao();}
-  else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}
+  if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}
   else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}
   else if(h===_H_SQ_DBA){_enterSquad("dba");}
   else if(h===_H_SQ_GWMS){_enterSquad("gwms");}
