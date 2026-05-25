@@ -1614,14 +1614,27 @@ body[data-user-perfil="gestor_bh"] #btn-ia,
 body[data-user-perfil="gestor"] #view-ia,
 body[data-user-perfil="gestor_bh"] #view-ia{display:none !important}
 /* Não-admin: chip "user logado" no topbar (criado dinamicamente) */
-.tb-user-chip{display:none;align-items:center;gap:8px;padding:5px 12px 5px 10px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.08));border:1px solid rgba(16,185,129,.35);color:#10b981;font-size:11px;font-weight:600;white-space:nowrap;margin-right:6px}
+.tb-user-chip{display:none;align-items:center;gap:6px;padding:4px 8px 4px 8px;border-radius:18px;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.08));border:1px solid rgba(16,185,129,.35);color:#10b981;font-size:10px;font-weight:600;white-space:nowrap;margin-right:4px;max-width:280px;overflow:hidden}
 body[data-mode="user"] .tb-user-chip{display:inline-flex}
-.tb-user-chip .tb-user-icon{font-size:11px;line-height:1}
-.tb-user-chip .tb-user-nome{color:#fff;font-weight:700}
+.tb-user-chip .tb-user-icon{font-size:10px;line-height:1}
+.tb-user-chip .tb-user-nome{color:#fff;font-weight:700;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis}
 .tb-user-chip .tb-user-perfil{color:rgba(255,255,255,.7);font-weight:500;text-transform:uppercase;letter-spacing:.05em;font-size:9px}
-.tb-user-chip .tb-user-filas{color:rgba(255,255,255,.6);font-weight:500;font-size:10px}
-.tb-user-chip .tb-user-logout{background:none;border:none;color:#fca5a5;cursor:pointer;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;margin-left:4px}
-.tb-user-chip .tb-user-logout:hover{background:rgba(220,38,38,.18);color:#fff}
+.tb-user-chip .tb-user-filas{color:rgba(255,255,255,.6);font-weight:500;font-size:9px;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.tb-user-chip .tb-user-logout{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);color:#fca5a5;cursor:pointer;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;display:inline-flex;align-items:center;gap:4px;line-height:1}
+.tb-user-chip .tb-user-logout:hover{background:rgba(220,38,38,.25);color:#fff;border-color:rgba(220,38,38,.5)}
+.tb-user-chip .tb-user-logout svg{width:10px;height:10px}
+.tb-user-chip .tb-user-logout-lbl{font-weight:700}
+/* Em viewports apertados (≤1500px), esconde perfil/filas — fica só no tooltip */
+@media(max-width:1500px){
+  .tb-user-chip .tb-user-perfil{display:none}
+  .tb-user-chip .tb-user-filas{display:none}
+}
+/* Em viewports muito apertados (≤1280px), esconde tb-divider extra + reduz fonte */
+@media(max-width:1280px){
+  .tb-user-chip{font-size:9.5px;padding:3px 6px 3px 6px}
+  .tb-user-chip .tb-user-nome{font-size:10.5px;max-width:120px}
+  .tb-user-chip .tb-user-logout-lbl{display:none}
+}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -2903,7 +2916,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       <span class="tb-user-nome" id="tb-user-nome">—</span>
       <span class="tb-user-perfil" id="tb-user-perfil">—</span>
       <span class="tb-user-filas" id="tb-user-filas"></span>
-      <button class="tb-user-logout" onclick="_userLogout()" title="Sair">Sair</button>
+      <button class="tb-user-logout" onclick="_userLogout()" title="Sair do painel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="tb-user-logout-lbl">Sair</span>
+      </button>
     </div>
     <!-- pills removidos: informação disponível no corpo do dashboard -->
     <!-- K13: chip de filtros ativos — visível em todas as abas, clique reseta -->
@@ -5012,23 +5028,24 @@ window._userLogout = function(){
 (function _bootUserChip(){
   function fill(){
     if(sessionStorage.getItem('mode') !== 'user') return;
+    var chip = document.getElementById('tb-user-chip');
     var nomeEl = document.getElementById('tb-user-nome');
     var perfilEl = document.getElementById('tb-user-perfil');
     var filasEl = document.getElementById('tb-user-filas');
-    if(nomeEl) nomeEl.textContent = sessionStorage.getItem('userNome') || '—';
-    if(perfilEl) perfilEl.textContent = sessionStorage.getItem('userPerfil') || '—';
-    if(filasEl){
-      var perfil = sessionStorage.getItem('userPerfil');
-      if(perfil === 'admin'){ filasEl.textContent = '· todas as filas'; }
-      else {
-        try {
-          var f = JSON.parse(sessionStorage.getItem('userFilas')||'[]');
-          // Renderiza cosmeticamente: INFRAESTUTURA → INFRAESTRUTURA
-          var disp = (f||[]).map(function(x){ return x === 'INFRAESTUTURA' ? 'INFRAESTRUTURA' : x; });
-          filasEl.textContent = '· ' + disp.length + ' fila' + (disp.length!==1?'s':'') + ' (' + disp.join(', ') + ')';
-        } catch(e){ filasEl.textContent = ''; }
-      }
-    }
+    var nome = sessionStorage.getItem('userNome') || '—';
+    var perfil = sessionStorage.getItem('userPerfil') || '—';
+    var perfilLbl = perfil === 'gestor_bh' ? 'GESTOR BH' : perfil.toUpperCase();
+    var filasArr = [];
+    try { filasArr = JSON.parse(sessionStorage.getItem('userFilas')||'[]'); } catch(e){}
+    var filasDisp = (filasArr||[]).map(function(x){ return x === 'INFRAESTUTURA' ? 'INFRAESTRUTURA' : x; });
+    var filasTxt = perfil === 'admin'
+      ? 'todas as filas'
+      : filasDisp.length + ' fila' + (filasDisp.length!==1?'s':'') + ' · ' + filasDisp.join(', ');
+    if(nomeEl) nomeEl.textContent = nome;
+    if(perfilEl) perfilEl.textContent = perfilLbl;
+    if(filasEl) filasEl.textContent = '· ' + filasTxt;
+    // Tooltip rico (visível mesmo quando o chip está compactado)
+    if(chip) chip.title = nome + ' · ' + perfilLbl + '\n' + filasTxt + '\n\nClique em "Sair" pra encerrar a sessão';
   }
   if(document.body) fill();
   else document.addEventListener('DOMContentLoaded', fill);
