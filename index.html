@@ -6401,14 +6401,20 @@ function renderUtilizacao(data){
   // utilizacao.json não tem campo cliente/fila por linha — intersecta via
   // TICKETS_ATIVOS_DATA (que tem fila + cli_id por ticket vivo) para descobrir
   // quem tem carga no escopo ativo. Mês NÃO se aplica (é estado agora).
+  // POC permissão (Fabio 22/05): se o usuário tem restrição de fila, SEMPRE
+  // filtra (mesmo se ele não escolheu fila/cliente). Sem isso, vazava a
+  // lista global de atendentes da empresa toda.
   var rows=data.rows;
   var _hasFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all');
   var _hasCli=(typeof activeCliente!=='undefined'&&activeCliente);
+  var _hasUserPerm=(typeof userFilasPermitidas==='function' && userFilasPermitidas());
   var _scoped=false;
-  if((_hasFila||_hasCli) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+  if((_hasFila||_hasCli||_hasUserPerm) && typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
     var _atSet={};
     TICKETS_ATIVOS_DATA.rows.forEach(function(r){
       if(!r.atendente) return;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(r.fila)) return;
       if(_hasFila && r.fila!==activeFilaOP) return;
       if(_hasCli && r.cli_id!==activeCliente) return;
       var stU=(r.estado||'').toUpperCase();
@@ -6962,6 +6968,8 @@ function renderTeamCapacity() {
     var byAt={};
     TICKETS_ATIVOS_DATA.rows.forEach(function(r){
       if(!r.atendente) return;
+      // POC permissão (Fabio 22/05): bloqueia filas fora do escopo do usuário
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(r.fila)) return;
       if(_hasFila && r.fila!==activeFilaOP) return;
       if(_hasCli && norm(r.cliente)!==acCliN) return;
       // FIX QA: excluir estados dormentes (fechado sem êxito auto, resolvido, cancelado).
@@ -6977,6 +6985,7 @@ function renderTeamCapacity() {
     atendFilt=Object.keys(byAt).map(function(k){return byAt[k];}).sort(function(a,b){return b.ab-a.ab;});
   } else {
     // Fallback: GWMS ainda não carregou — usa histórico
+    // getActiveOP() já respeita userCanSeeFila quando há restrição (fix raiz)
     atendFilt=(getActiveOP().atend||OP.atend||[]).filter(function(a){return a.t>0;});
   }
   if(!atendFilt.length){el.style.display='none';return;}
