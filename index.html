@@ -1643,6 +1643,15 @@ body[data-mode="user"] #at-piloto-badge{display:none!important}
 /* PDF Executivo (8 KPIs GWMS) é visão estratégica global — só admin */
 body[data-user-perfil="gestor"] .rpt-type-exec,
 body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
+
+/* Projetos & Melhorias — interatividade */
+.pm-kpi{transition:transform .12s,box-shadow .12s,border-color .12s}
+.pm-kpi:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.pm-kpi-on{box-shadow:0 0 0 2px rgba(232,98,42,.55) inset, 0 4px 14px rgba(232,98,42,.25)!important;border-color:#E8622A!important}
+.pm-top-row:hover{background:rgba(255,255,255,.04)!important}
+.pm-top-row.on:hover{background:rgba(232,98,42,.18)!important}
+.pm-filter-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:linear-gradient(135deg,rgba(232,98,42,.22),rgba(232,98,42,.08));border:1px solid rgba(232,98,42,.5);border-radius:14px;color:#E8622A;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .12s}
+.pm-filter-chip:hover{background:linear-gradient(135deg,rgba(232,98,42,.35),rgba(232,98,42,.18))}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -7755,11 +7764,64 @@ function renderSl(){
 // ════════════════════════════════════════════════════════════
 // PROJETOS & MELHORIAS — Aba dedicada (Adriano 22/05)
 // ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+// Estado de filtros/sort da aba Projetos & Melhorias
+// (em memória, não persiste — reseta a cada reload)
+// ════════════════════════════════════════════════════════════
+var _pmFilters = {
+  nivel: null,    // 'urgente' | 'atenc' | 'aviso' | null (todos)
+  cli:   null,    // cli_id
+  svc:   null,    // serviço
+  atend: null,    // login do atendente
+  sort:  'aging-desc'  // aging | cli | atend | criado · -asc | -desc
+};
+function _pmHasAnyFilter(){
+  return !!(_pmFilters.nivel || _pmFilters.cli || _pmFilters.svc || _pmFilters.atend);
+}
+function _pmApplyFilters(items){
+  return items.filter(function(it){
+    if(_pmFilters.nivel && it.nivel !== _pmFilters.nivel) return false;
+    if(_pmFilters.cli   && it.cli_id !== _pmFilters.cli) return false;
+    if(_pmFilters.svc   && it.servico !== _pmFilters.svc) return false;
+    if(_pmFilters.atend && it.atend !== _pmFilters.atend) return false;
+    return true;
+  });
+}
+function _pmApplySort(items){
+  var s = _pmFilters.sort;
+  return items.slice().sort(function(a,b){
+    switch(s){
+      case 'aging-asc':   return a.ageDays - b.ageDays;
+      case 'aging-desc':  return b.ageDays - a.ageDays;
+      case 'cli-asc':     return (a.cliNome||'').localeCompare(b.cliNome||'','pt-BR');
+      case 'cli-desc':    return (b.cliNome||'').localeCompare(a.cliNome||'','pt-BR');
+      case 'atend-asc':   return (a.atend||'').localeCompare(b.atend||'','pt-BR');
+      case 'atend-desc':  return (b.atend||'').localeCompare(a.atend||'','pt-BR');
+      case 'criado-asc':  return (a.criado||0) - (b.criado||0);
+      case 'criado-desc': return (b.criado||0) - (a.criado||0);
+      default:            return b.ageDays - a.ageDays;
+    }
+  });
+}
+// Toggles (clicáveis na UI)
+window._pmToggleNivel = function(n){ _pmFilters.nivel = (_pmFilters.nivel===n?null:n); renderProjMelTab(); };
+window._pmToggleCli   = function(k){ _pmFilters.cli   = (_pmFilters.cli===k?null:k);   renderProjMelTab(); };
+window._pmToggleSvc   = function(s){ _pmFilters.svc   = (_pmFilters.svc===s?null:s);   renderProjMelTab(); };
+window._pmToggleAtend = function(a){ _pmFilters.atend = (_pmFilters.atend===a?null:a); renderProjMelTab(); };
+window._pmClearFilters = function(){ _pmFilters.nivel=null;_pmFilters.cli=null;_pmFilters.svc=null;_pmFilters.atend=null; renderProjMelTab(); };
+window._pmSetSort = function(col){
+  var cur = _pmFilters.sort;
+  if(cur === col+'-desc'){ _pmFilters.sort = col+'-asc'; }
+  else if(cur === col+'-asc'){ _pmFilters.sort = col+'-desc'; }
+  else { _pmFilters.sort = col+'-desc'; }
+  renderProjMelTab();
+};
+
 function renderProjMelTab(){
   var el = document.getElementById('projmel-content');
   if(!el) return;
-  var items = (typeof getProjetosMelhoriasAbertos==='function') ? getProjetosMelhoriasAbertos() : [];
-  if(!items.length){
+  var itemsAll = (typeof getProjetosMelhoriasAbertos==='function') ? getProjetosMelhoriasAbertos() : [];
+  if(!itemsAll.length){
     el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--muted);background:rgba(59,130,246,.05);border:1px dashed rgba(59,130,246,.25);border-radius:var(--r2)">'
       +'<div style="font-size:32px;margin-bottom:8px">📋</div>'
       +'<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Nenhum projeto/melhoria em aberto</div>'
@@ -7769,34 +7831,97 @@ function renderProjMelTab(){
     if(badgeEmpty) badgeEmpty.style.display = 'none';
     return;
   }
+  // Aplica filtros pra obter items visíveis (mas KPIs e tops usam o conjunto FULL pra não recalcular cada filtro)
+  var items = _pmApplyFilters(itemsAll);
 
-  // Atualiza badge do nav com qtd urgente+atenção
-  var alertaveisCount = items.filter(function(i){return i.nivel==='urgente' || i.nivel==='atenc';}).length;
+  // Atualiza badge do nav com qtd urgente+atenção (FULL — não conta filtros locais)
+  var alertaveisCount = itemsAll.filter(function(i){return i.nivel==='urgente' || i.nivel==='atenc';}).length;
   var badge = document.getElementById('badge-projmel');
   if(badge){
     if(alertaveisCount > 0){ badge.style.display='inline-flex'; badge.textContent = alertaveisCount; }
     else { badge.style.display='none'; }
   }
 
-  // ── KPIs por nível ──
+  // ── KPIs por nível (do conjunto FULL pra contagens absolutas) ──
   var byLvl = {urgente:0, atenc:0, aviso:0, ok:0};
-  items.forEach(function(i){ byLvl[i.nivel] = (byLvl[i.nivel]||0) + 1; });
-  var avgAge = Math.round(items.reduce(function(s,i){return s+i.ageDays;},0)/items.length);
-  var maxAge = Math.max.apply(null, items.map(function(i){return i.ageDays;}));
+  itemsAll.forEach(function(i){ byLvl[i.nivel] = (byLvl[i.nivel]||0) + 1; });
+  var avgAge = itemsAll.length ? Math.round(itemsAll.reduce(function(s,i){return s+i.ageDays;},0)/itemsAll.length) : 0;
+  var maxAge = itemsAll.length ? Math.max.apply(null, itemsAll.map(function(i){return i.ageDays;})) : 0;
 
-  var kpisHtml = '<div class="kpi-row kpi-row-4" style="margin-bottom:16px">'
-    +'<div class="kpi"><div class="kpi-accent" style="background:#dc2626"></div><div class="kpi-lbl">Urgente (&gt;90d)</div><div class="kpi-val" style="color:#dc2626">'+byLvl.urgente+'</div><div class="kpi-sub">precisa decisão imediata</div></div>'
-    +'<div class="kpi"><div class="kpi-accent" style="background:#f59e0b"></div><div class="kpi-lbl">Atenção (60–90d)</div><div class="kpi-val" style="color:#f59e0b">'+byLvl.atenc+'</div><div class="kpi-sub">revisar status</div></div>'
-    +'<div class="kpi"><div class="kpi-accent" style="background:#3b82f6"></div><div class="kpi-lbl">Aviso (30–60d)</div><div class="kpi-val" style="color:#3b82f6">'+byLvl.aviso+'</div><div class="kpi-sub">acompanhamento</div></div>'
-    +'<div class="kpi"><div class="kpi-accent" style="background:#6b7280"></div><div class="kpi-lbl">Total em aberto</div><div class="kpi-val">'+items.length+'</div><div class="kpi-sub">aging médio '+avgAge+'d · máx '+maxAge+'d</div></div>'
+  // ── Resumo executivo (F) ──
+  var topCli = null, topAtd = null;
+  (function(){
+    var m={}; itemsAll.forEach(function(i){if(i.cli_id){m[i.cli_id]=(m[i.cli_id]||{n:0,nome:i.cliNome});m[i.cli_id].n++;}});
+    var arr=Object.keys(m).map(function(k){return {k:k,n:m[k].n,nome:m[k].nome};}).sort(function(a,b){return b.n-a.n;});
+    topCli = arr[0] || null;
+    var ma={}; itemsAll.forEach(function(i){if(i.atend && i.atend!=='—'){ma[i.atend]=(ma[i.atend]||0)+1;}});
+    var aa=Object.keys(ma).map(function(k){return {k:k,n:ma[k]};}).sort(function(a,b){return b.n-a.n;});
+    topAtd = aa[0] || null;
+  })();
+  var resumoBits = [];
+  resumoBits.push('<strong>'+itemsAll.length+'</strong> projeto'+(itemsAll.length!==1?'s':'')+' aberto'+(itemsAll.length!==1?'s':''));
+  if(byLvl.urgente) resumoBits.push('<strong style="color:#dc2626">'+byLvl.urgente+' urgente'+(byLvl.urgente!==1?'s':'')+'</strong> (&gt;90d)');
+  if(byLvl.atenc) resumoBits.push('<strong style="color:#f59e0b">'+byLvl.atenc+' atenção</strong> (60-90d)');
+  resumoBits.push('aging médio <strong>'+avgAge+'d</strong>');
+  if(topCli) resumoBits.push('top cliente: <strong>'+topCli.nome+'</strong> ('+topCli.n+')');
+  if(topAtd) resumoBits.push('top atendente: <strong>'+topAtd.k.split('.')[0]+'</strong> ('+topAtd.n+')');
+  var resumoHtml = '<div style="background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(59,130,246,.02));border:1px solid rgba(59,130,246,.2);border-radius:var(--r2);padding:12px 16px;margin-bottom:14px;font-size:12.5px;line-height:1.6;color:var(--text)">'
+    +'<span style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:.06em;margin-right:8px">📊 Resumo</span>'
+    + resumoBits.join(' · ')
     +'</div>';
 
-  // ── Agrupamentos: por Cliente, por Serviço, por Atendente ──
+  // ── Barra de ações (E + G) ──
+  var acoesHtml = '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">'
+    +'<button class="eq-btn primary" onclick="_pmCobrancaColetiva()" title="Mensagem WhatsApp pronta com top projetos urgentes/atenção">📢 Cobrança coletiva</button>'
+    +'<button class="eq-btn" onclick="_pmExportCSV()" title="Baixar lista em CSV (Excel)">📥 Exportar CSV</button>'
+    +(_pmHasAnyFilter()?'<span style="margin-left:8px;font-size:11px;color:var(--muted)">Mostrando <strong>'+items.length+'</strong> de '+itemsAll.length+'</span>':'')
+    +'</div>';
+
+  // ── KPIs CLICÁVEIS (A) — toggle filtro por nível ──
+  function _kpiClasses(lvl){
+    var on = _pmFilters.nivel === lvl;
+    return 'kpi pm-kpi'+(on?' pm-kpi-on':'');
+  }
+  var kpisHtml = '<div class="kpi-row kpi-row-4" style="margin-bottom:12px">'
+    +'<div class="'+_kpiClasses('urgente')+'" onclick="_pmToggleNivel(\'urgente\')" style="cursor:pointer" title="Filtrar só urgentes"><div class="kpi-accent" style="background:#dc2626"></div><div class="kpi-lbl">Urgente (&gt;90d)</div><div class="kpi-val" style="color:#dc2626">'+byLvl.urgente+'</div><div class="kpi-sub">'+(_pmFilters.nivel==='urgente'?'✓ filtrando':'clique pra filtrar')+'</div></div>'
+    +'<div class="'+_kpiClasses('atenc')+'" onclick="_pmToggleNivel(\'atenc\')" style="cursor:pointer" title="Filtrar só atenção"><div class="kpi-accent" style="background:#f59e0b"></div><div class="kpi-lbl">Atenção (60–90d)</div><div class="kpi-val" style="color:#f59e0b">'+byLvl.atenc+'</div><div class="kpi-sub">'+(_pmFilters.nivel==='atenc'?'✓ filtrando':'clique pra filtrar')+'</div></div>'
+    +'<div class="'+_kpiClasses('aviso')+'" onclick="_pmToggleNivel(\'aviso\')" style="cursor:pointer" title="Filtrar só avisos"><div class="kpi-accent" style="background:#3b82f6"></div><div class="kpi-lbl">Aviso (30–60d)</div><div class="kpi-val" style="color:#3b82f6">'+byLvl.aviso+'</div><div class="kpi-sub">'+(_pmFilters.nivel==='aviso'?'✓ filtrando':'clique pra filtrar')+'</div></div>'
+    +'<div class="kpi"><div class="kpi-accent" style="background:#6b7280"></div><div class="kpi-lbl">Total em aberto</div><div class="kpi-val">'+itemsAll.length+'</div><div class="kpi-sub">aging médio '+avgAge+'d · máx '+maxAge+'d</div></div>'
+    +'</div>';
+
+  // ── Chips de filtros ativos ──
+  var filtrosAtivosHtml = '';
+  if(_pmHasAnyFilter()){
+    var chips = [];
+    if(_pmFilters.nivel){
+      var lblN = _pmFilters.nivel==='urgente'?'Urgente':_pmFilters.nivel==='atenc'?'Atenção':'Aviso';
+      chips.push('<span class="pm-filter-chip" onclick="_pmToggleNivel(\''+_pmFilters.nivel+'\')">Nível: '+lblN+' ✕</span>');
+    }
+    if(_pmFilters.cli){
+      var nm = (typeof ENM2!=='undefined' && ENM2[_pmFilters.cli]) ? ENM2[_pmFilters.cli] : _pmFilters.cli;
+      chips.push('<span class="pm-filter-chip" onclick="_pmToggleCli(\''+_pmFilters.cli.replace(/\'/g,"\\\'")+'\')">Cliente: '+nm+' ✕</span>');
+    }
+    if(_pmFilters.svc){
+      var svcS = _pmFilters.svc.length>30?_pmFilters.svc.slice(0,27)+'...':_pmFilters.svc;
+      chips.push('<span class="pm-filter-chip" onclick="_pmToggleSvc(\''+_pmFilters.svc.replace(/\'/g,"\\\'")+'\')" title="'+_pmFilters.svc.replace(/"/g,'&quot;')+'">Serviço: '+svcS+' ✕</span>');
+    }
+    if(_pmFilters.atend){
+      chips.push('<span class="pm-filter-chip" onclick="_pmToggleAtend(\''+_pmFilters.atend.replace(/\'/g,"\\\'")+'\')">Atendente: '+_pmFilters.atend.split('.')[0]+' ✕</span>');
+    }
+    filtrosAtivosHtml = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center">'
+      +'<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700">Filtros:</span>'
+      + chips.join('')
+      +'<button class="eq-btn" onclick="_pmClearFilters()" style="font-size:10px;padding:3px 9px">Limpar todos</button>'
+      +'</div>';
+  }
+
+  // ── Agrupamentos CLICÁVEIS (B): por Cliente, por Serviço, por Atendente ──
+  // Sempre derivado do conjunto FULL (itemsAll) pra mostrar todos os tops independente do filtro ativo
   function topGroup(items, keyFn, nameFn){
     var m = {};
     items.forEach(function(i){
       var k = keyFn(i)||'—';
-      if(!m[k]) m[k] = {n:nameFn?nameFn(i):k, total:0, urg:0, ate:0, avi:0, ok:0};
+      if(!m[k]) m[k] = {k:k, n:nameFn?nameFn(i):k, total:0, urg:0, ate:0, avi:0, ok:0};
       m[k].total++;
       if(i.nivel==='urgente') m[k].urg++;
       else if(i.nivel==='atenc') m[k].ate++;
@@ -7805,25 +7930,27 @@ function renderProjMelTab(){
     });
     var arr = Object.keys(m).map(function(k){return m[k];});
     arr.sort(function(a,b){
-      // ordena por gravidade: urg > ate > avi > total
       if(b.urg !== a.urg) return b.urg - a.urg;
       if(b.ate !== a.ate) return b.ate - a.ate;
       return b.total - a.total;
     });
     return arr.slice(0, 8);
   }
-  var byCli  = topGroup(items, function(i){return i.cli_id;}, function(i){return i.cliNome;});
-  var bySvc  = topGroup(items, function(i){return i.servico;}, function(i){return i.servico;});
-  var byAtd  = topGroup(items, function(i){return i.atend;}, function(i){return i.atend.split('.')[0];});
+  var byCli  = topGroup(itemsAll, function(i){return i.cli_id;}, function(i){return i.cliNome;});
+  var bySvc  = topGroup(itemsAll, function(i){return i.servico;}, function(i){return i.servico;});
+  var byAtd  = topGroup(itemsAll, function(i){return i.atend;}, function(i){return i.atend.split('.')[0];});
 
-  function renderGroup(title, arr, icon){
+  function renderGroup(title, arr, icon, filterKey, activeKey, dblClickHandler){
     if(!arr.length) return '';
     return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;flex:1;min-width:260px">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">'+icon+' '+title+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">'+icon+' '+title+' <span style="font-weight:400;text-transform:none;color:var(--muted);letter-spacing:0">· clique pra filtrar'+(dblClickHandler?' · 2× pra detalhar':'')+'</span></div>'
       +arr.map(function(g){
         var nm = (g.n||'').length > 36 ? g.n.slice(0,33)+'...' : g.n;
-        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
-          +'<div style="flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+(g.n||'').replace(/"/g,'&quot;')+'">'+nm+'</div>'
+        var isOn = activeKey === g.k;
+        var keyEsc = String(g.k||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        var dbl = dblClickHandler ? ' ondblclick="event.stopPropagation();'+dblClickHandler+'(\''+keyEsc+'\')"' : '';
+        return '<div class="pm-top-row'+(isOn?' on':'')+'" onclick="_pmToggle'+filterKey+'(\''+keyEsc+'\')"'+dbl+' style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin:0 -8px;border-radius:6px;cursor:pointer;transition:background .12s;'+(isOn?'background:rgba(232,98,42,.12);':'')+'border-bottom:1px solid rgba(255,255,255,.04)">'
+          +'<div style="flex:1;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+(isOn?'font-weight:700':'')+'" title="'+(g.n||'').replace(/"/g,'&quot;')+'">'+nm+'</div>'
           +(g.urg?'<span style="font-size:10px;font-weight:700;color:#dc2626;font-family:var(--mono)">'+g.urg+'U</span>':'')
           +(g.ate?'<span style="font-size:10px;font-weight:700;color:#f59e0b;font-family:var(--mono)">'+g.ate+'A</span>':'')
           +(g.avi?'<span style="font-size:10px;font-weight:700;color:#3b82f6;font-family:var(--mono)">'+g.avi+'V</span>':'')
@@ -7834,26 +7961,42 @@ function renderProjMelTab(){
   }
 
   var groupsHtml = '<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">'
-    + renderGroup('Top Clientes', byCli, '🏢')
-    + renderGroup('Top Serviços', bySvc, '🛠')
-    + renderGroup('Top Atendentes', byAtd, '👤')
+    + renderGroup('Top Clientes', byCli, '🏢', 'Cli', _pmFilters.cli, '_pmDrillCliente')
+    + renderGroup('Top Serviços', bySvc, '🛠', 'Svc', _pmFilters.svc, null)
+    + renderGroup('Top Atendentes', byAtd, '👤', 'Atend', _pmFilters.atend, null)
   +'</div>';
 
-  // ── Tabela completa ──
+  // ── Tabela completa COM SORT + COLUNAS EXTRAS + LINHAS COLORIDAS ──
+  // Aplica sort no items (já filtrado)
+  items = _pmApplySort(items);
+  // Helper sort arrow
+  function _sortArrow(col){
+    if(_pmFilters.sort === col+'-desc') return ' <span style="color:#3b82f6">▼</span>';
+    if(_pmFilters.sort === col+'-asc')  return ' <span style="color:#3b82f6">▲</span>';
+    return ' <span style="opacity:.25">↕</span>';
+  }
+  var _rowBg = {
+    'urgente': 'background:rgba(220,38,38,.04);',
+    'atenc':   'background:rgba(245,158,11,.04);',
+    'aviso':   'background:rgba(59,130,246,.04);',
+    'ok':      ''
+  };
   var tableHtml = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden">'
     +'<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">'
       +'<span style="font-size:12px;font-weight:700;color:var(--text)">Lista completa</span>'
-      +'<span style="font-size:10px;color:var(--muted)">'+items.length+' chamado'+(items.length>1?'s':'')+' · ordenado por aging desc</span>'
+      +'<span style="font-size:10px;color:var(--muted)">'+items.length+' chamado'+(items.length>1?'s':'')+' · clique no header pra ordenar</span>'
       +'<span style="margin-left:auto;font-size:10px;color:var(--muted)">U=urgente · A=atenção · V=aviso</span>'
     +'</div>'
     +'<div class="tbl-scroll"><table class="tbl">'
       +'<thead><tr>'
-        +'<th style="min-width:90px">Aging</th>'
+        +'<th style="min-width:90px;cursor:pointer" onclick="_pmSetSort(\'aging\')">Aging'+_sortArrow('aging')+'</th>'
         +'<th style="min-width:90px">Status</th>'
         +'<th style="width:56px">#</th>'
         +'<th>Assunto</th>'
-        +'<th>Cliente</th>'
-        +'<th>Atendente</th>'
+        +'<th style="cursor:pointer" onclick="_pmSetSort(\'cli\')">Cliente'+_sortArrow('cli')+'</th>'
+        +'<th style="cursor:pointer" onclick="_pmSetSort(\'atend\')">Atendente'+_sortArrow('atend')+'</th>'
+        +'<th>Fila</th>'
+        +'<th>Prior.</th>'
         +'<th>Serviço</th>'
         +'<th>Estado</th>'
       +'</tr></thead>'
@@ -7862,19 +8005,23 @@ function renderProjMelTab(){
         var numAttr = String(it.num||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
         var ageLbl = it.ageDays >= 30 ? Math.floor(it.ageDays/7)+'sem' : it.ageDays+'d';
         var svcShort = (it.servico||'').length>40 ? it.servico.slice(0,37)+'...' : it.servico;
-        return '<tr style="cursor:pointer" onclick="openTicketDetail(\''+numAttr+'\')">'
+        var prShort = String(it.prior||'—').replace('Muito Alta','MA').replace('Muito Baixa','MB');
+        var prCol = it.prior==='Muito Alta'?'#dc2626':it.prior==='Alta'?'#f59e0b':it.prior==='Baixa'?'#6b7280':it.prior==='Muito Baixa'?'#6b7280':'var(--text)';
+        return '<tr style="cursor:pointer;'+(_rowBg[it.nivel]||'')+'" onclick="openTicketDetail(\''+numAttr+'\')">'
           +'<td style="font-family:var(--mono);font-size:11px;color:'+it.cor+';font-weight:700">'+ageLbl+'</td>'
           +'<td><span style="display:inline-block;padding:2px 8px;border-radius:10px;background:'+it.cor+';color:#fff;font-size:9px;font-weight:700;font-family:var(--mono)">'+it.label+'</span></td>'
           +'<td style="font-family:var(--mono);font-size:10px;color:var(--muted)">#'+String(it.num).slice(-8)+'</td>'
-          +'<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(it.assunto||'').replace(/"/g,'&quot;')+'">'+it.assunto+'</td>'
+          +'<td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(it.assunto||'').replace(/"/g,'&quot;')+'">'+it.assunto+'</td>'
           +'<td style="font-size:11px;color:var(--sub);white-space:nowrap">'+it.cliNome+'</td>'
           +'<td style="font-size:11px;color:var(--muted);white-space:nowrap">'+(it.atend||'—').split('.')[0]+'</td>'
-          +'<td style="font-size:10px;color:var(--muted);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(it.servico||'').replace(/"/g,'&quot;')+'">'+svcShort+'</td>'
+          +'<td style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap">'+(it.fila||'—')+'</td>'
+          +'<td style="font-size:10px;font-weight:700;color:'+prCol+';white-space:nowrap">'+prShort+'</td>'
+          +'<td style="font-size:10px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(it.servico||'').replace(/"/g,'&quot;')+'">'+svcShort+'</td>'
           +'<td style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</td>'
         +'</tr>';
       }).join('')
       +'</tbody></table></div>'
-      + (items.length>200 ? '<div style="text-align:center;font-size:11px;color:var(--muted);padding:8px">+'+(items.length-200)+' mais (filtre por cliente ou fila)</div>' : '')
+      + (items.length>200 ? '<div style="text-align:center;font-size:11px;color:var(--muted);padding:8px">+'+(items.length-200)+' mais (filtre por cliente, atendente ou nível)</div>' : '')
     +'</div>';
 
   // ── Tendência de chegada (últimos 6 meses) ──
@@ -7908,8 +8055,158 @@ function renderProjMelTab(){
     }).join('')
     +'</div></div>';
 
-  el.innerHTML = kpisHtml + trendHtml + groupsHtml + tableHtml;
+  el.innerHTML = resumoHtml + acoesHtml + kpisHtml + filtrosAtivosHtml + trendHtml + groupsHtml + tableHtml;
 }
+
+// ════════════════════════════════════════════════════════════
+// Projetos & Melhorias — Cobrança coletiva (E)
+// Gera mensagem WhatsApp pronta com top projetos urgentes/atenção
+// ════════════════════════════════════════════════════════════
+window._pmCobrancaColetiva = function(){
+  if(typeof getProjetosMelhoriasAbertos !== 'function') return;
+  var items = getProjetosMelhoriasAbertos();
+  if(!items.length){ alert('Nenhum projeto/melhoria em aberto.'); return; }
+  // Foco em urgentes + atenção
+  var alvos = items.filter(function(i){return i.nivel==='urgente' || i.nivel==='atenc';});
+  alvos.sort(function(a,b){return b.ageDays - a.ageDays;});
+  if(!alvos.length){ alert('Nenhum projeto urgente ou em atenção. Tudo dentro do esperado.'); return; }
+
+  var urgentes = alvos.filter(function(i){return i.nivel==='urgente';});
+  var atencao  = alvos.filter(function(i){return i.nivel==='atenc';});
+  var top      = alvos.slice(0, 8);
+
+  // Top clientes/atendentes
+  var byCli={}, byAtd={};
+  alvos.forEach(function(i){
+    if(i.cli_id){ if(!byCli[i.cli_id]) byCli[i.cli_id]={n:0,nome:i.cliNome}; byCli[i.cli_id].n++; }
+    if(i.atend && i.atend!=='—'){ byAtd[i.atend]=(byAtd[i.atend]||0)+1; }
+  });
+  var topCli = Object.keys(byCli).map(function(k){return {k:k,n:byCli[k].n,nome:byCli[k].nome};}).sort(function(a,b){return b.n-a.n;}).slice(0,3);
+  var topAtd = Object.keys(byAtd).map(function(k){return {k:k,n:byAtd[k]};}).sort(function(a,b){return b.n-a.n;}).slice(0,3);
+  var agingMedio = Math.round(alvos.reduce(function(s,i){return s+i.ageDays;},0)/alvos.length);
+
+  var linhas = top.map(function(it){
+    var emoji = it.nivel==='urgente'?'🔴':'🟡';
+    var ageLbl = it.ageDays >= 30 ? Math.floor(it.ageDays/7)+' semanas' : it.ageDays+' dias';
+    var atend = it.atend && it.atend!=='—' ? it.atend.split('.')[0] : '—';
+    return emoji+' #'+String(it.num).slice(-8)+' — *'+ageLbl+'* — '+it.cliNome+' — '+atend;
+  }).join('\n');
+
+  var blocoClientes = topCli.length ? ('\n\n🏢 Top clientes nos travados:\n' + topCli.map(function(c){return '• '+c.nome+' — '+c.n+' projeto'+(c.n!==1?'s':'');}).join('\n')) : '';
+  var blocoAtend = topAtd.length ? ('\n\n👤 Top atendentes nos travados:\n' + topAtd.map(function(a){return '• '+a.k.split('.')[0]+' — '+a.n+' projeto'+(a.n!==1?'s':'');}).join('\n')) : '';
+
+  var resumo = alvos.length + ' projeto'+(alvos.length!==1?'s':'')+' precisando atenção'
+    + (urgentes.length?' · *'+urgentes.length+' urgente'+(urgentes.length!==1?'s':'')+' (>90d)*':'')
+    + (atencao.length?' · '+atencao.length+' em atenção (60-90d)':'')
+    + ' · aging médio *'+agingMedio+' dias*';
+
+  var saudacoes = ['Galera, bom dia 👋', 'Time, segue panorama dos projetos travados:', 'Pessoal, status dos projetos & melhorias:'];
+  var saud = saudacoes[Math.floor(Math.random() * saudacoes.length)];
+  var fech = 'Bora alinhar uma re-priorização? Quem tá tocando esses precisa de apoio? Conta comigo 🙌';
+
+  var msg = saud + '\n\n'
+    + '📊 ' + resumo + '\n\n'
+    + '🔥 Top mais antigos:\n' + linhas
+    + blocoClientes
+    + blocoAtend
+    + '\n\n' + fech;
+
+  try { if(navigator.clipboard) navigator.clipboard.writeText(msg); } catch(e){}
+  var tEl = document.createElement('div');
+  tEl.className = 'eq-toast';
+  tEl.textContent = '✓ Cobrança coletiva copiada — cola no WhatsApp do time';
+  document.body.appendChild(tEl);
+  setTimeout(function(){ tEl.remove(); }, 3500);
+};
+
+// ════════════════════════════════════════════════════════════
+// Projetos & Melhorias — Export CSV (G)
+// ════════════════════════════════════════════════════════════
+window._pmExportCSV = function(){
+  if(typeof getProjetosMelhoriasAbertos !== 'function') return;
+  var itemsAll = getProjetosMelhoriasAbertos();
+  if(!itemsAll.length){ alert('Nenhum projeto/melhoria em aberto.'); return; }
+  // Aplica filtros locais (se houver)
+  var items = _pmApplyFilters(itemsAll);
+  items = _pmApplySort(items);
+  // Helpers CSV
+  var esc = function(v){
+    var s = String(v == null ? '' : v).replace(/"/g,'""').replace(/\r?\n/g,' ');
+    return '"' + s + '"';
+  };
+  var header = ['Numero','Cliente','Servico','Atendente','Estado','Prioridade','Fila','AgingDias','Nivel','CriadoEm'];
+  var rows = items.map(function(it){
+    var criadoStr = it.criado instanceof Date ? it.criado.toISOString().slice(0,16).replace('T',' ') : '';
+    return [it.num, it.cliNome, it.servico, it.atend, it.estado, it.prior, it.fila, it.ageDays, it.label||it.nivel, criadoStr].map(esc).join(',');
+  });
+  var csv = '﻿' + header.map(esc).join(',') + '\n' + rows.join('\n');  // BOM pra Excel pt-BR
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var now = new Date();
+  var pad = function(n){return n<10?'0'+n:n;};
+  var fname = 'projetos-melhorias_' + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) + '.csv';
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  var tEl = document.createElement('div'); tEl.className='eq-toast';
+  tEl.textContent='✓ Exportado: '+fname+' ('+items.length+' projeto'+(items.length!==1?'s':'')+')';
+  document.body.appendChild(tEl); setTimeout(function(){tEl.remove();},3500);
+};
+
+// ════════════════════════════════════════════════════════════
+// Projetos & Melhorias — Drill-down por cliente (H)
+// Abre modal com lista detalhada dos projetos do cliente
+// ════════════════════════════════════════════════════════════
+window._pmDrillCliente = function(cliId){
+  if(typeof getProjetosMelhoriasAbertos !== 'function') return;
+  var items = getProjetosMelhoriasAbertos().filter(function(i){return i.cli_id === cliId;});
+  if(!items.length) return;
+  items.sort(function(a,b){return b.ageDays - a.ageDays;});
+  var cliNome = items[0].cliNome || cliId;
+  var byNivel = {urgente:0,atenc:0,aviso:0,ok:0};
+  items.forEach(function(i){ byNivel[i.nivel]=(byNivel[i.nivel]||0)+1; });
+  var avgAge = Math.round(items.reduce(function(s,i){return s+i.ageDays;},0)/items.length);
+  var maxAge = Math.max.apply(null, items.map(function(i){return i.ageDays;}));
+
+  var listHtml = items.map(function(it){
+    var numAttr = String(it.num||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+    var ageLbl = it.ageDays >= 30 ? Math.floor(it.ageDays/7)+'sem' : it.ageDays+'d';
+    return '<div onclick="openTicketDetail(\''+numAttr+'\');_pmCloseDrill()" style="cursor:pointer;padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:'+(it.bg||'transparent')+'">'
+      +'<div style="min-width:54px;text-align:center;padding:3px 8px;border-radius:14px;background:'+it.cor+';color:#fff;font-size:10px;font-weight:700;font-family:var(--mono)">'+ageLbl+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.assunto+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:2px">#'+String(it.num).slice(-8)+' · '+(it.atend||'—').split('.')[0]+' · '+(it.fila||'—')+' · '+(it.prior||'—')+'</div>'
+      +'</div>'
+      +'<div style="font-size:10px;color:var(--sub);white-space:nowrap">'+it.estado+'</div>'
+    +'</div>';
+  }).join('');
+
+  var html = '<div id="pm-drill" onclick="if(event.target.id===\'pm-drill\')_pmCloseDrill()" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">'
+    +'<div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;max-width:820px;width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">'
+      +'<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">'
+        +'<div style="flex:1">'
+          +'<div style="font-size:16px;font-weight:700;color:var(--text)">🏢 '+cliNome+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'
+            +items.length+' projeto'+(items.length!==1?'s':'')+' aberto'+(items.length!==1?'s':'')+' · aging médio '+avgAge+'d · máx '+maxAge+'d'
+            +(byNivel.urgente?' · <span style="color:#dc2626;font-weight:700">'+byNivel.urgente+' urgente</span>':'')
+            +(byNivel.atenc?' · <span style="color:#f59e0b;font-weight:700">'+byNivel.atenc+' atenção</span>':'')
+          +'</div>'
+        +'</div>'
+        +'<button class="eq-btn" onclick="_pmCloseDrill()">Fechar</button>'
+      +'</div>'
+      +'<div style="overflow:auto;flex:1">'+listHtml+'</div>'
+    +'</div>'
+  +'</div>';
+  // Remove modal anterior se existir
+  var old = document.getElementById('pm-drill'); if(old) old.remove();
+  var wrap = document.createElement('div'); wrap.innerHTML = html;
+  document.body.appendChild(wrap.firstChild);
+};
+window._pmCloseDrill = function(){
+  var el = document.getElementById('pm-drill');
+  if(el) el.remove();
+};
 
 function renderBl(){
   try{populateBlHero();}catch(e){console.warn('bl hero:',e);}
