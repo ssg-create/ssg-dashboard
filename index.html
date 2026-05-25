@@ -2983,6 +2983,127 @@ button:focus-visible,
    estava animando 4 elementos toda mudança de subnav (lag visível). */
 
 /* ═══════════════════════════════════════════════════════════════ */
+/* ═══ KPI DRILL-DOWN MODAL — genérico pra qualquer KPI ════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+.kdrill-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;
+  display:none;align-items:flex-start;justify-content:center;
+  padding:40px 20px;overflow-y:auto;
+}
+.kdrill-overlay.open{display:flex}
+.kdrill-modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  width:100%;max-width:920px;max-height:calc(100vh - 80px);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.kdrill-head{
+  padding:18px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+}
+.kdrill-icon{font-size:22px;line-height:1}
+.kdrill-title-wrap{flex:1;min-width:0}
+.kdrill-title{
+  font-size:15px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;line-height:1.2;
+}
+.kdrill-sub{
+  font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono);
+}
+.kdrill-count{
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:4px 10px;border-radius:12px;background:var(--bg3);
+  color:var(--teal);border:1px solid rgba(0,212,168,.25);
+}
+.kdrill-close{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);width:32px;height:32px;border-radius:8px;
+  cursor:pointer;font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.kdrill-close:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.kdrill-close:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+.kdrill-filters{
+  padding:8px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;
+  background:rgba(255,255,255,.015);
+}
+.kdrill-filter-chip{
+  font-size:10px;color:var(--sub);
+  padding:3px 9px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border);
+  font-family:var(--mono);
+}
+.kdrill-filter-chip strong{color:var(--text);font-weight:600}
+
+.kdrill-body{
+  flex:1;overflow-y:auto;padding:6px 0;
+}
+.kdrill-row{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 22px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+}
+.kdrill-row:last-child{border-bottom:none}
+.kdrill-row:hover{background:rgba(0,212,168,.04)}
+.kdrill-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;background:rgba(0,212,168,.06)}
+.kdrill-num{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  min-width:80px;font-weight:600;
+}
+.kdrill-main{flex:1;min-width:0}
+.kdrill-assunto{
+  font-size:12.5px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;
+}
+.kdrill-meta{
+  font-size:10.5px;color:var(--muted);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.kdrill-meta-sep{color:var(--border2)}
+.kdrill-estado{
+  font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--bg3);color:var(--sub);white-space:nowrap;
+}
+.kdrill-aging{
+  font-size:10.5px;font-family:var(--mono);color:var(--muted);
+  min-width:60px;text-align:right;
+}
+.kdrill-aging.cr{color:var(--danger)}
+.kdrill-aging.wr{color:var(--orange)}
+.kdrill-aging.ok{color:var(--ok)}
+
+.kdrill-empty{padding:48px 22px;text-align:center;color:var(--muted)}
+.kdrill-empty-icon{font-size:32px;opacity:.5;margin-bottom:8px}
+.kdrill-empty-title{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:4px}
+.kdrill-empty-msg{font-size:11px}
+
+.kdrill-foot{
+  padding:10px 22px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;font-size:11px;color:var(--muted);font-family:var(--mono);
+}
+
+/* Light theme */
+[data-theme="light"] .kdrill-modal{box-shadow:0 20px 60px rgba(0,0,0,.15)}
+
+/* .kpi clicável — visual claro de "isso é interativo" */
+.kpi[onclick]{cursor:pointer;transition:border-color .2s,background .2s}
+.kpi[onclick]:hover{
+  border-color:var(--teal);
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%);
+}
+.kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.kpi[onclick]::after{
+  content:"↗";position:absolute;top:10px;right:10px;
+  font-size:11px;color:var(--muted);opacity:0;transition:opacity .2s;
+}
+.kpi[onclick]:hover::after{opacity:.7}
+
+/* ═══════════════════════════════════════════════════════════════ */
 /* ═══ POLISH ALERTAS CRÍTICOS — refator visível v6.1 ═════════ */
 /* ═══════════════════════════════════════════════════════════════ */
 /* Substitui os 3 KPIs minúsculos por 3 cards acionáveis (padrão BH) */
@@ -3551,15 +3672,15 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       </div>
       <div id="op-actions-panel" class="actions-panel"></div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Total de chamados',icon:'📊',filtro:function(d){return true;}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em aberto',icon:'📂',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados fechados com êxito',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo medido',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
+        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em espera',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl" id="kpi-l-7">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">equipe ativa</div></div>
       </div>
       <div class="grid2">
@@ -3761,10 +3882,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" style="margin-bottom:16px">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Total de chamados — análise',icon:'📊',filtro:function(d){return true;}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados fechados / resolvidos',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
       </div>
       <div id="ch-alert-bloq" style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:var(--r);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);font-size:12px;color:var(--warn);align-items:center;gap:8px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
@@ -4006,10 +4127,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
       </div>
       <div class="card card-mb" style="padding:16px 20px">
         <div class="card-title" style="margin-bottom:14px">Cumprimento de metas por indicador</div>
@@ -4061,9 +4182,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em espera (todos motivos)',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados sem atendente (triagem pendente)',icon:'🔍',filtro:function(d){return isOpenState(d.estado)&&(!d.atend||d.atend==='—');}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
     </div>
@@ -4141,10 +4262,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" id="bk-kpis">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · Total em aberto',icon:'📋',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · Muito Alta em aberto',icon:'🚨',filtro:function(d){return isOpenState(d.estado)&&d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · ordenado por aging',icon:'⏳',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
+        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · sem resposta &gt; 2 dias',icon:'😴',filtro:function(d){return isOpenState(d.estado)&&(d.resp_min==null||d.resp_min>2880);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
       </div>
       <div class="grid2" style="margin-bottom:16px">
         <div class="card">
@@ -14270,6 +14391,172 @@ function goToProjMelTab(){
 }
 
 // ─── DETALHE DE TICKET DO SLA (modal resumido) ──────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// KPI DRILL-DOWN — helper genérico
+// Permite que qualquer KPI seja clicável: abre modal listando tickets
+// que compõem aquele número, respeitando filtros globais ativos.
+//
+// Uso:
+//   openKpiDrill({
+//     titulo: "Em aberto",
+//     icon: "📂",
+//     filtro: function(d){ return isOpenState(d.estado); }
+//   })
+//
+// Opts:
+//   titulo (string, obrigatório) — título do modal
+//   icon (string) — emoji do header
+//   filtro (function(d)) — função de filtragem extra (após filtros globais)
+//   skipGlobalFilters (boolean) — pula filtros activeMonth/Fila/Cliente
+//   includeMelhorias (boolean) — inclui Projetos & Melhorias na contagem
+//   subtitulo (string) — texto auxiliar no header
+// ════════════════════════════════════════════════════════════════
+function openKpiDrill(opts){
+  opts = opts || {};
+  var titulo = opts.titulo || 'Drill-down';
+  var icon = opts.icon || '📋';
+  var fnExtra = typeof opts.filtro === 'function' ? opts.filtro : function(){return true;};
+  var skipGlob = !!opts.skipGlobalFilters;
+  var incMel = !!opts.includeMelhorias;
+  var subt = opts.subtitulo || '';
+
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA){
+    alert('Dados ainda não carregados. Tente novamente em alguns segundos.');
+    return;
+  }
+
+  // Aplica filtros globais + permissão + filtro customizado
+  var tickets = RAW_DATA.filter(function(d){
+    if(!d || !d.criado) return false;
+    // Segurança: chokepoint de permissão
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return false;
+    // Filtros globais (se habilitados)
+    if(!skipGlob){
+      if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return false;
+      if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return false;
+      if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+        if(d.criado < activeRangeStart || d.criado > activeRangeEnd) return false;
+      } else if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+        var mk = d.criado.toISOString().slice(0,7);
+        if(mk !== activeMonth) return false;
+      }
+    }
+    // Filtra projetos/melhorias (default: SIM, exclui)
+    if(!incMel && typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return false;
+    // Filtro customizado por KPI
+    return fnExtra(d);
+  });
+
+  // Sort: aging desc (mais antigos primeiro)
+  var now = new Date();
+  tickets.sort(function(a,b){ return a.criado - b.criado; });
+
+  // Monta os filter chips
+  var chips = [];
+  if(!skipGlob){
+    if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+      var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+      var p = activeMonth.split('-');
+      chips.push('Mês: <strong>'+(mNames[p[1]]||p[1])+'/'+p[0].slice(2)+'</strong>');
+    }
+    if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+      var p2=function(n){return n<10?'0'+n:String(n);};
+      chips.push('Período: <strong>'+p2(activeRangeStart.getDate())+'/'+p2(activeRangeStart.getMonth()+1)+' – '+p2(activeRangeEnd.getDate())+'/'+p2(activeRangeEnd.getMonth()+1)+'</strong>');
+    }
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all'){
+      chips.push('Fila: <strong>'+activeFilaOP+'</strong>');
+    }
+    if(typeof activeCliente !== 'undefined' && activeCliente){
+      var nome = (typeof EMPRESAS!=='undefined'&&EMPRESAS[activeCliente]&&EMPRESAS[activeCliente].nome)?EMPRESAS[activeCliente].nome:((typeof ENM2!=='undefined'&&ENM2[activeCliente])?ENM2[activeCliente]:activeCliente);
+      chips.push('Cliente: <strong>'+nome+'</strong>');
+    }
+  }
+  if(!chips.length) chips.push('<em style="color:var(--muted)">sem filtros aplicados</em>');
+
+  // Estados → cor
+  var eCores={'Aguardando Cliente':'var(--warn)','Aguardando Interno':'var(--purple)','Retorno Cliente':'var(--blue)','Em Atendimento':'var(--blue)','Aguardando Externo':'var(--orange)','Aberto':'var(--danger)','Fechado':'var(--ok)','Resolvido':'var(--ok)'};
+  function agingFmt(criado){
+    if(!criado) return {txt:'—',cls:''};
+    var dias = Math.floor((now-criado)/86400000);
+    var txt = dias===0?'hoje':dias===1?'1 dia':dias+' dias';
+    var cls = dias>=7?'cr':dias>=2?'wr':'ok';
+    return {txt:txt,cls:cls};
+  }
+
+  // Render lista (limita a 200 pra performance)
+  var maxShow = 200;
+  var visible = tickets.slice(0, maxShow);
+  var body;
+  if(!tickets.length){
+    body = '<div class="kdrill-empty">'
+      +'<div class="kdrill-empty-icon">📭</div>'
+      +'<div class="kdrill-empty-title">Nenhum chamado encontrado</div>'
+      +'<div class="kdrill-empty-msg">com os filtros aplicados</div>'
+    +'</div>';
+  } else {
+    body = visible.map(function(d){
+      var ag = agingFmt(d.criado);
+      var cor = eCores[d.estado] || 'var(--muted)';
+      var num = String(d.num||'');
+      var numEsc = num.replace(/'/g,"\\'");
+      var atend = d.atend ? String(d.atend).split('.')[0] : '—';
+      var cliNome = (typeof EMPRESAS!=='undefined'&&EMPRESAS[d.cli_id]&&EMPRESAS[d.cli_id].nome)?EMPRESAS[d.cli_id].nome:((typeof ENM2!=='undefined'&&ENM2[d.cli_id])?ENM2[d.cli_id]:(d.cli_id||'—'));
+      var prior = d.prior||'—';
+      var corPrior = prior==='Muito Alta'?'var(--danger)':prior==='Alta'?'var(--orange)':'var(--muted)';
+      var assuntoEsc = (d.assunto||'(sem assunto)').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="kdrill-row" tabindex="0" onclick="closeKpiDrill();openTicketDetail(\''+numEsc+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();closeKpiDrill();openTicketDetail(\''+numEsc+'\');}">'
+        +'<div class="kdrill-num">#'+num.slice(-8)+'</div>'
+        +'<div class="kdrill-main">'
+          +'<div class="kdrill-assunto">'+assuntoEsc+'</div>'
+          +'<div class="kdrill-meta">'
+            +'<span>👤 '+atend+'</span>'
+            +'<span class="kdrill-meta-sep">·</span>'
+            +'<span>🏢 '+cliNome+'</span>'
+            +'<span class="kdrill-meta-sep">·</span>'
+            +'<span style="color:'+corPrior+'">'+prior+'</span>'
+            +(d.fila?'<span class="kdrill-meta-sep">·</span><span>'+d.fila+'</span>':'')
+          +'</div>'
+        +'</div>'
+        +'<div class="kdrill-estado" style="background:'+cor+'22;color:'+cor+'">'+(d.estado||'—')+'</div>'
+        +'<div class="kdrill-aging '+ag.cls+'">'+ag.txt+'</div>'
+      +'</div>';
+    }).join('');
+  }
+
+  // Footer text
+  var footL = tickets.length>maxShow ? 'Mostrando '+maxShow+' de '+tickets.length+' chamados' : 'Clique numa linha pra abrir o ticket';
+
+  // Inject in modal
+  document.getElementById('kdrill-icon').textContent = icon;
+  document.getElementById('kdrill-title').textContent = titulo;
+  document.getElementById('kdrill-sub').textContent = subt;
+  document.getElementById('kdrill-count').textContent = tickets.length + (tickets.length===1?' chamado':' chamados');
+  document.getElementById('kdrill-filters').innerHTML = chips.map(function(c){return '<span class="kdrill-filter-chip">'+c+'</span>';}).join('');
+  document.getElementById('kdrill-body').innerHTML = body;
+  document.getElementById('kdrill-foot-left').textContent = footL;
+
+  // Open + bind ESC
+  var ov = document.getElementById('kdrill-overlay');
+  ov.classList.add('open');
+  document.addEventListener('keydown', _kdrillEscHandler);
+  // Focus management
+  setTimeout(function(){
+    var first = ov.querySelector('.kdrill-row');
+    if(first) first.focus(); else ov.querySelector('.kdrill-close').focus();
+  }, 50);
+}
+
+function closeKpiDrill(ev){
+  if(ev && ev.target && ev.target.id !== 'kdrill-overlay' && !ev.target.classList.contains('kdrill-close')) return;
+  var ov = document.getElementById('kdrill-overlay');
+  if(ov) ov.classList.remove('open');
+  document.removeEventListener('keydown', _kdrillEscHandler);
+}
+
+function _kdrillEscHandler(e){
+  if(e.key === 'Escape'){ closeKpiDrill(); }
+}
+
 function openTicketDetail(num){
   // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
   // Se achar, usa isso. Senão, cai no RAW_DATA do XLSX (histórico, pode estar defasado).
@@ -19112,6 +19399,27 @@ function renderBacklogTable(rows) {
 
 </script>
 
+
+<!-- ══════ KPI DRILL-DOWN MODAL — genérico ══════ -->
+<div id="kdrill-overlay" class="kdrill-overlay" onclick="closeKpiDrill(event)" role="dialog" aria-modal="true" aria-labelledby="kdrill-title">
+  <div class="kdrill-modal" onclick="event.stopPropagation()">
+    <div class="kdrill-head">
+      <div class="kdrill-icon" id="kdrill-icon">📋</div>
+      <div class="kdrill-title-wrap">
+        <div class="kdrill-title" id="kdrill-title">—</div>
+        <div class="kdrill-sub" id="kdrill-sub"></div>
+      </div>
+      <div class="kdrill-count" id="kdrill-count">—</div>
+      <button class="kdrill-close" onclick="closeKpiDrill()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="kdrill-filters" id="kdrill-filters"></div>
+    <div class="kdrill-body" id="kdrill-body"></div>
+    <div class="kdrill-foot">
+      <span id="kdrill-foot-left">Clique numa linha pra abrir o ticket</span>
+      <span id="kdrill-foot-right">ESC pra fechar</span>
+    </div>
+  </div>
+</div>
 
 <div id="at-modal-overlay" style="position:fixed;inset:0;z-index:700;background:rgba(8,11,16,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s" onclick="closeAtModal(event)" role="dialog" aria-modal="true" aria-labelledby="at-modal-name">
   <div id="at-modal" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:860px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;transform:scale(.95) translateY(14px);transition:transform .22s;overflow:hidden">
