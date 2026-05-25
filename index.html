@@ -1599,6 +1599,29 @@ body.squad-mode #rpt-btn{display:none!important}
 body[data-mode="squad"] .nav-gestao-only,
 body[data-mode="atendente"] .nav-gestao-only,
 body[data-mode="triagem"] .nav-gestao-only{display:none !important}
+
+/* ═══ Permissão por usuário (POC Fabio 22/05) ═══ */
+/* Gestor sem extra 'bh' → esconde aba Contratos BH (s-bh). Admin sempre vê.   */
+/* Capturamos via :not(): qualquer body[data-user-perfil] que NÃO seja admin
+   E NÃO tenha extra 'bh' no data-user-extras esconde a nav e button da s-bh.  */
+body[data-user-perfil="gestor"]:not([data-user-extras~="bh"]) .nav[onclick*="'s-bh'"],
+body[data-user-perfil="gestor"]:not([data-user-extras~="bh"]) #s-bh{display:none !important}
+body[data-user-perfil="gestor_bh"] .nav[onclick*="'s-bh'"],
+body[data-user-perfil="gestor_bh"] #s-bh{display:block}
+/* Não-admin: esconde IA (view global executiva) */
+body[data-user-perfil="gestor"] #btn-ia,
+body[data-user-perfil="gestor_bh"] #btn-ia,
+body[data-user-perfil="gestor"] #view-ia,
+body[data-user-perfil="gestor_bh"] #view-ia{display:none !important}
+/* Não-admin: chip "user logado" no topbar (criado dinamicamente) */
+.tb-user-chip{display:none;align-items:center;gap:8px;padding:5px 12px 5px 10px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.08));border:1px solid rgba(16,185,129,.35);color:#10b981;font-size:11px;font-weight:600;white-space:nowrap;margin-right:6px}
+body[data-mode="user"] .tb-user-chip{display:inline-flex}
+.tb-user-chip .tb-user-icon{font-size:11px;line-height:1}
+.tb-user-chip .tb-user-nome{color:#fff;font-weight:700}
+.tb-user-chip .tb-user-perfil{color:rgba(255,255,255,.7);font-weight:500;text-transform:uppercase;letter-spacing:.05em;font-size:9px}
+.tb-user-chip .tb-user-filas{color:rgba(255,255,255,.6);font-weight:500;font-size:10px}
+.tb-user-chip .tb-user-logout{background:none;border:none;color:#fca5a5;cursor:pointer;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;margin-left:4px}
+.tb-user-chip .tb-user-logout:hover{background:rgba(220,38,38,.18);color:#fff}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -2638,7 +2661,91 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     <button id="lb" style="width:100%;background:#FF6400;border:none;border-radius:10px;padding:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.02em;margin-top:6px;transition:all .18s cubic-bezier(.4,0,.2,1);transform:scale(1);box-shadow:0 4px 18px rgba(255,100,0,0.35)" onmouseover="this.style.background='#e05800';this.style.transform='scale(1.015)';this.style.boxShadow='0 6px 24px rgba(255,100,0,0.5)'" onmouseout="this.style.background='#FF6400';this.style.transform='scale(1)';this.style.boxShadow='0 4px 18px rgba(255,100,0,0.35)'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1.015)'">Entrar</button>
     <div style="text-align:center;margin-top:28px;font-size:11px;color:#9ca3af;">Groundwork · Uso interno · v3.0</div>
   </div>
-</div><script>var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";var _H_TRIAGEM="23c020a6381df65cbfd5570f08c0d61e05929e81718b41083ed2bf290d289f44";var _TRIAGEM_LOGINS=["triagem.gw"];function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("mode","atendente");sessionStorage.setItem("atendLogin",login);try{sessionStorage.removeItem("atendNome");}catch(e){}try{localStorage.removeItem("sq.atendente");}catch(e){}}else{sessionStorage.setItem("mode","squad");sessionStorage.removeItem("atendLogin");}location.reload();}function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}document.getElementById("lb").addEventListener("click",async function(){var h=await _chk(_i.value);var loginRaw=(_u&&_u.value||"").trim().toLowerCase();var loginN=_normLogin(loginRaw);if(h===_H_GEST){_enterGestao();}else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}else if(h===_H_SQ_DBA){_enterSquad("dba");}else if(h===_H_SQ_GWMS){_enterSquad("gwms");}else if(h===_H_SQ_DAT){_enterSquad("datasul");}else if(h===_H_SQ_INF){_enterSquad("infra");}else{_e.style.display="block";_i.value="";}});function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}_i.addEventListener("keydown",_enterKey);if(_u)_u.addEventListener("keydown",_enterKey);</script>
+</div><script>
+// ════════════════════════════════════════════════════════════
+// LOGIN — Sistema de permissão por usuário/perfil/fila
+// (POC com Weskley primeiro · senhas antigas mantidas pra compat)
+// ════════════════════════════════════════════════════════════
+var _o=document.getElementById("lo"),_i=document.getElementById("li"),_u=document.getElementById("lu"),_e=document.getElementById("le");
+// Hashes legados (gestão / squads / triagem) — back-compat
+var _H_GEST="a1ca296eb57a5dfad7f42107da5720e91b8df602fd8a2760a8657485b46138ee";
+var _H_SQ_SSG="9f2aa6e51cb818aabd83423a68ea27d3bd2959cdbc2acb5ac91ae8836d12f087";
+var _H_SQ_DBA="be569fdcc98b40be38539a7f3cb096f47bbdc27f0f9ba6688167d652a9ab34ee";
+var _H_SQ_GWMS="774be2f6f0bdc36f6f5a03a4b86da07836711c7507e4b39f829562f93fbdd472";
+var _H_SQ_DAT="0aa5165033c11c5afbb58a48f03d8e53679449c12354173603ef45835cbd1e16";
+var _H_SQ_INF="f6b5ea2b935c92700f922d725bd7c26dd95604cae973fd01c3444c3104ec914d";
+var _H_TRIAGEM="23c020a6381df65cbfd5570f08c0d61e05929e81718b41083ed2bf290d289f44";
+var _TRIAGEM_LOGINS=["triagem.gw"];
+
+// ── Tabela de usuários (POC: só Weskley inicialmente) ──
+// hash = SHA-256 da senha · perfil = admin|gestor|gestor_bh
+// filas = lista de filas que o usuário pode ver (case-insensitive)
+//         OBS: INFRAESTRUTURA é normalizada pra INFRAESTUTURA (typo histórico no OTRS)
+// extras = ['bh','executivo'...] (capacidades extras além do perfil)
+var _H_PWD_123456 = "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92";
+var _USERS = {
+  "weskley": {
+    hash: _H_PWD_123456,
+    nome: "Weskley",
+    perfil: "gestor",
+    filas: ["SSG","SSG-MELHORIAS","PROTHEUS"],
+    extras: []
+  }
+  // Outros usuários adicionados após validação do POC com Weskley
+};
+function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}
+function _normFila(f){
+  var x = String(f||"").trim().toUpperCase();
+  // INFRAESTRUTURA (correto) → INFRAESTUTURA (typo histórico no OTRS)
+  if(x === "INFRAESTRUTURA") return "INFRAESTUTURA";
+  return x;
+}
+if(sessionStorage.getItem("k")==="1"){_o.style.display="none";}
+async function _chk(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode((v||"").toLowerCase()));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
+async function _chkRaw(v){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v||""));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");}
+function _enterSquad(id){var login=(_u&&_u.value||"").trim().toLowerCase();sessionStorage.setItem("k","1");sessionStorage.setItem("squadId",id);if(login){sessionStorage.setItem("mode","atendente");sessionStorage.setItem("atendLogin",login);try{sessionStorage.removeItem("atendNome");}catch(e){}try{localStorage.removeItem("sq.atendente");}catch(e){}}else{sessionStorage.setItem("mode","squad");sessionStorage.removeItem("atendLogin");}location.reload();}
+function _enterGestao(){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","gestao");sessionStorage.removeItem("squadId");sessionStorage.removeItem("atendLogin");location.reload();}
+function _enterTriagem(login){sessionStorage.setItem("k","1");sessionStorage.setItem("mode","squad");sessionStorage.setItem("squadId","triagem");try{localStorage.removeItem("sq.atendente");}catch(e){}sessionStorage.setItem("atendLogin",login);location.reload();}
+// Login por usuário — perfil/filas vêm de _USERS
+function _enterAsUser(login, u){
+  sessionStorage.setItem("k","1");
+  sessionStorage.setItem("mode","user");
+  sessionStorage.setItem("userLogin", login);
+  sessionStorage.setItem("userNome", u.nome || login);
+  sessionStorage.setItem("userPerfil", u.perfil || "gestor");
+  // Normaliza filas pra match com OTRS (INFRAESTRUTURA → INFRAESTUTURA)
+  var fNorm = (u.filas === "all") ? "all" : (u.filas||[]).map(_normFila);
+  sessionStorage.setItem("userFilas", JSON.stringify(fNorm));
+  sessionStorage.setItem("userExtras", JSON.stringify(u.extras||[]));
+  sessionStorage.removeItem("squadId");
+  sessionStorage.removeItem("atendLogin");
+  location.reload();
+}
+document.getElementById("lb").addEventListener("click",async function(){
+  var loginRaw=(_u&&_u.value||"").trim().toLowerCase();
+  var loginN=_normLogin(loginRaw);
+  var pwd = _i.value || "";
+  // 1) Match contra tabela _USERS (novo sistema)
+  if(loginN && _USERS[loginN]){
+    var u = _USERS[loginN];
+    var hRaw = await _chkRaw(pwd);
+    if(hRaw === u.hash){ _enterAsUser(loginN, u); return; }
+  }
+  // 2) Hashes legados (back-compat: senha sem login = gestão/squad antigos)
+  var h=await _chk(pwd);
+  if(h===_H_GEST){_enterGestao();}
+  else if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}
+  else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}
+  else if(h===_H_SQ_DBA){_enterSquad("dba");}
+  else if(h===_H_SQ_GWMS){_enterSquad("gwms");}
+  else if(h===_H_SQ_DAT){_enterSquad("datasul");}
+  else if(h===_H_SQ_INF){_enterSquad("infra");}
+  else{_e.style.display="block";_i.value="";}
+});
+function _enterKey(e){if(e.key==="Enter")document.getElementById("lb").click();}
+_i.addEventListener("keydown",_enterKey);
+if(_u)_u.addEventListener("keydown",_enterKey);
+</script>
 
 <!-- ATENDENTE PROFILE MODAL -->
 <div class="atpf-overlay" id="atend-profile-overlay" onclick="closeAtendProfile(event)">
@@ -2749,6 +2856,14 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
     </button>
   </div>
   <div class="tb-alerts" id="tb-alerts">
+    <!-- Chip de usuário logado (POC permissão por fila — só aparece em mode=user) -->
+    <div class="tb-user-chip" id="tb-user-chip" title="Usuário logado">
+      <span class="tb-user-icon">👤</span>
+      <span class="tb-user-nome" id="tb-user-nome">—</span>
+      <span class="tb-user-perfil" id="tb-user-perfil">—</span>
+      <span class="tb-user-filas" id="tb-user-filas"></span>
+      <button class="tb-user-logout" onclick="_userLogout()" title="Sair">Sair</button>
+    </div>
     <!-- pills removidos: informação disponível no corpo do dashboard -->
     <!-- K13: chip de filtros ativos — visível em todas as abas, clique reseta -->
     <div class="tb-filter-chip" id="tb-filter-chip" onclick="resetAllFilters()" title="Clique para limpar todos os filtros">
@@ -4823,15 +4938,59 @@ function getAppMode(){
   if(sessionStorage.getItem('k')!=='1') return null;
   return sessionStorage.getItem('mode') || 'gestao'; // legado: sessão sem mode = gestão
 }
-// Aplica data-mode no body assim que possível pra CSS gate da aba Contratos BH
+// Aplica data-mode + data-user-perfil + data-user-extras no body
+// → CSS usa pra esconder abas (Contratos BH, IA) pra perfis sem acesso
 (function _applyBodyMode(){
   try {
     var m = sessionStorage.getItem('mode') || 'gestao';
-    if(document.body) document.body.setAttribute('data-mode', m);
-    else document.addEventListener('DOMContentLoaded', function(){
-      document.body.setAttribute('data-mode', sessionStorage.getItem('mode')||'gestao');
-    });
+    var perfil = sessionStorage.getItem('userPerfil') || '';
+    var extrasArr = []; try{extrasArr = JSON.parse(sessionStorage.getItem('userExtras')||'[]')||[];}catch(e){}
+    var extras = extrasArr.join(' ');
+    var _setAttrs = function(b){
+      b.setAttribute('data-mode', m);
+      if(perfil) b.setAttribute('data-user-perfil', perfil);
+      if(extras) b.setAttribute('data-user-extras', extras);
+    };
+    if(document.body) _setAttrs(document.body);
+    else document.addEventListener('DOMContentLoaded', function(){ _setAttrs(document.body); });
   } catch(e){}
+})();
+// Logout do modo user (POC permissão por fila)
+window._userLogout = function(){
+  if(!confirm('Sair do painel?')) return;
+  sessionStorage.removeItem('k');
+  sessionStorage.removeItem('mode');
+  sessionStorage.removeItem('userLogin');
+  sessionStorage.removeItem('userNome');
+  sessionStorage.removeItem('userPerfil');
+  sessionStorage.removeItem('userFilas');
+  sessionStorage.removeItem('userExtras');
+  location.reload();
+};
+// Boot do chip de usuário no topbar — preenche nome/perfil/filas
+(function _bootUserChip(){
+  function fill(){
+    if(sessionStorage.getItem('mode') !== 'user') return;
+    var nomeEl = document.getElementById('tb-user-nome');
+    var perfilEl = document.getElementById('tb-user-perfil');
+    var filasEl = document.getElementById('tb-user-filas');
+    if(nomeEl) nomeEl.textContent = sessionStorage.getItem('userNome') || '—';
+    if(perfilEl) perfilEl.textContent = sessionStorage.getItem('userPerfil') || '—';
+    if(filasEl){
+      var perfil = sessionStorage.getItem('userPerfil');
+      if(perfil === 'admin'){ filasEl.textContent = '· todas as filas'; }
+      else {
+        try {
+          var f = JSON.parse(sessionStorage.getItem('userFilas')||'[]');
+          // Renderiza cosmeticamente: INFRAESTUTURA → INFRAESTRUTURA
+          var disp = (f||[]).map(function(x){ return x === 'INFRAESTUTURA' ? 'INFRAESTRUTURA' : x; });
+          filasEl.textContent = '· ' + disp.length + ' fila' + (disp.length!==1?'s':'') + ' (' + disp.join(', ') + ')';
+        } catch(e){ filasEl.textContent = ''; }
+      }
+    }
+  }
+  if(document.body) fill();
+  else document.addEventListener('DOMContentLoaded', fill);
 })();
 function getSquadId(){ return sessionStorage.getItem('squadId') || null; }
 function getSquadCfg(){ var id=getSquadId(); return id?SQUADS[id]||null:null; }
@@ -7764,6 +7923,10 @@ function initCli(){
   while(sel.options.length>1)sel.remove(1);
   // 1) Clientes com tickets SSG (fonte tradicional — OTRS)
   var empIdsSSG=Object.keys(EMPRESAS).filter(function(k){return k&&k.indexOf('@')===-1&&EMPRESAS[k].total>0;});
+  // Permissão: filtra clientes que tenham tickets nas filas permitidas
+  if(typeof userCanSeeCliente==='function'){
+    empIdsSSG = empIdsSSG.filter(function(k){ return userCanSeeCliente(k); });
+  }
   // 2) Clientes com contrato BH (fonte: API apontamento) — pode ter clientes BH-only
   var bhCliIds = [];
   if(typeof _bhGetContratos === 'function'){
@@ -7817,6 +7980,14 @@ function _getEmpresaOrBHStub(key){
 }
 
 function loadEmpresa(key){
+  // POC permissão: bloqueia cliente fora do escopo do usuário
+  if(key && typeof userCanSeeCliente === 'function' && !userCanSeeCliente(key)){
+    console.warn('[permissão] cliente '+key+' fora do escopo do usuário — bloqueado');
+    var sel = document.getElementById('sel-empresa');
+    if(sel) sel.value = '';
+    if(typeof setClienteGlobal==='function') setClienteGlobal('');
+    return;
+  }
   // Suporta cliente "só BH" (sem tickets SSG): usa stub do _getEmpresaOrBHStub
   var emp = key ? _getEmpresaOrBHStub(key) : null;
   var d = emp ? (emp._bh_only ? emp : getFilteredEmpresa(emp)) : null;
@@ -11814,8 +11985,61 @@ var activeRangeStart = null; // Date | null
 var activeRangeEnd   = null; // Date | null
 
 // ─── DATE RANGE HELPERS ─────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// Helpers de permissão (POC: usuário com filas permitidas)
+// ════════════════════════════════════════════════════════════
+// CHAVE DA SEGURANÇA: toda função que itera RAW_DATA deve passar por
+// ticketInFilter (ou usar userCanSeeFila explicitamente). Isso garante
+// que filas fora do escopo do usuário JAMAIS entram em agregados/UI/PDF.
+function _isUserMode(){ return sessionStorage.getItem('mode') === 'user'; }
+function getUserPerfil(){ return sessionStorage.getItem('userPerfil') || null; }
+function isAdminUser(){ return _isUserMode() && getUserPerfil() === 'admin'; }
+function isGestorUser(){ var p=getUserPerfil(); return _isUserMode() && (p === 'gestor' || p === 'gestor_bh'); }
+function getUserNome(){ return sessionStorage.getItem('userNome') || null; }
+function getUserLogin(){ return sessionStorage.getItem('userLogin') || null; }
+function _userFilasRaw(){
+  if(!_isUserMode()) return null; // legado: sem usuário = sem restrição
+  if(isAdminUser()) return null;  // admin = sem restrição
+  try { return JSON.parse(sessionStorage.getItem('userFilas')||'null'); } catch(e){ return null; }
+}
+// Retorna lista de filas permitidas (normalizadas pra INFRAESTUTURA). Null = todas.
+function userFilasPermitidas(){
+  var f = _userFilasRaw();
+  if(!f || f === 'all') return null;
+  if(!Array.isArray(f)) return null;
+  return f.slice();
+}
+// Verifica se o usuário pode ver uma fila específica
+function userCanSeeFila(fila){
+  var fp = userFilasPermitidas();
+  if(!fp) return true; // null = sem restrição (admin ou legado)
+  var f = String(fila||'').trim().toUpperCase();
+  if(f === 'INFRAESTRUTURA') f = 'INFRAESTUTURA'; // normalizador
+  return fp.indexOf(f) !== -1;
+}
+function userHasExtra(key){
+  try { var ex = JSON.parse(sessionStorage.getItem('userExtras')||'[]');
+    return ex.indexOf(key) !== -1;
+  } catch(e){ return false; }
+}
+// Cliente é visível pro usuário se tem ≥1 ticket numa fila permitida
+function userCanSeeCliente(cliId){
+  if(!cliId) return true;
+  var fp = userFilasPermitidas();
+  if(!fp) return true; // admin/legado
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA) return true;
+  for(var i=0;i<RAW_DATA.length;i++){
+    var t = RAW_DATA[i];
+    if(t && t.cli_id === cliId && t.fila && fp.indexOf(String(t.fila).toUpperCase()) !== -1) return true;
+  }
+  return false;
+}
+
 function ticketInFilter(d) {
   if(!d || !d.criado) return false;
+  // GUARD DE PERMISSÃO: usuário só vê tickets das filas permitidas
+  // Aplicado AQUI (chokepoint canônico) pra cobrir ~50 funções derivadas.
+  if(!userCanSeeFila(d.fila)) return false;
   if(activeRangeStart && activeRangeEnd) {
     return d.criado >= activeRangeStart && d.criado <= activeRangeEnd;
   }
@@ -12305,6 +12529,11 @@ function buildFilaBtns(containerId, activeFila, onClickFn) {
   if(activeCliente && EMPRESAS[activeCliente] && EMPRESAS[activeCliente].filas) {
     var filasCli = Object.keys(EMPRESAS[activeCliente].filas).filter(function(f){ return (EMPRESAS[activeCliente].filas[f]||0)>0; }).sort();
     if(filasCli.length) listaFiias = filasCli;
+  }
+  // Permissão por usuário: mostra só filas permitidas
+  if(typeof userFilasPermitidas==='function'){
+    var fp = userFilasPermitidas();
+    if(fp){ listaFiias = listaFiias.filter(function(f){ return fp.indexOf(String(f).toUpperCase()) !== -1; }); }
   }
   var btns = '<button data-fila="all" style="padding:3px 10px;border-radius:20px;font-size:10px;border:1px solid '+(activeFila==='all'?'var(--blue2)':'var(--border)')+';background:'+(activeFila==='all'?'var(--blue2)':'transparent')+';color:'+(activeFila==='all'?'#fff':'var(--sub)')+';cursor:pointer;font-family:var(--font)">Todas</button>';
   listaFiias.forEach(function(f) {
@@ -13317,6 +13546,8 @@ function liveFilteredTickets(){
   return TICKETS_ATIVOS_DATA.rows.filter(function(r){
     if(acCli && norm(r.cliente)!==acCli) return false;
     if(acFila && r.fila!==acFila) return false;
+    // POC permissão por fila: bloqueia filas fora do escopo do usuário
+    if(typeof userCanSeeFila==='function' && !userCanSeeFila(r.fila)) return false;
     // Excluir tickets em estados dormentes (auto-fechados, resolvido, cancelado)
     var est=(r.estado||'').toUpperCase();
     if(_LIVE_DORMANT_STATES.indexOf(est)!==-1) return false;
@@ -15279,6 +15510,8 @@ function renderEquipes(){
     if(!t.atendente || t.atendente === 'Admin OTRS') return;
     if(!_eqAtivoState(t.estado)) return;
     if(!t.fila) return;
+    // POC permissão: bloqueia filas fora do escopo do usuário
+    if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return;
     var fila = String(t.fila).trim();
     var nome = t.atendente.trim();
     if(!byFila[fila]) byFila[fila] = {};
@@ -15486,6 +15719,11 @@ window._eqToggleAllSquads = function(action){ window._eqToggleAllFilas(action); 
 window._eqCobrancaColetiva = function(filaNome){
   if(!filaNome) return;
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
+  // POC permissão: bloqueia gerar cobrança de fila não permitida
+  if(typeof userCanSeeFila==='function' && !userCanSeeFila(filaNome)){
+    alert('Você não tem permissão pra cobrar a fila ' + filaNome + '.');
+    return;
+  }
   var gestor = FILA_GESTOR_MAP[filaNome] || '';
   var byAtend = {};
   TICKETS_ATIVOS_DATA.rows.forEach(function(t){
