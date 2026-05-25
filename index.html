@@ -2841,6 +2841,102 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 [data-theme="light"] .cs-hero-actions::before{background:radial-gradient(circle at 88% 25%,rgba(255,112,36,.1),transparent 52%)}
 [data-theme="light"] .cs-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH GLOBAL v6 — harmonização de abas antigas ═════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Aplica o padrão visual do refator BH (hover sutil, focus-visible,
+   border-left em alertas, touch target ≥32px) globalmente.
+   NÃO altera estrutura HTML nem regras de negócio. */
+
+/* Focus-visible global pra acessibilidade — ring teal sutil */
+.kpi[onclick],.kpi.clickable,
+.card[onclick],
+.action-row[onclick],
+.alert-item[onclick],
+.bl-item[onclick],
+.sl-item[onclick]{cursor:pointer}
+
+.kpi[onclick]:focus-visible,
+.card[onclick]:focus-visible,
+.action-row[onclick]:focus-visible,
+.alert-item[onclick]:focus-visible{
+  outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r2);
+}
+
+/* Botões em geral — focus-visible consistente */
+button:focus-visible,
+[role="button"]:focus-visible,
+.btn:focus-visible{
+  outline:2px solid var(--teal);outline-offset:2px;
+}
+
+/* KPI clicável — hover mais expressivo (igual padrão BH) */
+.kpi[onclick]:hover,.kpi.clickable:hover{
+  border-color:var(--teal);
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.025) 100%);
+}
+
+/* Alert-card — border-left vermelho 3px (padrão BH bh-banner-sinal) */
+.alert-card{border-left:3px solid var(--danger);padding-left:18px}
+
+/* Actions panel — border-left amber (padrão BH) */
+.actions-panel{border-left:3px solid var(--warn)}
+
+/* Touch target mínimo em botões pequenos (≥32px diagonal/altura) */
+.sb-import-btn,.sb-export-csv-btn{min-height:32px}
+.kpi-trend,.score-badge,.pill{min-height:18px;display:inline-flex;align-items:center}
+
+/* Card hover — transform sutil (consistente com .kpi) */
+.card{transition:border-color .2s,transform .2s,box-shadow .2s}
+
+/* Page header — refinamento sutil (mais respiro entre h1 e p) */
+.page-header h1{line-height:1.15}
+.page-header p{line-height:1.4;max-width:720px}
+
+/* Empty states globais (quando alguma view sem dados) */
+.empty-state{
+  text-align:center;padding:32px 16px;color:var(--muted);
+  font-size:12px;border:1px dashed var(--border);border-radius:var(--r2);
+  background:rgba(255,255,255,.015);
+}
+.empty-state-icon{font-size:24px;margin-bottom:8px;opacity:.5}
+.empty-state-title{font-size:13px;color:var(--sub);margin-bottom:4px;font-weight:600}
+.empty-state-msg{font-size:11px;color:var(--muted)}
+
+/* Tabela — hover de linha mais visível em listagens densas */
+.tbl tbody tr{cursor:default}
+.tbl tbody tr[onclick]{cursor:pointer}
+.tbl tbody tr[onclick]:hover td{background:rgba(0,212,168,.04)}
+
+/* SLA card — focus-visible quando clicável */
+.sla-card[onclick]{cursor:pointer;transition:border-color .2s,transform .2s}
+.sla-card[onclick]:hover{border-color:var(--teal);transform:translateY(-1px)}
+.sla-card[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Health Ring container — alinhamento consistente */
+.hs-wrap{align-items:flex-start}
+
+/* Pills — leve elevação visual */
+.pill{font-variant-numeric:tabular-nums}
+
+/* Cobrança coletiva / botões agregados nos cards — padrão visual unificado */
+.collective-action-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,168,.08);border:1px solid rgba(0,212,168,.25);
+  color:var(--teal);font-size:11px;font-weight:600;padding:6px 12px;
+  border-radius:var(--r);cursor:pointer;transition:all .2s;
+  min-height:32px;
+}
+.collective-action-btn:hover{background:rgba(0,212,168,.15);border-color:var(--teal)}
+.collective-action-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Light theme adaptações pro polish */
+[data-theme="light"] .kpi[onclick]:hover{
+  background:linear-gradient(180deg,#ffffff 0%,rgba(0,180,140,.04) 100%);
+}
+[data-theme="light"] .alert-card{border-left-color:#dc2626}
+[data-theme="light"] .actions-panel{border-left-color:#d97706}
+
 </style>
 <!-- Lottie web component pra mascote animado (GW Walker) — CDN -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
