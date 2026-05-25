@@ -1635,6 +1635,11 @@ body[data-mode="user"] .tb-user-chip{display:inline-flex}
   .tb-user-chip .tb-user-nome{font-size:10.5px;max-width:120px}
   .tb-user-chip .tb-user-logout-lbl{display:none}
 }
+/* Em mode=user, esconde elementos legados (gw-user-pill, tb-logout-btn antigo,
+   at-piloto-badge) pra não duplicar a info do chip novo do usuário. */
+body[data-mode="user"] #gw-user-pill,
+body[data-mode="user"] #tb-logout-btn,
+body[data-mode="user"] #at-piloto-badge{display:none!important}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -5027,25 +5032,32 @@ window._userLogout = function(){
 // Boot do chip de usuário no topbar — preenche nome/perfil/filas
 (function _bootUserChip(){
   function fill(){
-    if(sessionStorage.getItem('mode') !== 'user') return;
-    var chip = document.getElementById('tb-user-chip');
-    var nomeEl = document.getElementById('tb-user-nome');
-    var perfilEl = document.getElementById('tb-user-perfil');
-    var filasEl = document.getElementById('tb-user-filas');
-    var nome = sessionStorage.getItem('userNome') || '—';
-    var perfil = sessionStorage.getItem('userPerfil') || '—';
-    var perfilLbl = perfil === 'gestor_bh' ? 'GESTOR BH' : perfil.toUpperCase();
-    var filasArr = [];
-    try { filasArr = JSON.parse(sessionStorage.getItem('userFilas')||'[]'); } catch(e){}
-    var filasDisp = (filasArr||[]).map(function(x){ return x === 'INFRAESTUTURA' ? 'INFRAESTRUTURA' : x; });
-    var filasTxt = perfil === 'admin'
-      ? 'todas as filas'
-      : filasDisp.length + ' fila' + (filasDisp.length!==1?'s':'') + ' · ' + filasDisp.join(', ');
-    if(nomeEl) nomeEl.textContent = nome;
-    if(perfilEl) perfilEl.textContent = perfilLbl;
-    if(filasEl) filasEl.textContent = '· ' + filasTxt;
-    // Tooltip rico (visível mesmo quando o chip está compactado)
-    if(chip) chip.title = nome + ' · ' + perfilLbl + '\n' + filasTxt + '\n\nClique em "Sair" pra encerrar a sessão';
+    try {
+      if(sessionStorage.getItem('mode') !== 'user') return;
+      var chip = document.getElementById('tb-user-chip');
+      var nomeEl = document.getElementById('tb-user-nome');
+      var perfilEl = document.getElementById('tb-user-perfil');
+      var filasEl = document.getElementById('tb-user-filas');
+      var nome = sessionStorage.getItem('userNome') || '—';
+      var perfil = sessionStorage.getItem('userPerfil') || '—';
+      var perfilLbl = perfil === 'gestor_bh' ? 'GESTOR BH' : (perfil||'').toUpperCase();
+      // Fix: userFilas pode ser "all" (string) pra admin ou array JSON. Trata ambos.
+      var rawFilas = sessionStorage.getItem('userFilas') || '[]';
+      var filasParsed;
+      try { filasParsed = JSON.parse(rawFilas); } catch(e){ filasParsed = []; }
+      var isAll = (filasParsed === 'all' || perfil === 'admin');
+      var filasArr = (Array.isArray(filasParsed) ? filasParsed : []);
+      var filasDisp = filasArr.map(function(x){ return x === 'INFRAESTUTURA' ? 'INFRAESTRUTURA' : x; });
+      var filasTxt = isAll
+        ? 'todas as filas'
+        : filasDisp.length + ' fila' + (filasDisp.length!==1?'s':'') + ' · ' + filasDisp.join(', ');
+      if(nomeEl) nomeEl.textContent = nome;
+      if(perfilEl) perfilEl.textContent = perfilLbl;
+      if(filasEl) filasEl.textContent = '· ' + filasTxt;
+      if(chip) chip.title = nome + ' · ' + perfilLbl + '\n' + filasTxt + '\n\nClique em "Sair" pra encerrar a sessão';
+    } catch(err){
+      console.warn('[bootUserChip]', err);
+    }
   }
   if(document.body) fill();
   else document.addEventListener('DOMContentLoaded', fill);
