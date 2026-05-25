@@ -1614,26 +1614,31 @@ body[data-user-perfil="gestor_bh"] #btn-ia,
 body[data-user-perfil="gestor"] #view-ia,
 body[data-user-perfil="gestor_bh"] #view-ia{display:none !important}
 /* Não-admin: chip "user logado" no topbar (criado dinamicamente) */
-.tb-user-chip{display:none;align-items:center;gap:6px;padding:4px 8px 4px 8px;border-radius:18px;background:linear-gradient(135deg,rgba(16,185,129,.18),rgba(16,185,129,.08));border:1px solid rgba(16,185,129,.35);color:#10b981;font-size:10px;font-weight:600;white-space:nowrap;margin-right:4px;max-width:280px;overflow:hidden}
+.tb-user-chip{display:none;align-items:center;gap:8px;padding:5px 6px 5px 12px;border-radius:20px;background:linear-gradient(135deg,rgba(16,185,129,.22),rgba(16,185,129,.10));border:1px solid rgba(16,185,129,.45);color:#10b981;font-size:11px;font-weight:600;white-space:nowrap;margin-right:6px;max-width:420px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 body[data-mode="user"] .tb-user-chip{display:inline-flex}
-.tb-user-chip .tb-user-icon{font-size:10px;line-height:1}
-.tb-user-chip .tb-user-nome{color:#fff;font-weight:700;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis}
-.tb-user-chip .tb-user-perfil{color:rgba(255,255,255,.7);font-weight:500;text-transform:uppercase;letter-spacing:.05em;font-size:9px}
-.tb-user-chip .tb-user-filas{color:rgba(255,255,255,.6);font-weight:500;font-size:9px;max-width:160px;overflow:hidden;text-overflow:ellipsis}
-.tb-user-chip .tb-user-logout{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);color:#fca5a5;cursor:pointer;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:4px;display:inline-flex;align-items:center;gap:4px;line-height:1}
-.tb-user-chip .tb-user-logout:hover{background:rgba(220,38,38,.25);color:#fff;border-color:rgba(220,38,38,.5)}
-.tb-user-chip .tb-user-logout svg{width:10px;height:10px}
+.tb-user-chip .tb-user-icon{font-size:12px;line-height:1}
+.tb-user-chip .tb-user-nome{color:#fff;font-weight:700;font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+.tb-user-chip .tb-user-perfil{color:rgba(255,255,255,.78);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:9.5px;padding:1px 7px;border-radius:8px;background:rgba(255,255,255,.08)}
+.tb-user-chip .tb-user-filas{color:rgba(255,255,255,.65);font-weight:500;font-size:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.tb-user-chip .tb-user-logout{background:rgba(220,38,38,.16);border:1px solid rgba(220,38,38,.4);color:#fca5a5;cursor:pointer;padding:4px 10px;border-radius:12px;font-size:10.5px;font-weight:700;margin-left:2px;display:inline-flex;align-items:center;gap:5px;line-height:1;transition:all .15s}
+.tb-user-chip .tb-user-logout:hover{background:rgba(220,38,38,.32);color:#fff;border-color:rgba(220,38,38,.6);transform:translateY(-1px)}
+.tb-user-chip .tb-user-logout svg{width:11px;height:11px}
 .tb-user-chip .tb-user-logout-lbl{font-weight:700}
-/* Em viewports apertados (≤1500px), esconde perfil/filas — fica só no tooltip */
+/* Divisor antes do chip user (separa visualmente da área de modos) */
+.tb-divider-user{display:none}
+body[data-mode="user"] .tb-divider-user{display:block}
+/* Viewports apertados (≤1500px): esconde info extra mantendo nome completo */
 @media(max-width:1500px){
   .tb-user-chip .tb-user-perfil{display:none}
   .tb-user-chip .tb-user-filas{display:none}
+  .tb-user-chip .tb-user-nome{max-width:180px}
 }
-/* Em viewports muito apertados (≤1280px), esconde tb-divider extra + reduz fonte */
+/* Viewports muito apertados (≤1280px) */
 @media(max-width:1280px){
-  .tb-user-chip{font-size:9.5px;padding:3px 6px 3px 6px}
-  .tb-user-chip .tb-user-nome{font-size:10.5px;max-width:120px}
+  .tb-user-chip{padding:4px 6px 4px 10px;font-size:10px}
+  .tb-user-chip .tb-user-nome{font-size:11px;max-width:140px}
   .tb-user-chip .tb-user-logout-lbl{display:none}
+  .tb-user-chip .tb-user-logout{padding:4px 7px}
 }
 /* Em mode=user, esconde elementos legados (gw-user-pill, tb-logout-btn antigo,
    at-piloto-badge) pra não duplicar a info do chip novo do usuário. */
@@ -2929,6 +2934,7 @@ if(_u)_u.addEventListener("keydown",_enterKey);
   </div>
   <div class="tb-alerts" id="tb-alerts">
     <!-- Chip de usuário logado (POC permissão por fila — só aparece em mode=user) -->
+    <div class="tb-divider tb-divider-user"></div>
     <div class="tb-user-chip" id="tb-user-chip" title="Usuário logado">
       <span class="tb-user-icon">👤</span>
       <span class="tb-user-nome" id="tb-user-nome">—</span>
