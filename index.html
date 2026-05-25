@@ -1391,8 +1391,9 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-zona-hd-toggle{cursor:pointer;user-select:none;margin-bottom:0}
 .bh-zona-hd-toggle:hover{filter:brightness(1.15)}
 .bh-zona-body{margin-top:16px}
-.bh-refresh-btn{background:transparent;border:1px solid var(--border);color:var(--teal);padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
-.bh-refresh-btn:hover{background:rgba(20,184,166,.1)}
+.bh-refresh-btn{background:transparent;border:1px solid var(--border);color:var(--teal);padding:6px 12px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:inherit;min-height:32px;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+.bh-refresh-btn:hover{background:rgba(20,184,166,.1);border-color:var(--teal)}
+.bh-refresh-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 /* Zona 1 — 3 cards acionáveis */
 .bh-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .bh-acao-3{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
@@ -1426,11 +1427,15 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Zona 3 — Filtros agrupados + tabela */
 .bh-filtro-grupo{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,255,255,.03);border-radius:18px;margin-right:6px;margin-bottom:6px}
 .bh-filtro-grupo-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
-.bh-luzes-cell{white-space:nowrap;font-family:var(--mono);font-size:16px;letter-spacing:2px;line-height:1}
-.bh-luz{display:inline-block;width:11px;height:11px;border-radius:50%;margin:0 1px;vertical-align:middle;font-size:0;line-height:1}
-.bh-luz.ok{background:#10b981;box-shadow:0 0 0 1px rgba(16,185,129,.4)}
-.bh-luz.risco{background:#dc2626;box-shadow:0 0 6px rgba(220,38,38,.55), 0 0 0 1px rgba(220,38,38,.5)}
-.bh-luz.na{background:#374151;box-shadow:0 0 0 1px rgba(255,255,255,.08);opacity:.6}
+.bh-luzes-cell{white-space:nowrap;font-family:var(--mono);font-size:0;letter-spacing:3px;line-height:1}
+.bh-luz{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;margin:0 2px;vertical-align:middle;font-size:0;line-height:1;font-family:var(--mono);position:relative}
+.bh-luz::before{font-size:10px;font-weight:900;line-height:1;display:block}
+.bh-luz.ok{background:#10b981;color:#054634;box-shadow:0 0 0 1px rgba(16,185,129,.4)}
+.bh-luz.ok::before{content:"✓"}
+.bh-luz.risco{background:#dc2626;color:#fff;box-shadow:0 0 6px rgba(220,38,38,.55), 0 0 0 1px rgba(220,38,38,.5)}
+.bh-luz.risco::before{content:"!"}
+.bh-luz.na{background:#374151;color:rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.08);opacity:.7}
+.bh-luz.na::before{content:"—";font-size:9px}
 .bh-row-sub{font-size:10px;color:var(--muted);margin-top:2px;font-weight:400}
 /* Linhas da carteira com mais respiro */
 .bh-zona3 .bh-table tbody tr.bh-row{transition:background .12s;cursor:pointer}
@@ -1506,10 +1511,13 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-funil-item-idade.warn{background:rgba(245,158,11,.18);color:#f59e0b}
 .bh-funil-item-idade.urg{background:rgba(220,38,38,.18);color:#fca5a5}
 .bh-funil-item-btns{display:flex;gap:4px;margin-top:6px}
-.bh-funil-btn-mover{flex:1;background:var(--blue);color:#fff;border:none;padding:4px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600}
-.bh-funil-btn-mover:hover{filter:brightness(1.1)}
-.bh-funil-btn-voltar{background:transparent;border:1px solid var(--border);color:var(--muted);width:26px;border-radius:5px;cursor:pointer;font-size:13px}
-.bh-funil-btn-voltar:hover{background:var(--bg3);color:var(--text)}
+.bh-funil-btn-mover{flex:1;background:var(--blue);color:#fff;border:none;padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;min-height:32px;display:inline-flex;align-items:center;justify-content:center;gap:4px;transition:filter .12s,transform .12s}
+.bh-funil-btn-mover:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.bh-funil-btn-mover:active{transform:translateY(0);filter:brightness(.95)}
+.bh-funil-btn-mover:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.bh-funil-btn-voltar{background:transparent;border:1px solid var(--border);color:var(--muted);min-width:32px;min-height:32px;border-radius:6px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;transition:all .12s}
+.bh-funil-btn-voltar:hover{background:var(--bg3);color:var(--text);border-color:var(--text)}
+.bh-funil-btn-voltar:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .bh-funil-empty{text-align:center;padding:20px 8px;color:var(--muted);font-size:11px;font-style:italic}
 .bh-funil-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
 .bh-funil-totais{font-size:12px;color:var(--text)}
@@ -17642,18 +17650,30 @@ function renderContratosBH(){
       + (BH_API_STATE.data && BH_API_STATE.data.length ? ' <button onclick="_bhFetchAPI(true).then(function(){if(typeof renderContratosBH===\'function\')renderContratosBH();})" class="bh-refresh-btn">🔄</button>' : '')
     + '</div>'
     + '<div class="bh-cards-3">'
-      // Card 1: FATURAR (excedente a cobrar)
-      + '<div class="bh-acao-3 faturar clickable" onclick="_bhAbrirFunilCobranca()">'
-        + '<div class="bh-acao-3-icon">💸</div>'
-        + '<div class="bh-acao-3-titulo">Faturar</div>'
-        + '<div class="bh-acao-3-num">' + cobranca.contratos_com_excedente + '</div>'
-        + '<div class="bh-acao-3-sub">' + _bhFmtBRL(cobranca.total_identificado_rs - cobranca.total_faturado_rs) + ' pendente</div>'
-        + '<div class="bh-acao-3-meta">'
-          + '<span class="bh-mini-badge ' + capturaBadge + '">Captura ' + cobranca.captura_pct + '%</span>'
-          + '<span class="bh-mini-badge ' + idadeBadge + '">Idade média ' + cobranca.idade_media_dias + 'd</span>'
+      // Card 1: FATURAR (excedente a cobrar) — estados: pendente OU tudo capturado
+      + (cobranca.contratos_com_excedente === 0
+        ? // Empty state positivo: sem excedente pendente
+          '<div class="bh-acao-3 faturar bh-zero clickable" onclick="_bhAbrirFunilCobranca()">'
+          + '<div class="bh-acao-3-icon">✓</div>'
+          + '<div class="bh-acao-3-titulo">Faturar</div>'
+          + '<div class="bh-acao-3-num bh-acao-3-zero">0</div>'
+          + '<div class="bh-acao-3-sub">nenhum excedente a faturar</div>'
+          + '<div class="bh-acao-3-meta"><span class="bh-mini-badge ok">tudo em dia</span></div>'
+          + '<div class="bh-acao-3-owner">owner: Rodrigo · clique pra ver histórico</div>'
         + '</div>'
-        + '<div class="bh-acao-3-owner">owner: Rodrigo · clique pra abrir funil</div>'
-      + '</div>'
+        : // Estado normal: tem excedente pendente
+          '<div class="bh-acao-3 faturar clickable" onclick="_bhAbrirFunilCobranca()">'
+          + '<div class="bh-acao-3-icon">💸</div>'
+          + '<div class="bh-acao-3-titulo">Faturar</div>'
+          + '<div class="bh-acao-3-num">' + cobranca.contratos_com_excedente + '</div>'
+          + '<div class="bh-acao-3-sub">' + _bhFmtBRL(cobranca.total_identificado_rs - cobranca.total_faturado_rs) + ' pendente</div>'
+          + '<div class="bh-acao-3-meta">'
+            + '<span class="bh-mini-badge ' + capturaBadge + '">Captura ' + cobranca.captura_pct + '%</span>'
+            + '<span class="bh-mini-badge ' + idadeBadge + '">Idade média ' + cobranca.idade_media_dias + 'd</span>'
+          + '</div>'
+          + '<div class="bh-acao-3-owner">owner: Rodrigo · clique pra abrir funil</div>'
+        + '</div>'
+      )
       // Card 2: RENEGOCIAR (pool zera antes do prazo)
       + '<div class="bh-acao-3 renegociar clickable" onclick="_bhDrillDown(\'pool_zera\')">'
         + '<div class="bh-acao-3-icon">📉</div>'
@@ -18046,15 +18066,29 @@ window._bhAbrirFunilCobranca = function(){
     modal = document.createElement('div');
     modal.id = 'bh-funil-modal';
     modal.className = 'bh-funil-overlay';
+    modal.setAttribute('role','dialog');
+    modal.setAttribute('aria-modal','true');
+    modal.setAttribute('aria-label','Funil de Cobrança de Excedente');
     modal.onclick = function(e){ if(e.target===modal) _bhFecharFunil(); };
     document.body.appendChild(modal);
   }
   modal.innerHTML = '<div class="bh-funil-card">' + html + '</div>';
   modal.style.display = 'flex';
+  // Foco no botão de fechar pra navegação por teclado
+  setTimeout(function(){
+    var closeBtn = modal.querySelector('.bh-funil-close');
+    if(closeBtn) closeBtn.focus();
+  }, 50);
+  // ESC fecha
+  document.addEventListener('keydown', _bhFunilEscHandler);
 };
+function _bhFunilEscHandler(e){
+  if(e.key === 'Escape'){ _bhFecharFunil(); }
+}
 window._bhFecharFunil = function(){
   var m = document.getElementById('bh-funil-modal');
   if(m) m.style.display = 'none';
+  document.removeEventListener('keydown', _bhFunilEscHandler);
 };
 // ── Filtros chips da tabela ──
 window._bhFiltrosAtivos = window._bhFiltrosAtivos || {};
@@ -18079,8 +18113,19 @@ function _bhAplicarFiltros(){
   var ativos = Object.keys(window._bhFiltrosAtivos);
   var contratos = _bhGetContratos().sort(function(a,b){return _bhPrioRisco(a) - _bhPrioRisco(b);});
   var rows = document.querySelectorAll('.bh-table tbody tr.bh-row');
+  // Garante que existe linha de "empty state" no final do tbody
+  var tbody = document.querySelector('.bh-zona3 .bh-table tbody');
+  var emptyRow = tbody ? tbody.querySelector('.bh-table-empty') : null;
+  if(tbody && !emptyRow){
+    emptyRow = document.createElement('tr');
+    emptyRow.className = 'bh-table-empty';
+    emptyRow.style.display = 'none';
+    emptyRow.innerHTML = '<td colspan="7" style="text-align:center;padding:32px 16px;color:var(--muted);font-style:italic">Nenhum contrato bate com os filtros selecionados. <button class="bh-chip" onclick="_bhLimparFiltros()" style="margin-left:8px">Limpar filtros</button></td>';
+    tbody.appendChild(emptyRow);
+  }
   if(!ativos.length){
     rows.forEach(function(r){r.style.display='';});
+    if(emptyRow) emptyRow.style.display = 'none';
     return;
   }
   rows.forEach(function(r, i){
@@ -18111,6 +18156,12 @@ function _bhAplicarFiltros(){
     }
     r.style.display = mostra ? '' : 'none';
   });
+  // Empty state: se nenhuma linha visível, mostra mensagem
+  if(emptyRow){
+    var visiveis = 0;
+    rows.forEach(function(r){ if(r.style.display !== 'none') visiveis++; });
+    emptyRow.style.display = visiveis === 0 ? '' : 'none';
+  }
 }
 
 // ════════════════════════════════════════════════════════════
