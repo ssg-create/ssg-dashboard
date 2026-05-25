@@ -3090,6 +3090,102 @@ button:focus-visible,
 /* Light theme */
 [data-theme="light"] .kdrill-modal{box-shadow:0 20px 60px rgba(0,0,0,.15)}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ COMPARATIVO MENSAL — Sprint A pós coo-advisor ════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Bloco Runrate do mês corrente */
+.comp-runrate{
+  background:linear-gradient(135deg,var(--bg2) 0%,rgba(0,212,168,.04) 100%);
+  border:1px solid var(--border);border-left:3px solid var(--teal);
+  border-radius:12px;padding:18px 22px;margin-bottom:18px;
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+}
+.comp-runrate-icon{font-size:32px;line-height:1;flex-shrink:0}
+.comp-runrate-main{flex:1;min-width:240px}
+.comp-runrate-tag{
+  font-size:10px;font-weight:700;color:var(--teal);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;
+}
+.comp-runrate-titulo{
+  font-size:15px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;margin-bottom:6px;
+}
+.comp-runrate-sub{font-size:12px;color:var(--sub);line-height:1.5}
+.comp-runrate-sub strong{color:var(--text);font-weight:600}
+.comp-runrate-num{
+  font-family:var(--display);font-size:38px;font-weight:800;
+  line-height:1;color:var(--teal);letter-spacing:-.02em;
+}
+.comp-runrate-num-lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-top:4px;
+}
+.comp-runrate-delta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:3px 10px;border-radius:10px;margin-top:6px;
+}
+.comp-runrate-delta.up{background:rgba(16,185,129,.12);color:var(--ok)}
+.comp-runrate-delta.dn{background:rgba(244,63,94,.12);color:var(--danger)}
+.comp-runrate-delta.nt{background:rgba(90,98,120,.15);color:var(--muted)}
+
+/* Toggle volume bruto/d.útil */
+.comp-vol-tgl{
+  background:transparent;border:none;color:var(--muted);
+  font-size:10.5px;font-weight:600;padding:6px 12px;border-radius:6px;
+  cursor:pointer;transition:all .15s;font-family:var(--font);
+  min-height:28px;
+}
+.comp-vol-tgl:hover{color:var(--sub)}
+.comp-vol-tgl.active{background:var(--teal);color:#fff}
+.comp-vol-tgl:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+
+/* KPI por mês — refinado pra suportar sinal combinado Volume × SLA */
+.comp-mes-kpi{
+  position:relative;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 16px;overflow:hidden;
+  transition:border-color .15s;
+}
+.comp-mes-kpi.ativo{border-color:var(--blue);box-shadow:0 0 0 2px rgba(79,142,247,.18)}
+.comp-mes-kpi-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.comp-mes-kpi-lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:6px;font-weight:600;
+}
+.comp-mes-kpi-val{
+  font-family:var(--mono);font-size:24px;font-weight:600;
+  line-height:1;letter-spacing:-.02em;
+}
+.comp-mes-kpi-val-sub{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
+.comp-mes-kpi-sinais{
+  display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;
+}
+.comp-sinal{
+  font-size:9.5px;font-weight:700;font-family:var(--mono);
+  padding:2px 7px;border-radius:8px;display:inline-flex;align-items:center;gap:3px;
+}
+.comp-sinal.ok{background:rgba(16,185,129,.1);color:var(--ok)}
+.comp-sinal.warn{background:rgba(245,158,11,.1);color:var(--warn)}
+.comp-sinal.crit{background:rgba(244,63,94,.1);color:var(--danger)}
+.comp-sinal.nt{background:rgba(90,98,120,.1);color:var(--muted)}
+
+/* Indicador de direção (↑bom / ↓bom / neutra) na tabela comparativa */
+.comp-dir-wrap{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;margin-right:4px;
+}
+.comp-dir-ic{
+  font-size:10px;font-family:var(--mono);color:var(--muted);
+  cursor:help;
+}
+
+/* Light theme */
+[data-theme="light"] .comp-runrate{
+  background:linear-gradient(135deg,#ffffff 0%,#e6fffa 100%);
+  border-left-color:#0d9488;
+}
+
 /* .kpi clicável — visual claro de "isso é interativo" */
 .kpi[onclick]{cursor:pointer;transition:border-color .2s,background .2s}
 .kpi[onclick]:hover{
@@ -3939,7 +4035,20 @@ if(_u)_u.addEventListener("keydown",_enterKey);
   <div id="s-comp" class="sec">
     <div class="page-header"><h1>Comparativo Mensal</h1><p>Evolução dos indicadores mês a mês</p></div>
     <div class="page-body">
+
+      <!-- ── ZONA 1: Runrate do mês corrente (Sprint A · #1) ── -->
+      <div id="comp-runrate" class="comp-runrate"></div>
+
+      <!-- ── ZONA 2: Toggle volume + KPIs por mês ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Volume mês a mês</span>
+        <div style="margin-left:auto;display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px">
+          <button id="comp-vol-bruto" class="comp-vol-tgl active" onclick="_compSwitchVolumeMode('bruto')">Bruto</button>
+          <button id="comp-vol-dutil" class="comp-vol-tgl" onclick="_compSwitchVolumeMode('dutil')">Por dia útil</button>
+        </div>
+      </div>
       <div class="kpi-row kpi-row-3" id="comp-kpis"></div>
+
       <div class="grid2">
         <div class="card">
           <div class="card-title">Volume mensal <span class="card-title-right" id="comp-periodo"></span></div>
@@ -7454,6 +7563,73 @@ function renderCh(){
   }
 }
 
+// ════════════════════════════════════════════════════════════════
+// COMPARATIVO MENSAL — helpers Sprint A (refator pós-coo-advisor)
+// ════════════════════════════════════════════════════════════════
+// _compState: estado UI da aba (modo de volume, modo trimestral, etc)
+var _compState = { modoVolume: 'bruto' };  // 'bruto' | 'dutil'
+
+// Dias úteis (seg-sex) de um mês (ignora feriados — simplificação)
+function _compBusinessDaysInMonth(year, monthIdx0){
+  var d = new Date(year, monthIdx0, 1);
+  var count = 0;
+  while(d.getMonth() === monthIdx0){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+// Dias úteis decorridos no mês até refDate (default: hoje)
+function _compBusinessDaysPassed(year, monthIdx0, refDate){
+  refDate = refDate || new Date();
+  var d = new Date(year, monthIdx0, 1);
+  // Se o mês já passou inteiro, retorna total de d.ú. do mês
+  var isCurrent = (refDate.getFullYear() === year && refDate.getMonth() === monthIdx0);
+  var isPast = (year < refDate.getFullYear() || (year === refDate.getFullYear() && monthIdx0 < refDate.getMonth()));
+  if(isPast) return _compBusinessDaysInMonth(year, monthIdx0);
+  if(!isCurrent) return 0;
+  var lastDay = refDate.getDate();
+  var count = 0;
+  while(d.getMonth() === monthIdx0 && d.getDate() <= lastDay){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+// % SLA cumprido (1ª Resposta) por mês via calcSLAOtrs
+// Respeita filtros activeFilaOP e activeCliente
+function _compSlaByMonth(){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return {};
+  if(typeof calcSLAOtrs !== 'function') return {};
+  var byMonth = {};
+  RAW_DATA.forEach(function(d){
+    if(!d.criado) return;
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+    if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+    if(typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return;
+    var mk = d.criado.toISOString().slice(0,7);
+    if(!byMonth[mk]) byMonth[mk] = [];
+    byMonth[mk].push(d);
+  });
+  var out = {};
+  Object.keys(byMonth).forEach(function(mk){
+    var r = calcSLAOtrs(byMonth[mk]);
+    out[mk] = r.pct_within_sla;  // null se sample==0
+  });
+  return out;
+}
+
+// Handler chamado pelo toggle Volume Bruto/D.Útil (evita onclick complexo)
+function _compSwitchVolumeMode(modo){
+  _compState.modoVolume = modo;
+  if(typeof renderComp === 'function') renderComp();
+}
+
 function renderComp(){
   // Lê meses disponíveis dinamicamente de OP_MESES (calculado no import)
   var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
@@ -7495,29 +7671,132 @@ function renderComp(){
   var mOrder=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var mLabels=mOrder.map(function(k){return mLbl(k);});
 
-  // ── KPIs dinâmicos — um por mês com volume e variação
-  var PAL_ACC=['var(--blue)','var(--teal)','var(--purple)','var(--orange)','var(--ok)','var(--danger)','var(--warn)'];
+  // ── SLA% por mês (pra sinal combinado Volume × SLA) ──
+  var slaByMonth = _compSlaByMonth();
+
+  // ── Dias úteis por mês (pra modo "Por dia útil") ──
+  var dutilByMonth = {};
+  mOrder.forEach(function(k){
+    var p = k.split('-');
+    dutilByMonth[k] = _compBusinessDaysInMonth(parseInt(p[0],10), parseInt(p[1],10)-1);
+  });
+
+  // Helper: aplica modo Bruto/D.Útil no valor de volume
+  function volMode(v, k){
+    if(_compState.modoVolume === 'dutil'){
+      var du = dutilByMonth[k] || 22;
+      return Math.round(v / du * 10) / 10;
+    }
+    return v;
+  }
+  var volUnid = _compState.modoVolume === 'dutil' ? '/d.ú.' : '';
+
+  // Atualiza UI dos toggles
+  var tglBruto = document.getElementById('comp-vol-bruto');
+  var tglDutil = document.getElementById('comp-vol-dutil');
+  if(tglBruto) tglBruto.classList.toggle('active', _compState.modoVolume === 'bruto');
+  if(tglDutil) tglDutil.classList.toggle('active', _compState.modoVolume === 'dutil');
+
+  // ── Bloco RUNRATE do mês corrente (Sprint A · #1) ──
+  // Identifica último mês com dados (geralmente = mês atual)
+  var runEl = document.getElementById('comp-runrate');
+  if(runEl && mOrder.length){
+    var curMonthKey = mOrder[mOrder.length-1];
+    var prevMonthKey = mOrder.length > 1 ? mOrder[mOrder.length-2] : null;
+    var curM = getMesSource(curMonthKey) || {};
+    var prevM = prevMonthKey ? (getMesSource(prevMonthKey) || {}) : null;
+    var curParts = curMonthKey.split('-');
+    var curYear = parseInt(curParts[0], 10);
+    var curMonthIdx = parseInt(curParts[1], 10) - 1;
+    var totalDuMes = _compBusinessDaysInMonth(curYear, curMonthIdx);
+    var duPassed = _compBusinessDaysPassed(curYear, curMonthIdx, new Date());
+    var isMesAtual = (new Date()).getFullYear() === curYear && (new Date()).getMonth() === curMonthIdx;
+    var volParcial = curM.total || 0;
+    var runrate = (isMesAtual && duPassed > 0)
+      ? Math.round(volParcial / duPassed * totalDuMes)
+      : volParcial;
+    var deltaHtml = '';
+    if(prevM && prevM.total){
+      var pctVs = Math.round((runrate - prevM.total) / prevM.total * 100);
+      var clsVs = pctVs > 5 ? 'up' : pctVs < -5 ? 'dn' : 'nt';
+      var arrowVs = pctVs > 0 ? '↑' : pctVs < 0 ? '↓' : '▬';
+      deltaHtml = '<div class="comp-runrate-delta ' + clsVs + '">' + arrowVs + ' ' + (pctVs>0?'+':'') + pctVs + '% vs ' + mLbl(prevMonthKey) + ' (' + prevM.total + ')</div>';
+    }
+    var subTxt;
+    if(isMesAtual){
+      subTxt = '<strong>' + volParcial + '</strong> chamados em <strong>' + duPassed + ' de ' + totalDuMes + '</strong> dias úteis · projeção fim do mês';
+    } else {
+      subTxt = '<strong>' + volParcial + '</strong> chamados em <strong>' + totalDuMes + '</strong> dias úteis · mês fechado';
+    }
+    runEl.innerHTML = ''
+      + '<div class="comp-runrate-icon">' + (isMesAtual ? '⏳' : '📅') + '</div>'
+      + '<div class="comp-runrate-main">'
+        + '<div class="comp-runrate-tag">' + (isMesAtual ? 'MÊS CORRENTE · PROJEÇÃO' : 'ÚLTIMO MÊS FECHADO') + '</div>'
+        + '<div class="comp-runrate-titulo">' + mLbl(curMonthKey) + (isMesAtual ? ' · em andamento' : '') + '</div>'
+        + '<div class="comp-runrate-sub">' + subTxt + '</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+        + '<div class="comp-runrate-num">' + (isMesAtual ? runrate : volParcial) + '</div>'
+        + '<div class="comp-runrate-num-lbl">' + (isMesAtual ? 'projeção total' : 'total do mês') + '</div>'
+        + deltaHtml
+      + '</div>';
+  }
+
+  // ── KPIs dinâmicos — um por mês com volume + sinal combinado Volume × SLA
+  // (Sprint A · #2: pintar pela COMBINAÇÃO Volume × SLA, não volume isolado)
   var kpisEl=document.getElementById('comp-kpis');
   if(kpisEl){
     kpisEl.innerHTML=mOrder.map(function(k,i){
       var m=getMesSource(k)||{};
       var prev=i>0?getMesSource(mOrder[i-1]):null;
-      var taxa=m.total>0?Math.round((m.fechados||0)/m.total*100):0;
-      var varHtml='';
-      if(prev&&prev.total){
-        var delta=m.total-prev.total;
-        var pct=Math.round(Math.abs(delta)/prev.total*100);
-        var col=delta<=0?'var(--ok)':'var(--danger)';
-        varHtml='<span style="color:'+col+'">'+(delta>0?'↑':'↓')+pct+'%</span> vs '+mLbl(mOrder[i-1]);
-      } else {
-        varHtml='base do período';
+      var sla = slaByMonth[k];
+      var slaPrev = i>0 ? slaByMonth[mOrder[i-1]] : null;
+
+      // Sinal volume
+      var volSinal = 'nt', volTxt = 'base';
+      if(prev && prev.total){
+        var dvol = m.total - prev.total;
+        var pctv = Math.round(Math.abs(dvol)/prev.total*100);
+        volTxt = (dvol>0?'↑':dvol<0?'↓':'▬') + pctv + '% vol';
+        // Volume é NEUTRO sozinho (recomendação coo-advisor)
+        volSinal = (Math.abs(pctv) <= 5) ? 'nt' : 'nt';
       }
-      var isAtivo=activeMonth===k;
-      return'<div class="kpi" style="'+(isAtivo?'border:1px solid rgba(79,142,247,.3);':'')+'">'
-        +'<div class="kpi-accent" style="background:'+PAL_ACC[i%PAL_ACC.length]+'"></div>'
-        +'<div class="kpi-lbl">'+mLbl(k)+'</div>'
-        +'<div class="kpi-val" style="color:'+PAL_ACC[i%PAL_ACC.length]+'">'+(m.total||0)+'</div>'
-        +'<div class="kpi-sub"><span style="font-size:9px">'+varHtml+'</span></div>'
+
+      // Sinal SLA — é o que MAIS importa
+      var slaSinal = 'nt', slaTxt = '';
+      if(sla != null){
+        slaTxt = sla + '% SLA';
+        if(slaPrev != null){
+          var dsla = sla - slaPrev;
+          if(dsla >= 3) slaSinal = 'ok';
+          else if(dsla <= -3) slaSinal = 'crit';
+          else slaSinal = sla >= 80 ? 'ok' : sla >= 60 ? 'warn' : 'crit';
+        } else {
+          slaSinal = sla >= 80 ? 'ok' : sla >= 60 ? 'warn' : 'crit';
+        }
+      } else {
+        slaTxt = 's/ SLA';
+      }
+
+      // Volume + SLA juntos formam o diagnóstico
+      // Verde: SLA mantido/melhorou (independente do volume)
+      // Vermelho: SLA piorou (alerta real)
+      // Amarelo: SLA baixo absoluto
+      var diagCls = slaSinal;
+      var accent = diagCls==='ok'?'var(--ok)':diagCls==='warn'?'var(--warn)':diagCls==='crit'?'var(--danger)':'var(--blue)';
+
+      var volExib = volMode(m.total||0, k);
+      var isAtivo = activeMonth===k;
+      var pmKey = mOrder[i-1];
+      return ''
+        +'<div class="comp-mes-kpi'+(isAtivo?' ativo':'')+'">'
+          +'<div class="comp-mes-kpi-accent" style="background:'+accent+'"></div>'
+          +'<div class="comp-mes-kpi-lbl">'+mLbl(k)+(isAtivo?' · ativo':'')+'</div>'
+          +'<div class="comp-mes-kpi-val">'+volExib+'<span class="comp-mes-kpi-val-sub">'+volUnid+'</span></div>'
+          +'<div class="comp-mes-kpi-sinais">'
+            +(prev?'<span class="comp-sinal nt" title="Variação de volume vs '+mLbl(pmKey)+'">'+volTxt+'</span>':'')
+            +'<span class="comp-sinal '+slaSinal+'" title="% de chamados dentro do SLA OTRS (1ª Resposta)">'+slaTxt+'</span>'
+          +'</div>'
         +'</div>';
     }).join('');
   }
@@ -7541,7 +7820,7 @@ function renderComp(){
     mColors=mColors.map(function(c,i){return i===ai?c:c.replace('.6','.15');});
     mBorder=mBorder.map(function(c,i){return i===ai?c:'rgba(255,255,255,.08)';});
   }
-  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return (getMesSource(k)||{}).total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:xy()});
+  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return volMode((getMesSource(k)||{}).total||0, k);}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5,label:'Volume'+volUnid}],{scales:xy()});
 
   // Tabela comparativa — prev/curr baseado no filtro ativo
   var curIdx=activeMonth==='all'?mOrder.length-1:mOrder.indexOf(activeMonth);
@@ -7553,44 +7832,50 @@ function renderComp(){
   var tEl=document.getElementById('comp-ind-title');
   if(tEl)tEl.innerHTML='Indicadores — '+(prevKey?mLbl(prevKey):'base')+' <span style="color:var(--muted)">→</span> '+mLbl(currKey);
 
+  // ── Linhas da tabela comparativa (Sprint A · #3: + linha SLA cumprido)
+  // direction: 'up' = ↑ é bom · 'down' = ↑ é ruim · 'neutral' = depende
   var rows=[
-    {l:'Volume de chamados',fv:function(m){return m.total||0;},unid:'',invert:false},
-    {l:'Taxa de conclusão',fv:function(m){return m.total>0?Math.round(m.fechados/m.total*100):0;},unid:'%',invert:false},
-    {l:'Chamados Muito Alta',fv:function(m){return m.prior&&m.prior['Muito Alta']||0;},unid:'',invert:true},
-    {l:'1ª Resposta mediana',fv:function(m){return m.resp_med||0;},unid:'min',invert:true},
-    {l:'Tempo médio solução',fv:function(m){return m.sol_med||0;},unid:'h',invert:true}
+    {l:'Volume de chamados', fv:function(m){return m.total||0;}, unid:'', direction:'neutral', hint:'mais demanda — depende de SLA'},
+    {l:'% SLA 1ª Resposta cumprido', fv:function(m,k){var s=slaByMonth[k];return s==null?null:s;}, unid:'%', direction:'up', hint:'meta da operação'},
+    {l:'Taxa de conclusão', fv:function(m){return m.total>0?Math.round(m.fechados/m.total*100):0;}, unid:'%', direction:'up', hint:'fechados / total'},
+    {l:'Chamados Muito Alta', fv:function(m){return m.prior&&m.prior['Muito Alta']||0;}, unid:'', direction:'down', hint:'menos pico crítico é melhor'},
+    {l:'1ª Resposta mediana', fv:function(m){return m.resp_med||0;}, unid:'min', direction:'down', hint:'menor tempo é melhor'},
+    {l:'Tempo médio solução', fv:function(m){return m.sol_med||0;}, unid:'h', direction:'down', hint:'menor tempo é melhor'}
   ];
 
-  // Sparkline com todos os meses disponíveis
-  function spark(vals,col){
-    var max=Math.max.apply(null,vals.concat([1]));
-    var W=60,H=24,n=vals.length;
-    var pts=vals.map(function(v,i){return(6+i*(W-12)/Math.max(n-1,1))+','+(H-4-Math.round(v/max*(H-8)));}).join(' ');
-    return'<svg width="'+W+'" height="'+H+'" style="vertical-align:middle;margin-right:6px">'
-      +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/>'
-      +vals.map(function(v,i){var x=6+i*(W-12)/Math.max(n-1,1),y=H-4-Math.round(v/max*(H-8));return'<circle cx="'+x+'" cy="'+y+'" r="2.5" fill="'+col+'"/>';}).join('')
-      +'</svg>';
+  function dirIcon(direction){
+    if(direction==='up') return '<span class="comp-dir-ic" title="↑ é bom">🎯↑</span>';
+    if(direction==='down') return '<span class="comp-dir-ic" title="↓ é bom">🎯↓</span>';
+    return '<span class="comp-dir-ic" title="depende — neutra">◦</span>';
   }
 
   document.getElementById('comp-table').innerHTML=rows.map(function(r){
-    var allVals=mOrder.map(function(k){return r.fv(getMesSource(k)||{});});
-    var currV=r.fv(curr),prevV=prev?r.fv(prev):null;
-    var delta=prevV!==null?currV-prevV:0;
-    var pctD=prevV?Math.round(Math.abs(delta)/Math.abs(prevV||1)*100):0;
-    var better=r.invert?delta<0:delta>0,same=delta===0||prevV===null;
-    var dc=same?'var(--muted)':better?'var(--ok)':'var(--danger)';
-    var dbg=same?'rgba(90,98,120,.1)':better?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)';
-    var sign=delta>0?'+':'';
-    var spk=spark(allVals,same?'#5a6278':(better?'#10b981':'#f43f5e'));
-    var fmtV=function(v){return r.unid==='min'?fmtRespTxt(v):(v+r.unid);};
-    return'<div class="comp-row">'
-      +'<span class="comp-label">'+r.l+'</span>'
-      +spk
-      +(prevV!==null?'<span class="comp-prev" style="color:var(--muted)">'+fmtV(prevV)+'</span>':'<span class="comp-prev" style="color:var(--muted)">—</span>')
-      +'<span class="comp-arrow" style="color:'+dc+'">→</span>'
-      +'<span class="comp-curr" style="color:'+dc+'">'+fmtV(currV)+'</span>'
-      +'<span class="comp-delta" style="background:'+dbg+';color:'+dc+'">'+(prevV!==null?sign+pctD+'%':'Base')+'</span>'
-    +'</div>';
+    var currV=r.fv(curr, currKey), prevV=prev?r.fv(prev, prevKey):null;
+    var hasCurr = currV != null;
+    var hasPrev = prevV != null;
+    var delta = (hasCurr && hasPrev) ? currV-prevV : 0;
+    var pctD = (hasPrev && prevV !== 0) ? Math.round(Math.abs(delta)/Math.abs(prevV||1)*100) : 0;
+    var same = delta === 0 || !hasPrev;
+    var better;
+    if(r.direction === 'up') better = delta > 0;
+    else if(r.direction === 'down') better = delta < 0;
+    else better = null;  // neutral: nem bom nem ruim
+    var dc = same ? 'var(--muted)' : (better === null) ? 'var(--blue)' : better ? 'var(--ok)' : 'var(--danger)';
+    var dbg = same ? 'rgba(90,98,120,.1)' : (better === null) ? 'rgba(79,142,247,.1)' : better ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)';
+    var sign = delta > 0 ? '+' : '';
+    var fmtV = function(v){
+      if(v == null) return '—';
+      if(r.unid === 'min') return fmtRespTxt(v);
+      return v + r.unid;
+    };
+    return '<div class="comp-row" title="'+r.hint+'">'
+      + '<span class="comp-dir-wrap">' + dirIcon(r.direction) + '</span>'
+      + '<span class="comp-label">'+r.l+'</span>'
+      + '<span class="comp-prev" style="color:var(--muted)">'+fmtV(prevV)+'</span>'
+      + '<span class="comp-arrow" style="color:'+dc+'">→</span>'
+      + '<span class="comp-curr" style="color:'+dc+'">'+fmtV(currV)+'</span>'
+      + '<span class="comp-delta" style="background:'+dbg+';color:'+dc+'">'+(hasPrev ? sign+pctD+'%' : 'Base')+'</span>'
+    + '</div>';
   }).join('');
 
   // Tendência 1ª resposta — todos os meses
@@ -7601,7 +7886,7 @@ function renderComp(){
     {data:new Array(mLen).fill(META_RESP),label:'≤'+fmtRespTxt(META_RESP)+' — meta GW',borderColor:'rgba(245,158,11,.85)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0},
     {data:new Array(mLen).fill(15),label:'≤15min — ITSM excelente',borderColor:'rgba(16,185,129,.65)',borderDash:[3,5],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
   ],{scales:xy('Tempo (min)'),plugins:{
-    legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8,filter:function(item){return item.datasetIndex>0;}}}
+    legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8}}
   }});
 }
 
