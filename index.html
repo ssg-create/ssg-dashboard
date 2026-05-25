@@ -6475,6 +6475,8 @@ function openAtendPendModal(nome, mode){
   modal.style.transform='scale(1) translateY(0)';
   setTimeout(function(){document.getElementById('at-modal-search').focus();},150);
   document.getElementById('at-modal-search').value='';
+  // ESC fecha modal (acessibilidade)
+  document.addEventListener('keydown', _atModalEscHandler);
 }
 
 var SILENC_DATA=null;
@@ -15614,7 +15616,9 @@ function _closeAtModal(){
   overlay.style.opacity='0';
   overlay.style.pointerEvents='none';
   modal.style.transform='scale(.95) translateY(14px)';
+  document.removeEventListener('keydown', _atModalEscHandler);
 }
+function _atModalEscHandler(e){ if(e.key==='Escape') _closeAtModal(); }
 
 function calcAging(criadoStr) {
   if (!criadoStr) return 0;
@@ -18821,7 +18825,7 @@ function renderBacklogTable(rows) {
 </script>
 
 
-<div id="at-modal-overlay" style="position:fixed;inset:0;z-index:700;background:rgba(8,11,16,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s" onclick="closeAtModal(event)">
+<div id="at-modal-overlay" style="position:fixed;inset:0;z-index:700;background:rgba(8,11,16,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s" onclick="closeAtModal(event)" role="dialog" aria-modal="true" aria-labelledby="at-modal-name">
   <div id="at-modal" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:860px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;transform:scale(.95) translateY(14px);transition:transform .22s;overflow:hidden">
     <div style="padding:18px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0">
       <!-- Linha 1: avatar + nome/sub + botão fechar -->
