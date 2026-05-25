@@ -1650,6 +1650,12 @@ body[data-mode="user"] .tb-divider-user{display:block}
 body[data-mode="user"] #gw-user-pill,
 body[data-mode="user"] #tb-logout-btn,
 body[data-mode="user"] #at-piloto-badge{display:none!important}
+/* Fabio 25/05: em mode=user esconde sino, relógio e engrenagem do topbar.
+   Libera espaço pro chip do usuário e elimina ruído visual. SLA agora é
+   configurado por usuário no novo sistema, settings antigos não relevantes. */
+body[data-mode="user"] #notif-btn,
+body[data-mode="user"] #tb-clock,
+body[data-mode="user"] .tb-settings-btn{display:none!important}
 /* PDF Executivo (8 KPIs GWMS) é visão estratégica global — só admin */
 body[data-user-perfil="gestor"] .rpt-type-exec,
 body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}

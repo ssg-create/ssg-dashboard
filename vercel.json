@@ -1,7 +1,19 @@
 {
+  "version": 2,
+  "ignoreCommand": "bash vercel-ignore-build.sh",
+  "rewrites": [
+    { "source": "/historico_completo.json", "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/historico_completo.json" },
+    { "source": "/tickets_ativos.json",     "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/tickets_ativos.json" },
+    { "source": "/utilizacao.json",         "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/utilizacao.json" },
+    { "source": "/gwms-insights.json",      "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/gwms-insights.json" },
+    { "source": "/aios-insights.json",      "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/aios-insights.json" },
+    { "source": "/silenciosos.json",        "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/silenciosos.json" },
+    { "source": "/triagem.json",            "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/triagem.json" },
+    { "source": "/reaberturas.json",        "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/reaberturas.json" }
+  ],
   "headers": [
     {
-      "source": "/(index.html)?",
+      "source": "/",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" },
         { "key": "Pragma", "value": "no-cache" },
@@ -9,9 +21,11 @@
       ]
     },
     {
-      "source": "/(.*\\.(json|js))",
+      "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
       ]
     }
   ]
