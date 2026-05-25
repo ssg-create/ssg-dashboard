@@ -5358,6 +5358,8 @@ function populateBkHero(op){
     if(!d||!d.criado) return;
     var ab=['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;
     if(!ab) return;
+    // POC permissão: bloqueia filas fora do escopo do usuário (genérico via userCanSeeFila)
+    if(typeof userCanSeeFila==='function' && !userCanSeeFila(d.fila)) return;
     if(activeCliente&&d.cli_id!==activeCliente) return;
     if(activeFilaOP!=='all'&&d.fila!==activeFilaOP) return;
     // Adriano 22/05: excluir projetos/melhorias do hero operacional
@@ -12379,6 +12381,18 @@ var OP_MESES = {
 
 // Returns the correct dataset for current month filter
 function getActiveOP() {
+  // ── FIX RAIZ POC permissão (Fabio 22/05) ──
+  // Quando o usuário tem filas restritas (perfil gestor/gestor_bh), JAMAIS usa
+  // os agregados pré-calculados (OP, OP_MESES, OP_FILAS) — eles foram montados
+  // SEM filtro de fila no boot e vazam dados de outras filas.
+  // Solução: força o caminho buildOPFromRange(), que itera RAW_DATA passando
+  // por ticketInFilter (que respeita userCanSeeFila). Resultado: todos os
+  // consumidores de getActiveOP (Dashboard, Alertas, Atendentes, Clientes,
+  // Resumo Executivo, heros) ficam protegidos automaticamente.
+  // Genérico: usa userFilasPermitidas() — funciona pra qualquer user em _USERS.
+  if(typeof userFilasPermitidas==='function' && userFilasPermitidas()){
+    return buildOPFromRange();
+  }
   // Filtro global de cliente — aplica antes de qualquer outro filtro
   if(activeCliente && EMPRESAS[activeCliente]) {
     var emp = getFilteredEmpresa(EMPRESAS[activeCliente]);
@@ -12742,6 +12756,8 @@ function getFilteredEmpresa(d) {
     var m = {};
     RAW_DATA.forEach(function(t){
       if(!t || !t.criado || !(t.criado instanceof Date) || isNaN(t.criado)) return;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return;
       if(cliId && t.cli_id !== cliId) return;
       if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
       if(activeMonth && activeMonth !== 'all' && t.criado.toISOString().slice(0,7) !== activeMonth) return;
@@ -12757,6 +12773,8 @@ function getFilteredEmpresa(d) {
     if(typeof RAW_DATA==='undefined' || !RAW_DATA || !RAW_DATA.length) return null;
     var rs = RAW_DATA.filter(function(t){
       if(!t || !t.criado) return false;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return false;
       if(cliId && t.cli_id !== cliId) return false;
       if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return false;
       if(activeRangeStart && activeRangeEnd) {
@@ -12779,6 +12797,8 @@ function getFilteredEmpresa(d) {
     var pad = function(n){return n<10?'0'+n:n;};
     var rs = RAW_DATA.filter(function(t){
       if(!t || !t.criado) return false;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return false;
       if(cliId && t.cli_id !== cliId) return false;
       if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return false;
       if(activeRangeStart && activeRangeEnd) {
@@ -12830,6 +12850,8 @@ function getFilteredEmpresa(d) {
     var pr = {};
     RAW_DATA.forEach(function(t){
       if(!t || !t.criado) return;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return;
       if(cliId && t.cli_id !== cliId) return;
       if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
       if(activeRangeStart && activeRangeEnd){
@@ -12852,6 +12874,8 @@ function getFilteredEmpresa(d) {
     var rs = [];
     RAW_DATA.forEach(function(t){
       if(!t || !t.criado || t.resp_min == null) return;
+      // POC permissão: filas fora do escopo do usuário não entram
+      if(typeof userCanSeeFila==='function' && !userCanSeeFila(t.fila)) return;
       if(cliId && t.cli_id !== cliId) return;
       if(activeFilaOP && activeFilaOP !== 'all' && t.fila !== activeFilaOP) return;
       if(activeRangeStart && activeRangeEnd){
@@ -12867,6 +12891,7 @@ function getFilteredEmpresa(d) {
     return rs[Math.floor(rs.length/2)];
   };
   // Range mode: filter from RAW_DATA for accurate results
+  // Nota: ticketInFilter já tem guard de permissão (userCanSeeFila), então respeita user
   if(activeRangeStart && activeRangeEnd) {
     var rTix=(RAW_DATA||[]).filter(function(t){return t.cli_id===d.id&&ticketInFilter(t)&&(activeFilaOP==='all'||t.fila===activeFilaOP);});
     if(!rTix.length) return Object.assign({},d,{total:0,abertos:0,fechados:0,tickets:[],estados:{},by_mes:{},by_day:[],byDay:[],
@@ -14244,6 +14269,9 @@ function renderCSHealthList() {
   var rowsData = [];
   Object.keys(EMPRESAS).forEach(function(k){
     if(!k || k.indexOf('@')!==-1) return;
+    // POC permissão: lista só clientes que tenham tickets em filas permitidas
+    // (genérico — funciona pra qualquer user em _USERS)
+    if(typeof userCanSeeCliente==='function' && !userCanSeeCliente(k)) return;
     var d = (typeof getFilteredEmpresa==='function') ? (getFilteredEmpresa(EMPRESAS[k]) || null) : EMPRESAS[k];
     if(!d || !d.total) return; // sem chamado no escopo → fora da lista
     rowsData.push({k:k, d:d});
@@ -17859,18 +17887,23 @@ var isFe = isClosedAnyState; // fonte canônica
 // ════════════════════════════════════════════════════════════
 function renderResumo(){
   // ── Dados base ────────────────────────────────────────────
-  // BUG FIX: usar `op.X != null ? op.X : ...` em vez de `op.X || OP.X`
+  // BUG FIX original: usar `op.X != null ? op.X : ...` em vez de `op.X || OP.X`
   // porque op.total=0 (range vazio) caía em OP.total (global), gerando
   // narrativa "2215 chamados com 0% taxa". Agora respeita o escopo.
+  // POC permissão (Fabio 22/05): se houver restrição de fila, NÃO faz fallback
+  // em OP global. Só usa op (que vem de getActiveOP — que respeita guard).
   var op=getActiveOP();
-  var total=op.total!=null?op.total:(OP.total||0);
-  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
-  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
-  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
-  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
-  // Quando o escopo é vazio (total=0), zera prior/estado também
-  var prior=(op.total!=null&&op.total===0)?{}:(op.prior||OP.prior||{});
-  var estado=(op.total!=null&&op.total===0)?{}:(op.estado||OP.estado||{});
+  var hasUserPerm = typeof userFilasPermitidas==='function' && userFilasPermitidas();
+  var fb = function(v, fb){ return v!=null ? v : (hasUserPerm ? 0 : fb); };
+  var total=fb(op.total, OP.total||0);
+  var fechados=fb(op.fechados, OP.fechados||0);
+  var abertos=fb(op.abertos, OP.abertos||0);
+  var solMed=fb(op.sol_med, OP.sol_med||0);
+  var respMed=fb(op.resp_med, OP.resp_med||0);
+  // Quando o escopo é vazio (total=0) OU há restrição de user, zera prior/estado
+  var emptyScope = (op.total!=null&&op.total===0) || hasUserPerm;
+  var prior=emptyScope?(op.prior||{}):(op.prior||OP.prior||{});
+  var estado=emptyScope?(op.estado||{}):(op.estado||OP.estado||{});
   var bloqData=getActiveBloqList();
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardCli=estado['Aguardando Cliente']||0;
@@ -17880,7 +17913,8 @@ function renderResumo(){
   var taxaConc=pct(fechados,total);
   var pctAbertos=pct(abertos,total);
   var pctMA=pct(prioMA,total);
-  var numCrit=(OP.criticos||[]).length;
+  // POC permissão: numCrit do escopo (op.criticos) — não usa OP.criticos global
+  var numCrit=hasUserPerm?((op.criticos||[]).length):((OP.criticos||[]).length);
   // ── by_day reconstruído a partir do RAW_DATA com todos os filtros ativos ──
   // Garante que Tendência/Ritmo/Previsão usem exatamente o conjunto filtrado
   var byDay=op.by_day||OP.by_day||[];
@@ -19059,16 +19093,20 @@ function computeInsights(){
   // BUG FIX (idem renderResumo): op.total=0 (range vazio) caía em
   // OP.total. Agora respeita o escopo e aborta quando vazio,
   // deixando AI_DATA null pra renderIAResumo exibir aiNoData().
+  // POC permissão (Fabio 22/05): se houver restrição de fila, NÃO faz fallback
+  // pra OP global. Tudo deriva de getActiveOP (que respeita guard).
   var op=getActiveOP();
-  var total=op.total!=null?op.total:(OP.total||0);
+  var hasUserPerm = typeof userFilasPermitidas==='function' && userFilasPermitidas();
+  var fb = function(v, fb){ return v!=null ? v : (hasUserPerm ? 0 : fb); };
+  var total=fb(op.total, OP.total||0);
   if(!total){AI_DATA=null;return;}
 
-  var fechados=op.fechados!=null?op.fechados:(OP.fechados||0);
-  var abertos=op.abertos!=null?op.abertos:(OP.abertos||0);
-  var solMed=op.sol_med!=null?op.sol_med:(OP.sol_med||0);
-  var respMed=op.resp_med!=null?op.resp_med:(OP.resp_med||0);
-  var prior=op.prior||OP.prior||{};
-  var estado=op.estado||op.estados||OP.estado||{};
+  var fechados=fb(op.fechados, OP.fechados||0);
+  var abertos=fb(op.abertos, OP.abertos||0);
+  var solMed=fb(op.sol_med, OP.sol_med||0);
+  var respMed=fb(op.resp_med, OP.resp_med||0);
+  var prior=hasUserPerm?(op.prior||{}):(op.prior||OP.prior||{});
+  var estado=hasUserPerm?(op.estado||op.estados||{}):(op.estado||op.estados||OP.estado||{});
   var bloqData=getActiveBloqList();
   var totalBloq=bloqData.reduce(function(a,b){return a+b.n;},0);
   var aguardCli=estado['Aguardando Cliente']||0;
@@ -19077,8 +19115,9 @@ function computeInsights(){
   var taxaConc=pct(fechados,total);
   var pctAbertos=pct(abertos,total);
   var pctMA=pct(prioMA,total);
-  var criticos=OP.criticos||[];
-  var atendData=op.atend||OP.atend||[];
+  // POC permissão: criticos/atend do escopo, não global
+  var criticos=hasUserPerm?(op.criticos||[]):(OP.criticos||[]);
+  var atendData=hasUserPerm?(op.atend||[]):(op.atend||OP.atend||[]);
 
   // Tendência semanal
   var byDay=op.by_day||OP.by_day||[];
