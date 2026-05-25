@@ -3186,6 +3186,166 @@ button:focus-visible,
   border-left-color:#0d9488;
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ CONTRATOS SSG — Refator pós cro-advisor (Sprint A) ══════ */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Barra de seletor de trimestre + resumo trim */
+.ctr-quarter-bar{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 18px;margin-bottom:14px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.ctr-q-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ctr-q-btn{
+  padding:6px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--sub);font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;letter-spacing:.04em;
+  min-height:30px;transition:all .15s;
+}
+.ctr-q-btn:hover{border-color:var(--border2);color:var(--text)}
+.ctr-q-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ctr-q-btn.disabled{opacity:.4;cursor:not-allowed;color:var(--muted)}
+.ctr-q-btn:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+
+.ctr-q-info{display:flex;flex-direction:column;gap:2px;margin-left:auto}
+.ctr-q-info-tit{font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.ctr-q-info-sub{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+
+/* 3 cards acionáveis no topo (padrão BH v5) */
+.ctr-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.ctr-acao{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.ctr-acao::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.ctr-acao.cobrar::before{background:#dc2626}
+.ctr-acao.vai-estourar::before{background:#f59e0b}
+.ctr-acao.upsell::before{background:#3b82f6}
+.ctr-acao:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.ctr-acao.cobrar:hover{border-color:rgba(220,38,38,.4)}
+.ctr-acao.vai-estourar:hover{border-color:rgba(245,158,11,.4)}
+.ctr-acao.upsell:hover{border-color:rgba(59,130,246,.4)}
+.ctr-acao:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ctr-acao.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,212,168,.2)}
+
+.ctr-acao-icon{font-size:22px;margin-bottom:4px;line-height:1}
+.ctr-acao-lbl{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sub);margin-bottom:6px;
+}
+.ctr-acao-num{
+  font-size:34px;font-weight:800;font-family:var(--display);
+  line-height:1;color:var(--text);
+}
+.ctr-acao.cobrar .ctr-acao-num{color:#dc2626}
+.ctr-acao.vai-estourar .ctr-acao-num{color:#f59e0b}
+.ctr-acao.upsell .ctr-acao-num{color:#3b82f6}
+.ctr-acao-sub{font-size:12px;color:var(--text);margin-top:6px;line-height:1.4}
+.ctr-acao-acao{
+  font-size:10.5px;color:var(--muted);margin-top:10px;
+  padding-top:10px;border-top:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.ctr-acao-acao::before{content:"→";color:var(--teal);font-weight:700}
+.ctr-acao.empty{cursor:default;opacity:.6}
+.ctr-acao.empty:hover{transform:none;box-shadow:none}
+.ctr-acao.empty .ctr-acao-num{color:var(--muted)}
+.ctr-acao.empty::before{background:var(--border)}
+
+/* Banner AÇÃO */
+.ctr-banner{
+  padding:12px 16px;margin-bottom:14px;border-radius:8px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--text);font-weight:500;
+  border-left:3px solid var(--ok);
+  background:rgba(16,185,129,.06);
+}
+.ctr-banner.crit{border-left-color:var(--danger);background:rgba(244,63,94,.08)}
+.ctr-banner.warn{border-left-color:var(--warn);background:rgba(245,158,11,.06)}
+.ctr-banner-icon{font-size:18px;line-height:1;flex-shrink:0}
+.ctr-banner-tag{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.ctr-banner.ok .ctr-banner-tag{color:var(--ok)}
+.ctr-banner.crit .ctr-banner-tag{color:var(--danger)}
+.ctr-banner.warn .ctr-banner-tag{color:var(--warn)}
+
+/* Resumo Q vs Q */
+.ctr-resumo-q{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.ctr-resumo-q-icon{font-size:18px;line-height:1}
+.ctr-resumo-q-titulo{font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em}
+.ctr-resumo-q-itens{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.ctr-resumo-q-item{display:flex;flex-direction:column;gap:1px;align-items:flex-end}
+.ctr-resumo-q-item-num{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
+.ctr-resumo-q-item-lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ctr-resumo-q-delta{
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:3px 10px;border-radius:10px;
+}
+.ctr-resumo-q-delta.up{background:rgba(244,63,94,.12);color:var(--danger)}
+.ctr-resumo-q-delta.dn{background:rgba(16,185,129,.12);color:var(--ok)}
+.ctr-resumo-q-delta.nt{background:rgba(90,98,120,.12);color:var(--muted)}
+
+/* Tabela executiva (similar BH v5) */
+.ctr-tabela-exec{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;margin-bottom:16px;
+}
+.ctr-tabela-exec table{width:100%;border-collapse:collapse;font-size:12px}
+.ctr-tabela-exec th{
+  text-align:left;padding:10px 12px;font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);
+  white-space:nowrap;
+}
+.ctr-tabela-exec td{
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  color:var(--text);vertical-align:middle;
+}
+.ctr-tabela-exec tbody tr:last-child td{border-bottom:none}
+.ctr-tabela-exec tbody tr{cursor:pointer;transition:background .12s}
+.ctr-tabela-exec tbody tr:hover td{background:rgba(0,212,168,.04)}
+.ctr-tabela-exec tbody tr.crit td{background:rgba(244,63,94,.04)}
+.ctr-tabela-exec tbody tr.warn td{background:rgba(245,158,11,.03)}
+.ctr-tabela-exec tbody tr.upsell-bg td{background:rgba(59,130,246,.04)}
+.ctr-tabela-exec tbody tr:hover.crit td{background:rgba(244,63,94,.08)}
+.ctr-tabela-exec tbody tr:hover.warn td{background:rgba(245,158,11,.07)}
+
+.ctr-st-pill{
+  display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;
+  padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;
+  font-family:var(--mono);white-space:nowrap;
+}
+.ctr-st-pill.ok{background:rgba(16,185,129,.1);color:var(--ok)}
+.ctr-st-pill.warn{background:rgba(245,158,11,.1);color:var(--warn)}
+.ctr-st-pill.crit{background:rgba(244,63,94,.1);color:var(--danger)}
+.ctr-st-pill.info{background:rgba(90,98,120,.12);color:var(--muted)}
+
+.ctr-mini-bar{
+  height:5px;background:rgba(255,255,255,.05);border-radius:3px;
+  overflow:hidden;margin-top:4px;
+}
+.ctr-mini-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+.ctr-upsell-badge{
+  display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:8px;font-family:var(--mono);margin-left:6px;
+  background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);
+}
+
+.ctr-tabela-empty{
+  padding:40px 20px;text-align:center;color:var(--muted);font-size:12px;
+}
+
+/* Light theme */
+[data-theme="light"] .ctr-tabela-exec tbody tr.crit td{background:#fef2f2}
+[data-theme="light"] .ctr-tabela-exec tbody tr.warn td{background:#fffbeb}
+[data-theme="light"] .ctr-tabela-exec tbody tr.upsell-bg td{background:#eff6ff}
+
 /* .kpi clicável — visual claro de "isso é interativo" */
 .kpi[onclick]{cursor:pointer;transition:border-color .2s,background .2s}
 .kpi[onclick]:hover{
@@ -4317,7 +4477,38 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       <p>Volume contratado vs. aberto · acompanhamento mensal · gatilho de cobrança trimestral</p>
     </div>
     <div class="page-body">
-      <div id="ctr-hero" class="card card-mb"></div>
+
+      <!-- ── ZONA 0: Seletor de trimestre + resumo executivo do trim ── -->
+      <div id="ctr-quarter-bar"></div>
+
+      <!-- ── ZONA 1: 3 cards acionáveis (padrão BH v5) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🎯 Ações do trimestre</span>
+        <span class="al-zona-hint">clique num card pra filtrar a tabela abaixo</span>
+      </div>
+      <div id="ctr-cards-top" class="ctr-cards-3"></div>
+
+      <!-- ── ZONA 2: Banner AÇÃO (orientação operacional) ── -->
+      <div id="ctr-banner-acao"></div>
+
+      <!-- ── ZONA 3: Resumo Q × Q (comparação trimestral) ── -->
+      <div id="ctr-resumo-q"></div>
+
+      <!-- ── ZONA 4: Tabela executiva com busca/filtro ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📋 Carteira SSG</span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="ctr-search" type="text" placeholder="Buscar cliente…" oninput="_ctrSetSearch(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text);font-family:var(--font);width:140px;outline:none">
+          <span id="ctr-filter-pill" style="display:none;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.3);border-radius:10px;padding:3px 10px;font-size:10px;color:var(--teal);font-weight:600;cursor:pointer" onclick="_ctrSetFilter('all')"></span>
+        </div>
+      </div>
+      <div id="ctr-table-wrap"></div>
+
+      <!-- ── ZONA 5: Cards detalhados (preservados — view alternativa) ── -->
+      <div class="al-zona-hd" style="margin-top:18px">
+        <span class="al-zona-titulo">📂 Detalhamento por contrato</span>
+        <span class="al-zona-hint">mês a mês dentro do trimestre</span>
+      </div>
       <div id="ctr-list"></div>
     </div>
   </div>
@@ -19274,10 +19465,124 @@ window._ctrSetQuarter = function(ano, q){
   _ctrSelQ = {ano: ano, q: q};
   renderContratosSSG();
 };
-function renderContratosSSG(){
-  var heroEl = document.getElementById('ctr-hero');
+
+// ════════════════════════════════════════════════════════════════
+// CONTRATOS SSG — helpers Sprint A (refator pós cro-advisor)
+// ════════════════════════════════════════════════════════════════
+// Estado de filtros da tabela executiva
+var _ctrFilter = 'all';   // 'all' | 'cobrar' | 'vai-estourar' | 'upsell'
+var _ctrSearch = '';
+
+window._ctrSetFilter = function(modo){
+  _ctrFilter = (_ctrFilter === modo) ? 'all' : modo;
+  if(typeof renderContratosSSG === 'function') renderContratosSSG();
+};
+window._ctrSetSearch = function(v){
+  _ctrSearch = (v||'').toLowerCase().trim();
+  if(typeof renderContratosSSG === 'function') renderContratosSSG();
+};
+
+// Scroll suave pro card detalhado do cliente clicado (na zona 5)
+window._ctrScrollToCard = function(alias){
+  var aliasN = String(alias||'').toUpperCase();
   var listEl = document.getElementById('ctr-list');
-  if(!heroEl || !listEl) return;
+  if(!listEl) return;
+  var cards = listEl.querySelectorAll('[data-alias]');
+  for(var i=0;i<cards.length;i++){
+    if(cards[i].getAttribute('data-alias') === aliasN){
+      cards[i].scrollIntoView({behavior:'smooth', block:'center'});
+      cards[i].style.boxShadow = '0 0 0 2px var(--teal)';
+      setTimeout(function(c){return function(){ c.style.boxShadow = ''; };}(cards[i]), 1500);
+      return;
+    }
+  }
+};
+
+// Quarter anterior (ano,q)
+function _ctrPrevQuarter(ano, q){
+  if(q === 1) return { ano: ano - 1, q: 4 };
+  return { ano: ano, q: q - 1 };
+}
+
+// Calcula uso/projeção de UM contrato em UM trimestre específico
+// Retorna { usoTrim, projTrim, pctProj, status }
+function _ctrCalcContratoTrim(cfg, ano, q, refDate){
+  refDate = refDate || new Date();
+  var anoNow = refDate.getFullYear();
+  var qNow = _ctrQuarterOf(refDate);
+  var trimMeses = _ctrQuarterMonths(ano, q);
+  var mesAtualKey = _ctrMonthKey(refDate);
+  var isTrimAtual = (ano === anoNow && q === qNow);
+  var tickets = _ctrGetTickets(cfg.alias);
+  var byMonth = {};
+  tickets.forEach(function(t){
+    var dt = _ctrParseDate(t.criado);
+    if(!dt) return;
+    var k = _ctrMonthKey(dt);
+    byMonth[k] = (byMonth[k] || 0) + 1;
+  });
+  var usoTrim = trimMeses.reduce(function(s,mk){ return s + (byMonth[mk]||0); }, 0);
+  var limiteTrim = cfg.limite_mes * 3;
+  var projTrim;
+  if(isTrimAtual){
+    var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey);
+    var diasNoMes = _ctrDaysInMonth(refDate.getFullYear(), refDate.getMonth());
+    var diaHoje = refDate.getDate();
+    projTrim = 0;
+    trimMeses.forEach(function(mk, idx){
+      var nMes = byMonth[mk] || 0;
+      if(idx < idxMesAtualNoTrim) projTrim += nMes;
+      else if(idx === idxMesAtualNoTrim){
+        var fator = diasNoMes > 0 ? (diasNoMes / Math.max(1, diaHoje)) : 1;
+        projTrim += Math.round(nMes * fator);
+      }
+      // futuros = 0
+    });
+  } else {
+    projTrim = usoTrim;
+  }
+  var pctProj = limiteTrim > 0 ? (projTrim / limiteTrim) : 0;
+  var status = 'ok';
+  if(pctProj >= 1) status = 'crit';
+  else if(pctProj >= 0.8) status = 'warn';
+  if(usoTrim === 0) status = 'info';
+  var excedente = Math.max(0, projTrim - limiteTrim);
+  return {
+    usoTrim:usoTrim, limiteTrim:limiteTrim, projTrim:projTrim,
+    pctProj:pctProj, status:status, excedente:excedente, byMonth:byMonth
+  };
+}
+
+// Calcula snapshot agregado de UM trimestre (usado pra cards top + Q vs Q)
+function _ctrCalcSnap(ano, q){
+  var contratos = SSG_CONTRATOS.filter(function(c){return c.ativo;});
+  var stats = { ok:0, warn:0, crit:0, info:0, totalExcedente:0, nContratos:contratos.length };
+  contratos.forEach(function(c){
+    var r = _ctrCalcContratoTrim(c, ano, q);
+    stats[r.status]++;
+    stats.totalExcedente += r.excedente;
+  });
+  return stats;
+}
+
+// Cliente é candidato a upsell? (estouro recorrente em trims anteriores)
+// Critério: nos 2 trims anteriores, ambos status crit (estourou)
+function _ctrIsUpsellCandidate(cfg, anoSel, qSel){
+  var t1 = _ctrPrevQuarter(anoSel, qSel);          // T-1
+  var t2 = _ctrPrevQuarter(t1.ano, t1.q);          // T-2
+  var r1 = _ctrCalcContratoTrim(cfg, t1.ano, t1.q);
+  var r2 = _ctrCalcContratoTrim(cfg, t2.ano, t2.q);
+  return (r1.status === 'crit' && r2.status === 'crit');
+}
+function renderContratosSSG(){
+  // Refator v6 (cro-advisor): zonas separadas em vez de hero monolítico
+  var qBarEl   = document.getElementById('ctr-quarter-bar');
+  var cardsEl  = document.getElementById('ctr-cards-top');
+  var bannerEl = document.getElementById('ctr-banner-acao');
+  var resumoEl = document.getElementById('ctr-resumo-q');
+  var tabelaEl = document.getElementById('ctr-table-wrap');
+  var listEl   = document.getElementById('ctr-list');
+  if(!qBarEl || !cardsEl || !tabelaEl || !listEl) return;
 
   var now = new Date();
   var anoNow = now.getFullYear();
@@ -19379,88 +19684,232 @@ function renderContratosSSG(){
     return (b.pctProj||0) - (a.pctProj||0);
   });
 
-  // ── Hero ──
+  // ── Marca upsell candidates (estouro 2+ trims anteriores) ──
+  clientes.forEach(function(c){
+    c.isUpsell = _ctrIsUpsellCandidate(c.cfg, anoSel, qSel);
+  });
+
   var totalContratado = SSG_CONTRATOS.filter(function(c){return c.ativo;}).reduce(function(s,c){return s + c.limite_mes;}, 0);
-  // Botões de trimestre: ano atual (4Q) + ano anterior se relevante
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 0: Quarter selector + resumo do trim ativo
+  // ────────────────────────────────────────────────────────────
   var qBtnsHtml = '';
   var anosBtns = [anoNow];
-  if(anoNow > 2026) anosBtns.unshift(anoNow - 1); // adiciona ano anterior se aplicável
-  // (a partir de 2026 — corte combinado)
+  if(anoNow > 2026) anosBtns.unshift(anoNow - 1);
   anosBtns.forEach(function(ano){
     [1,2,3,4].forEach(function(q){
-      // Pular Q futuro do ano atual
       if(ano === anoNow && q > qNow + 1) return;
-      // Pular Q antes de 2026
       if(ano < 2026) return;
       if(ano === 2026 && q < 1) return;
       var ativo = (ano === anoSel && q === qSel);
       var isAtualBtn = (ano === anoNow && q === qNow);
       var isFuturoBtn = (ano > anoNow) || (ano === anoNow && q > qNow);
-      var corBtn = ativo
-        ? 'background:var(--blue);color:#fff;border-color:var(--blue)'
-        : (isFuturoBtn ? 'opacity:.5;cursor:not-allowed;color:var(--muted)' : 'color:var(--sub)');
+      var cls = 'ctr-q-btn' + (ativo ? ' active' : '') + (isFuturoBtn ? ' disabled' : '');
       var disabled = isFuturoBtn ? 'disabled' : '';
       var click = isFuturoBtn ? '' : 'onclick="_ctrSetQuarter('+ano+','+q+')"';
       var marker = isAtualBtn ? ' ●' : '';
-      qBtnsHtml += '<button '+disabled+' '+click+' style="'+corBtn+';background:'+(ativo?'var(--blue)':'var(--bg3)')+';border:1px solid '+(ativo?'var(--blue)':'var(--border)')+';border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.04em">Q'+q+'/'+String(ano).slice(-2)+marker+'</button>';
+      qBtnsHtml += '<button '+disabled+' '+click+' class="'+cls+'">Q'+q+'/'+String(ano).slice(-2)+marker+'</button>';
     });
   });
-  var trimSubLbl = isTrimAtual ? 'trimestre ativo · em andamento'
-                : isTrimPassado ? 'trimestre fechado · valores definitivos'
-                : 'trimestre futuro · sem dados';
-  heroEl.innerHTML =
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);align-items:center">'
-    +   '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-right:4px">Trimestre:</span>'
+  var trimSubLbl = isTrimAtual ? 'trim ativo · em andamento'
+                : isTrimPassado ? 'trim fechado · valores definitivos'
+                : 'trim futuro · sem dados';
+  qBarEl.className = 'ctr-quarter-bar';
+  qBarEl.innerHTML = ''
+    + '<div class="ctr-q-btns">'
+    +   '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-right:2px">Trimestre:</span>'
     +   qBtnsHtml
     + '</div>'
-    + '<div class="ctr-hero-grid">'
-    +   '<div>'
-    +     '<div class="ctr-hero-q">Q'+qSel+'/'+String(anoSel).slice(-2)+'</div>'
-    +     '<div class="ctr-hero-q-lbl">'+trimSubLbl+'</div>'
-    +     '<div class="ctr-hero-q-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+'</div>'
-    +   '</div>'
-    +   '<div class="ctr-hero-kpis">'
-    +     '<div class="ctr-hero-kpi"><div class="ctr-hero-kpi-num">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+'</div><div class="ctr-hero-kpi-lbl">clientes ativos</div></div>'
-    // Cor semântica só quando há valor; zero fica neutro (cinza) pra não criar
-    // alerta falso ("EM RISCO: 0" em laranja confunde).
-    +     '<div class="ctr-hero-kpi"' + (resumo.ok>0 ? ' style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.ok>0 ? ' style="color:var(--ok)"' : ' style="color:var(--muted)"') + '>'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
-    +     '<div class="ctr-hero-kpi"' + (resumo.warn>0 ? ' style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.warn>0 ? ' style="color:var(--warn)"' : ' style="color:var(--muted)"') + '>'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
-    +     '<div class="ctr-hero-kpi"' + (resumo.crit>0 ? ' style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.crit>0 ? ' style="color:var(--danger)"' : ' style="color:var(--muted)"') + '>'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">'+(isTrimPassado?'estourou':'estourados')+'</div></div>'
-    +   '</div>'
-    + '</div>'
-    // Linha acionável — diz O QUE FAZER, não só o que existe.
-    // Prioriza alertas: estourados (cobrar) → risco (atenção) → tudo ok (✓)
-    + (function(){
-        var estourou = clientes.filter(function(c){return c.status==='crit';});
-        var emRisco  = clientes.filter(function(c){return c.status==='warn';});
-        var fechouTrim = trimMeses[2] + '-' + _ctrDaysInMonth(parseInt(trimMeses[2].split('-')[0],10), parseInt(trimMeses[2].split('-')[1],10)-1);
-        var msg = '', cor = 'var(--ok)', bg = 'rgba(16,185,129,.06)', borda = 'rgba(16,185,129,.25)', icon = '✓';
-        if(estourou.length){
-          var totalExcedente = estourou.reduce(function(s,c){return s + c.excedente;}, 0);
-          var nomes = estourou.map(function(c){return c.cfg.nome;}).join(', ');
-          msg = (isTrimPassado ? 'Trimestre fechou estourado: ' : 'Para fechar Q'+qSel+': cobrar ') + nomes + ' (+'+totalExcedente+' chamado'+(totalExcedente!==1?'s':'')+' excedente'+(totalExcedente!==1?'s':'')+')';
-          cor = 'var(--danger)'; bg = 'rgba(244,63,94,.08)'; borda = 'rgba(244,63,94,.3)'; icon = '🔴';
-        } else if(emRisco.length){
-          var nomesR = emRisco.map(function(c){return c.cfg.nome;}).join(', ');
-          msg = 'Atenção: ' + nomesR + ' próximo'+(emRisco.length!==1?'s':'')+' do limite. Acompanhar nas próximas semanas.';
-          cor = 'var(--warn)'; bg = 'rgba(245,158,11,.06)'; borda = 'rgba(245,158,11,.25)'; icon = '🟡';
-        } else if(isTrimPassado){
-          msg = 'Trimestre fechado sem cobrança extra. Todos os clientes dentro do contrato.';
-        } else {
-          msg = 'Trimestre tranquilo até agora. Nenhum cliente projetado pra estourar.';
-        }
-        return '<div style="margin-top:14px;padding:10px 14px;background:'+bg+';border:1px solid '+borda+';border-radius:8px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);font-weight:500">'
-          + '<span style="font-size:16px;line-height:1">'+icon+'</span>'
-          + '<span><strong style="color:'+cor+';font-weight:700">'+(estourou.length?'AÇÃO:':'STATUS:')+'</strong> '+msg+'</span>'
-        + '</div>';
-      })()
-    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)">'
-    +   'Total contratado: <strong style="color:var(--text)">'+totalContratado+' chamados/mês</strong> · '+(totalContratado*3)+' chamados/trimestre. Gatilho de cobrança fecha no último dia do trimestre.'
+    + '<div class="ctr-q-info">'
+    +   '<span class="ctr-q-info-tit">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+' clientes ativos · '+totalContratado+' chamados/mês · '+(totalContratado*3)+'/trim</span>'
+    +   '<span class="ctr-q-info-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+' · '+trimSubLbl+'</span>'
     + '</div>';
 
+  // ────────────────────────────────────────────────────────────
+  // ZONA 1: 3 cards acionáveis (padrão BH v5)
+  // ────────────────────────────────────────────────────────────
+  var nCobrar      = clientes.filter(function(c){return c.status==='crit';}).length;
+  var totExcedente = clientes.filter(function(c){return c.status==='crit';}).reduce(function(s,c){return s+c.excedente;},0);
+  var nVaiEstourar = clientes.filter(function(c){return c.status==='warn';}).length;
+  var nUpsell      = clientes.filter(function(c){return c.isUpsell;}).length;
+
+  function _ctrCardCobrar(){
+    var empty = nCobrar === 0;
+    var cls = 'ctr-acao cobrar' + (empty ? ' empty' : '') + (_ctrFilter==='cobrar' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'cobrar\')"';
+    var num = empty ? '✓' : nCobrar;
+    var sub = empty ? 'tudo em dia nesse trim' : nCobrar+' contrato'+(nCobrar!==1?'s':'')+' · +'+totExcedente+' chamado'+(totExcedente!==1?'s':'')+' excedente';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">filtrar tabela abaixo</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">💸</div>'
+      + '<div class="ctr-acao-lbl">'+(isTrimPassado?'Cobrar (trim fechado)':'Cobrar agora')+'</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  function _ctrCardVaiEstourar(){
+    var empty = nVaiEstourar === 0;
+    var cls = 'ctr-acao vai-estourar' + (empty ? ' empty' : '') + (_ctrFilter==='vai-estourar' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'vai-estourar\')"';
+    var num = empty ? '—' : nVaiEstourar;
+    var sub = empty ? 'nenhum próximo do limite' : nVaiEstourar+' contrato'+(nVaiEstourar!==1?'s':'')+' próximo'+(nVaiEstourar!==1?'s':'')+' do limite';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">avisar Weskley pra contatar</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">🟡</div>'
+      + '<div class="ctr-acao-lbl">Vai estourar</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  function _ctrCardUpsell(){
+    var empty = nUpsell === 0;
+    var cls = 'ctr-acao upsell' + (empty ? ' empty' : '') + (_ctrFilter==='upsell' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'upsell\')"';
+    var num = empty ? '—' : nUpsell;
+    var sub = empty ? 'sem estouro recorrente' : nUpsell+' contrato'+(nUpsell!==1?'s':'')+' estourou 2+ trims · alvo de upsell';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">propor aumento de limite</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">📈</div>'
+      + '<div class="ctr-acao-lbl">Upsell alvo</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  cardsEl.innerHTML = _ctrCardCobrar() + _ctrCardVaiEstourar() + _ctrCardUpsell();
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 2: Banner AÇÃO (preservado da versão antiga, refinado)
+  // ────────────────────────────────────────────────────────────
+  (function(){
+    var estourou = clientes.filter(function(c){return c.status==='crit';});
+    var emRisco  = clientes.filter(function(c){return c.status==='warn';});
+    var msg, cls, icon, tag;
+    if(estourou.length){
+      var nomes = estourou.slice(0,3).map(function(c){return c.cfg.nome;}).join(', ');
+      if(estourou.length > 3) nomes += ' +'+(estourou.length-3)+' outros';
+      msg = (isTrimPassado ? 'Trim fechou estourado: ' : 'Cobrar (fim Q'+qSel+'): ') + nomes + ' · +'+totExcedente+' chamados excedentes';
+      cls = 'crit'; icon = '🔴'; tag = isTrimPassado ? 'COBRAR:' : 'AÇÃO:';
+    } else if(emRisco.length){
+      var nomesR = emRisco.slice(0,3).map(function(c){return c.cfg.nome;}).join(', ');
+      if(emRisco.length > 3) nomesR += ' +'+(emRisco.length-3)+' outros';
+      msg = 'Atenção: ' + nomesR + ' próximo do limite. Avisar cliente proativamente.';
+      cls = 'warn'; icon = '🟡'; tag = 'ATENÇÃO:';
+    } else if(isTrimPassado){
+      msg = 'Trim fechado sem cobrança extra. Todos os clientes dentro do contrato.';
+      cls = 'ok'; icon = '✓'; tag = 'STATUS:';
+    } else {
+      msg = 'Trim tranquilo até agora. Nenhum cliente projetado pra estourar.';
+      cls = 'ok'; icon = '✓'; tag = 'STATUS:';
+    }
+    bannerEl.className = 'ctr-banner ' + cls;
+    bannerEl.innerHTML = ''
+      + '<span class="ctr-banner-icon">'+icon+'</span>'
+      + '<span><span class="ctr-banner-tag">'+tag+'</span>'+msg+'</span>';
+  })();
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 3: Resumo Q × Q (comparação trimestral)
+  // ────────────────────────────────────────────────────────────
+  var prevQ = _ctrPrevQuarter(anoSel, qSel);
+  var snapPrev = _ctrCalcSnap(prevQ.ano, prevQ.q);
+  var critAtual = nCobrar;
+  var critPrev = snapPrev.crit;
+  var deltaCrit = critAtual - critPrev;
+  var deltaPct = critPrev > 0 ? Math.round(Math.abs(deltaCrit)/critPrev*100) : (critAtual > 0 ? 100 : 0);
+  var deltaCls, deltaArrow;
+  if(deltaCrit > 0){ deltaCls = 'up'; deltaArrow = '↑'; }
+  else if(deltaCrit < 0){ deltaCls = 'dn'; deltaArrow = '↓'; }
+  else { deltaCls = 'nt'; deltaArrow = '▬'; }
+  var labelPrev = 'Q'+prevQ.q+'/'+String(prevQ.ano).slice(-2);
+  var labelAtual = 'Q'+qSel+'/'+String(anoSel).slice(-2);
+  resumoEl.className = 'ctr-resumo-q';
+  resumoEl.innerHTML = ''
+    + '<span class="ctr-resumo-q-icon">📊</span>'
+    + '<span class="ctr-resumo-q-titulo">'+labelPrev+' → '+labelAtual+'</span>'
+    + '<div class="ctr-resumo-q-itens">'
+    +   '<div class="ctr-resumo-q-item">'
+    +     '<span class="ctr-resumo-q-item-num" style="color:var(--danger)">'+critPrev+'</span>'
+    +     '<span class="ctr-resumo-q-item-lbl">estourou em '+labelPrev+'</span>'
+    +   '</div>'
+    +   '<div class="ctr-resumo-q-item">'
+    +     '<span class="ctr-resumo-q-item-num" style="color:var(--danger)">'+critAtual+'</span>'
+    +     '<span class="ctr-resumo-q-item-lbl">'+(isTrimAtual?'projeção '+labelAtual:'estourou em '+labelAtual)+'</span>'
+    +   '</div>'
+    +   '<div class="ctr-resumo-q-delta '+deltaCls+'">'+deltaArrow+' '+(deltaCrit>0?'+':'')+deltaCrit+' contrato'+(Math.abs(deltaCrit)!==1?'s':'')+(critPrev>0?' ('+deltaPct+'%)':'')+'</div>'
+    + '</div>';
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 4: Tabela executiva com busca/filtro
+  // ────────────────────────────────────────────────────────────
+  // Aplica filtro de status + busca
+  var clientesFiltrados = clientes.filter(function(c){
+    if(_ctrFilter === 'cobrar' && c.status !== 'crit') return false;
+    if(_ctrFilter === 'vai-estourar' && c.status !== 'warn') return false;
+    if(_ctrFilter === 'upsell' && !c.isUpsell) return false;
+    if(_ctrSearch){
+      var nm = (c.cfg.nome||'').toLowerCase();
+      var al = (c.cfg.alias||'').toLowerCase();
+      if(nm.indexOf(_ctrSearch) === -1 && al.indexOf(_ctrSearch) === -1) return false;
+    }
+    return true;
+  });
+
+  // Atualiza filter pill (mostra qual filtro ativo, clique pra limpar)
+  var filterPillEl = document.getElementById('ctr-filter-pill');
+  if(filterPillEl){
+    if(_ctrFilter === 'all'){ filterPillEl.style.display = 'none'; }
+    else {
+      var lblFilter = _ctrFilter === 'cobrar' ? 'Cobrar agora' : _ctrFilter === 'vai-estourar' ? 'Vai estourar' : 'Upsell alvo';
+      filterPillEl.style.display = '';
+      filterPillEl.innerHTML = 'Filtro: '+lblFilter+' ✕';
+    }
+  }
+
+  // Build tabela
+  var tabelaRows = clientesFiltrados.map(function(c){
+    var pctBar = Math.min(c.pctProj * 100, 100);
+    var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
+    var pctTxt = Math.round(c.pctProj * 100);
+    var excTxt = c.excedente > 0 ? '+'+c.excedente : '—';
+    var excCol = c.excedente > 0 ? 'var(--danger)' : 'var(--muted)';
+    var aliasEsc = String(c.cfg.alias||'').replace(/'/g,"\\'");
+    var trClass = c.status === 'crit' ? 'crit' : (c.status === 'warn' ? 'warn' : (c.isUpsell ? 'upsell-bg' : ''));
+    var upsellBadge = c.isUpsell ? '<span class="ctr-upsell-badge" title="Estourou 2+ trims consecutivos">📈 UPSELL</span>' : '';
+    return '<tr class="'+trClass+'" onclick="_ctrScrollToCard(\''+aliasEsc+'\')">'
+      + '<td><span class="ctr-st-pill '+c.status+'">'+c.statusLbl+'</span></td>'
+      + '<td><strong>'+c.cfg.nome+'</strong>'+upsellBadge+'<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px">'+c.cfg.alias+'</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px"><strong>'+c.limiteTrim+'</strong><div style="font-size:10px;color:var(--muted)">'+c.cfg.limite_mes+'/mês</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px">'+c.usoTrim+'<div class="ctr-mini-bar"><div class="ctr-mini-bar-fill" style="width:'+pctBar+'%;background:'+barColor+'"></div></div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px"><strong style="color:'+barColor+'">'+c.projTrim+'</strong><div style="font-size:10px;color:var(--muted)">'+pctTxt+'% do limite</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:13px;color:'+excCol+';font-weight:700">'+excTxt+'</td>'
+      + '<td style="text-align:center;color:var(--muted);font-size:14px">↓</td>'
+    + '</tr>';
+  }).join('');
+  if(!tabelaRows){
+    tabelaRows = '<tr><td colspan="7" class="ctr-tabela-empty">Nenhum contrato com o filtro/busca aplicado</td></tr>';
+  }
+  tabelaEl.className = 'ctr-tabela-exec';
+  tabelaEl.innerHTML = '<table>'
+    + '<thead><tr>'
+    +   '<th>Status</th>'
+    +   '<th>Cliente</th>'
+    +   '<th style="text-align:right">Limite trim</th>'
+    +   '<th style="text-align:right">Acumulado</th>'
+    +   '<th style="text-align:right">'+(isTrimAtual?'Projeção':'Fechado')+'</th>'
+    +   '<th style="text-align:right">Excedente</th>'
+    +   '<th style="text-align:center">→</th>'
+    + '</tr></thead>'
+    + '<tbody>'+tabelaRows+'</tbody>'
+    + '</table>';
+
   // ── Lista por cliente (grid 2-por-linha, foco no trimestre) ──
+  // Respeita filtros aplicados via Zona 4 (cards do topo + busca)
   listEl.className = 'ctr-list';
-  listEl.innerHTML = clientes.map(function(c){
+  listEl.innerHTML = clientesFiltrados.map(function(c){
     var pctBar = Math.min(c.pctProj * 100, 100);
     var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
     var statusTxt = c.statusLbl.toUpperCase();
@@ -19498,11 +19947,13 @@ function renderContratosSSG(){
       + '</div>';
     }).join('');
 
-    return '<div class="ctr-card s-'+c.status+'">'
+    var aliasUp = String(c.cfg.alias||'').toUpperCase();
+    var upsellTag = c.isUpsell ? '<span class="ctr-upsell-badge" style="margin-left:6px" title="Estourou 2+ trims consecutivos · alvo upsell">📈 UPSELL</span>' : '';
+    return '<div class="ctr-card s-'+c.status+'" data-alias="'+aliasUp+'" style="transition:box-shadow .3s">'
       // Header: nome + status
       + '<div class="ctr-c-hd">'
         + '<div class="ctr-c-hd-left">'
-          + '<div class="ctr-c-name">'+c.cfg.nome+'</div>'
+          + '<div class="ctr-c-name">'+c.cfg.nome+upsellTag+'</div>'
           + '<div class="ctr-c-sub">'+c.cfg.limite_mes+'/mês · '+c.limiteTrim+'/trim · '+c.cfg.alias+'</div>'
           + obsTxt
         + '</div>'
