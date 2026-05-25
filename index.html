@@ -1640,6 +1640,9 @@ body[data-mode="user"] .tb-user-chip{display:inline-flex}
 body[data-mode="user"] #gw-user-pill,
 body[data-mode="user"] #tb-logout-btn,
 body[data-mode="user"] #at-piloto-badge{display:none!important}
+/* PDF Executivo (8 KPIs GWMS) é visão estratégica global — só admin */
+body[data-user-perfil="gestor"] .rpt-type-exec,
+body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
 .eq-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:eqToastIn .3s ease-out}
 @keyframes eqToastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 
@@ -9198,6 +9201,22 @@ function handleOverlayClick(e){if(e.target===document.getElementById('import-ove
 function openRptModal(){
   var m=document.getElementById('rpt-modal');
   if(!m)return;
+  // POC permissão: pra não-admin, "Executivo" fica escondido (CSS) — default vira "Por Cliente"
+  if(typeof getUserPerfil==='function'){
+    var _p = getUserPerfil();
+    if(_p === 'gestor' || _p === 'gestor_bh'){
+      var execRadio = document.querySelector('input[name="rpt-type"][value="exec"]');
+      var cliRadio  = document.querySelector('input[name="rpt-type"][value="cli"]');
+      if(execRadio && execRadio.checked && cliRadio){
+        execRadio.checked = false;
+        cliRadio.checked  = true;
+        // sincroniza classe visual
+        document.querySelectorAll('.rpt-type').forEach(function(el){ el.classList.remove('sel'); });
+        var cliLabel = document.querySelector('.rpt-type[data-rpt="cli"]');
+        if(cliLabel) cliLabel.classList.add('sel');
+      }
+    }
+  }
   _rptPopulateFilters();
   _rptSyncOpts();
   _rptPrefetchSideData();
@@ -9297,6 +9316,10 @@ function _rptPopulateFilters(){
     if(typeof EMPRESAS==='object'&&EMPRESAS){
       clis=Object.keys(EMPRESAS).map(function(k){return {k:k,l:(EMPRESAS[k]&&EMPRESAS[k].nome)||k};});
     }
+    // POC permissão (Fabio 22/05): só clientes com tickets em filas permitidas
+    if(typeof userCanSeeCliente==='function'){
+      clis = clis.filter(function(o){ return userCanSeeCliente(o.k); });
+    }
     // Fix QA #5: ordem alfabética pt-BR
     clis.sort(function(a,b){return (a.l||'').localeCompare(b.l||'','pt-BR');});
     cSel.innerHTML='<option value="">Todos os clientes</option>'+
@@ -9309,9 +9332,14 @@ function _rptPopulateFilters(){
   // Fila — chips visíveis inline
   var fChips=document.getElementById('rpt-f-fila-chips');
   if(fChips){
-    var filas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+    var filas=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST.slice():[];
+    // POC permissão (Fabio 22/05): só filas permitidas do usuário
+    if(typeof userFilasPermitidas==='function'){
+      var fp = userFilasPermitidas();
+      if(fp){ filas = filas.filter(function(f){ return fp.indexOf(String(f).toUpperCase()) !== -1; }); }
+    }
     var curFila=(typeof activeFilaOP!=='undefined'&&activeFilaOP&&activeFilaOP!=='all')?activeFilaOP:'';
-    // Seleção inicial: tela com fila ativa → só ela; senão → todas
+    // Seleção inicial: tela com fila ativa → só ela; senão → todas (limitadas pelas permitidas)
     _rptFilasSelected=curFila?[curFila]:filas.slice();
     fChips.innerHTML=filas.map(function(f){
       var on=_rptFilasSelected.indexOf(f)!==-1;
@@ -9365,7 +9393,12 @@ function rptFilaToggle(el){
   _rptFilaUpdateCount();
 }
 function rptFilaAll(select){
-  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST.slice():[];
+  // POC permissão: "Marcar todas" só marca as filas que o usuário pode ver
+  if(typeof userFilasPermitidas==='function'){
+    var fp = userFilasPermitidas();
+    if(fp){ all = all.filter(function(f){ return fp.indexOf(String(f).toUpperCase()) !== -1; }); }
+  }
   _rptFilasSelected=select?all.slice():[];
   var container=document.getElementById('rpt-f-fila-chips');
   if(container){
@@ -9378,7 +9411,11 @@ function rptFilaAll(select){
 function _rptFilaUpdateCount(){
   var el=document.getElementById('rpt-f-fila-count');
   if(!el)return;
-  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST:[];
+  var all=(typeof FILAS_LIST!=='undefined'&&FILAS_LIST)?FILAS_LIST.slice():[];
+  if(typeof userFilasPermitidas==='function'){
+    var fp = userFilasPermitidas();
+    if(fp){ all = all.filter(function(f){ return fp.indexOf(String(f).toUpperCase()) !== -1; }); }
+  }
   var n=_rptFilasSelected.length;
   if(n===0)el.textContent='· nenhuma selecionada';
   else if(n===all.length)el.textContent='· todas ('+n+')';
@@ -20484,7 +20521,7 @@ function renderIA(){
     <div class="rpt-body">
       <div class="rpt-sec-lbl">Tipo de relatório</div>
       <div class="rpt-types">
-        <label class="rpt-type sel" data-rpt="exec">
+        <label class="rpt-type sel rpt-type-exec" data-rpt="exec">
           <input type="radio" name="rpt-type" value="exec" checked onchange="rptTypeChange()">
           <div>
             <div class="rpt-type-ttl">Executivo — 8 KPIs GWMS</div>
