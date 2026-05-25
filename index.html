@@ -1426,11 +1426,18 @@ body.squad-mode #rpt-btn{display:none!important}
 /* Zona 3 — Filtros agrupados + tabela */
 .bh-filtro-grupo{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,255,255,.03);border-radius:18px;margin-right:6px;margin-bottom:6px}
 .bh-filtro-grupo-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
-.bh-luzes-cell{white-space:nowrap;font-family:var(--mono);font-size:14px;letter-spacing:1px}
-.bh-luz.ok{color:#10b981}
-.bh-luz.risco{color:#dc2626}
-.bh-luz.na{color:#6b7280;opacity:.45}
-.bh-row-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.bh-luzes-cell{white-space:nowrap;font-family:var(--mono);font-size:16px;letter-spacing:2px;line-height:1}
+.bh-luz{display:inline-block;width:11px;height:11px;border-radius:50%;margin:0 1px;vertical-align:middle;font-size:0;line-height:1}
+.bh-luz.ok{background:#10b981;box-shadow:0 0 0 1px rgba(16,185,129,.4)}
+.bh-luz.risco{background:#dc2626;box-shadow:0 0 6px rgba(220,38,38,.55), 0 0 0 1px rgba(220,38,38,.5)}
+.bh-luz.na{background:#374151;box-shadow:0 0 0 1px rgba(255,255,255,.08);opacity:.6}
+.bh-row-sub{font-size:10px;color:var(--muted);margin-top:2px;font-weight:400}
+/* Linhas da carteira com mais respiro */
+.bh-zona3 .bh-table tbody tr.bh-row{transition:background .12s;cursor:pointer}
+.bh-zona3 .bh-table tbody tr.bh-row:hover{background:rgba(255,255,255,.03)}
+.bh-zona3 .bh-table td{padding:11px 12px;vertical-align:middle}
+.bh-zona3 .bh-table th{padding:10px 12px;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border)}
+.bh-zona3 .bh-table td.r,.bh-zona3 .bh-table th.r{text-align:right;font-family:var(--mono)}
 /* Zona 4 — Indicadores executivos */
 .bh-exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 .bh-exec-bloco{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
@@ -1441,16 +1448,38 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-exec-util.risco-alto .bh-exec-val{color:#f59e0b}
 .bh-exec-util.ok .bh-exec-val{color:#10b981}
 .bh-exec-tag{display:inline-block;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:#f59e0b;font-size:9px;font-weight:600;text-transform:none;letter-spacing:0;margin-left:6px;border:1px solid rgba(245,158,11,.25)}
-/* Evolução da Carteira — narrativa visual integrada (opção B) */
-.bh-exec-evolucao{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.06));border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:18px 20px}
-.bh-evo-flow{display:flex;align-items:center;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
-.bh-evo-step{flex:1;min-width:140px;text-align:center;padding:10px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px}
-.bh-evo-step.bh-evo-final{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.35)}
-.bh-evo-step-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-.bh-evo-step-val{font-size:14px;font-weight:800;color:var(--text);font-family:var(--display)}
-.bh-evo-arrow{font-size:18px;color:var(--blue);font-weight:700;flex-shrink:0}
-.bh-evo-deltas{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text);padding-top:12px;border-top:1px dashed var(--border)}
-.bh-evo-deltas span strong{font-family:var(--mono)}
+/* Sub-section headers (heatmap, dentro de zonas) */
+.bh-subsection-hd{display:flex;align-items:baseline;gap:14px;margin:18px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.bh-subsection-titulo{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bh-subsection-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+/* Evolução da Carteira — narrativa visual integrada (opção B · polish v5.1) */
+.bh-exec-evolucao{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(16,185,129,.05));border:1px solid rgba(59,130,246,.25);border-radius:12px;padding:20px 24px}
+.bh-evo-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed rgba(255,255,255,.08)}
+.bh-evo-titulo{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bh-evo-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.bh-evo-flow{display:flex;align-items:stretch;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.bh-evo-step{flex:1;min-width:160px;text-align:center;padding:14px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.bh-evo-step.bh-evo-final{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.4);box-shadow:0 2px 12px rgba(16,185,129,.15)}
+.bh-evo-step-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.bh-evo-step-val{font-size:18px;font-weight:800;color:var(--text);font-family:var(--display);line-height:1.1}
+.bh-evo-final .bh-evo-step-val{color:#10b981}
+.bh-evo-step-sub{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-style:italic;margin-top:2px}
+.bh-evo-arrow{font-size:22px;color:var(--blue);font-weight:700;flex-shrink:0;align-self:center;opacity:.7}
+/* Deltas em 3 cards lado a lado */
+.bh-evo-deltas{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.08)}
+.bh-evo-delta{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:8px;border-left:3px solid #6b7280}
+.bh-evo-delta.perda{border-left-color:#dc2626;background:rgba(220,38,38,.04)}
+.bh-evo-delta.ganho{border-left-color:#10b981;background:rgba(16,185,129,.04)}
+.bh-evo-delta.saldo.positivo{border-left-color:#10b981;background:rgba(16,185,129,.07);font-weight:600}
+.bh-evo-delta.saldo.negativo{border-left-color:#dc2626;background:rgba(220,38,38,.07)}
+.bh-evo-delta-icon{font-size:18px;flex-shrink:0}
+.bh-evo-delta-val{font-size:14px;font-weight:800;color:var(--text);font-family:var(--display);line-height:1.1}
+.bh-evo-delta.perda .bh-evo-delta-val{color:#fca5a5}
+.bh-evo-delta.ganho .bh-evo-delta-val{color:#10b981}
+.bh-evo-delta.saldo.positivo .bh-evo-delta-val{color:#10b981}
+.bh-evo-delta.saldo.negativo .bh-evo-delta-val{color:#fca5a5}
+.bh-evo-delta-lbl{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+@media(max-width:900px){.bh-evo-deltas{grid-template-columns:1fr}}
 /* Funil de Cobrança modal */
 .bh-funil-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9998;display:flex;align-items:center;justify-content:center;padding:30px}
 .bh-funil-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;max-width:1280px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
@@ -1571,8 +1600,26 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-banner-tend-titulo{font-family:var(--display);font-size:15px;font-weight:800;color:var(--danger);letter-spacing:-.01em;line-height:1.3;text-transform:uppercase}
 .bh-banner-tend-sub{font-size:11.5px;color:var(--sub);margin-top:5px;line-height:1.4}
 .bh-banner-tend-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:8px}
-.bh-banner-tend-item{background:rgba(0,0,0,.25);border:1px solid rgba(244,63,94,.25);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .15s}
-.bh-banner-tend-item:hover{border-color:var(--danger);background:rgba(244,63,94,.08);transform:translateX(2px)}
+.bh-banner-tend-item{background:rgba(0,0,0,.28);border:1px solid rgba(244,63,94,.28);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:8px}
+.bh-banner-tend-item:hover{border-color:var(--danger);background:rgba(244,63,94,.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(244,63,94,.18)}
+/* Header do card: cliente + ritmo badge */
+.bh-bt-card-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bh-bt-cli{font-size:13.5px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bh-bt-ritmo{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap}
+.bh-bt-ritmo.warn{background:rgba(245,158,11,.18);color:#f59e0b;border:1px solid rgba(245,158,11,.35)}
+.bh-bt-ritmo.high{background:rgba(249,115,22,.18);color:#fb923c;border:1px solid rgba(249,115,22,.4)}
+.bh-bt-ritmo.crit{background:rgba(220,38,38,.22);color:#fca5a5;border:1px solid rgba(220,38,38,.5)}
+/* Bloco de métricas: até zerar → contrato termina */
+.bh-bt-metricas{display:flex;align-items:center;gap:10px;padding:6px 4px}
+.bh-bt-metrica{flex:1;text-align:center}
+.bh-bt-metrica.primaria .bh-bt-metrica-val{color:#fca5a5;font-size:15px}
+.bh-bt-metrica-val{font-family:var(--display);font-size:14px;font-weight:800;color:var(--text);line-height:1}
+.bh-bt-metrica-lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.bh-bt-arrow{font-size:14px;color:var(--muted);font-weight:700}
+/* Antecipa: linha de alerta sutil no rodapé */
+.bh-bt-antecipa{font-size:11px;color:#fca5a5;background:rgba(244,63,94,.08);padding:5px 10px;border-radius:6px;text-align:center;border-left:3px solid var(--danger)}
+.bh-bt-antecipa strong{color:#fff;font-weight:700}
+/* Legacy: mantém pra compatibilidade com versões antigas */
 .bh-banner-tend-cli{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
 .bh-banner-tend-meta{font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.4}
 .bh-bt-num{color:var(--text);font-weight:700}
@@ -17645,14 +17692,35 @@ function renderContratosBH(){
         + contratosRenegociar.slice(0, 6).map(function(c){
             var t = c.tendencia_pool;
             var idx = contratos.indexOf(c);
+            // Helpers de formatação
+            var fmtMeses = function(m){
+              if(m == null) return '—';
+              var inteiro = Math.floor(m);
+              var dec = m - inteiro;
+              if(inteiro >= 1) return inteiro + ' mes' + (inteiro!==1?'es':'');
+              // Decimal: traduz pra semanas/dias pra ficar legível
+              var semanas = Math.round(m * 4);
+              return semanas + ' semana' + (semanas!==1?'s':'');
+            };
+            var ritmo = t.pct_do_pool_mensal || 0;
+            var ritmoCls = ritmo >= 150 ? 'crit' : ritmo >= 120 ? 'high' : 'warn';
+            var ritmoIcon = ritmo >= 150 ? '🔥' : ritmo >= 120 ? '⚠' : '↑';
             return '<div class="bh-banner-tend-item clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
-              + '<div class="bh-banner-tend-cli">' + c.display + '</div>'
-              + '<div class="bh-banner-tend-meta">'
-                + '<span class="bh-bt-num">' + t.meses_ate_zerar + 'm</span> até zerar · '
-                + 'contrato vai até <span class="bh-bt-num">' + t.meses_ate_fim + 'm</span> · '
-                + '<strong>antecipa ' + t.antecipa_meses + ' mês' + (t.antecipa_meses!==1?'es':'') + '</strong> · '
-                + 'ritmo ' + t.pct_do_pool_mensal.toFixed(0) + '% do contratado'
+              + '<div class="bh-bt-card-hd"><strong class="bh-bt-cli">' + c.display + '</strong>'
+                + '<span class="bh-bt-ritmo ' + ritmoCls + '">' + ritmoIcon + ' ' + ritmo.toFixed(0) + '%</span>'
               + '</div>'
+              + '<div class="bh-bt-metricas">'
+                + '<div class="bh-bt-metrica primaria">'
+                  + '<div class="bh-bt-metrica-val">' + fmtMeses(t.meses_ate_zerar) + '</div>'
+                  + '<div class="bh-bt-metrica-lbl">até zerar</div>'
+                + '</div>'
+                + '<div class="bh-bt-arrow">→</div>'
+                + '<div class="bh-bt-metrica">'
+                  + '<div class="bh-bt-metrica-val">' + fmtMeses(t.meses_ate_fim) + '</div>'
+                  + '<div class="bh-bt-metrica-lbl">contrato termina</div>'
+                + '</div>'
+              + '</div>'
+              + '<div class="bh-bt-antecipa">⚠ antecipa <strong>' + fmtMeses(t.antecipa_meses) + '</strong></div>'
             + '</div>';
         }).join('')
         + (contratosRenegociar.length > 6 ? '<button class="bh-bt-vermais" onclick="_bhDrillDown(\'pool_zera\')">Ver todos os ' + contratosRenegociar.length + ' →</button>' : '')
@@ -17709,12 +17777,15 @@ function renderContratosBH(){
       return 'ok';
     };
     heatmapHTML = '<div class="bh-heatmap-wrap">'
-      + '<h3 class="bh-section-title">🔥 Heatmap consumo mensal · % do pool mensal por contrato</h3>'
+      + '<div class="bh-subsection-hd">'
+        + '<span class="bh-subsection-titulo">🔥 Heatmap de consumo mensal</span>'
+        + '<span class="bh-subsection-sub">% do pool mensal por contrato · 5 meses + projeção</span>'
+      + '</div>'
       + '<div class="bh-heatmap-legend">'
-        + '<span><i class="bh-cel ok"></i> ≤30%</span>'
-        + '<span><i class="bh-cel mid"></i> 30-69%</span>'
-        + '<span><i class="bh-cel warn"></i> 70-99%</span>'
-        + '<span><i class="bh-cel crit"></i> ≥100% (estouro)</span>'
+        + '<span><i class="bh-cel ok"></i> ≤30% · folga</span>'
+        + '<span><i class="bh-cel mid"></i> 30-69% · saudável</span>'
+        + '<span><i class="bh-cel warn"></i> 70-99% · próximo do limite</span>'
+        + '<span><i class="bh-cel crit"></i> ≥100% · estouro</span>'
         + '<span><i class="bh-cel na"></i> sem dado</span>'
       + '</div>'
       + '<div class="bh-heatmap-tab-wrap"><table class="bh-heatmap-tab">'
@@ -17855,18 +17926,22 @@ function renderContratosBH(){
       + '</div>'
       // Evolução da Carteira 12m (narrativa visual integrada — opção B)
       + '<div class="bh-exec-evolucao">'
-        + '<div class="bh-exec-lbl">📊 Evolução da Carteira (12 meses) ' + (evolucao.simplificado ? '<span class="bh-exec-tag">estimativa baseada em médias setoriais · automatização em 12m de histórico</span>' : '') + '</div>'
+        + '<div class="bh-evo-hd">'
+          + '<div><div class="bh-evo-titulo">📊 Evolução da Carteira (12 meses)</div>'
+            + '<div class="bh-evo-sub">retenção · expansion · saldo líquido</div></div>'
+          + (evolucao.simplificado ? '<span class="bh-exec-tag" title="V1 simplificada — automatiza com histórico real de 12m em produção">⚠ estimativa</span>' : '')
+        + '</div>'
         + '<div class="bh-evo-flow">'
-          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">12m atrás</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atras) + '/mês</div></div>'
+          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">12 meses atrás</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atras) + '</div><div class="bh-evo-step-sub">por mês</div></div>'
           + '<div class="bh-evo-arrow">→</div>'
-          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">Hoje sem upsell</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.sem_upsell) + '/mês</div></div>'
+          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">Hoje · sem expansion</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.sem_upsell) + '</div><div class="bh-evo-step-sub">só retenção pura</div></div>'
           + '<div class="bh-evo-arrow">→</div>'
-          + '<div class="bh-evo-step bh-evo-final"><div class="bh-evo-step-lbl">Hoje</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atual) + '/mês</div></div>'
+          + '<div class="bh-evo-step bh-evo-final"><div class="bh-evo-step-lbl">Hoje</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atual) + '</div><div class="bh-evo-step-sub">com expansion</div></div>'
         + '</div>'
         + '<div class="bh-evo-deltas">'
-          + '<span>Perda por churn/redução: <strong style="color:#dc2626">-' + _bhFmtBRL(evolucao.perda) + '/mês (-' + evolucao.perda_pct + '%)</strong></span>'
-          + '<span>Ganho via expansion: <strong style="color:#10b981">+' + _bhFmtBRL(evolucao.ganho) + '/mês (+' + evolucao.ganho_pct + '%)</strong></span>'
-          + '<span>Saldo líquido: <strong style="color:' + (evolucao.saldo>=0?'#10b981':'#dc2626') + '">' + (evolucao.saldo>=0?'+':'-') + _bhFmtBRL(Math.abs(evolucao.saldo)) + '/mês (' + (evolucao.saldo_pct>=0?'+':'') + evolucao.saldo_pct + '%)</strong></span>'
+          + '<div class="bh-evo-delta perda"><span class="bh-evo-delta-icon">📉</span><div><div class="bh-evo-delta-val">-' + _bhFmtBRL(evolucao.perda) + '/mês</div><div class="bh-evo-delta-lbl">Perda por churn/redução (-' + evolucao.perda_pct + '%)</div></div></div>'
+          + '<div class="bh-evo-delta ganho"><span class="bh-evo-delta-icon">📈</span><div><div class="bh-evo-delta-val">+' + _bhFmtBRL(evolucao.ganho) + '/mês</div><div class="bh-evo-delta-lbl">Ganho via expansion (+' + evolucao.ganho_pct + '%)</div></div></div>'
+          + '<div class="bh-evo-delta saldo ' + (evolucao.saldo>=0?'positivo':'negativo') + '"><span class="bh-evo-delta-icon">' + (evolucao.saldo>=0?'✅':'⚠️') + '</span><div><div class="bh-evo-delta-val">' + (evolucao.saldo>=0?'+':'-') + _bhFmtBRL(Math.abs(evolucao.saldo)) + '/mês</div><div class="bh-evo-delta-lbl">Saldo líquido (' + (evolucao.saldo_pct>=0?'+':'') + evolucao.saldo_pct + '%)</div></div></div>'
         + '</div>'
       + '</div>'
     + '</div>'
