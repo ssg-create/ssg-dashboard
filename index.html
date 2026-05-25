@@ -2937,6 +2937,52 @@ button:focus-visible,
 [data-theme="light"] .alert-card{border-left-color:#dc2626}
 [data-theme="light"] .actions-panel{border-left-color:#d97706}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH VISÃO CLIENTE (view-cli) ══════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Sub-abas: c-ov, c-tl, c-hs, c-sq, c-inf
+   Mantém o padrão próprio (.co-hero, .gw-hero) mas harmoniza com BH. */
+
+/* co-kpi — hover sutil + transição (igual padrão .kpi) */
+.co-kpi{transition:border-color .2s,transform .2s,background .2s}
+.co-kpi:hover{border-color:var(--border2)}
+.co-kpi[onclick],.co-kpi.clickable{cursor:pointer}
+.co-kpi[onclick]:hover{border-color:var(--teal);background:rgba(0,212,168,.04)}
+.co-kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r)}
+
+/* co-hero — leve refinamento (já tem gradient top, mantém) */
+.co-hero{transition:border-color .2s}
+
+/* .empty (antigo) — harmoniza com .empty-state global mas mantém variante centrada */
+.empty{transition:border-color .2s}
+.empty-icon{transition:transform .2s}
+.empty:hover .empty-icon{transform:scale(1.04)}
+
+/* Botão export-btn (PDF) — focus-visible + touch target */
+.export-btn{min-height:32px}
+.export-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Health Score ring container — touch alvo no canvas */
+.hs-ring canvas[onclick]{cursor:pointer}
+
+/* SLA gauges (sla-grid > sla-card) — já tem hover via polish global */
+
+/* CINF banner — border-left azul (padrão dos banners informativos) */
+#cinf-banner{border-left:3px solid var(--blue);padding-left:14px !important}
+
+/* Light theme — cinf banner */
+[data-theme="light"] #cinf-banner{border-left-color:#2563eb}
+
+/* Timeline (tl-list) — hover de linha quando clicável */
+#tl-list [onclick]{cursor:pointer;transition:background .15s}
+#tl-list [onclick]:hover{background:rgba(0,212,168,.04)}
+
+/* Distinção visual co-content vs co-empty (when toggling) */
+#co-content,#tl-content,#hs-content,#sq-content{
+  animation:fadeInCli .25s ease;
+}
+@keyframes fadeInCli{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
 </style>
 <!-- Lottie web component pra mascote animado (GW Walker) — CDN -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
