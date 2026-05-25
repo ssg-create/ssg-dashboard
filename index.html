@@ -3928,15 +3928,15 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       </div>
       <div id="op-actions-panel" class="actions-panel"></div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Total de chamados',icon:'📊',filtro:function(d){return true;}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em aberto',icon:'📂',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados fechados com êxito',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdTotal()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdAbertos()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdFechadosOk()"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdMuitoAlta()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo medido',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
-        <div class="kpi fu" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em espera',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl" id="kpi-l-7">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">equipe ativa</div></div>
       </div>
       <div class="grid2">
@@ -4138,10 +4138,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" style="margin-bottom:16px">
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Total de chamados — análise',icon:'📊',filtro:function(d){return true;}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados fechados / resolvidos',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdTotal()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdMuitoAlta()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdFechadosOk()"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
       </div>
       <div id="ch-alert-bloq" style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:var(--r);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);font-size:12px;color:var(--warn);align-items:center;gap:8px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
@@ -4396,10 +4396,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null&&!isNaN(d.resp_min);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1&&d.sol_h!=null&&!isNaN(d.sol_h);}})"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
+        <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
       </div>
       <div class="card card-mb" style="padding:16px 20px">
         <div class="card-title" style="margin-bottom:14px">Cumprimento de metas por indicador</div>
@@ -4451,9 +4451,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-3">
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados em espera (todos motivos)',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Chamados sem atendente (triagem pendente)',icon:'🔍',filtro:function(d){return isOpenState(d.estado)&&(!d.atend||d.atend==='—');}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSemAtend()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
     </div>
@@ -4562,10 +4562,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" id="bk-kpis">
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · Total em aberto',icon:'📋',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · Muito Alta em aberto',icon:'🚨',filtro:function(d){return isOpenState(d.estado)&&d.prior==='Muito Alta';}})"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · ordenado por aging',icon:'⏳',filtro:function(d){return isOpenState(d.estado);}})"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
-        <div class="kpi" tabindex="0" onclick="openKpiDrill({titulo:'Backlog · sem resposta &gt; 2 dias',icon:'😴',filtro:function(d){return isOpenState(d.estado)&&(d.resp_min==null||d.resp_min>2880);}})"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogTotal()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogMA()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogAging()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogSemResp()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
       </div>
       <div class="grid2" style="margin-bottom:16px">
         <div class="card">
@@ -15032,6 +15032,24 @@ function closeKpiDrill(ev){
 function _kdrillEscHandler(e){
   if(e.key === 'Escape'){ closeKpiDrill(); }
 }
+
+// ════════════════════════════════════════════════════════════════
+// KPI DRILL — wrappers nomeados (substituem onclick inline com &&)
+// Evita parser HTML strict tratando && como entity inválida.
+// ════════════════════════════════════════════════════════════════
+function _kdTotal(){ openKpiDrill({titulo:'Total de chamados',icon:'📊',filtro:function(d){return true;}}); }
+function _kdAbertos(){ openKpiDrill({titulo:'Chamados em aberto',icon:'📂',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdFechadosOk(){ openKpiDrill({titulo:'Chamados fechados / resolvidos',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}}); }
+function _kdMuitoAlta(){ openKpiDrill({titulo:'Chamados prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}}); }
+function _kdRespMedidos(){ openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null && !isNaN(d.resp_min);}}); }
+function _kdSolMedidos(){ openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1 && d.sol_h!=null && !isNaN(d.sol_h);}}); }
+function _kdAguardCliente(){ openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}}); }
+function _kdEspera(){ openKpiDrill({titulo:'Chamados em espera (todos motivos)',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}}); }
+function _kdSemAtend(){ openKpiDrill({titulo:'Chamados sem atendente (triagem pendente)',icon:'🔍',filtro:function(d){return isOpenState(d.estado) && (!d.atend || d.atend==='—');}}); }
+function _kdBacklogTotal(){ openKpiDrill({titulo:'Backlog · Total em aberto',icon:'📋',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdBacklogMA(){ openKpiDrill({titulo:'Backlog · Muito Alta em aberto',icon:'🚨',filtro:function(d){return isOpenState(d.estado) && d.prior==='Muito Alta';}}); }
+function _kdBacklogAging(){ openKpiDrill({titulo:'Backlog · ordenado por aging',icon:'⏳',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdBacklogSemResp(){ openKpiDrill({titulo:'Backlog · sem resposta há mais de 2 dias',icon:'😴',filtro:function(d){return isOpenState(d.estado) && (d.resp_min==null || d.resp_min>2880);}}); }
 
 function openTicketDetail(num){
   // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
