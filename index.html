@@ -3459,6 +3459,13 @@ button:focus-visible,
   background:#fee2e2;border-color:#fecaca;color:#7f1d1d;
 }
 
+/* CS KPIs clicáveis — feedback de interatividade */
+.cs-kpi[onclick]{cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.cs-kpi[onclick]:hover{border-color:var(--teal);background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%)}
+.cs-kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.cs-kpi[onclick]::after{content:"↗";position:absolute;top:8px;right:10px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .15s}
+.cs-kpi[onclick]:hover::after{opacity:.7}
+
 </style>
 <!-- Lottie web component pra mascote animado (GW Walker) — CDN -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
@@ -4256,7 +4263,19 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       </div>
 
       <div id="at-capacity" class="card card-mb" style="display:none"></div>
+
+      <!-- ── ZONA: Performance histórica do período ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📈 Performance histórica do período</span>
+        <span class="al-zona-hint">volume total · fechados · pendentes por atendente</span>
+      </div>
       <div class="card card-mb"><div class="card-title">Volume total × fechados × pendentes</div><div class="cw" style="height:220px"><canvas id="c-atend"></canvas></div></div>
+
+      <!-- ── ZONA: Carga atual (live GWMS) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">⚡ Carga atual · live GWMS</span>
+        <span class="al-zona-hint">snapshot do "agora" · sync ~10min · clique no nome pra espelhar</span>
+      </div>
       <div class="card card-mb" id="at-util-card">
         <div class="card-title">Carga atual (tempo real via GWMS)
           <span class="card-title-right" style="font-size:10px;color:var(--muted)">
@@ -4270,6 +4289,11 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Ativos totais</div><div class="kpi-val" id="at-util-kpi-tot" style="color:var(--blue)">—</div><div class="kpi-sub">em todas as filas</div></div>
         </div>
         <div class="tbl-scroll" style="max-height:380px;overflow-y:auto"><table class="tbl" id="at-util-tbl"></table></div>
+      </div>
+      <!-- ── ZONA: Ranking detalhado ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🏆 Ranking detalhado · histórico do período</span>
+        <span class="al-zona-hint">clique no nome do atendente pra ver a página individual</span>
       </div>
       <div class="card" id="atend-tbl-card"><div class="card-title">Ranking detalhado</div><div class="tbl-scroll"><table class="tbl" id="atend-tbl"></table></div></div>
     </div>
@@ -4906,9 +4930,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
         <!-- KPIs -->
         <div class="cs-kpi-row">
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--teal)"></div><div class="cs-kpi-lbl">Total de chamados</div><div class="cs-kpi-val" id="cs-kpi-total" style="color:var(--teal)"></div><div class="cs-kpi-sub" id="cs-kpi-total-sub"></div></div>
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--warn)"></div><div class="cs-kpi-lbl">Em aberto</div><div class="cs-kpi-val" id="cs-kpi-abertos" style="color:var(--warn)"></div><div class="cs-kpi-sub" id="cs-kpi-abertos-sub"></div></div>
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--ok)"></div><div class="cs-kpi-lbl">Taxa de resolução</div><div class="cs-kpi-val" id="cs-kpi-taxa" style="color:var(--ok)"></div><div class="cs-kpi-sub" id="cs-kpi-taxa-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdTotal()" title="Clique para ver os chamados"><div class="cs-kpi-accent" style="background:var(--teal)"></div><div class="cs-kpi-lbl">Total de chamados</div><div class="cs-kpi-val" id="cs-kpi-total" style="color:var(--teal)"></div><div class="cs-kpi-sub" id="cs-kpi-total-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdAbertos()" title="Clique para ver os chamados em aberto"><div class="cs-kpi-accent" style="background:var(--warn)"></div><div class="cs-kpi-lbl">Em aberto</div><div class="cs-kpi-val" id="cs-kpi-abertos" style="color:var(--warn)"></div><div class="cs-kpi-sub" id="cs-kpi-abertos-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdFechadosOk()" title="Clique para ver os chamados fechados"><div class="cs-kpi-accent" style="background:var(--ok)"></div><div class="cs-kpi-lbl">Taxa de resolução</div><div class="cs-kpi-val" id="cs-kpi-taxa" style="color:var(--ok)"></div><div class="cs-kpi-sub" id="cs-kpi-taxa-sub"></div></div>
           <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--purple)"></div><div class="cs-kpi-lbl">SLA 1ª resposta</div><div class="cs-kpi-val" id="cs-kpi-sla" style="color:var(--purple)"></div><div class="cs-kpi-sub" id="cs-kpi-sla-sub"></div></div>
         </div>
         <div class="cs-kpi-row">
