@@ -4395,21 +4395,51 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           </div>
         </div>
       </div>
+
+      <!-- ── ZONA 1: 3 cards acionáveis (Sprint A pós cro-advisor SLA) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🎯 Saúde do SLA OTRS</span>
+        <span class="al-zona-hint">regra por serviço/prioridade/cliente · clique pra ver chamados</span>
+      </div>
+      <div class="al-cards-3" id="sl-cards-top"></div>
+
+      <!-- ── ZONA 2: KPIs detalhados de tempo ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">⏱️ Tempos médios do período</span>
+        <span class="al-zona-hint">mediana é mais representativa que média (corta outliers)</span>
+      </div>
       <div class="kpi-row kpi-row-4">
         <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
         <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
         <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
         <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
       </div>
+      <!-- ── ZONA 3: Cumprimento por indicador ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Cumprimento por indicador</span>
+        <span class="al-zona-hint">% dentro do SLA OTRS · barras horizontais</span>
+      </div>
       <div class="card card-mb" style="padding:16px 20px">
         <div class="card-title" style="margin-bottom:14px">Cumprimento de metas por indicador</div>
         <div id="sla-metas-bars"></div>
+      </div>
+
+      <!-- ── ZONA 4: Performance por atendente ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">👥 Performance por atendente</span>
+        <span class="al-zona-hint">cor = % dentro do SLA OTRS · linhas tracejadas = referências</span>
       </div>
       <div class="grid2">
         <div class="card"><div class="card-title">1ª Resposta por atendente <span class="card-title-right" id="sl-resp-meta-lbl">meta: &lt;30min</span></div><div class="cw" style="height:240px"><canvas id="c-resp"></canvas></div></div>
         <div class="card"><div class="card-title">Solução por atendente <span class="card-title-right">meta: &lt;48h</span></div><div class="cw" style="height:240px"><canvas id="c-sol"></canvas></div></div>
       </div>
-      <div class="card card-mb" id="sl-tri-card" style="margin-top:16px">
+
+      <!-- ── ZONA 5: Triagem (chegada de tickets) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🔍 Triagem · chegada de tickets</span>
+        <span class="al-zona-hint">tickets OPEN sem movimento ainda</span>
+      </div>
+      <div class="card card-mb" id="sl-tri-card" style="margin-top:0">
         <div class="card-title">Tickets em triagem
           <span class="card-title-right" style="font-size:10px;color:var(--muted)">
             <span id="sl-tri-meta">carregando…</span> ·
@@ -8667,12 +8697,69 @@ window._hmAbrirDrillHora = function(dd, hh){
   ov.appendChild(card);
 };
 
+// Renderiza os 3 cards acionáveis de saúde SLA OTRS no topo da aba s-sl
+function _renderSlCardsTop(){
+  var el = document.getElementById('sl-cards-top');
+  if(!el || typeof RAW_DATA === 'undefined' || !RAW_DATA) return;
+  // Conta tickets do escopo ativo classificados por situação SLA
+  var nViolando = 0, nRisco = 0, nCumprindo = 0, nElegivel = 0;
+  RAW_DATA.forEach(function(d){
+    if(!d || !d.criado) return;
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+    if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+    if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+      if(d.criado < activeRangeStart || d.criado > activeRangeEnd) return;
+    } else if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+      if(d.criado.toISOString().slice(0,7) !== activeMonth) return;
+    }
+    if(typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return;
+    var th = _slaThreshold(d);
+    if(th == null) return;
+    if(d.resp_min == null || isNaN(d.resp_min)) return;
+    nElegivel++;
+    if(d.resp_min > th) nViolando++;
+    else if(d.resp_min >= th * 0.8) nRisco++;
+    else nCumprindo++;
+  });
+  var pctCumpr = nElegivel > 0 ? Math.round(nCumprindo / nElegivel * 100) : null;
+  var cumprCls = pctCumpr == null ? 'esp' : (pctCumpr >= 80 ? 'crit' : pctCumpr >= 60 ? 'esp' : 'resp');
+  // (reusa as classes .al-acao do refator Alertas: crit=vermelho, esp=laranja, resp=amber)
+  // Pra Cumprimento INVERTEMOS o sentido visual: cor verde dominante via accent
+  var cardViolando = ''
+    + '<div class="al-acao crit" tabindex="0" onclick="_kdSlaViolando()">'
+    +   '<div class="al-acao-icon">🚨</div>'
+    +   '<div class="al-acao-lbl">Violando SLA OTRS</div>'
+    +   '<div class="al-acao-num">'+nViolando+'</div>'
+    +   '<div class="al-acao-sub">'+(nViolando===0?'sem violação no período':'1ª Resposta acima do limite OTRS')+'</div>'
+    +   '<div class="al-acao-acao">ver chamados violados</div>'
+    + '</div>';
+  var cardRisco = ''
+    + '<div class="al-acao esp" tabindex="0" onclick="_kdSlaRisco()">'
+    +   '<div class="al-acao-icon">🟡</div>'
+    +   '<div class="al-acao-lbl">Em risco (80-100%)</div>'
+    +   '<div class="al-acao-num">'+nRisco+'</div>'
+    +   '<div class="al-acao-sub">'+(nRisco===0?'nenhum próximo do limite':'abertos perto de estourar SLA')+'</div>'
+    +   '<div class="al-acao-acao">priorizar agora</div>'
+    + '</div>';
+  var cardCumpr = ''
+    + '<div class="al-acao resp" tabindex="0" onclick="_kdSlaCumprindo()" style="border-left:none">'
+    +   '<div class="al-acao-icon">✅</div>'
+    +   '<div class="al-acao-lbl">% Cumprimento SLA</div>'
+    +   '<div class="al-acao-num" style="color:'+(pctCumpr==null?'var(--muted)':pctCumpr>=80?'var(--ok)':pctCumpr>=60?'var(--warn)':'var(--danger)')+'">'+(pctCumpr==null?'—':pctCumpr+'%')+'</div>'
+    +   '<div class="al-acao-sub">'+(nElegivel===0?'sem tickets elegíveis':nCumprindo+' de '+nElegivel+' dentro do limite OTRS')+'</div>'
+    +   '<div class="al-acao-acao">ver chamados cumprindo</div>'
+    + '</div>';
+  el.innerHTML = cardViolando + cardRisco + cardCumpr;
+}
+
 function renderSl(){
   if(!TRI_DATA||(Date.now()/1000-TRI_DATA.generated_at)>300) fetchTriagem();
   else renderTriagem(TRI_DATA);
   var atend=(getActiveOP().atend||OP.atend).slice(0,10);
   var op=getActiveOP();
   try{populateSlHero(op);}catch(e){console.warn('sl hero:',e);}
+  try{_renderSlCardsTop();}catch(e){console.warn('sl cards top:',e);}
   // ── Sprint 1 (2026-05-21): SLA fiel ao OTRS por atendente ──
   // Antes: cores e barras usavam META_RESP fixo (30min) e a.rm (média simples).
   // Agora: usa calcSLAOtrsPerAtendente — % real de tickets dentro do SLA OTRS
@@ -15050,6 +15137,39 @@ function _kdBacklogTotal(){ openKpiDrill({titulo:'Backlog · Total em aberto',ic
 function _kdBacklogMA(){ openKpiDrill({titulo:'Backlog · Muito Alta em aberto',icon:'🚨',filtro:function(d){return isOpenState(d.estado) && d.prior==='Muito Alta';}}); }
 function _kdBacklogAging(){ openKpiDrill({titulo:'Backlog · ordenado por aging',icon:'⏳',filtro:function(d){return isOpenState(d.estado);}}); }
 function _kdBacklogSemResp(){ openKpiDrill({titulo:'Backlog · sem resposta há mais de 2 dias',icon:'😴',filtro:function(d){return isOpenState(d.estado) && (d.resp_min==null || d.resp_min>2880);}}); }
+
+// SLA OTRS drill — usa regra por serviço/prioridade/cliente
+function _slaThreshold(d){
+  // Replica lógica de calcSLAOtrs pra drill consistente
+  if(typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0) return d.sla_first_response_min;
+  if(typeof getOTRSSLAThreshold === 'function') return getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+  return null;
+}
+function _kdSlaViolando(){
+  openKpiDrill({titulo:'Violando SLA · 1ª Resposta acima do limite OTRS',icon:'🔴',filtro:function(d){
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min > th;
+  }});
+}
+function _kdSlaRisco(){
+  openKpiDrill({titulo:'Em risco · próximos do limite SLA (80-100%)',icon:'🟡',filtro:function(d){
+    if(!isOpenState(d.estado)) return false;
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min >= th * 0.8 && d.resp_min <= th;
+  }});
+}
+function _kdSlaCumprindo(){
+  openKpiDrill({titulo:'Cumprindo SLA · dentro do limite OTRS',icon:'✅',filtro:function(d){
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min <= th;
+  }});
+}
 
 function openTicketDetail(num){
   // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
