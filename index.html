@@ -2886,8 +2886,10 @@ button:focus-visible,
 .sb-import-btn,.sb-export-csv-btn{min-height:32px}
 .kpi-trend,.score-badge,.pill{min-height:18px;display:inline-flex;align-items:center}
 
-/* Card hover — transform sutil (consistente com .kpi) */
-.card{transition:border-color .2s,transform .2s,box-shadow .2s}
+/* Card hover — mantém só border-color (transform/shadow em transition
+   estava forçando composite layer em todos os cards e dando lag em
+   abas com muitos cards). Hover já é gerenciado por .card existente. */
+/* .card transition mantida como original (linha 401): só border-color */
 
 /* Page header — refinamento sutil (mais respiro entre h1 e p) */
 .page-header h1{line-height:1.15}
@@ -2977,11 +2979,8 @@ button:focus-visible,
 #tl-list [onclick]{cursor:pointer;transition:background .15s}
 #tl-list [onclick]:hover{background:rgba(0,212,168,.04)}
 
-/* Distinção visual co-content vs co-empty (when toggling) */
-#co-content,#tl-content,#hs-content,#sq-content{
-  animation:fadeInCli .25s ease;
-}
-@keyframes fadeInCli{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* Distinção visual co-content vs co-empty — REMOVIDO fadeInCli
+   estava animando 4 elementos toda mudança de subnav (lag visível). */
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* ═══ POLISH ALERTAS CRÍTICOS — refator visível v6.1 ═════════ */
