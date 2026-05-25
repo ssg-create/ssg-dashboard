@@ -1382,7 +1382,112 @@ body.squad-mode #rpt-btn{display:none!important}
 .eq-gestor-block{margin-bottom:18px;padding:14px;background:rgba(79,142,247,.04);border:1px solid rgba(79,142,247,.18);border-radius:12px}
 .eq-gestor-hd{font-size:13px;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(79,142,247,.25)}
 
-/* ─── Contratos · Banco de Horas (módulo MSP) ─── */
+/* ═══ Contratos BH — Refator v5 (Fabio 25/05 · 3 skills) ═══ */
+/* Zonas */
+.bh-zona{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:18px}
+.bh-zona-hd{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.bh-zona-titulo{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bh-zona-sub{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.bh-zona-hd-toggle{cursor:pointer;user-select:none;margin-bottom:0}
+.bh-zona-hd-toggle:hover{filter:brightness(1.15)}
+.bh-zona-body{margin-top:16px}
+.bh-refresh-btn{background:transparent;border:1px solid var(--border);color:var(--teal);padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit}
+.bh-refresh-btn:hover{background:rgba(20,184,166,.1)}
+/* Zona 1 — 3 cards acionáveis */
+.bh-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.bh-acao-3{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.bh-acao-3:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25);border-color:var(--blue)}
+.bh-acao-3::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.bh-acao-3.faturar::before{background:#dc2626}
+.bh-acao-3.renegociar::before{background:#f59e0b}
+.bh-acao-3.renovar::before{background:#3b82f6}
+.bh-acao-3-icon{font-size:22px;margin-bottom:4px}
+.bh-acao-3-titulo{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin-bottom:6px}
+.bh-acao-3-num{font-size:34px;font-weight:800;color:var(--text);font-family:var(--display);line-height:1}
+.bh-acao-3.faturar .bh-acao-3-num{color:#dc2626}
+.bh-acao-3.renegociar .bh-acao-3-num{color:#f59e0b}
+.bh-acao-3.renovar .bh-acao-3-num{color:#3b82f6}
+.bh-acao-3-sub{font-size:12px;color:var(--text);margin-top:4px}
+.bh-acao-3-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.bh-mini-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--bg2);border:1px solid var(--border);color:var(--sub)}
+.bh-mini-badge.ok{background:rgba(16,185,129,.12);color:#10b981;border-color:rgba(16,185,129,.3)}
+.bh-mini-badge.warn{background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.3)}
+.bh-mini-badge.urg{background:rgba(220,38,38,.12);color:#fca5a5;border-color:rgba(220,38,38,.3)}
+.bh-acao-3-owner{font-size:10px;color:var(--muted);margin-top:10px;font-style:italic}
+/* Zona 2 — Banners de sinais */
+.bh-banner-sinal{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;border-left:4px solid #6b7280}
+.bh-banner-sinal.upsell{border-left-color:#dc2626;background:rgba(220,38,38,.05)}
+.bh-banner-sinal.subutil{border-left-color:#8b5cf6;background:rgba(139,92,246,.05)}
+.bh-banner-sinal.envelhecido{border-left-color:#f59e0b;background:rgba(245,158,11,.05)}
+.bh-banner-sinal-hd{font-size:12px;color:var(--text);margin-bottom:8px}
+.bh-banner-sinal-list{display:flex;flex-wrap:wrap;gap:6px}
+.bh-banner-sinal-item{font-size:11px;background:var(--bg2);border:1px solid var(--border);padding:3px 9px;border-radius:12px;color:var(--sub);cursor:pointer;transition:all .12s}
+.bh-banner-sinal-item:hover{border-color:var(--blue);color:var(--blue)}
+/* Zona 3 — Filtros agrupados + tabela */
+.bh-filtro-grupo{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,255,255,.03);border-radius:18px;margin-right:6px;margin-bottom:6px}
+.bh-filtro-grupo-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.bh-luzes-cell{white-space:nowrap;font-family:var(--mono);font-size:14px;letter-spacing:1px}
+.bh-luz.ok{color:#10b981}
+.bh-luz.risco{color:#dc2626}
+.bh-luz.na{color:#6b7280;opacity:.45}
+.bh-row-sub{font-size:10px;color:var(--muted);margin-top:2px}
+/* Zona 4 — Indicadores executivos */
+.bh-exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.bh-exec-bloco{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 18px}
+.bh-exec-lbl{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.bh-exec-val{font-size:24px;font-weight:800;color:var(--text);font-family:var(--display);line-height:1.1}
+.bh-exec-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.bh-exec-util.risco-baixo .bh-exec-val{color:#8b5cf6}
+.bh-exec-util.risco-alto .bh-exec-val{color:#f59e0b}
+.bh-exec-util.ok .bh-exec-val{color:#10b981}
+.bh-exec-tag{display:inline-block;padding:2px 8px;border-radius:10px;background:rgba(245,158,11,.12);color:#f59e0b;font-size:9px;font-weight:600;text-transform:none;letter-spacing:0;margin-left:6px;border:1px solid rgba(245,158,11,.25)}
+/* Evolução da Carteira — narrativa visual integrada (opção B) */
+.bh-exec-evolucao{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(16,185,129,.06));border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:18px 20px}
+.bh-evo-flow{display:flex;align-items:center;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
+.bh-evo-step{flex:1;min-width:140px;text-align:center;padding:10px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px}
+.bh-evo-step.bh-evo-final{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.35)}
+.bh-evo-step-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.bh-evo-step-val{font-size:14px;font-weight:800;color:var(--text);font-family:var(--display)}
+.bh-evo-arrow{font-size:18px;color:var(--blue);font-weight:700;flex-shrink:0}
+.bh-evo-deltas{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text);padding-top:12px;border-top:1px dashed var(--border)}
+.bh-evo-deltas span strong{font-family:var(--mono)}
+/* Funil de Cobrança modal */
+.bh-funil-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9998;display:flex;align-items:center;justify-content:center;padding:30px}
+.bh-funil-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;max-width:1280px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.bh-funil-modal-hd{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.bh-funil-modal-hd h2{margin:0;font-size:18px;font-weight:800;color:var(--text)}
+.bh-funil-meta{flex:1;font-size:11.5px;color:var(--muted)}
+.bh-funil-meta strong{color:var(--text)}
+.bh-funil-close{background:transparent;border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px}
+.bh-funil-close:hover{background:rgba(220,38,38,.15);color:#dc2626;border-color:rgba(220,38,38,.35)}
+.bh-funil-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:16px;overflow:auto;flex:1}
+.bh-funil-col{display:flex;flex-direction:column;background:var(--bg2);border-radius:8px;overflow:hidden}
+.bh-funil-col-hd{padding:10px 12px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--text)}
+.bh-funil-col-count{background:var(--bg);padding:1px 8px;border-radius:10px;font-family:var(--mono);font-size:11px}
+.bh-funil-col-sla{padding:4px 12px;font-size:10px;color:var(--muted);background:var(--bg3);border-bottom:1px solid var(--border)}
+.bh-funil-col-body{padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;max-height:calc(90vh - 220px)}
+.bh-funil-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px}
+.bh-funil-item.warn{border-left:3px solid #f59e0b}
+.bh-funil-item.urg{border-left:3px solid #dc2626;background:rgba(220,38,38,.05)}
+.bh-funil-item-cli{font-weight:700;color:var(--text);font-size:11.5px}
+.bh-funil-item-tarefa{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bh-funil-item-meta{display:flex;justify-content:space-between;margin-top:6px;align-items:center}
+.bh-funil-item-val{font-family:var(--mono);font-weight:700;color:#10b981}
+.bh-funil-item-idade{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg2)}
+.bh-funil-item-idade.warn{background:rgba(245,158,11,.18);color:#f59e0b}
+.bh-funil-item-idade.urg{background:rgba(220,38,38,.18);color:#fca5a5}
+.bh-funil-item-btns{display:flex;gap:4px;margin-top:6px}
+.bh-funil-btn-mover{flex:1;background:var(--blue);color:#fff;border:none;padding:4px 8px;border-radius:5px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600}
+.bh-funil-btn-mover:hover{filter:brightness(1.1)}
+.bh-funil-btn-voltar{background:transparent;border:1px solid var(--border);color:var(--muted);width:26px;border-radius:5px;cursor:pointer;font-size:13px}
+.bh-funil-btn-voltar:hover{background:var(--bg3);color:var(--text)}
+.bh-funil-empty{text-align:center;padding:20px 8px;color:var(--muted);font-size:11px;font-style:italic}
+.bh-funil-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.bh-funil-totais{font-size:12px;color:var(--text)}
+.bh-funil-alerta{font-size:12px;color:#f59e0b;background:rgba(245,158,11,.1);padding:6px 12px;border-radius:6px;border:1px solid rgba(245,158,11,.3)}
+@media(max-width:1100px){.bh-cards-3{grid-template-columns:1fr}.bh-exec-grid{grid-template-columns:1fr}.bh-funil-grid{grid-template-columns:1fr;max-height:none}}
+
+/* ─── Contratos · Banco de Horas (módulo MSP) — CSS LEGADO (mantém pro modal e heatmap) ─── */
 .bh-hero{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px 26px;margin-bottom:22px}
 .bh-hero-title{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:18px}
 .bh-hero-title h2{margin:0;font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--text)}
@@ -17253,7 +17358,161 @@ function _bhAggregate(){
 }
 
 // ════════════════════════════════════════════════════════════
-// RENDER da aba Contratos BH — hero clicável + cards de ação + tabela com drill-down
+// HELPERS pra refatoração v5 (Fabio 25/05 — 3 skills consolidadas)
+// ════════════════════════════════════════════════════════════
+// 1) Chave canônica do contrato pra rastreio do funil de cobrança
+function _bhContratoChave(c){
+  return (c._api_cli_alias||c.cli_apo||'') + '||' + (c._api_proj_id||c.projeto||'') + '||' + (c._api_tarefa_id||c.tarefa||'');
+}
+// 2) Estado do funil de cobrança (5 estágios) — persistido em localStorage
+//    Substituído por integração financeira depois. Owner: Rodrigo.
+//    estagios: 'identificado' | 'validado' | 'comunicado' | 'faturado' | 'pago'
+function _bhCobrancaGetEstado(){
+  try { return JSON.parse(localStorage.getItem('_bh_cobranca')||'{}'); } catch(e){ return {}; }
+}
+function _bhCobrancaSetEstado(s){
+  try { localStorage.setItem('_bh_cobranca', JSON.stringify(s)); } catch(e){}
+}
+function _bhCobrancaItem(chave){
+  var e = _bhCobrancaGetEstado();
+  return e[chave] || null;
+}
+window._bhCobrancaMudarEstagio = function(chave, novoEstagio, valor_rs){
+  var e = _bhCobrancaGetEstado();
+  var hoje = new Date().toISOString().slice(0,10);
+  if(!e[chave]) e[chave] = { estagio:'identificado', valor_rs: valor_rs||0, data_identificado: hoje };
+  e[chave].estagio = novoEstagio;
+  e[chave]['data_'+novoEstagio] = hoje;
+  if(valor_rs) e[chave].valor_rs = valor_rs;
+  _bhCobrancaSetEstado(e);
+  if(typeof renderContratosBH==='function') renderContratosBH();
+};
+// 3) Métricas agregadas do funil (Taxa de Captura, Idade média, Envelhecidos)
+function _bhCobrancaMetricas(contratos){
+  var estado = _bhCobrancaGetEstado();
+  var hoje = new Date();
+  var total_identificado_rs = 0, total_faturado_rs = 0;
+  var itens_abertos = []; // estágios identificado/validado/comunicado
+  contratos.forEach(function(c){
+    if(c.receita_excedente <= 0) return;
+    var chave = _bhContratoChave(c);
+    var item = estado[chave];
+    // Se nunca foi visto antes, considera "identificado hoje"
+    if(!item){
+      total_identificado_rs += c.receita_excedente;
+      itens_abertos.push({ c:c, chave:chave, estagio:'identificado', idade_dias: 0, valor_rs: c.receita_excedente, data_identificado: hoje.toISOString().slice(0,10) });
+      return;
+    }
+    total_identificado_rs += item.valor_rs || c.receita_excedente;
+    if(item.estagio === 'faturado' || item.estagio === 'pago'){
+      total_faturado_rs += item.valor_rs || c.receita_excedente;
+    } else {
+      var diasIdent = item.data_identificado ? Math.floor((hoje - new Date(item.data_identificado))/86400000) : 0;
+      itens_abertos.push({ c:c, chave:chave, estagio:item.estagio, idade_dias: diasIdent, valor_rs: item.valor_rs || c.receita_excedente, data_identificado: item.data_identificado });
+    }
+  });
+  var captura_pct = total_identificado_rs > 0 ? Math.round(total_faturado_rs / total_identificado_rs * 100) : 0;
+  var idade_media = itens_abertos.length ? Math.round(itens_abertos.reduce(function(s,i){return s+i.idade_dias;},0) / itens_abertos.length) : 0;
+  var envelhecidos = itens_abertos.filter(function(i){return i.idade_dias > 20;});
+  return {
+    total_identificado_rs: total_identificado_rs,
+    total_faturado_rs: total_faturado_rs,
+    captura_pct: captura_pct,
+    idade_media_dias: idade_media,
+    itens_abertos: itens_abertos.sort(function(a,b){return b.idade_dias-a.idade_dias;}),
+    envelhecidos: envelhecidos,
+    contratos_com_excedente: itens_abertos.length + contratos.filter(function(c){
+      if(c.receita_excedente <= 0) return false;
+      var it = estado[_bhContratoChave(c)];
+      return it && (it.estagio==='faturado'||it.estagio==='pago');
+    }).length
+  };
+}
+// 4) 3 luzes binárias por contrato (substitui Health Score 0-100)
+//    consumo: ok se < 80%, risco se ≥ 80% ou estourado
+//    prazo:   ok se > 90 dias até fim, risco se ≤ 90 dias
+//    receita: ok se margem realizada ≥ alvo (15%), risco se < alvo (precisa dado da API)
+function _bhContratoLuzes(c){
+  var pct = c.pct_consumido_total || 0;
+  var luzConsumo = (pct >= 80 || c.livre_h < 0) ? 'risco' : 'ok';
+  var consumoDesc = pct >= 100 ? 'Pool estourado' : (pct >= 80 ? 'Acima de 80%' : 'Saudável');
+  var luzPrazo = (c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90) ? 'risco' : 'ok';
+  var prazoDesc = c.dias_ate_fim <= 30 ? 'Vence em ≤30d' : c.dias_ate_fim <= 90 ? 'Vence em ≤90d' : 'Mais de 90d';
+  // Receita só é avaliável se temos sale_margin da API
+  var luzReceita = 'ok', receitaDesc = 'Margem dentro do esperado';
+  if(c._api_sale_margin != null){
+    if(c._api_sale_margin < 15){ luzReceita = 'risco'; receitaDesc = 'Margem realizada baixa (<15%)'; }
+    else receitaDesc = 'Margem ' + c._api_sale_margin.toFixed(1) + '%';
+  } else {
+    luzReceita = 'na'; receitaDesc = 'Sem dado de margem';
+  }
+  return { consumo: luzConsumo, consumoDesc: consumoDesc, prazo: luzPrazo, prazoDesc: prazoDesc, receita: luzReceita, receitaDesc: receitaDesc };
+}
+// 5) Receita Contratada Vigente (R$/mês equivalente)
+//    Σ (valor_contrato / meses_ciclo) — o "MRR equivalente" sem usar nome MRR
+function _bhReceitaContratadaVigente(contratos){
+  var total = 0;
+  (contratos||[]).forEach(function(c){
+    if(c._api_sale_value && c.pool_h && c.meses_contrato){
+      total += (c._api_sale_value * c.pool_h) / c.meses_contrato;
+    }
+  });
+  return total;
+}
+// 6) Taxa de Utilização média da carteira (% horas consumidas / horas contratadas no ciclo vigente)
+function _bhTaxaUtilizacaoMedia(contratos){
+  if(!contratos || !contratos.length) return 0;
+  var soma = 0, n = 0;
+  contratos.forEach(function(c){
+    if(c.pool_h > 0){ soma += c.pct_consumido_total; n++; }
+  });
+  return n > 0 ? Math.round(soma / n) : 0;
+}
+// 7) Evolução da Carteira 12m (narrativa visual integrada — substitui GRR/NRR)
+//    Versão simplificada V1: usa snapshot atual + estimativa baseada em BH_HISTORICO.
+//    TODO: integrar com histórico real de 12m quando acumular dado suficiente.
+function _bhEvolucao12m(contratos){
+  // V1 SIMPLIFICADA: como não temos histórico de 12m completo, usa snapshot
+  // dos últimos 5 meses (BH_HISTORICO) pra estimar trajetória.
+  var atual = _bhReceitaContratadaVigente(contratos);
+  if(!atual) return { atual:0, atras:0, sem_upsell:0, perda:0, ganho:0, saldo:0, perda_pct:0, ganho_pct:0, saldo_pct:0, simplificado:true };
+  // Estimativa V1: assumir perda histórica de 8% e expansion de 15% (médias setoriais MSP)
+  // até termos dado real de 12m
+  var atras = atual / 1.15;  // se NRR ~ 115%
+  var sem_upsell = atras * 0.92;  // se GRR ~ 92%
+  return {
+    atual: atual,
+    atras: atras,
+    sem_upsell: sem_upsell,
+    perda: atras - sem_upsell,
+    ganho: atual - sem_upsell,
+    saldo: atual - atras,
+    perda_pct: Math.round((atras - sem_upsell) / atras * 100),
+    ganho_pct: Math.round((atual - sem_upsell) / atras * 100),
+    saldo_pct: Math.round((atual - atras) / atras * 100),
+    simplificado: true  // marcador pra UI: precisa de 12m real depois
+  };
+}
+// 8) Detecta clientes que estouraram 2 ciclos seguidos (alvo de upsell — CRO)
+function _bhEstourou2CiclosSeguidos(c){
+  // Como BH_HISTORICO tem 5 meses, considera "2 ciclos" = 2 últimos meses com pct >= 100
+  if(typeof BH_HISTORICO === 'undefined') return false;
+  var chave = c.cli_apo + '||' + c.projeto + '||' + c.tarefa;
+  var hist = BH_HISTORICO[chave];
+  if(!hist || hist.length < 2) return false;
+  var ult = hist[hist.length-1], penult = hist[hist.length-2];
+  return (ult && ult.pct >= 100) && (penult && penult.pct >= 100);
+}
+// 9) Subutilizado <50% no ciclo vigente (risco de churn por perceção de baixo valor)
+function _bhSubutilizado(c){
+  // Só considera contratos não-novos (>= 3 meses de vida vigente)
+  var meses_ja_passados = (c.meses_contrato || 12) - Math.max(0, Math.floor((c.dias_ate_fim||0)/30));
+  if(meses_ja_passados < 3) return false;
+  return c.pct_consumido_total < 50 && c.dias_ate_fim > 30;
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER da aba Contratos BH — refatorado v5 (4 zonas)
 // ════════════════════════════════════════════════════════════
 // Formatador moeda BR (reusado)
 function _bhFmtBRL(v){
@@ -17293,105 +17552,97 @@ function renderContratosBH(){
     var nomes = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     return (nomes[mes]||'?') + '/' + ano;
   })();
-  // ── Hero ──
-  var heroHTML = '<div class="bh-hero">'
-    + '<div class="bh-hero-title">'
-      + '<div><h2>Saúde do Banco de Horas</h2>'
-      + '<div class="bh-hero-sub">' + (function(){
-          var fonteHTML;
-          if(BH_API_STATE.data && BH_API_STATE.data.length){
-            var min = Math.floor((Date.now() - BH_API_STATE.ts) / 60000);
-            fonteHTML = '🟢 <strong>Live</strong> · API apontamento · sync há ' + (min < 1 ? 'menos de 1 min' : min + ' min')
-              + ' · <button onclick="_bhFetchAPI(true).then(function(){if(typeof renderContratosBH===\'function\')renderContratosBH();})" style="background:transparent;border:1px solid var(--border);color:var(--teal);padding:2px 8px;border-radius:4px;font-size:10.5px;cursor:pointer;font-family:inherit">🔄 Atualizar</button>';
-          } else if(BH_API_STATE.loading){
-            fonteHTML = '⏳ Carregando da API...';
-          } else if(BH_API_STATE.error){
-            fonteHTML = '⚠ API indisponível · usando snapshot ' + snapLabel + ' embutido';
-          } else {
-            fonteHTML = '📦 Snapshot ' + snapLabel + ' · iniciando sync...';
-          }
-          return 'Controle de consumo, saldo, excedentes, alertas e renovações · ' + fonteHTML + ' · ' + agg.total + ' contratos · <em>clique nos cards e linhas</em>';
-        })() + '</div></div>'
-      + '<div class="bh-hero-health"><div class="bh-hero-health-num">' + agg.health_media + '</div><div class="bh-hero-health-lbl">/100<br>Saúde média</div></div>'
+  // ─────────────────────────────────────────────────────────────
+  // DADOS PRA 4 ZONAS (calculados uma vez)
+  // ─────────────────────────────────────────────────────────────
+  var cobranca = _bhCobrancaMetricas(contratos);
+  var contratosRenegociar = contratos.filter(function(c){
+    return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;
+  }).sort(function(a,b){ return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999); });
+  var contratosRenovar = contratos.filter(function(c){ return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90; })
+                                  .sort(function(a,b){ return a.dias_ate_fim - b.dias_ate_fim; });
+  var receitaRenovar_mensal = 0;
+  contratosRenovar.forEach(function(c){
+    if(c._api_sale_value && c.pool_h && c.meses_contrato){
+      receitaRenovar_mensal += (c._api_sale_value * c.pool_h) / c.meses_contrato;
+    }
+  });
+  // Sinais (Zona 2)
+  var contratosEstourou2x = contratos.filter(_bhEstourou2CiclosSeguidos);
+  var contratosSubutil = contratos.filter(_bhSubutilizado);
+
+  // Fonte de dado (live ou snapshot)
+  var fonteTxt;
+  if(BH_API_STATE.data && BH_API_STATE.data.length){
+    var min = Math.floor((Date.now() - BH_API_STATE.ts) / 60000);
+    fonteTxt = '🟢 Live · API apontamento · sync há ' + (min < 1 ? '<1 min' : min + ' min');
+  } else if(BH_API_STATE.loading){
+    fonteTxt = '⏳ Carregando da API...';
+  } else if(BH_API_STATE.error){
+    fonteTxt = '⚠ API indisponível · usando snapshot ' + snapLabel;
+  } else {
+    fonteTxt = '📦 Snapshot ' + snapLabel;
+  }
+  // ═════════════════════════════════════════════════════════════
+  // ZONA 1 · O QUE PRECISA AGIR HOJE — 3 cards acionáveis
+  // ═════════════════════════════════════════════════════════════
+  var idadeBadge = cobranca.idade_media_dias > 20 ? 'urg' : cobranca.idade_media_dias > 10 ? 'warn' : 'ok';
+  var capturaBadge = cobranca.captura_pct >= 80 ? 'ok' : cobranca.captura_pct >= 50 ? 'warn' : 'urg';
+  var zona1HTML = '<div class="bh-zona bh-zona1">'
+    + '<div class="bh-zona-hd">'
+      + '<span class="bh-zona-titulo">⚡ O que precisa agir hoje</span>'
+      + '<span class="bh-zona-sub">' + fonteTxt + ' · ' + contratos.length + ' contratos vigentes</span>'
+      + (BH_API_STATE.data && BH_API_STATE.data.length ? ' <button onclick="_bhFetchAPI(true).then(function(){if(typeof renderContratosBH===\'function\')renderContratosBH();})" class="bh-refresh-btn">🔄</button>' : '')
     + '</div>'
-    + '<div class="bh-hero-cards">'
-      + '<div class="bh-hero-card crit clickable" onclick="_bhDrillDown(\'crit\')">'
-        + '<div class="bh-hero-card-num">' + agg.crit + '</div>'
-        + '<div class="bh-hero-card-lbl">🔴 Crítico</div>'
-        + '<div class="bh-hero-card-sub">' + _bhHToHHMM(agg.horas_excedentes) + ' h estouradas</div>'
+    + '<div class="bh-cards-3">'
+      // Card 1: FATURAR (excedente a cobrar)
+      + '<div class="bh-acao-3 faturar clickable" onclick="_bhAbrirFunilCobranca()">'
+        + '<div class="bh-acao-3-icon">💸</div>'
+        + '<div class="bh-acao-3-titulo">Faturar</div>'
+        + '<div class="bh-acao-3-num">' + cobranca.contratos_com_excedente + '</div>'
+        + '<div class="bh-acao-3-sub">' + _bhFmtBRL(cobranca.total_identificado_rs - cobranca.total_faturado_rs) + ' pendente</div>'
+        + '<div class="bh-acao-3-meta">'
+          + '<span class="bh-mini-badge ' + capturaBadge + '">Captura ' + cobranca.captura_pct + '%</span>'
+          + '<span class="bh-mini-badge ' + idadeBadge + '">Idade média ' + cobranca.idade_media_dias + 'd</span>'
+        + '</div>'
+        + '<div class="bh-acao-3-owner">owner: Rodrigo · clique pra abrir funil</div>'
       + '</div>'
-      + '<div class="bh-hero-card warn clickable" onclick="_bhDrillDown(\'warn\')">'
-        + '<div class="bh-hero-card-num">' + agg.warn + '</div>'
-        + '<div class="bh-hero-card-lbl">🟡 Atenção</div>'
-        + '<div class="bh-hero-card-sub">monitorar este mês</div>'
+      // Card 2: RENEGOCIAR (pool zera antes do prazo)
+      + '<div class="bh-acao-3 renegociar clickable" onclick="_bhDrillDown(\'pool_zera\')">'
+        + '<div class="bh-acao-3-icon">📉</div>'
+        + '<div class="bh-acao-3-titulo">Renegociar</div>'
+        + '<div class="bh-acao-3-num">' + contratosRenegociar.length + '</div>'
+        + '<div class="bh-acao-3-sub">pool zerando antes do contrato</div>'
+        + '<div class="bh-acao-3-meta"><span class="bh-mini-badge ' + (contratosRenegociar.length?'urg':'ok') + '">propor aditivo / renovação antecipada</span></div>'
+        + '<div class="bh-acao-3-owner">owner: Rodrigo + Comercial</div>'
       + '</div>'
-      + '<div class="bh-hero-card ok clickable" onclick="_bhDrillDown(\'ok\')">'
-        + '<div class="bh-hero-card-num">' + agg.ok + '</div>'
-        + '<div class="bh-hero-card-lbl">🟢 Saudável</div>'
-        + '<div class="bh-hero-card-sub">consumo dentro do esperado</div>'
-      + '</div>'
-      + '<div class="bh-hero-card receita clickable" onclick="_bhDrillDown(\'receita\')">'
-        + '<div class="bh-hero-card-num">' + _bhFmtBRL(agg.receita_excedente_total) + '</div>'
-        + '<div class="bh-hero-card-lbl">💸 Receita Excedente</div>'
-        + '<div class="bh-hero-card-sub">horas estouradas × valor/hora (a recuperar)</div>'
-      + '</div>'
-      + '<div class="bh-hero-card renov clickable" onclick="_bhDrillDown(\'renov90d\')">'
-        + '<div class="bh-hero-card-num">' + agg.renovacoes_em_90d + '</div>'
-        + '<div class="bh-hero-card-lbl">📅 Renovações em 90d</div>'
-        + '<div class="bh-hero-card-sub">contratos próximos do fim</div>'
-      + '</div>'
-      + '<div class="bh-hero-card tend clickable" onclick="_bhDrillDown(\'pool_zera\')">'
-        + '<div class="bh-hero-card-num">' + agg.pool_zera_antes_prazo + '</div>'
-        + '<div class="bh-hero-card-lbl">📉 Pool zera antes do prazo</div>'
-        + '<div class="bh-hero-card-sub">no ritmo atual</div>'
+      // Card 3: RENOVAR (vencimento próximo)
+      + '<div class="bh-acao-3 renovar clickable" onclick="_bhDrillDown(\'renov90d\')">'
+        + '<div class="bh-acao-3-icon">📅</div>'
+        + '<div class="bh-acao-3-titulo">Renovar</div>'
+        + '<div class="bh-acao-3-num">' + contratosRenovar.length + '</div>'
+        + '<div class="bh-acao-3-sub">' + _bhFmtBRL(receitaRenovar_mensal) + '/mês a confirmar</div>'
+        + '<div class="bh-acao-3-meta"><span class="bh-mini-badge ' + (contratosRenovar.length?'warn':'ok') + '">próximos 90 dias</span></div>'
+        + '<div class="bh-acao-3-owner">owner: Rodrigo + Comercial</div>'
       + '</div>'
     + '</div>'
-    // ── 2ª linha: Radar Financeiro (só aparece se API ativa) ──
-    + (function(){
-        var rf = _bhRadarFinanceiro();
-        if(!rf.ativa) return '';
-        var subRisco = rf.risco_30d_count > 0 ? ('<strong style="color:var(--danger)">' + rf.risco_30d_count + ' em ≤30d</strong> de ' + rf.risco_90d_count + ' totais') : (rf.risco_90d_count + ' contrato' + (rf.risco_90d_count!==1?'s':''));
-        return '<div class="bh-hero-finrow">'
-          + '<div class="bh-hero-finrow-lbl">💼 Radar Financeiro</div>'
-          + '<div class="bh-hero-cards bh-finrow-cards">'
-            + '<div class="bh-hero-card mrr">'
-              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.mrr_potencial) + '</div>'
-              + '<div class="bh-hero-card-lbl">💵 MRR Banco de Horas</div>'
-              + '<div class="bh-hero-card-sub">faturamento mensal recorrente</div>'
-            + '</div>'
-            + '<div class="bh-hero-card risco clickable" onclick="_bhDrillDown(\'risco_mrr_90d\')">'
-              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.risco_90d_mrr) + '</div>'
-              + '<div class="bh-hero-card-lbl">⚠️ Risco 90d (MRR)</div>'
-              + '<div class="bh-hero-card-sub">' + subRisco + ' · clique pra ver</div>'
-            + '</div>'
-            + '<div class="bh-hero-card excedente clickable" onclick="_bhDrillDown(\'excedente\')">'
-              + '<div class="bh-hero-card-num">' + _bhFmtBRL(rf.excedente_rs) + '</div>'
-              + '<div class="bh-hero-card-lbl">💸 Excedente a Faturar</div>'
-              + '<div class="bh-hero-card-sub">' + _bhHToHHMM(rf.excedente_h_total) + ' h em ' + rf.contratos_estourados.length + ' contrato' + (rf.contratos_estourados.length!==1?'s':'') + '</div>'
-            + '</div>'
-          + '</div>'
-        + '</div>';
-      })()
   + '</div>';
 
-  // ── Banner de alerta de tendência (v4.2) ──
-  // Lista os contratos que VÃO ZERAR antes do contrato terminar (super visível)
-  var alertaTend = contratos.filter(function(c){
-    return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;
-  }).sort(function(a,b){
-    return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999);
-  });
-  var bannerTendHTML = '';
-  if(alertaTend.length){
-    bannerTendHTML = '<div class="bh-banner-tend">'
+  // ═════════════════════════════════════════════════════════════
+  // ZONA 2 · SINAIS DA SEMANA — 4 banners (só aparecem se houver)
+  // ═════════════════════════════════════════════════════════════
+  var banners = [];
+  // (a) Pool zerando antes do prazo — mantido como hoje
+  if(contratosRenegociar.length){
+    banners.push('<div class="bh-banner-tend">'
       + '<div class="bh-banner-tend-hd">'
         + '<span class="bh-banner-tend-icon">📉</span>'
         + '<div><div class="bh-banner-tend-titulo">'
-          + alertaTend.length + ' contrato' + (alertaTend.length!==1?'s':'') + ' com POOL ACABANDO ANTES DO CONTRATO TERMINAR</div>'
+          + contratosRenegociar.length + ' contrato' + (contratosRenegociar.length!==1?'s':'') + ' com POOL ACABANDO ANTES DO CONTRATO TERMINAR</div>'
           + '<div class="bh-banner-tend-sub">No ritmo atual de consumo (média dos últimos 3 meses), o pool vai zerar antes da data de renovação. Renegociar ou avisar cliente.</div>'
         + '</div></div>'
         + '<div class="bh-banner-tend-list">'
-        + alertaTend.slice(0, 6).map(function(c){
+        + contratosRenegociar.slice(0, 6).map(function(c){
             var t = c.tendencia_pool;
             var idx = contratos.indexOf(c);
             return '<div class="bh-banner-tend-item clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
@@ -17404,34 +17655,43 @@ function renderContratosBH(){
               + '</div>'
             + '</div>';
         }).join('')
-        + (alertaTend.length > 6 ? '<button class="bh-bt-vermais" onclick="_bhDrillDown(\'pool_zera\')">Ver todos os ' + alertaTend.length + ' →</button>' : '')
-      + '</div>';
+        + (contratosRenegociar.length > 6 ? '<button class="bh-bt-vermais" onclick="_bhDrillDown(\'pool_zera\')">Ver todos os ' + contratosRenegociar.length + ' →</button>' : '')
+      + '</div>');
   }
-
-  // ── Cards de Ação (só problemas — ordenados por prioridade) ──
-  var emRisco = contratos.filter(function(c){return c.status !== 'ok';});
-  var top6 = emRisco.slice(0, 6);
-  var cardsHTML = '';
-  if(top6.length){
-    cardsHTML = '<div class="bh-acoes-wrap">'
-      + '<div class="bh-section-head">'
-        + '<h3 class="bh-section-title">🎯 Ações prioritárias (top ' + top6.length + ' de ' + emRisco.length + ' em risco)</h3>'
-        + (emRisco.length > 6 ? '<button class="eq-btn" onclick="_bhDrillDown(\'risco\')">Ver todos os ' + emRisco.length + ' em risco →</button>' : '')
-      + '</div>'
-      + '<div class="bh-acoes-grid">'
-      + top6.map(function(c){
-        var emoji = c.status==='crit' ? '🔴' : '🟡';
-        var motivo = c.motivo_risco || ('Health ' + c.health + '/100');
-        var avBadge = c.avisar_cliente.nivel !== 'nao' ? '<span class="bh-aviso-pill ' + c.avisar_cliente.cor + '">' + c.avisar_cliente.texto + '</span>' : '';
-        return '<div class="bh-acao-card ' + c.status + ' clickable" onclick="_bhDrillDownContrato(' + contratos.indexOf(c) + ')">'
-          + '<div class="bh-acao-hd">' + emoji + ' <strong>' + c.display + '</strong> ' + avBadge + '</div>'
-          + '<div class="bh-acao-motivo">' + motivo + '</div>'
-          + '<div class="bh-acao-tarefa">' + c.tarefa + ' · ' + c.tipo_banco + ' · health ' + c.health + '</div>'
-          + '<div class="bh-acao-acao">→ ' + c.acao + (c.receita_excedente > 0 ? ' · <strong>' + _bhFmtBRL(c.receita_excedente) + '</strong>' : '') + '</div>'
-        + '</div>';
-      }).join('')
-      + '</div></div>';
+  // (b) Estourou 2 ciclos seguidos — alvo de UPSELL (CRO)
+  if(contratosEstourou2x.length){
+    banners.push('<div class="bh-banner-sinal upsell">'
+      + '<div class="bh-banner-sinal-hd">🔥 <strong>' + contratosEstourou2x.length + ' cliente' + (contratosEstourou2x.length!==1?'s':'') + ' estourou pool 2 ciclos seguidos</strong> · oportunidade de upsell</div>'
+      + '<div class="bh-banner-sinal-list">'
+      + contratosEstourou2x.slice(0,5).map(function(c){
+          var idx = contratos.indexOf(c);
+          return '<span class="bh-banner-sinal-item clickable" onclick="_bhDrillDownContrato(' + idx + ')">' + c.display + '</span>';
+        }).join('')
+      + '</div></div>');
   }
+  // (c) Subutilizado <50% — risco de churn por baixa percepção de valor
+  if(contratosSubutil.length){
+    banners.push('<div class="bh-banner-sinal subutil">'
+      + '<div class="bh-banner-sinal-hd">😴 <strong>' + contratosSubutil.length + ' cliente' + (contratosSubutil.length!==1?'s':'') + ' subutilizando o pool (<50%)</strong> · risco de não-renovação</div>'
+      + '<div class="bh-banner-sinal-list">'
+      + contratosSubutil.slice(0,5).map(function(c){
+          var idx = contratos.indexOf(c);
+          return '<span class="bh-banner-sinal-item clickable" onclick="_bhDrillDownContrato(' + idx + ')">' + c.display + ' (' + Math.round(c.pct_consumido_total) + '%)</span>';
+        }).join('')
+      + '</div></div>');
+  }
+  // (d) Excedente envelhecido >20d — perda de receita
+  if(cobranca.envelhecidos.length){
+    banners.push('<div class="bh-banner-sinal envelhecido">'
+      + '<div class="bh-banner-sinal-hd">⏰ <strong>' + cobranca.envelhecidos.length + ' excedente' + (cobranca.envelhecidos.length!==1?'s':'') + ' identificado' + (cobranca.envelhecidos.length!==1?'s':'') + ' há mais de 20 dias</strong> · faturar urgente</div>'
+      + '<div class="bh-banner-sinal-list">'
+      + cobranca.envelhecidos.slice(0,5).map(function(it){
+          var idx = contratos.indexOf(it.c);
+          return '<span class="bh-banner-sinal-item clickable" onclick="_bhAbrirFunilCobranca()">' + it.c.display + ' (' + it.idade_dias + 'd)</span>';
+        }).join('')
+      + '</div></div>');
+  }
+  var zona2HTML = banners.length ? '<div class="bh-zona bh-zona2"><div class="bh-zona-hd"><span class="bh-zona-titulo">📡 Sinais da semana</span></div>' + banners.join('') + '</div>' : '';
 
   // ── Heatmap Cliente × Mês (5 meses do histórico) ──
   var heatmapHTML = '';
@@ -17495,87 +17755,232 @@ function renderContratosBH(){
       + '</tbody></table></div></div>';
   }
 
-  // ── Filtros chips pra tabela completa ──
+  // ── Filtros chips (5 agrupados — refator v5) ──
   var filtrosHTML = '<div class="bh-filtros-wrap">'
-    + '<span class="bh-filtros-lbl">Filtrar:</span>'
-    + '<button class="bh-chip" data-bh-filtro="status:crit" onclick="_bhToggleFiltro(this)">🔴 Críticos</button>'
-    + '<button class="bh-chip" data-bh-filtro="status:warn" onclick="_bhToggleFiltro(this)">🟡 Atenção</button>'
-    + '<button class="bh-chip" data-bh-filtro="status:ok" onclick="_bhToggleFiltro(this)">🟢 Saudáveis</button>'
-    + '<span class="bh-filtros-sep">·</span>'
-    + '<button class="bh-chip" data-bh-filtro="aviso:formal" onclick="_bhToggleFiltro(this)">Avisar formal</button>'
-    + '<button class="bh-chip" data-bh-filtro="aviso:urgente" onclick="_bhToggleFiltro(this)">Avisar urgente</button>'
-    + '<button class="bh-chip" data-bh-filtro="aviso:preventivo" onclick="_bhToggleFiltro(this)">Avisar preventivo</button>'
-    + '<span class="bh-filtros-sep">·</span>'
-    + '<button class="bh-chip" data-bh-filtro="venc:30" onclick="_bhToggleFiltro(this)">Vence ≤30d</button>'
-    + '<button class="bh-chip" data-bh-filtro="venc:90" onclick="_bhToggleFiltro(this)">Vence ≤90d</button>'
-    + '<span class="bh-filtros-sep">·</span>'
-    + '<button class="bh-chip" data-bh-filtro="margem:prejuizo" onclick="_bhToggleFiltro(this)" title="Margem realizada < 10%">📉 Margem baixa</button>'
-    + '<button class="bh-chip" data-bh-filtro="pool:zera_antes" onclick="_bhToggleFiltro(this)" title="No ritmo atual, pool acaba antes do contrato">📉 Pool zera antes</button>'
-    + '<span class="bh-filtros-sep">·</span>'
+    + '<div class="bh-filtro-grupo">'
+      + '<span class="bh-filtro-grupo-lbl">Status</span>'
+      + '<button class="bh-chip" data-bh-filtro="status:risco" onclick="_bhToggleFiltro(this)">⚠ Em risco</button>'
+    + '</div>'
+    + '<div class="bh-filtro-grupo">'
+      + '<span class="bh-filtro-grupo-lbl">Prazo</span>'
+      + '<button class="bh-chip" data-bh-filtro="venc:30" onclick="_bhToggleFiltro(this)">Vence ≤30d</button>'
+      + '<button class="bh-chip" data-bh-filtro="venc:90" onclick="_bhToggleFiltro(this)">Vence ≤90d</button>'
+    + '</div>'
+    + '<div class="bh-filtro-grupo">'
+      + '<span class="bh-filtro-grupo-lbl">Negócio</span>'
+      + '<button class="bh-chip" data-bh-filtro="pool:zera_antes" onclick="_bhToggleFiltro(this)" title="No ritmo atual, pool acaba antes do contrato">📉 Pool zera antes</button>'
+      + '<button class="bh-chip" data-bh-filtro="aviso:avisar" onclick="_bhToggleFiltro(this)">📢 Avisar cliente</button>'
+    + '</div>'
     + '<button class="bh-chip bh-chip-reset" onclick="_bhLimparFiltros()">✕ Limpar</button>'
   + '</div>';
 
   // ── Tabela completa ──
-  var tabelaHTML = '<div class="bh-tab-wrap">'
-    + '<h3 class="bh-section-title">📋 Todos os contratos · ordenados por risco · clique numa linha pra detalhe</h3>'
+  // ═════════════════════════════════════════════════════════════
+  // ZONA 3 · CARTEIRA COMPLETA — filtros + tabela 7 cols + heatmap
+  // ═════════════════════════════════════════════════════════════
+  var tabelaHTML = '<div class="bh-zona bh-zona3">'
+    + '<div class="bh-zona-hd">'
+      + '<span class="bh-zona-titulo">📋 Carteira completa</span>'
+      + '<span class="bh-zona-sub">' + contratos.length + ' contratos · ordenado por risco · clique pra detalhe</span>'
+    + '</div>'
     + filtrosHTML
     + '<table class="bh-table">'
     + '<thead><tr>'
-      + '<th>Status</th><th>Cliente</th><th>Tarefa</th><th>Health</th>'
-      + '<th class="r">Pool</th><th class="r">Saldo</th>'
-      + '<th class="r">% Pool</th>'
-      + '<th class="r">Cons. mês</th>'
-      + '<th>📉 Tendência</th>'
-      + '<th class="r">Dias</th><th class="r">R$/h</th>'
-      + '<th>Avisar?</th><th>Ação recomendada</th>'
+      + '<th title="3 luzes: Consumo · Prazo · Receita">Status</th>'
+      + '<th>Cliente</th>'
+      + '<th class="r">% Consumido</th>'
+      + '<th class="r">Vence em</th>'
+      + '<th class="r">Excedente</th>'
+      + '<th>Próxima ação</th>'
+      + '<th class="r">Idade</th>'
     + '</tr></thead><tbody>'
     + contratos.map(function(c){
-      var emoji = c.status==='crit'?'🔴':(c.status==='warn'?'🟡':'🟢');
+      var luzes = _bhContratoLuzes(c);
       var pctConsCls = c.pct_consumido_total >= 100 ? 'crit' : (c.pct_consumido_total >= 85 ? 'crit' : (c.pct_consumido_total >= 70 ? 'warn' : ''));
-      var saldoCls = c.livre_h < 0 ? 'crit' : '';
-      var healthCls = c.health < 30 ? 'crit' : (c.health < 60 ? 'warn' : 'ok');
       var diasCls = c.dias_ate_fim >= 0 && c.dias_ate_fim <= 30 ? 'crit' : (c.dias_ate_fim >= 31 && c.dias_ate_fim <= 90 ? 'warn' : '');
-      var valHora = c.valor_hora ? ('R$ ' + c.valor_hora.toFixed(2).replace('.',',')) : '—';
       var idx = contratos.indexOf(c);
-      var avCls = c.avisar_cliente.cor;
-      var avTxt = c.avisar_cliente.texto;
-      // Pool trim com indicador de estouro
-      var trim = c.trimestre || {};
-      var trimCls = trim.estourou ? 'crit' : (trim.tendencia ? 'warn' : '');
-      var trimSuffix = trim.estourou ? ' ⚠' : (trim.tendencia ? ' ↑' : '');
-      // Tendência do pool — leitura curta pra cabeçalho
-      var t = c.tendencia_pool || {};
-      var tendCelCls = '', tendCelTxt = '—';
-      if(t.pool_ja_zerado){
-        tendCelCls = 'crit'; tendCelTxt = '🔴 já zerou';
-      } else if(t.zera_antes_do_prazo){
-        tendCelCls = 'crit'; tendCelTxt = '🔴 zera em ' + t.meses_ate_zerar + 'm · antecipa ' + t.antecipa_meses + 'm';
-      } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 2){
-        tendCelCls = 'warn'; tendCelTxt = '🟡 zera em ' + t.meses_ate_zerar + 'm';
-      } else if(t.meses_ate_zerar != null){
-        tendCelCls = 'ok'; tendCelTxt = '🟢 dura ' + t.meses_ate_zerar + 'm';
-      }
+      // Idade da última ação (do funil de cobrança ou 0)
+      var chave = _bhContratoChave(c);
+      var itemFunil = _bhCobrancaItem(chave);
+      var idadeAcao = itemFunil && itemFunil.data_identificado
+        ? Math.floor((Date.now() - new Date(itemFunil.data_identificado).getTime())/86400000) + 'd'
+        : '—';
+      var excTxt = c.receita_excedente > 0 ? _bhFmtBRL(c.receita_excedente) : '—';
+      var excCls = c.receita_excedente > 0 ? 'crit' : '';
+      var acaoTxt = c.acao || '—';
       return '<tr class="bh-row ' + c.status + ' clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
-        + '<td><span class="bh-status-badge ' + c.status + '">' + emoji + ' ' + (c.status==='crit'?'CRÍ':c.status==='warn'?'ATE':'OK') + '</span></td>'
-        + '<td><strong>' + c.display + '</strong>' + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente bh-badge-sm" title="Contrato ficou inativo neste mês">📌</span>' : '') + '</td>'
-        + '<td title="' + c.projeto + '">' + c.tarefa + '</td>'
-        + '<td><span class="bh-health-pill ' + healthCls + '">' + c.health + '</span></td>'
-        + '<td class="r">' + _bhHToHHMM(c.pool_h) + '</td>'
-        + '<td class="r ' + saldoCls + '">' + _bhHToHHMM(c.livre_h) + '</td>'
+        // 3 luzes binárias substituem Health Score
+        + '<td class="bh-luzes-cell">'
+          + '<span class="bh-luz ' + luzes.consumo + '" title="Consumo: ' + luzes.consumoDesc + '">●</span>'
+          + '<span class="bh-luz ' + luzes.prazo + '" title="Prazo: ' + luzes.prazoDesc + '">●</span>'
+          + '<span class="bh-luz ' + luzes.receita + '" title="Receita: ' + luzes.receitaDesc + '">●</span>'
+        + '</td>'
+        + '<td><strong>' + c.display + '</strong>' + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente bh-badge-sm" title="Contrato ficou inativo neste mês">📌</span>' : '') + '<div class="bh-row-sub">' + c.tarefa + '</div></td>'
         + '<td class="r ' + pctConsCls + '">' + c.pct_consumido_total.toFixed(1) + '%</td>'
-        + '<td class="r ' + trimCls + '">' + _bhHToHHMM(c.cons_mes_h) + trimSuffix + '</td>'
-        + '<td class="bh-tend-cell ' + tendCelCls + '" title="ritmo médio ' + (t.pct_do_pool_mensal||0).toFixed(0) + '% do pool · contrato vai até ' + (t.meses_ate_fim||0) + 'm">' + tendCelTxt + '</td>'
         + '<td class="r ' + diasCls + '">' + c.dias_ate_fim + 'd</td>'
-        + '<td class="r">' + valHora + '</td>'
-        + '<td><span class="bh-aviso-pill ' + avCls + '">' + avTxt + '</span></td>'
-        + '<td class="bh-acao-cell">' + c.acao + '</td>'
+        + '<td class="r ' + excCls + '">' + excTxt + '</td>'
+        + '<td class="bh-acao-cell">' + acaoTxt + '</td>'
+        + '<td class="r" title="Idade desde identificado no funil de cobrança">' + idadeAcao + '</td>'
       + '</tr>';
     }).join('')
-    + '</tbody></table></div>';
+    + '</tbody></table>'
+    + heatmapHTML
+  + '</div>';
 
-  // Container do modal (vazio inicial — populado no drill-down)
-  el.innerHTML = heroHTML + bannerTendHTML + cardsHTML + heatmapHTML + tabelaHTML + '<div id="bh-modal" class="bh-modal-overlay" style="display:none" onclick="if(event.target===this)_bhFecharDrill()"><div class="bh-modal-card" id="bh-modal-card"></div></div>';
+  // ═════════════════════════════════════════════════════════════
+  // ZONA 4 · INDICADORES EXECUTIVOS — Receita · Evolução · Utilização
+  // ═════════════════════════════════════════════════════════════
+  var receitaContratada = _bhReceitaContratadaVigente(contratos);
+  var evolucao = _bhEvolucao12m(contratos);
+  var utilMedia = _bhTaxaUtilizacaoMedia(contratos);
+  var utilCls = utilMedia < 50 ? 'risco-baixo' : utilMedia > 85 ? 'risco-alto' : 'ok';
+  var utilDesc = utilMedia < 50 ? 'risco de subutilização (cliente pode não renovar)' : utilMedia > 85 ? 'pressão alta no pool (avaliar upsell)' : 'utilização saudável';
+  var zona4HTML = '<div class="bh-zona bh-zona4" id="bh-zona-exec">'
+    + '<div class="bh-zona-hd bh-zona-hd-toggle" onclick="_bhToggleExec()">'
+      + '<span class="bh-zona-titulo">📊 Indicadores executivos</span>'
+      + '<span class="bh-zona-sub">Receita Contratada · Evolução · Utilização <span class="bh-toggle-arrow">▼</span></span>'
+    + '</div>'
+    + '<div class="bh-zona-body" id="bh-zona-exec-body">'
+      + '<div class="bh-exec-grid">'
+        + '<div class="bh-exec-bloco">'
+          + '<div class="bh-exec-lbl">Receita Contratada Vigente</div>'
+          + '<div class="bh-exec-val">' + _bhFmtBRL(receitaContratada) + '</div>'
+          + '<div class="bh-exec-sub">por mês equivalente · ' + contratos.length + ' contratos ativos</div>'
+        + '</div>'
+        + '<div class="bh-exec-bloco bh-exec-util ' + utilCls + '">'
+          + '<div class="bh-exec-lbl">Taxa de Utilização média</div>'
+          + '<div class="bh-exec-val">' + utilMedia + '%</div>'
+          + '<div class="bh-exec-sub">' + utilDesc + '</div>'
+        + '</div>'
+      + '</div>'
+      // Evolução da Carteira 12m (narrativa visual integrada — opção B)
+      + '<div class="bh-exec-evolucao">'
+        + '<div class="bh-exec-lbl">📊 Evolução da Carteira (12 meses) ' + (evolucao.simplificado ? '<span class="bh-exec-tag">estimativa baseada em médias setoriais · automatização em 12m de histórico</span>' : '') + '</div>'
+        + '<div class="bh-evo-flow">'
+          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">12m atrás</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atras) + '/mês</div></div>'
+          + '<div class="bh-evo-arrow">→</div>'
+          + '<div class="bh-evo-step"><div class="bh-evo-step-lbl">Hoje sem upsell</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.sem_upsell) + '/mês</div></div>'
+          + '<div class="bh-evo-arrow">→</div>'
+          + '<div class="bh-evo-step bh-evo-final"><div class="bh-evo-step-lbl">Hoje</div><div class="bh-evo-step-val">' + _bhFmtBRL(evolucao.atual) + '/mês</div></div>'
+        + '</div>'
+        + '<div class="bh-evo-deltas">'
+          + '<span>Perda por churn/redução: <strong style="color:#dc2626">-' + _bhFmtBRL(evolucao.perda) + '/mês (-' + evolucao.perda_pct + '%)</strong></span>'
+          + '<span>Ganho via expansion: <strong style="color:#10b981">+' + _bhFmtBRL(evolucao.ganho) + '/mês (+' + evolucao.ganho_pct + '%)</strong></span>'
+          + '<span>Saldo líquido: <strong style="color:' + (evolucao.saldo>=0?'#10b981':'#dc2626') + '">' + (evolucao.saldo>=0?'+':'-') + _bhFmtBRL(Math.abs(evolucao.saldo)) + '/mês (' + (evolucao.saldo_pct>=0?'+':'') + evolucao.saldo_pct + '%)</strong></span>'
+        + '</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  // Modal pro drill-down (mantém estrutura existente)
+  var modalHTML = '<div id="bh-modal" class="bh-modal-overlay" style="display:none" onclick="if(event.target===this)_bhFecharDrill()"><div class="bh-modal-card" id="bh-modal-card"></div></div>';
+
+  el.innerHTML = zona1HTML + zona2HTML + tabelaHTML + zona4HTML + modalHTML;
 }
+// Toggle da zona executiva
+window._bhToggleExec = function(){
+  var body = document.getElementById('bh-zona-exec-body');
+  var arrow = document.querySelector('#bh-zona-exec .bh-toggle-arrow');
+  if(!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if(arrow) arrow.textContent = isOpen ? '▶' : '▼';
+};
+
+// ════════════════════════════════════════════════════════════
+// Modal · Funil de Cobrança (Rodrigo move estágios manualmente)
+// Process-doc: SOP 2 · 5 estágios · SLA 10d total
+// ════════════════════════════════════════════════════════════
+window._bhAbrirFunilCobranca = function(){
+  var contratos = _bhGetContratos();
+  var cobranca = _bhCobrancaMetricas(contratos);
+  var estagios = [
+    {key:'identificado', lbl:'Identificado', icon:'🔍', cor:'#94a3b8', sla:0},
+    {key:'validado',     lbl:'Validado',     icon:'✓',  cor:'#3b82f6', sla:2},
+    {key:'comunicado',   lbl:'Comunicado',   icon:'📧', cor:'#f59e0b', sla:5},
+    {key:'faturado',     lbl:'Faturado (NF)',icon:'🧾', cor:'#10b981', sla:8},
+    {key:'pago',         lbl:'Pago',         icon:'💰', cor:'#16a34a', sla:38}
+  ];
+
+  // Agrupa itens por estágio
+  var estado = _bhCobrancaGetEstado();
+  var porEstagio = {identificado:[], validado:[], comunicado:[], faturado:[], pago:[]};
+  contratos.forEach(function(c){
+    if(c.receita_excedente <= 0) return;
+    var chave = _bhContratoChave(c);
+    var item = estado[chave];
+    var estagio = item ? item.estagio : 'identificado';
+    var data_identificado = item && item.data_identificado ? item.data_identificado : new Date().toISOString().slice(0,10);
+    var idade = Math.floor((Date.now() - new Date(data_identificado).getTime())/86400000);
+    porEstagio[estagio].push({ c:c, chave:chave, idade:idade, valor: c.receita_excedente });
+  });
+
+  var html = '<div class="bh-funil-modal-hd">'
+    + '<h2>💸 Funil de Cobrança de Excedente</h2>'
+    + '<div class="bh-funil-meta">Owner: <strong>Rodrigo Pinheiro</strong> · SLA total: 10 dias úteis Identificado → NF · Taxa de Captura: <strong>' + cobranca.captura_pct + '%</strong> · Idade média: <strong>' + cobranca.idade_media_dias + 'd</strong></div>'
+    + '<button class="bh-funil-close" onclick="_bhFecharFunil()">✕</button>'
+  + '</div>'
+  + '<div class="bh-funil-grid">'
+  + estagios.map(function(e){
+      var itens = porEstagio[e.key] || [];
+      return '<div class="bh-funil-col" data-estagio="' + e.key + '">'
+        + '<div class="bh-funil-col-hd" style="border-color:' + e.cor + '"><span>' + e.icon + ' ' + e.lbl + '</span><span class="bh-funil-col-count">' + itens.length + '</span></div>'
+        + '<div class="bh-funil-col-sla">SLA: D+' + e.sla + '</div>'
+        + '<div class="bh-funil-col-body">'
+        + itens.map(function(it){
+            var idadeCls = it.idade > 20 ? 'urg' : it.idade > 10 ? 'warn' : 'ok';
+            var chaveEsc = it.chave.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+            // Botões pra avançar estágio
+            var btns = '';
+            estagios.forEach(function(e2, i2){
+              var curIdx = estagios.findIndex(function(es){return es.key===e.key;});
+              if(i2 !== curIdx && i2 === curIdx+1){
+                btns += '<button class="bh-funil-btn-mover" onclick="_bhCobrancaMudarEstagio(\'' + chaveEsc + '\',\'' + e2.key + '\',' + it.valor + ')" title="Mover pra ' + e2.lbl + '">→ ' + e2.icon + '</button>';
+              }
+            });
+            if(e.key !== 'identificado'){
+              btns += '<button class="bh-funil-btn-voltar" onclick="_bhCobrancaMudarEstagio(\'' + chaveEsc + '\',\'identificado\',' + it.valor + ')" title="Reabrir">↺</button>';
+            }
+            return '<div class="bh-funil-item ' + idadeCls + '">'
+              + '<div class="bh-funil-item-cli"><strong>' + it.c.display + '</strong></div>'
+              + '<div class="bh-funil-item-tarefa">' + it.c.tarefa + '</div>'
+              + '<div class="bh-funil-item-meta">'
+                + '<span class="bh-funil-item-val">' + _bhFmtBRL(it.valor) + '</span>'
+                + '<span class="bh-funil-item-idade ' + idadeCls + '">' + it.idade + 'd</span>'
+              + '</div>'
+              + '<div class="bh-funil-item-btns">' + btns + '</div>'
+            + '</div>';
+          }).join('') || '<div class="bh-funil-empty">—</div>'
+        + '</div>'
+      + '</div>';
+    }).join('')
+  + '</div>'
+  + '<div class="bh-funil-footer">'
+    + '<div class="bh-funil-totais">'
+      + 'Total identificado: <strong>' + _bhFmtBRL(cobranca.total_identificado_rs) + '</strong> · '
+      + 'Total faturado: <strong style="color:#10b981">' + _bhFmtBRL(cobranca.total_faturado_rs) + '</strong> · '
+      + 'Pendente: <strong style="color:#dc2626">' + _bhFmtBRL(cobranca.total_identificado_rs - cobranca.total_faturado_rs) + '</strong>'
+    + '</div>'
+    + (cobranca.envelhecidos.length > 0
+        ? '<div class="bh-funil-alerta">⏰ <strong>' + cobranca.envelhecidos.length + '</strong> item' + (cobranca.envelhecidos.length!==1?'s':'') + ' envelhecido' + (cobranca.envelhecidos.length!==1?'s':'') + ' (>20d) · faturar urgente</div>'
+        : '')
+  + '</div>';
+
+  var modal = document.getElementById('bh-funil-modal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.id = 'bh-funil-modal';
+    modal.className = 'bh-funil-overlay';
+    modal.onclick = function(e){ if(e.target===modal) _bhFecharFunil(); };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div class="bh-funil-card">' + html + '</div>';
+  modal.style.display = 'flex';
+};
+window._bhFecharFunil = function(){
+  var m = document.getElementById('bh-funil-modal');
+  if(m) m.style.display = 'none';
+};
 // ── Filtros chips da tabela ──
 window._bhFiltrosAtivos = window._bhFiltrosAtivos || {};
 window._bhToggleFiltro = function(btn){
@@ -17611,8 +18016,12 @@ function _bhAplicarFiltros(){
       var f = ativos[j];
       var p = f.split(':');
       var tipo = p[0], val = p[1];
-      if(tipo === 'status' && c.status !== val) { mostra = false; break; }
-      if(tipo === 'aviso' && (!c.avisar_cliente || c.avisar_cliente.nivel !== val)) { mostra = false; break; }
+      // Refator v5: status:risco = qualquer em risco (crit ou warn)
+      if(tipo === 'status' && val === 'risco' && c.status === 'ok') { mostra = false; break; }
+      if(tipo === 'status' && val !== 'risco' && c.status !== val) { mostra = false; break; }
+      // Refator v5: aviso:avisar = qualquer nível de aviso (formal/urgente/preventivo/tendencia)
+      if(tipo === 'aviso' && val === 'avisar' && (!c.avisar_cliente || c.avisar_cliente.nivel === 'nao')) { mostra = false; break; }
+      if(tipo === 'aviso' && val !== 'avisar' && (!c.avisar_cliente || c.avisar_cliente.nivel !== val)) { mostra = false; break; }
       if(tipo === 'venc'){
         var limite = parseInt(val,10);
         if(!(c.dias_ate_fim >= 0 && c.dias_ate_fim <= limite)) { mostra = false; break; }
