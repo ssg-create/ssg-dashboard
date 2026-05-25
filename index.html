@@ -2841,6 +2841,631 @@ body:not(.dark) .rpt-dlg{background:#fff;border-color:#e5e7eb}
 [data-theme="light"] .cs-hero-actions::before{background:radial-gradient(circle at 88% 25%,rgba(255,112,36,.1),transparent 52%)}
 [data-theme="light"] .cs-hero::after{background:linear-gradient(90deg,transparent 0%,transparent 42%,rgba(40,54,69,.02) 50%,transparent 58%,transparent 100%)}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH GLOBAL v6 — harmonização de abas antigas ═════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Aplica o padrão visual do refator BH (hover sutil, focus-visible,
+   border-left em alertas, touch target ≥32px) globalmente.
+   NÃO altera estrutura HTML nem regras de negócio. */
+
+/* Focus-visible global pra acessibilidade — ring teal sutil */
+.kpi[onclick],.kpi.clickable,
+.card[onclick],
+.action-row[onclick],
+.alert-item[onclick],
+.bl-item[onclick],
+.sl-item[onclick]{cursor:pointer}
+
+.kpi[onclick]:focus-visible,
+.card[onclick]:focus-visible,
+.action-row[onclick]:focus-visible,
+.alert-item[onclick]:focus-visible{
+  outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r2);
+}
+
+/* Botões em geral — focus-visible consistente */
+button:focus-visible,
+[role="button"]:focus-visible,
+.btn:focus-visible{
+  outline:2px solid var(--teal);outline-offset:2px;
+}
+
+/* KPI clicável — hover mais expressivo (igual padrão BH) */
+.kpi[onclick]:hover,.kpi.clickable:hover{
+  border-color:var(--teal);
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.025) 100%);
+}
+
+/* Alert-card — border-left vermelho 3px (padrão BH bh-banner-sinal) */
+.alert-card{border-left:3px solid var(--danger);padding-left:18px}
+
+/* Actions panel — border-left amber (padrão BH) */
+.actions-panel{border-left:3px solid var(--warn)}
+
+/* Touch target mínimo em botões pequenos (≥32px diagonal/altura) */
+.sb-import-btn,.sb-export-csv-btn{min-height:32px}
+.kpi-trend,.score-badge,.pill{min-height:18px;display:inline-flex;align-items:center}
+
+/* Card hover — mantém só border-color (transform/shadow em transition
+   estava forçando composite layer em todos os cards e dando lag em
+   abas com muitos cards). Hover já é gerenciado por .card existente. */
+/* .card transition mantida como original (linha 401): só border-color */
+
+/* Page header — refinamento sutil (mais respiro entre h1 e p) */
+.page-header h1{line-height:1.15}
+.page-header p{line-height:1.4;max-width:720px}
+
+/* Empty states globais (quando alguma view sem dados) */
+.empty-state{
+  text-align:center;padding:32px 16px;color:var(--muted);
+  font-size:12px;border:1px dashed var(--border);border-radius:var(--r2);
+  background:rgba(255,255,255,.015);
+}
+.empty-state-icon{font-size:24px;margin-bottom:8px;opacity:.5}
+.empty-state-title{font-size:13px;color:var(--sub);margin-bottom:4px;font-weight:600}
+.empty-state-msg{font-size:11px;color:var(--muted)}
+
+/* Tabela — hover de linha mais visível em listagens densas */
+.tbl tbody tr{cursor:default}
+.tbl tbody tr[onclick]{cursor:pointer}
+.tbl tbody tr[onclick]:hover td{background:rgba(0,212,168,.04)}
+
+/* SLA card — focus-visible quando clicável */
+.sla-card[onclick]{cursor:pointer;transition:border-color .2s,transform .2s}
+.sla-card[onclick]:hover{border-color:var(--teal);transform:translateY(-1px)}
+.sla-card[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Health Ring container — alinhamento consistente */
+.hs-wrap{align-items:flex-start}
+
+/* Pills — leve elevação visual */
+.pill{font-variant-numeric:tabular-nums}
+
+/* Cobrança coletiva / botões agregados nos cards — padrão visual unificado */
+.collective-action-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,212,168,.08);border:1px solid rgba(0,212,168,.25);
+  color:var(--teal);font-size:11px;font-weight:600;padding:6px 12px;
+  border-radius:var(--r);cursor:pointer;transition:all .2s;
+  min-height:32px;
+}
+.collective-action-btn:hover{background:rgba(0,212,168,.15);border-color:var(--teal)}
+.collective-action-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Light theme adaptações pro polish */
+[data-theme="light"] .kpi[onclick]:hover{
+  background:linear-gradient(180deg,#ffffff 0%,rgba(0,180,140,.04) 100%);
+}
+[data-theme="light"] .alert-card{border-left-color:#dc2626}
+[data-theme="light"] .actions-panel{border-left-color:#d97706}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH VISÃO CLIENTE (view-cli) ══════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Sub-abas: c-ov, c-tl, c-hs, c-sq, c-inf
+   Mantém o padrão próprio (.co-hero, .gw-hero) mas harmoniza com BH. */
+
+/* co-kpi — hover sutil + transição (igual padrão .kpi) */
+.co-kpi{transition:border-color .2s,transform .2s,background .2s}
+.co-kpi:hover{border-color:var(--border2)}
+.co-kpi[onclick],.co-kpi.clickable{cursor:pointer}
+.co-kpi[onclick]:hover{border-color:var(--teal);background:rgba(0,212,168,.04)}
+.co-kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:var(--r)}
+
+/* co-hero — leve refinamento (já tem gradient top, mantém) */
+.co-hero{transition:border-color .2s}
+
+/* .empty (antigo) — harmoniza com .empty-state global mas mantém variante centrada */
+.empty{transition:border-color .2s}
+.empty-icon{transition:transform .2s}
+.empty:hover .empty-icon{transform:scale(1.04)}
+
+/* Botão export-btn (PDF) — focus-visible + touch target */
+.export-btn{min-height:32px}
+.export-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* Health Score ring container — touch alvo no canvas */
+.hs-ring canvas[onclick]{cursor:pointer}
+
+/* SLA gauges (sla-grid > sla-card) — já tem hover via polish global */
+
+/* CINF banner — border-left azul (padrão dos banners informativos) */
+#cinf-banner{border-left:3px solid var(--blue);padding-left:14px !important}
+
+/* Light theme — cinf banner */
+[data-theme="light"] #cinf-banner{border-left-color:#2563eb}
+
+/* Timeline (tl-list) — hover de linha quando clicável */
+#tl-list [onclick]{cursor:pointer;transition:background .15s}
+#tl-list [onclick]:hover{background:rgba(0,212,168,.04)}
+
+/* Distinção visual co-content vs co-empty — REMOVIDO fadeInCli
+   estava animando 4 elementos toda mudança de subnav (lag visível). */
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ KPI DRILL-DOWN MODAL — genérico pra qualquer KPI ════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+.kdrill-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;
+  display:none;align-items:flex-start;justify-content:center;
+  padding:40px 20px;overflow-y:auto;
+}
+.kdrill-overlay.open{display:flex}
+.kdrill-modal{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:14px;
+  width:100%;max-width:920px;max-height:calc(100vh - 80px);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.kdrill-head{
+  padding:18px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+}
+.kdrill-icon{font-size:22px;line-height:1}
+.kdrill-title-wrap{flex:1;min-width:0}
+.kdrill-title{
+  font-size:15px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;line-height:1.2;
+}
+.kdrill-sub{
+  font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono);
+}
+.kdrill-count{
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:4px 10px;border-radius:12px;background:var(--bg3);
+  color:var(--teal);border:1px solid rgba(0,212,168,.25);
+}
+.kdrill-close{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);width:32px;height:32px;border-radius:8px;
+  cursor:pointer;font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.kdrill-close:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.kdrill-close:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+.kdrill-filters{
+  padding:8px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;
+  background:rgba(255,255,255,.015);
+}
+.kdrill-filter-chip{
+  font-size:10px;color:var(--sub);
+  padding:3px 9px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border);
+  font-family:var(--mono);
+}
+.kdrill-filter-chip strong{color:var(--text);font-weight:600}
+
+.kdrill-body{
+  flex:1;overflow-y:auto;padding:6px 0;
+}
+.kdrill-row{
+  display:flex;align-items:center;gap:14px;
+  padding:10px 22px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background .12s;
+}
+.kdrill-row:last-child{border-bottom:none}
+.kdrill-row:hover{background:rgba(0,212,168,.04)}
+.kdrill-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;background:rgba(0,212,168,.06)}
+.kdrill-num{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  min-width:80px;font-weight:600;
+}
+.kdrill-main{flex:1;min-width:0}
+.kdrill-assunto{
+  font-size:12.5px;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:2px;
+}
+.kdrill-meta{
+  font-size:10.5px;color:var(--muted);
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.kdrill-meta-sep{color:var(--border2)}
+.kdrill-estado{
+  font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:10px;
+  background:var(--bg3);color:var(--sub);white-space:nowrap;
+}
+.kdrill-aging{
+  font-size:10.5px;font-family:var(--mono);color:var(--muted);
+  min-width:60px;text-align:right;
+}
+.kdrill-aging.cr{color:var(--danger)}
+.kdrill-aging.wr{color:var(--orange)}
+.kdrill-aging.ok{color:var(--ok)}
+
+.kdrill-empty{padding:48px 22px;text-align:center;color:var(--muted)}
+.kdrill-empty-icon{font-size:32px;opacity:.5;margin-bottom:8px}
+.kdrill-empty-title{font-size:13px;color:var(--sub);font-weight:600;margin-bottom:4px}
+.kdrill-empty-msg{font-size:11px}
+
+.kdrill-foot{
+  padding:10px 22px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;font-size:11px;color:var(--muted);font-family:var(--mono);
+}
+
+/* Light theme */
+[data-theme="light"] .kdrill-modal{box-shadow:0 20px 60px rgba(0,0,0,.15)}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ COMPARATIVO MENSAL — Sprint A pós coo-advisor ════════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Bloco Runrate do mês corrente */
+.comp-runrate{
+  background:linear-gradient(135deg,var(--bg2) 0%,rgba(0,212,168,.04) 100%);
+  border:1px solid var(--border);border-left:3px solid var(--teal);
+  border-radius:12px;padding:18px 22px;margin-bottom:18px;
+  display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+}
+.comp-runrate-icon{font-size:32px;line-height:1;flex-shrink:0}
+.comp-runrate-main{flex:1;min-width:240px}
+.comp-runrate-tag{
+  font-size:10px;font-weight:700;color:var(--teal);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;
+}
+.comp-runrate-titulo{
+  font-size:15px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;margin-bottom:6px;
+}
+.comp-runrate-sub{font-size:12px;color:var(--sub);line-height:1.5}
+.comp-runrate-sub strong{color:var(--text);font-weight:600}
+.comp-runrate-num{
+  font-family:var(--display);font-size:38px;font-weight:800;
+  line-height:1;color:var(--teal);letter-spacing:-.02em;
+}
+.comp-runrate-num-lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin-top:4px;
+}
+.comp-runrate-delta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:3px 10px;border-radius:10px;margin-top:6px;
+}
+.comp-runrate-delta.up{background:rgba(16,185,129,.12);color:var(--ok)}
+.comp-runrate-delta.dn{background:rgba(244,63,94,.12);color:var(--danger)}
+.comp-runrate-delta.nt{background:rgba(90,98,120,.15);color:var(--muted)}
+
+/* Toggle volume bruto/d.útil */
+.comp-vol-tgl{
+  background:transparent;border:none;color:var(--muted);
+  font-size:10.5px;font-weight:600;padding:6px 12px;border-radius:6px;
+  cursor:pointer;transition:all .15s;font-family:var(--font);
+  min-height:28px;
+}
+.comp-vol-tgl:hover{color:var(--sub)}
+.comp-vol-tgl.active{background:var(--teal);color:#fff}
+.comp-vol-tgl:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+
+/* KPI por mês — refinado pra suportar sinal combinado Volume × SLA */
+.comp-mes-kpi{
+  position:relative;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 16px;overflow:hidden;
+  transition:border-color .15s;
+}
+.comp-mes-kpi.ativo{border-color:var(--blue);box-shadow:0 0 0 2px rgba(79,142,247,.18)}
+.comp-mes-kpi-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.comp-mes-kpi-lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:6px;font-weight:600;
+}
+.comp-mes-kpi-val{
+  font-family:var(--mono);font-size:24px;font-weight:600;
+  line-height:1;letter-spacing:-.02em;
+}
+.comp-mes-kpi-val-sub{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
+.comp-mes-kpi-sinais{
+  display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;
+}
+.comp-sinal{
+  font-size:9.5px;font-weight:700;font-family:var(--mono);
+  padding:2px 7px;border-radius:8px;display:inline-flex;align-items:center;gap:3px;
+}
+.comp-sinal.ok{background:rgba(16,185,129,.1);color:var(--ok)}
+.comp-sinal.warn{background:rgba(245,158,11,.1);color:var(--warn)}
+.comp-sinal.crit{background:rgba(244,63,94,.1);color:var(--danger)}
+.comp-sinal.nt{background:rgba(90,98,120,.1);color:var(--muted)}
+
+/* Indicador de direção (↑bom / ↓bom / neutra) na tabela comparativa */
+.comp-dir-wrap{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;margin-right:4px;
+}
+.comp-dir-ic{
+  font-size:10px;font-family:var(--mono);color:var(--muted);
+  cursor:help;
+}
+
+/* Light theme */
+[data-theme="light"] .comp-runrate{
+  background:linear-gradient(135deg,#ffffff 0%,#e6fffa 100%);
+  border-left-color:#0d9488;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ CONTRATOS SSG — Refator pós cro-advisor (Sprint A) ══════ */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* Barra de seletor de trimestre + resumo trim */
+.ctr-quarter-bar{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 18px;margin-bottom:14px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.ctr-q-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ctr-q-btn{
+  padding:6px 12px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--sub);font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;letter-spacing:.04em;
+  min-height:30px;transition:all .15s;
+}
+.ctr-q-btn:hover{border-color:var(--border2);color:var(--text)}
+.ctr-q-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ctr-q-btn.disabled{opacity:.4;cursor:not-allowed;color:var(--muted)}
+.ctr-q-btn:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+
+.ctr-q-info{display:flex;flex-direction:column;gap:2px;margin-left:auto}
+.ctr-q-info-tit{font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.ctr-q-info-sub{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+
+/* 3 cards acionáveis no topo (padrão BH v5) */
+.ctr-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.ctr-acao{
+  background:var(--bg3);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.ctr-acao::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.ctr-acao.cobrar::before{background:#dc2626}
+.ctr-acao.vai-estourar::before{background:#f59e0b}
+.ctr-acao.upsell::before{background:#3b82f6}
+.ctr-acao:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.ctr-acao.cobrar:hover{border-color:rgba(220,38,38,.4)}
+.ctr-acao.vai-estourar:hover{border-color:rgba(245,158,11,.4)}
+.ctr-acao.upsell:hover{border-color:rgba(59,130,246,.4)}
+.ctr-acao:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.ctr-acao.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,212,168,.2)}
+
+.ctr-acao-icon{font-size:22px;margin-bottom:4px;line-height:1}
+.ctr-acao-lbl{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sub);margin-bottom:6px;
+}
+.ctr-acao-num{
+  font-size:34px;font-weight:800;font-family:var(--display);
+  line-height:1;color:var(--text);
+}
+.ctr-acao.cobrar .ctr-acao-num{color:#dc2626}
+.ctr-acao.vai-estourar .ctr-acao-num{color:#f59e0b}
+.ctr-acao.upsell .ctr-acao-num{color:#3b82f6}
+.ctr-acao-sub{font-size:12px;color:var(--text);margin-top:6px;line-height:1.4}
+.ctr-acao-acao{
+  font-size:10.5px;color:var(--muted);margin-top:10px;
+  padding-top:10px;border-top:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.ctr-acao-acao::before{content:"→";color:var(--teal);font-weight:700}
+.ctr-acao.empty{cursor:default;opacity:.6}
+.ctr-acao.empty:hover{transform:none;box-shadow:none}
+.ctr-acao.empty .ctr-acao-num{color:var(--muted)}
+.ctr-acao.empty::before{background:var(--border)}
+
+/* Banner AÇÃO */
+.ctr-banner{
+  padding:12px 16px;margin-bottom:14px;border-radius:8px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--text);font-weight:500;
+  border-left:3px solid var(--ok);
+  background:rgba(16,185,129,.06);
+}
+.ctr-banner.crit{border-left-color:var(--danger);background:rgba(244,63,94,.08)}
+.ctr-banner.warn{border-left-color:var(--warn);background:rgba(245,158,11,.06)}
+.ctr-banner-icon{font-size:18px;line-height:1;flex-shrink:0}
+.ctr-banner-tag{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.ctr-banner.ok .ctr-banner-tag{color:var(--ok)}
+.ctr-banner.crit .ctr-banner-tag{color:var(--danger)}
+.ctr-banner.warn .ctr-banner-tag{color:var(--warn)}
+
+/* Resumo Q vs Q */
+.ctr-resumo-q{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.ctr-resumo-q-icon{font-size:18px;line-height:1}
+.ctr-resumo-q-titulo{font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em}
+.ctr-resumo-q-itens{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.ctr-resumo-q-item{display:flex;flex-direction:column;gap:1px;align-items:flex-end}
+.ctr-resumo-q-item-num{font-family:var(--mono);font-size:18px;font-weight:700;line-height:1}
+.ctr-resumo-q-item-lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ctr-resumo-q-delta{
+  font-size:11px;font-weight:700;font-family:var(--mono);
+  padding:3px 10px;border-radius:10px;
+}
+.ctr-resumo-q-delta.up{background:rgba(244,63,94,.12);color:var(--danger)}
+.ctr-resumo-q-delta.dn{background:rgba(16,185,129,.12);color:var(--ok)}
+.ctr-resumo-q-delta.nt{background:rgba(90,98,120,.12);color:var(--muted)}
+
+/* Tabela executiva (similar BH v5) */
+.ctr-tabela-exec{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;margin-bottom:16px;
+}
+.ctr-tabela-exec table{width:100%;border-collapse:collapse;font-size:12px}
+.ctr-tabela-exec th{
+  text-align:left;padding:10px 12px;font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);
+  white-space:nowrap;
+}
+.ctr-tabela-exec td{
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  color:var(--text);vertical-align:middle;
+}
+.ctr-tabela-exec tbody tr:last-child td{border-bottom:none}
+.ctr-tabela-exec tbody tr{cursor:pointer;transition:background .12s}
+.ctr-tabela-exec tbody tr:hover td{background:rgba(0,212,168,.04)}
+.ctr-tabela-exec tbody tr.crit td{background:rgba(244,63,94,.04)}
+.ctr-tabela-exec tbody tr.warn td{background:rgba(245,158,11,.03)}
+.ctr-tabela-exec tbody tr.upsell-bg td{background:rgba(59,130,246,.04)}
+.ctr-tabela-exec tbody tr:hover.crit td{background:rgba(244,63,94,.08)}
+.ctr-tabela-exec tbody tr:hover.warn td{background:rgba(245,158,11,.07)}
+
+.ctr-st-pill{
+  display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;
+  padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;
+  font-family:var(--mono);white-space:nowrap;
+}
+.ctr-st-pill.ok{background:rgba(16,185,129,.1);color:var(--ok)}
+.ctr-st-pill.warn{background:rgba(245,158,11,.1);color:var(--warn)}
+.ctr-st-pill.crit{background:rgba(244,63,94,.1);color:var(--danger)}
+.ctr-st-pill.info{background:rgba(90,98,120,.12);color:var(--muted)}
+
+.ctr-mini-bar{
+  height:5px;background:rgba(255,255,255,.05);border-radius:3px;
+  overflow:hidden;margin-top:4px;
+}
+.ctr-mini-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+
+.ctr-upsell-badge{
+  display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;
+  padding:2px 6px;border-radius:8px;font-family:var(--mono);margin-left:6px;
+  background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);
+}
+
+.ctr-tabela-empty{
+  padding:40px 20px;text-align:center;color:var(--muted);font-size:12px;
+}
+
+/* Light theme */
+[data-theme="light"] .ctr-tabela-exec tbody tr.crit td{background:#fef2f2}
+[data-theme="light"] .ctr-tabela-exec tbody tr.warn td{background:#fffbeb}
+[data-theme="light"] .ctr-tabela-exec tbody tr.upsell-bg td{background:#eff6ff}
+
+/* .kpi clicável — visual claro de "isso é interativo" */
+.kpi[onclick]{cursor:pointer;transition:border-color .2s,background .2s}
+.kpi[onclick]:hover{
+  border-color:var(--teal);
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%);
+}
+.kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.kpi[onclick]::after{
+  content:"↗";position:absolute;top:10px;right:10px;
+  font-size:11px;color:var(--muted);opacity:0;transition:opacity .2s;
+}
+.kpi[onclick]:hover::after{opacity:.7}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH ALERTAS CRÍTICOS — refator visível v6.1 ═════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Substitui os 3 KPIs minúsculos por 3 cards acionáveis (padrão BH) */
+
+/* Header de zona — versão compacta sem wrapper */
+.al-zona-hd{
+  display:flex;align-items:center;gap:10px;margin:18px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.al-zona-hd:first-child{margin-top:0}
+.al-zona-titulo{
+  font-size:11px;font-weight:800;color:var(--sub);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.al-zona-pill{
+  font-size:10px;font-weight:600;font-family:var(--mono);
+  padding:2px 8px;border-radius:10px;background:var(--bg3);
+  color:var(--muted);border:1px solid var(--border);
+}
+.al-zona-hint{
+  margin-left:auto;font-size:10px;color:var(--muted);font-style:italic;
+}
+
+/* 3 cards acionáveis no topo de Alertas */
+.al-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.al-acao{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.al-acao::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+}
+.al-acao:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.al-acao:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.al-acao.crit::before{background:var(--danger)}
+.al-acao.crit:hover{border-color:rgba(244,63,94,.4)}
+.al-acao.esp::before{background:var(--orange)}
+.al-acao.esp:hover{border-color:rgba(255,112,36,.4)}
+.al-acao.resp::before{background:var(--warn)}
+.al-acao.resp:hover{border-color:rgba(245,158,11,.4)}
+
+.al-acao-icon{font-size:22px;margin-bottom:4px;line-height:1}
+.al-acao-lbl{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sub);margin-bottom:6px;
+}
+.al-acao-num{
+  font-size:34px;font-weight:800;font-family:var(--display);
+  line-height:1;color:var(--text);
+}
+.al-acao.crit .al-acao-num{color:var(--danger)}
+.al-acao.esp .al-acao-num{color:var(--orange)}
+.al-acao.resp .al-acao-num{color:var(--warn)}
+.al-acao-sub{font-size:12px;color:var(--text);margin-top:6px;line-height:1.4}
+.al-acao-acao{
+  font-size:10.5px;color:var(--muted);margin-top:10px;
+  padding-top:10px;border-top:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.al-acao-acao::before{content:"→";color:var(--teal);font-weight:700}
+
+/* Alert-card refinado — header maior estilo BH */
+#s-alertas .alert-card{
+  border-left:3px solid var(--danger);padding:18px 20px;
+  background:rgba(244,63,94,.04);
+}
+#s-alertas .alert-card-title{
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--danger);margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid rgba(244,63,94,.12);
+  display:flex;align-items:center;gap:8px;
+}
+#s-alertas .alert-card-title svg{width:16px;height:16px}
+#s-alertas #crit-count{
+  margin-left:auto;font-size:11px;font-weight:600;font-family:var(--mono);
+  color:var(--muted);opacity:1;
+  padding:2px 10px;border-radius:10px;background:rgba(244,63,94,.08);
+  border:1px solid rgba(244,63,94,.15);
+}
+
+/* Filtros mais visíveis na alert-card */
+#s-alertas #filtro-fila-btns,
+#s-alertas #filtro-atend-btns{align-items:center}
+
+/* Hide kpi-row antigo nessa aba (substituído pela al-cards-3) */
+#s-alertas .kpi-row.kpi-row-3.legacy-hide{display:none !important}
+
+/* Light theme */
+[data-theme="light"] #s-alertas .alert-card{
+  background:#fff5f5;border-left-color:#dc2626;
+}
+[data-theme="light"] #s-alertas .alert-card-title{
+  color:#b91c1c;border-bottom-color:#fecaca;
+}
+[data-theme="light"] #s-alertas #crit-count{
+  background:#fee2e2;border-color:#fecaca;color:#7f1d1d;
+}
+
+/* CS KPIs clicáveis — feedback de interatividade */
+.cs-kpi[onclick]{cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.cs-kpi[onclick]:hover{border-color:var(--teal);background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%)}
+.cs-kpi[onclick]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.cs-kpi[onclick]::after{content:"↗";position:absolute;top:8px;right:10px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .15s}
+.cs-kpi[onclick]:hover::after{opacity:.7}
+
 </style>
 <!-- Lottie web component pra mascote animado (GW Walker) — CDN -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
@@ -3310,15 +3935,15 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       </div>
       <div id="op-actions-panel" class="actions-panel"></div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdTotal()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ estável</div><div class="kpi-lbl">Total de chamados</div><div class="kpi-val" id="kpi-v-0">556</div><div class="kpi-sub" id="kpi-s-0">53 dias · fila SSG</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdAbertos()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-trend dn">↑ +5 hoje</div><div class="kpi-lbl">Em aberto</div><div class="kpi-val" id="kpi-v-1" style="color:var(--warn)">101</div><div class="kpi-sub" id="kpi-s-1">18,2% do total</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdFechadosOk()"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-trend up">↑ 62,2%</div><div class="kpi-lbl">Fechados com êxito</div><div class="kpi-val" id="kpi-v-2" style="color:var(--ok)">346</div><div class="kpi-sub" id="kpi-s-2">taxa de conclusão</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdMuitoAlta()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-trend dn">↑ risco</div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="kpi-v-3" style="color:var(--danger)">200</div><div class="kpi-sub" id="kpi-s-3">36% do volume</div></div>
       </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
-        <div class="kpi fu"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-trend up">✓ meta</div><div class="kpi-lbl">1ª Resposta (mediana)</div><div class="kpi-val" id="kpi-v-4" style="color:var(--teal)">—</div><div class="kpi-sub" id="kpi-s-4">excelente performance</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-trend nt">◦ ref.</div><div class="kpi-lbl">Solução média</div><div class="kpi-val" id="kpi-v-5" style="color:var(--purple)">54<span>h</span></div><div class="kpi-sub" id="kpi-s-5">chamados fechados</div></div>
+        <div class="kpi fu" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-trend dn">↑ aging</div><div class="kpi-lbl" id="kpi-l-6">Em Espera</div><div class="kpi-val" id="kpi-v-6" style="color:var(--orange)">119</div><div class="kpi-sub" id="kpi-s-6">21,4% aguardando</div></div>
         <div class="kpi fu"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-trend nt">▬ ativo</div><div class="kpi-lbl" id="kpi-l-7">Atendentes</div><div class="kpi-val" id="kpi-v-7">14</div><div class="kpi-sub" id="kpi-s-7">equipe ativa</div></div>
       </div>
       <div class="grid2">
@@ -3417,15 +4042,50 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
         <div id="proj-mel-list" style="padding:8px 0"></div>
       </div>
-      <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)" id="kpi-ma-abertos">37</div><div class="kpi-sub" id="kpi-ma-sub">exige atenção imediata</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Em Espera (totais)</div><div class="kpi-val" style="color:var(--orange)" id="kpi-bloq-aging">—</div><div class="kpi-sub" id="kpi-bloq-sub">aguardando ação</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Sem 1ª resposta +30min</div><div class="kpi-val" style="color:var(--warn)" id="kpi-sem-resp">63</div><div class="kpi-sub">acima da meta</div></div>
+
+      <!-- ── ZONA: O QUE EXIGE AÇÃO AGORA ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Panorama de risco operacional</span>
+        <span class="al-zona-hint">clique em qualquer card pra filtrar a lista abaixo</span>
+      </div>
+      <div class="al-cards-3">
+        <div class="al-acao crit" tabindex="0" onclick="document.getElementById('lista-criticos').scrollIntoView({behavior:'smooth',block:'start'})">
+          <div class="al-acao-icon">🚨</div>
+          <div class="al-acao-lbl">Muito Alta em aberto</div>
+          <div class="al-acao-num" id="kpi-ma-abertos">—</div>
+          <div class="al-acao-sub" id="kpi-ma-sub">exige atenção imediata</div>
+          <div class="al-acao-acao">ver lista crítica abaixo</div>
+        </div>
+        <div class="al-acao esp" tabindex="0" onclick="(function(){var n=document.querySelector('.nav[onclick*=&quot;s-bl&quot;]');if(n)n.click();})()">
+          <div class="al-acao-icon">⏸️</div>
+          <div class="al-acao-lbl">Em Espera (totais)</div>
+          <div class="al-acao-num" id="kpi-bloq-aging">—</div>
+          <div class="al-acao-sub" id="kpi-bloq-sub">aguardando ação externa</div>
+          <div class="al-acao-acao">abrir aba Em Espera</div>
+        </div>
+        <div class="al-acao resp" tabindex="0" onclick="(function(){var n=document.querySelector('.nav[onclick*=&quot;s-sl&quot;]');if(n)n.click();})()">
+          <div class="al-acao-icon">⏱️</div>
+          <div class="al-acao-lbl">Sem 1ª resposta +30min</div>
+          <div class="al-acao-num" id="kpi-sem-resp">—</div>
+          <div class="al-acao-sub">acima da meta de tempo de primeira resposta</div>
+          <div class="al-acao-acao">analisar SLA &amp; Tempos</div>
+        </div>
+      </div>
+      <div class="kpi-row kpi-row-3 legacy-hide" aria-hidden="true">
+        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)">—</div><div class="kpi-sub">—</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Em Espera (totais)</div><div class="kpi-val" style="color:var(--orange)">—</div><div class="kpi-sub">—</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Sem 1ª resposta +30min</div><div class="kpi-val" style="color:var(--warn)">—</div><div class="kpi-sub">—</div></div>
+      </div>
+
+      <!-- ── ZONA: LISTA CRÍTICA (Muito Alta) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🚨 Chamados Muito Alta em aberto</span>
+        <span class="al-zona-hint">clique numa linha pra abrir o ticket</span>
       </div>
       <div class="alert-card">
         <div class="alert-card-title" style="margin-bottom:12px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-          Chamados Muito Alta em Aberto
+          Lista de chamados críticos
           <span id="crit-count" style="margin-left:8px;font-size:10px;font-weight:400;opacity:.6"></span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
@@ -3445,6 +4105,12 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           </select>
         </div>
         <div id="lista-criticos"></div>
+      </div>
+
+      <!-- ── ZONA: ANÁLISE COMPLEMENTAR ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📈 Análise de distribuição</span>
+        <span class="al-zona-hint">contexto pra entender onde concentra o problema</span>
       </div>
       <div class="grid2">
         <div class="card"><div class="card-title">Distribuição de espera</div><div id="bloq-dist"></div></div>
@@ -3479,10 +4145,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" style="margin-bottom:16px">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdTotal()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Total do período</div><div class="kpi-val" id="ch-kpi-total">—</div><div class="kpi-sub">chamados</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" id="ch-kpi-bloq" style="color:var(--warn)">—</div><div class="kpi-sub" id="ch-kpi-bloq-sub">do total</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdMuitoAlta()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" id="ch-kpi-ma" style="color:var(--danger)">—</div><div class="kpi-sub" id="ch-kpi-ma-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdFechadosOk()"><div class="kpi-accent" style="background:var(--ok)"></div><div class="kpi-lbl">Taxa de conclusão</div><div class="kpi-val" id="ch-kpi-taxa" style="color:var(--ok)">—</div><div class="kpi-sub" id="ch-kpi-taxa-sub">fechados/total</div></div>
       </div>
       <div id="ch-alert-bloq" style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:var(--r);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);font-size:12px;color:var(--warn);align-items:center;gap:8px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
@@ -3536,7 +4202,20 @@ if(_u)_u.addEventListener("keydown",_enterKey);
   <div id="s-comp" class="sec">
     <div class="page-header"><h1>Comparativo Mensal</h1><p>Evolução dos indicadores mês a mês</p></div>
     <div class="page-body">
+
+      <!-- ── ZONA 1: Runrate do mês corrente (Sprint A · #1) ── -->
+      <div id="comp-runrate" class="comp-runrate"></div>
+
+      <!-- ── ZONA 2: Toggle volume + KPIs por mês ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Volume mês a mês</span>
+        <div style="margin-left:auto;display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px">
+          <button id="comp-vol-bruto" class="comp-vol-tgl active" onclick="_compSwitchVolumeMode('bruto')">Bruto</button>
+          <button id="comp-vol-dutil" class="comp-vol-tgl" onclick="_compSwitchVolumeMode('dutil')">Por dia útil</button>
+        </div>
+      </div>
       <div class="kpi-row kpi-row-3" id="comp-kpis"></div>
+
       <div class="grid2">
         <div class="card">
           <div class="card-title">Volume mensal <span class="card-title-right" id="comp-periodo"></span></div>
@@ -3584,7 +4263,19 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       </div>
 
       <div id="at-capacity" class="card card-mb" style="display:none"></div>
+
+      <!-- ── ZONA: Performance histórica do período ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📈 Performance histórica do período</span>
+        <span class="al-zona-hint">volume total · fechados · pendentes por atendente</span>
+      </div>
       <div class="card card-mb"><div class="card-title">Volume total × fechados × pendentes</div><div class="cw" style="height:220px"><canvas id="c-atend"></canvas></div></div>
+
+      <!-- ── ZONA: Carga atual (live GWMS) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">⚡ Carga atual · live GWMS</span>
+        <span class="al-zona-hint">snapshot do "agora" · sync ~10min · clique no nome pra espelhar</span>
+      </div>
       <div class="card card-mb" id="at-util-card">
         <div class="card-title">Carga atual (tempo real via GWMS)
           <span class="card-title-right" style="font-size:10px;color:var(--muted)">
@@ -3598,6 +4289,11 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Ativos totais</div><div class="kpi-val" id="at-util-kpi-tot" style="color:var(--blue)">—</div><div class="kpi-sub">em todas as filas</div></div>
         </div>
         <div class="tbl-scroll" style="max-height:380px;overflow-y:auto"><table class="tbl" id="at-util-tbl"></table></div>
+      </div>
+      <!-- ── ZONA: Ranking detalhado ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🏆 Ranking detalhado · histórico do período</span>
+        <span class="al-zona-hint">clique no nome do atendente pra ver a página individual</span>
       </div>
       <div class="card" id="atend-tbl-card"><div class="card-title">Ranking detalhado</div><div class="tbl-scroll"><table class="tbl" id="atend-tbl"></table></div></div>
     </div>
@@ -3723,21 +4419,51 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           </div>
         </div>
       </div>
+
+      <!-- ── ZONA 1: 3 cards acionáveis (Sprint A pós cro-advisor SLA) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🎯 Saúde do SLA OTRS</span>
+        <span class="al-zona-hint">regra por serviço/prioridade/cliente · clique pra ver chamados</span>
+      </div>
+      <div class="al-cards-3" id="sl-cards-top"></div>
+
+      <!-- ── ZONA 2: KPIs detalhados de tempo ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">⏱️ Tempos médios do período</span>
+        <span class="al-zona-hint">mediana é mais representativa que média (corta outliers)</span>
+      </div>
       <div class="kpi-row kpi-row-4">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-lbl">1ª Resp — mediana</div><div class="kpi-val" style="color:var(--teal)" id="sl-v-0">—</div><div class="kpi-sub" id="sl-s-0"></div></div>
+        <div class="kpi" tabindex="0" onclick="_kdRespMedidos()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">1ª Resp — média</div><div class="kpi-val" style="color:var(--warn)" id="sl-v-1">—</div><div class="kpi-sub" id="sl-s-1">outliers elevam média</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Solução — média</div><div class="kpi-val" style="color:var(--purple)" id="sl-v-2">—</div><div class="kpi-sub" id="sl-s-2">chamados fechados</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSolMedidos()"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-lbl">Solução — mediana</div><div class="kpi-val" style="color:var(--blue)" id="sl-v-3">—</div><div class="kpi-sub" id="sl-s-3">mais representativa</div></div>
+      </div>
+      <!-- ── ZONA 3: Cumprimento por indicador ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Cumprimento por indicador</span>
+        <span class="al-zona-hint">% dentro do SLA OTRS · barras horizontais</span>
       </div>
       <div class="card card-mb" style="padding:16px 20px">
         <div class="card-title" style="margin-bottom:14px">Cumprimento de metas por indicador</div>
         <div id="sla-metas-bars"></div>
       </div>
+
+      <!-- ── ZONA 4: Performance por atendente ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">👥 Performance por atendente</span>
+        <span class="al-zona-hint">cor = % dentro do SLA OTRS · linhas tracejadas = referências</span>
+      </div>
       <div class="grid2">
         <div class="card"><div class="card-title">1ª Resposta por atendente <span class="card-title-right" id="sl-resp-meta-lbl">meta: &lt;30min</span></div><div class="cw" style="height:240px"><canvas id="c-resp"></canvas></div></div>
         <div class="card"><div class="card-title">Solução por atendente <span class="card-title-right">meta: &lt;48h</span></div><div class="cw" style="height:240px"><canvas id="c-sol"></canvas></div></div>
       </div>
-      <div class="card card-mb" id="sl-tri-card" style="margin-top:16px">
+
+      <!-- ── ZONA 5: Triagem (chegada de tickets) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🔍 Triagem · chegada de tickets</span>
+        <span class="al-zona-hint">tickets OPEN sem movimento ainda</span>
+      </div>
+      <div class="card card-mb" id="sl-tri-card" style="margin-top:0">
         <div class="card-title">Tickets em triagem
           <span class="card-title-right" style="font-size:10px;color:var(--muted)">
             <span id="sl-tri-meta">carregando…</span> ·
@@ -3779,9 +4505,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdSemAtend()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
     </div>
@@ -3805,7 +4531,38 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       <p>Volume contratado vs. aberto · acompanhamento mensal · gatilho de cobrança trimestral</p>
     </div>
     <div class="page-body">
-      <div id="ctr-hero" class="card card-mb"></div>
+
+      <!-- ── ZONA 0: Seletor de trimestre + resumo executivo do trim ── -->
+      <div id="ctr-quarter-bar"></div>
+
+      <!-- ── ZONA 1: 3 cards acionáveis (padrão BH v5) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🎯 Ações do trimestre</span>
+        <span class="al-zona-hint">clique num card pra filtrar a tabela abaixo</span>
+      </div>
+      <div id="ctr-cards-top" class="ctr-cards-3"></div>
+
+      <!-- ── ZONA 2: Banner AÇÃO (orientação operacional) ── -->
+      <div id="ctr-banner-acao"></div>
+
+      <!-- ── ZONA 3: Resumo Q × Q (comparação trimestral) ── -->
+      <div id="ctr-resumo-q"></div>
+
+      <!-- ── ZONA 4: Tabela executiva com busca/filtro ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📋 Carteira SSG</span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="ctr-search" type="text" placeholder="Buscar cliente…" oninput="_ctrSetSearch(this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text);font-family:var(--font);width:140px;outline:none">
+          <span id="ctr-filter-pill" style="display:none;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.3);border-radius:10px;padding:3px 10px;font-size:10px;color:var(--teal);font-weight:600;cursor:pointer" onclick="_ctrSetFilter('all')"></span>
+        </div>
+      </div>
+      <div id="ctr-table-wrap"></div>
+
+      <!-- ── ZONA 5: Cards detalhados (preservados — view alternativa) ── -->
+      <div class="al-zona-hd" style="margin-top:18px">
+        <span class="al-zona-titulo">📂 Detalhamento por contrato</span>
+        <span class="al-zona-hint">mês a mês dentro do trimestre</span>
+      </div>
       <div id="ctr-list"></div>
     </div>
   </div>
@@ -3859,10 +4616,10 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-4" id="bk-kpis">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogTotal()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Total em Aberto</div><div class="kpi-val" style="color:var(--warn)" id="bk-total">—</div><div class="kpi-sub" id="bk-total-sub">chamados pendentes</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogMA()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Prioridade Muito Alta</div><div class="kpi-val" style="color:var(--danger)" id="bk-criticos">—</div><div class="kpi-sub" id="bk-criticos-sub">requerem atenção imediata</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogAging()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Aging Médio</div><div class="kpi-val" style="color:var(--orange)" id="bk-aging">—</div><div class="kpi-sub">dias em aberto</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdBacklogSemResp()"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Sem Resposta &gt;2 dias</div><div class="kpi-val" style="color:var(--purple)" id="bk-semresp">—</div><div class="kpi-sub">risco de insatisfação</div></div>
       </div>
       <div class="grid2" style="margin-bottom:16px">
         <div class="card">
@@ -4173,9 +4930,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
         <!-- KPIs -->
         <div class="cs-kpi-row">
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--teal)"></div><div class="cs-kpi-lbl">Total de chamados</div><div class="cs-kpi-val" id="cs-kpi-total" style="color:var(--teal)"></div><div class="cs-kpi-sub" id="cs-kpi-total-sub"></div></div>
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--warn)"></div><div class="cs-kpi-lbl">Em aberto</div><div class="cs-kpi-val" id="cs-kpi-abertos" style="color:var(--warn)"></div><div class="cs-kpi-sub" id="cs-kpi-abertos-sub"></div></div>
-          <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--ok)"></div><div class="cs-kpi-lbl">Taxa de resolução</div><div class="cs-kpi-val" id="cs-kpi-taxa" style="color:var(--ok)"></div><div class="cs-kpi-sub" id="cs-kpi-taxa-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdTotal()" title="Clique para ver os chamados"><div class="cs-kpi-accent" style="background:var(--teal)"></div><div class="cs-kpi-lbl">Total de chamados</div><div class="cs-kpi-val" id="cs-kpi-total" style="color:var(--teal)"></div><div class="cs-kpi-sub" id="cs-kpi-total-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdAbertos()" title="Clique para ver os chamados em aberto"><div class="cs-kpi-accent" style="background:var(--warn)"></div><div class="cs-kpi-lbl">Em aberto</div><div class="cs-kpi-val" id="cs-kpi-abertos" style="color:var(--warn)"></div><div class="cs-kpi-sub" id="cs-kpi-abertos-sub"></div></div>
+          <div class="cs-kpi" tabindex="0" onclick="_kdFechadosOk()" title="Clique para ver os chamados fechados"><div class="cs-kpi-accent" style="background:var(--ok)"></div><div class="cs-kpi-lbl">Taxa de resolução</div><div class="cs-kpi-val" id="cs-kpi-taxa" style="color:var(--ok)"></div><div class="cs-kpi-sub" id="cs-kpi-taxa-sub"></div></div>
           <div class="cs-kpi"><div class="cs-kpi-accent" style="background:var(--purple)"></div><div class="cs-kpi-lbl">SLA 1ª resposta</div><div class="cs-kpi-val" id="cs-kpi-sla" style="color:var(--purple)"></div><div class="cs-kpi-sub" id="cs-kpi-sla-sub"></div></div>
         </div>
         <div class="cs-kpi-row">
@@ -6115,7 +6872,8 @@ function renderCriticos(){
   }
   function renderItem(c){
     var cor=eCores[c.estado]||'var(--danger)';
-    return'<div class="alert-item" style="align-items:flex-start;padding:10px 0">'
+    var numEsc=String(c.num||'').replace(/'/g,"\\'");
+    return'<div class="alert-item" onclick="openTicketDetail(\''+numEsc+'\')" tabindex="0" style="align-items:flex-start;padding:10px 6px;border-radius:6px">'
       +'<div class="alert-item-dot" style="margin-top:4px"></div>'
       +'<div class="alert-item-text" style="flex:1">'
         +'<div style="margin-bottom:3px"><strong style="font-family:var(--mono);font-size:11px">#'+(c.num||'').slice(-8)+'</strong>'
@@ -6130,7 +6888,12 @@ function renderCriticos(){
   }
   var html='';
   if(!lista.length){
-    html='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Nenhum crítico'+(filtroAtend!=='all'?' para '+filtroAtend:'')+'</div>';
+    var msg=filtroAtend!=='all'?'Nenhum chamado crítico para '+filtroAtend:'Nenhum chamado de prioridade Muito Alta em aberto';
+    html='<div class="empty-state">'
+      +'<div class="empty-state-icon">✓</div>'
+      +'<div class="empty-state-title">Sem críticos no momento</div>'
+      +'<div class="empty-state-msg">'+msg+'</div>'
+    +'</div>';
   } else if(groupBy==='none'){
     html=lista.map(renderItem).join('');
   } else {
@@ -7045,6 +7808,73 @@ function renderCh(){
   }
 }
 
+// ════════════════════════════════════════════════════════════════
+// COMPARATIVO MENSAL — helpers Sprint A (refator pós-coo-advisor)
+// ════════════════════════════════════════════════════════════════
+// _compState: estado UI da aba (modo de volume, modo trimestral, etc)
+var _compState = { modoVolume: 'bruto' };  // 'bruto' | 'dutil'
+
+// Dias úteis (seg-sex) de um mês (ignora feriados — simplificação)
+function _compBusinessDaysInMonth(year, monthIdx0){
+  var d = new Date(year, monthIdx0, 1);
+  var count = 0;
+  while(d.getMonth() === monthIdx0){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+// Dias úteis decorridos no mês até refDate (default: hoje)
+function _compBusinessDaysPassed(year, monthIdx0, refDate){
+  refDate = refDate || new Date();
+  var d = new Date(year, monthIdx0, 1);
+  // Se o mês já passou inteiro, retorna total de d.ú. do mês
+  var isCurrent = (refDate.getFullYear() === year && refDate.getMonth() === monthIdx0);
+  var isPast = (year < refDate.getFullYear() || (year === refDate.getFullYear() && monthIdx0 < refDate.getMonth()));
+  if(isPast) return _compBusinessDaysInMonth(year, monthIdx0);
+  if(!isCurrent) return 0;
+  var lastDay = refDate.getDate();
+  var count = 0;
+  while(d.getMonth() === monthIdx0 && d.getDate() <= lastDay){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return count;
+}
+
+// % SLA cumprido (1ª Resposta) por mês via calcSLAOtrs
+// Respeita filtros activeFilaOP e activeCliente
+function _compSlaByMonth(){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return {};
+  if(typeof calcSLAOtrs !== 'function') return {};
+  var byMonth = {};
+  RAW_DATA.forEach(function(d){
+    if(!d.criado) return;
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+    if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+    if(typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return;
+    var mk = d.criado.toISOString().slice(0,7);
+    if(!byMonth[mk]) byMonth[mk] = [];
+    byMonth[mk].push(d);
+  });
+  var out = {};
+  Object.keys(byMonth).forEach(function(mk){
+    var r = calcSLAOtrs(byMonth[mk]);
+    out[mk] = r.pct_within_sla;  // null se sample==0
+  });
+  return out;
+}
+
+// Handler chamado pelo toggle Volume Bruto/D.Útil (evita onclick complexo)
+function _compSwitchVolumeMode(modo){
+  _compState.modoVolume = modo;
+  if(typeof renderComp === 'function') renderComp();
+}
+
 function renderComp(){
   // Lê meses disponíveis dinamicamente de OP_MESES (calculado no import)
   var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
@@ -7086,29 +7916,132 @@ function renderComp(){
   var mOrder=Object.keys(OP_MESES).filter(function(k){return k!=='all';}).sort();
   var mLabels=mOrder.map(function(k){return mLbl(k);});
 
-  // ── KPIs dinâmicos — um por mês com volume e variação
-  var PAL_ACC=['var(--blue)','var(--teal)','var(--purple)','var(--orange)','var(--ok)','var(--danger)','var(--warn)'];
+  // ── SLA% por mês (pra sinal combinado Volume × SLA) ──
+  var slaByMonth = _compSlaByMonth();
+
+  // ── Dias úteis por mês (pra modo "Por dia útil") ──
+  var dutilByMonth = {};
+  mOrder.forEach(function(k){
+    var p = k.split('-');
+    dutilByMonth[k] = _compBusinessDaysInMonth(parseInt(p[0],10), parseInt(p[1],10)-1);
+  });
+
+  // Helper: aplica modo Bruto/D.Útil no valor de volume
+  function volMode(v, k){
+    if(_compState.modoVolume === 'dutil'){
+      var du = dutilByMonth[k] || 22;
+      return Math.round(v / du * 10) / 10;
+    }
+    return v;
+  }
+  var volUnid = _compState.modoVolume === 'dutil' ? '/d.ú.' : '';
+
+  // Atualiza UI dos toggles
+  var tglBruto = document.getElementById('comp-vol-bruto');
+  var tglDutil = document.getElementById('comp-vol-dutil');
+  if(tglBruto) tglBruto.classList.toggle('active', _compState.modoVolume === 'bruto');
+  if(tglDutil) tglDutil.classList.toggle('active', _compState.modoVolume === 'dutil');
+
+  // ── Bloco RUNRATE do mês corrente (Sprint A · #1) ──
+  // Identifica último mês com dados (geralmente = mês atual)
+  var runEl = document.getElementById('comp-runrate');
+  if(runEl && mOrder.length){
+    var curMonthKey = mOrder[mOrder.length-1];
+    var prevMonthKey = mOrder.length > 1 ? mOrder[mOrder.length-2] : null;
+    var curM = getMesSource(curMonthKey) || {};
+    var prevM = prevMonthKey ? (getMesSource(prevMonthKey) || {}) : null;
+    var curParts = curMonthKey.split('-');
+    var curYear = parseInt(curParts[0], 10);
+    var curMonthIdx = parseInt(curParts[1], 10) - 1;
+    var totalDuMes = _compBusinessDaysInMonth(curYear, curMonthIdx);
+    var duPassed = _compBusinessDaysPassed(curYear, curMonthIdx, new Date());
+    var isMesAtual = (new Date()).getFullYear() === curYear && (new Date()).getMonth() === curMonthIdx;
+    var volParcial = curM.total || 0;
+    var runrate = (isMesAtual && duPassed > 0)
+      ? Math.round(volParcial / duPassed * totalDuMes)
+      : volParcial;
+    var deltaHtml = '';
+    if(prevM && prevM.total){
+      var pctVs = Math.round((runrate - prevM.total) / prevM.total * 100);
+      var clsVs = pctVs > 5 ? 'up' : pctVs < -5 ? 'dn' : 'nt';
+      var arrowVs = pctVs > 0 ? '↑' : pctVs < 0 ? '↓' : '▬';
+      deltaHtml = '<div class="comp-runrate-delta ' + clsVs + '">' + arrowVs + ' ' + (pctVs>0?'+':'') + pctVs + '% vs ' + mLbl(prevMonthKey) + ' (' + prevM.total + ')</div>';
+    }
+    var subTxt;
+    if(isMesAtual){
+      subTxt = '<strong>' + volParcial + '</strong> chamados em <strong>' + duPassed + ' de ' + totalDuMes + '</strong> dias úteis · projeção fim do mês';
+    } else {
+      subTxt = '<strong>' + volParcial + '</strong> chamados em <strong>' + totalDuMes + '</strong> dias úteis · mês fechado';
+    }
+    runEl.innerHTML = ''
+      + '<div class="comp-runrate-icon">' + (isMesAtual ? '⏳' : '📅') + '</div>'
+      + '<div class="comp-runrate-main">'
+        + '<div class="comp-runrate-tag">' + (isMesAtual ? 'MÊS CORRENTE · PROJEÇÃO' : 'ÚLTIMO MÊS FECHADO') + '</div>'
+        + '<div class="comp-runrate-titulo">' + mLbl(curMonthKey) + (isMesAtual ? ' · em andamento' : '') + '</div>'
+        + '<div class="comp-runrate-sub">' + subTxt + '</div>'
+      + '</div>'
+      + '<div style="text-align:right">'
+        + '<div class="comp-runrate-num">' + (isMesAtual ? runrate : volParcial) + '</div>'
+        + '<div class="comp-runrate-num-lbl">' + (isMesAtual ? 'projeção total' : 'total do mês') + '</div>'
+        + deltaHtml
+      + '</div>';
+  }
+
+  // ── KPIs dinâmicos — um por mês com volume + sinal combinado Volume × SLA
+  // (Sprint A · #2: pintar pela COMBINAÇÃO Volume × SLA, não volume isolado)
   var kpisEl=document.getElementById('comp-kpis');
   if(kpisEl){
     kpisEl.innerHTML=mOrder.map(function(k,i){
       var m=getMesSource(k)||{};
       var prev=i>0?getMesSource(mOrder[i-1]):null;
-      var taxa=m.total>0?Math.round((m.fechados||0)/m.total*100):0;
-      var varHtml='';
-      if(prev&&prev.total){
-        var delta=m.total-prev.total;
-        var pct=Math.round(Math.abs(delta)/prev.total*100);
-        var col=delta<=0?'var(--ok)':'var(--danger)';
-        varHtml='<span style="color:'+col+'">'+(delta>0?'↑':'↓')+pct+'%</span> vs '+mLbl(mOrder[i-1]);
-      } else {
-        varHtml='base do período';
+      var sla = slaByMonth[k];
+      var slaPrev = i>0 ? slaByMonth[mOrder[i-1]] : null;
+
+      // Sinal volume
+      var volSinal = 'nt', volTxt = 'base';
+      if(prev && prev.total){
+        var dvol = m.total - prev.total;
+        var pctv = Math.round(Math.abs(dvol)/prev.total*100);
+        volTxt = (dvol>0?'↑':dvol<0?'↓':'▬') + pctv + '% vol';
+        // Volume é NEUTRO sozinho (recomendação coo-advisor)
+        volSinal = (Math.abs(pctv) <= 5) ? 'nt' : 'nt';
       }
-      var isAtivo=activeMonth===k;
-      return'<div class="kpi" style="'+(isAtivo?'border:1px solid rgba(79,142,247,.3);':'')+'">'
-        +'<div class="kpi-accent" style="background:'+PAL_ACC[i%PAL_ACC.length]+'"></div>'
-        +'<div class="kpi-lbl">'+mLbl(k)+'</div>'
-        +'<div class="kpi-val" style="color:'+PAL_ACC[i%PAL_ACC.length]+'">'+(m.total||0)+'</div>'
-        +'<div class="kpi-sub"><span style="font-size:9px">'+varHtml+'</span></div>'
+
+      // Sinal SLA — é o que MAIS importa
+      var slaSinal = 'nt', slaTxt = '';
+      if(sla != null){
+        slaTxt = sla + '% SLA';
+        if(slaPrev != null){
+          var dsla = sla - slaPrev;
+          if(dsla >= 3) slaSinal = 'ok';
+          else if(dsla <= -3) slaSinal = 'crit';
+          else slaSinal = sla >= 80 ? 'ok' : sla >= 60 ? 'warn' : 'crit';
+        } else {
+          slaSinal = sla >= 80 ? 'ok' : sla >= 60 ? 'warn' : 'crit';
+        }
+      } else {
+        slaTxt = 's/ SLA';
+      }
+
+      // Volume + SLA juntos formam o diagnóstico
+      // Verde: SLA mantido/melhorou (independente do volume)
+      // Vermelho: SLA piorou (alerta real)
+      // Amarelo: SLA baixo absoluto
+      var diagCls = slaSinal;
+      var accent = diagCls==='ok'?'var(--ok)':diagCls==='warn'?'var(--warn)':diagCls==='crit'?'var(--danger)':'var(--blue)';
+
+      var volExib = volMode(m.total||0, k);
+      var isAtivo = activeMonth===k;
+      var pmKey = mOrder[i-1];
+      return ''
+        +'<div class="comp-mes-kpi'+(isAtivo?' ativo':'')+'">'
+          +'<div class="comp-mes-kpi-accent" style="background:'+accent+'"></div>'
+          +'<div class="comp-mes-kpi-lbl">'+mLbl(k)+(isAtivo?' · ativo':'')+'</div>'
+          +'<div class="comp-mes-kpi-val">'+volExib+'<span class="comp-mes-kpi-val-sub">'+volUnid+'</span></div>'
+          +'<div class="comp-mes-kpi-sinais">'
+            +(prev?'<span class="comp-sinal nt" title="Variação de volume vs '+mLbl(pmKey)+'">'+volTxt+'</span>':'')
+            +'<span class="comp-sinal '+slaSinal+'" title="% de chamados dentro do SLA OTRS (1ª Resposta)">'+slaTxt+'</span>'
+          +'</div>'
         +'</div>';
     }).join('');
   }
@@ -7132,7 +8065,7 @@ function renderComp(){
     mColors=mColors.map(function(c,i){return i===ai?c:c.replace('.6','.15');});
     mBorder=mBorder.map(function(c,i){return i===ai?c:'rgba(255,255,255,.08)';});
   }
-  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return (getMesSource(k)||{}).total||0;}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5}],{scales:xy()});
+  mk('c-mensal','bar',mLabels,[{data:mOrder.map(function(k){return volMode((getMesSource(k)||{}).total||0, k);}),backgroundColor:mColors,borderColor:mBorder,borderWidth:1,borderRadius:5,label:'Volume'+volUnid}],{scales:xy()});
 
   // Tabela comparativa — prev/curr baseado no filtro ativo
   var curIdx=activeMonth==='all'?mOrder.length-1:mOrder.indexOf(activeMonth);
@@ -7144,44 +8077,50 @@ function renderComp(){
   var tEl=document.getElementById('comp-ind-title');
   if(tEl)tEl.innerHTML='Indicadores — '+(prevKey?mLbl(prevKey):'base')+' <span style="color:var(--muted)">→</span> '+mLbl(currKey);
 
+  // ── Linhas da tabela comparativa (Sprint A · #3: + linha SLA cumprido)
+  // direction: 'up' = ↑ é bom · 'down' = ↑ é ruim · 'neutral' = depende
   var rows=[
-    {l:'Volume de chamados',fv:function(m){return m.total||0;},unid:'',invert:false},
-    {l:'Taxa de conclusão',fv:function(m){return m.total>0?Math.round(m.fechados/m.total*100):0;},unid:'%',invert:false},
-    {l:'Chamados Muito Alta',fv:function(m){return m.prior&&m.prior['Muito Alta']||0;},unid:'',invert:true},
-    {l:'1ª Resposta mediana',fv:function(m){return m.resp_med||0;},unid:'min',invert:true},
-    {l:'Tempo médio solução',fv:function(m){return m.sol_med||0;},unid:'h',invert:true}
+    {l:'Volume de chamados', fv:function(m){return m.total||0;}, unid:'', direction:'neutral', hint:'mais demanda — depende de SLA'},
+    {l:'% SLA 1ª Resposta cumprido', fv:function(m,k){var s=slaByMonth[k];return s==null?null:s;}, unid:'%', direction:'up', hint:'meta da operação'},
+    {l:'Taxa de conclusão', fv:function(m){return m.total>0?Math.round(m.fechados/m.total*100):0;}, unid:'%', direction:'up', hint:'fechados / total'},
+    {l:'Chamados Muito Alta', fv:function(m){return m.prior&&m.prior['Muito Alta']||0;}, unid:'', direction:'down', hint:'menos pico crítico é melhor'},
+    {l:'1ª Resposta mediana', fv:function(m){return m.resp_med||0;}, unid:'min', direction:'down', hint:'menor tempo é melhor'},
+    {l:'Tempo médio solução', fv:function(m){return m.sol_med||0;}, unid:'h', direction:'down', hint:'menor tempo é melhor'}
   ];
 
-  // Sparkline com todos os meses disponíveis
-  function spark(vals,col){
-    var max=Math.max.apply(null,vals.concat([1]));
-    var W=60,H=24,n=vals.length;
-    var pts=vals.map(function(v,i){return(6+i*(W-12)/Math.max(n-1,1))+','+(H-4-Math.round(v/max*(H-8)));}).join(' ');
-    return'<svg width="'+W+'" height="'+H+'" style="vertical-align:middle;margin-right:6px">'
-      +'<polyline points="'+pts+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"/>'
-      +vals.map(function(v,i){var x=6+i*(W-12)/Math.max(n-1,1),y=H-4-Math.round(v/max*(H-8));return'<circle cx="'+x+'" cy="'+y+'" r="2.5" fill="'+col+'"/>';}).join('')
-      +'</svg>';
+  function dirIcon(direction){
+    if(direction==='up') return '<span class="comp-dir-ic" title="↑ é bom">🎯↑</span>';
+    if(direction==='down') return '<span class="comp-dir-ic" title="↓ é bom">🎯↓</span>';
+    return '<span class="comp-dir-ic" title="depende — neutra">◦</span>';
   }
 
   document.getElementById('comp-table').innerHTML=rows.map(function(r){
-    var allVals=mOrder.map(function(k){return r.fv(getMesSource(k)||{});});
-    var currV=r.fv(curr),prevV=prev?r.fv(prev):null;
-    var delta=prevV!==null?currV-prevV:0;
-    var pctD=prevV?Math.round(Math.abs(delta)/Math.abs(prevV||1)*100):0;
-    var better=r.invert?delta<0:delta>0,same=delta===0||prevV===null;
-    var dc=same?'var(--muted)':better?'var(--ok)':'var(--danger)';
-    var dbg=same?'rgba(90,98,120,.1)':better?'rgba(16,185,129,.1)':'rgba(244,63,94,.1)';
-    var sign=delta>0?'+':'';
-    var spk=spark(allVals,same?'#5a6278':(better?'#10b981':'#f43f5e'));
-    var fmtV=function(v){return r.unid==='min'?fmtRespTxt(v):(v+r.unid);};
-    return'<div class="comp-row">'
-      +'<span class="comp-label">'+r.l+'</span>'
-      +spk
-      +(prevV!==null?'<span class="comp-prev" style="color:var(--muted)">'+fmtV(prevV)+'</span>':'<span class="comp-prev" style="color:var(--muted)">—</span>')
-      +'<span class="comp-arrow" style="color:'+dc+'">→</span>'
-      +'<span class="comp-curr" style="color:'+dc+'">'+fmtV(currV)+'</span>'
-      +'<span class="comp-delta" style="background:'+dbg+';color:'+dc+'">'+(prevV!==null?sign+pctD+'%':'Base')+'</span>'
-    +'</div>';
+    var currV=r.fv(curr, currKey), prevV=prev?r.fv(prev, prevKey):null;
+    var hasCurr = currV != null;
+    var hasPrev = prevV != null;
+    var delta = (hasCurr && hasPrev) ? currV-prevV : 0;
+    var pctD = (hasPrev && prevV !== 0) ? Math.round(Math.abs(delta)/Math.abs(prevV||1)*100) : 0;
+    var same = delta === 0 || !hasPrev;
+    var better;
+    if(r.direction === 'up') better = delta > 0;
+    else if(r.direction === 'down') better = delta < 0;
+    else better = null;  // neutral: nem bom nem ruim
+    var dc = same ? 'var(--muted)' : (better === null) ? 'var(--blue)' : better ? 'var(--ok)' : 'var(--danger)';
+    var dbg = same ? 'rgba(90,98,120,.1)' : (better === null) ? 'rgba(79,142,247,.1)' : better ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)';
+    var sign = delta > 0 ? '+' : '';
+    var fmtV = function(v){
+      if(v == null) return '—';
+      if(r.unid === 'min') return fmtRespTxt(v);
+      return v + r.unid;
+    };
+    return '<div class="comp-row" title="'+r.hint+'">'
+      + '<span class="comp-dir-wrap">' + dirIcon(r.direction) + '</span>'
+      + '<span class="comp-label">'+r.l+'</span>'
+      + '<span class="comp-prev" style="color:var(--muted)">'+fmtV(prevV)+'</span>'
+      + '<span class="comp-arrow" style="color:'+dc+'">→</span>'
+      + '<span class="comp-curr" style="color:'+dc+'">'+fmtV(currV)+'</span>'
+      + '<span class="comp-delta" style="background:'+dbg+';color:'+dc+'">'+(hasPrev ? sign+pctD+'%' : 'Base')+'</span>'
+    + '</div>';
   }).join('');
 
   // Tendência 1ª resposta — todos os meses
@@ -7192,7 +8131,7 @@ function renderComp(){
     {data:new Array(mLen).fill(META_RESP),label:'≤'+fmtRespTxt(META_RESP)+' — meta GW',borderColor:'rgba(245,158,11,.85)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,tension:0},
     {data:new Array(mLen).fill(15),label:'≤15min — ITSM excelente',borderColor:'rgba(16,185,129,.65)',borderDash:[3,5],borderWidth:1.5,pointRadius:0,fill:false,tension:0}
   ],{scales:xy('Tempo (min)'),plugins:{
-    legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8,filter:function(item){return item.datasetIndex>0;}}}
+    legend:{display:true,labels:{color:TK,font:{size:9,family:"'JetBrains Mono'"},boxWidth:14,padding:8}}
   }});
 }
 
@@ -7782,12 +8721,69 @@ window._hmAbrirDrillHora = function(dd, hh){
   ov.appendChild(card);
 };
 
+// Renderiza os 3 cards acionáveis de saúde SLA OTRS no topo da aba s-sl
+function _renderSlCardsTop(){
+  var el = document.getElementById('sl-cards-top');
+  if(!el || typeof RAW_DATA === 'undefined' || !RAW_DATA) return;
+  // Conta tickets do escopo ativo classificados por situação SLA
+  var nViolando = 0, nRisco = 0, nCumprindo = 0, nElegivel = 0;
+  RAW_DATA.forEach(function(d){
+    if(!d || !d.criado) return;
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+    if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+    if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+      if(d.criado < activeRangeStart || d.criado > activeRangeEnd) return;
+    } else if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+      if(d.criado.toISOString().slice(0,7) !== activeMonth) return;
+    }
+    if(typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return;
+    var th = _slaThreshold(d);
+    if(th == null) return;
+    if(d.resp_min == null || isNaN(d.resp_min)) return;
+    nElegivel++;
+    if(d.resp_min > th) nViolando++;
+    else if(d.resp_min >= th * 0.8) nRisco++;
+    else nCumprindo++;
+  });
+  var pctCumpr = nElegivel > 0 ? Math.round(nCumprindo / nElegivel * 100) : null;
+  var cumprCls = pctCumpr == null ? 'esp' : (pctCumpr >= 80 ? 'crit' : pctCumpr >= 60 ? 'esp' : 'resp');
+  // (reusa as classes .al-acao do refator Alertas: crit=vermelho, esp=laranja, resp=amber)
+  // Pra Cumprimento INVERTEMOS o sentido visual: cor verde dominante via accent
+  var cardViolando = ''
+    + '<div class="al-acao crit" tabindex="0" onclick="_kdSlaViolando()">'
+    +   '<div class="al-acao-icon">🚨</div>'
+    +   '<div class="al-acao-lbl">Violando SLA OTRS</div>'
+    +   '<div class="al-acao-num">'+nViolando+'</div>'
+    +   '<div class="al-acao-sub">'+(nViolando===0?'sem violação no período':'1ª Resposta acima do limite OTRS')+'</div>'
+    +   '<div class="al-acao-acao">ver chamados violados</div>'
+    + '</div>';
+  var cardRisco = ''
+    + '<div class="al-acao esp" tabindex="0" onclick="_kdSlaRisco()">'
+    +   '<div class="al-acao-icon">🟡</div>'
+    +   '<div class="al-acao-lbl">Em risco (80-100%)</div>'
+    +   '<div class="al-acao-num">'+nRisco+'</div>'
+    +   '<div class="al-acao-sub">'+(nRisco===0?'nenhum próximo do limite':'abertos perto de estourar SLA')+'</div>'
+    +   '<div class="al-acao-acao">priorizar agora</div>'
+    + '</div>';
+  var cardCumpr = ''
+    + '<div class="al-acao resp" tabindex="0" onclick="_kdSlaCumprindo()" style="border-left:none">'
+    +   '<div class="al-acao-icon">✅</div>'
+    +   '<div class="al-acao-lbl">% Cumprimento SLA</div>'
+    +   '<div class="al-acao-num" style="color:'+(pctCumpr==null?'var(--muted)':pctCumpr>=80?'var(--ok)':pctCumpr>=60?'var(--warn)':'var(--danger)')+'">'+(pctCumpr==null?'—':pctCumpr+'%')+'</div>'
+    +   '<div class="al-acao-sub">'+(nElegivel===0?'sem tickets elegíveis':nCumprindo+' de '+nElegivel+' dentro do limite OTRS')+'</div>'
+    +   '<div class="al-acao-acao">ver chamados cumprindo</div>'
+    + '</div>';
+  el.innerHTML = cardViolando + cardRisco + cardCumpr;
+}
+
 function renderSl(){
   if(!TRI_DATA||(Date.now()/1000-TRI_DATA.generated_at)>300) fetchTriagem();
   else renderTriagem(TRI_DATA);
   var atend=(getActiveOP().atend||OP.atend).slice(0,10);
   var op=getActiveOP();
   try{populateSlHero(op);}catch(e){console.warn('sl hero:',e);}
+  try{_renderSlCardsTop();}catch(e){console.warn('sl cards top:',e);}
   // ── Sprint 1 (2026-05-21): SLA fiel ao OTRS por atendente ──
   // Antes: cores e barras usavam META_RESP fixo (30min) e a.rm (média simples).
   // Agora: usa calcSLAOtrsPerAtendente — % real de tickets dentro do SLA OTRS
@@ -13982,6 +14978,223 @@ function goToProjMelTab(){
 }
 
 // ─── DETALHE DE TICKET DO SLA (modal resumido) ──────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// KPI DRILL-DOWN — helper genérico
+// Permite que qualquer KPI seja clicável: abre modal listando tickets
+// que compõem aquele número, respeitando filtros globais ativos.
+//
+// Uso:
+//   openKpiDrill({
+//     titulo: "Em aberto",
+//     icon: "📂",
+//     filtro: function(d){ return isOpenState(d.estado); }
+//   })
+//
+// Opts:
+//   titulo (string, obrigatório) — título do modal
+//   icon (string) — emoji do header
+//   filtro (function(d)) — função de filtragem extra (após filtros globais)
+//   skipGlobalFilters (boolean) — pula filtros activeMonth/Fila/Cliente
+//   includeMelhorias (boolean) — inclui Projetos & Melhorias na contagem
+//   subtitulo (string) — texto auxiliar no header
+// ════════════════════════════════════════════════════════════════
+function openKpiDrill(opts){
+  opts = opts || {};
+  var titulo = opts.titulo || 'Drill-down';
+  var icon = opts.icon || '📋';
+  var fnExtra = typeof opts.filtro === 'function' ? opts.filtro : function(){return true;};
+  var skipGlob = !!opts.skipGlobalFilters;
+  var incMel = !!opts.includeMelhorias;
+  var subt = opts.subtitulo || '';
+
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA){
+    alert('Dados ainda não carregados. Tente novamente em alguns segundos.');
+    return;
+  }
+
+  // Aplica filtros globais + permissão + filtro customizado
+  var tickets = RAW_DATA.filter(function(d){
+    if(!d || !d.criado) return false;
+    // Segurança: chokepoint de permissão
+    if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return false;
+    // Filtros globais (se habilitados)
+    if(!skipGlob){
+      if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return false;
+      if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return false;
+      if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+        if(d.criado < activeRangeStart || d.criado > activeRangeEnd) return false;
+      } else if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+        var mk = d.criado.toISOString().slice(0,7);
+        if(mk !== activeMonth) return false;
+      }
+    }
+    // Filtra projetos/melhorias (default: SIM, exclui)
+    if(!incMel && typeof _isProjetoMelhoria === 'function' && _isProjetoMelhoria(d)) return false;
+    // Filtro customizado por KPI
+    return fnExtra(d);
+  });
+
+  // Sort: aging desc (mais antigos primeiro)
+  var now = new Date();
+  tickets.sort(function(a,b){ return a.criado - b.criado; });
+
+  // Monta os filter chips
+  var chips = [];
+  if(!skipGlob){
+    if(typeof activeMonth !== 'undefined' && activeMonth && activeMonth !== 'all'){
+      var mNames={'01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez'};
+      var p = activeMonth.split('-');
+      chips.push('Mês: <strong>'+(mNames[p[1]]||p[1])+'/'+p[0].slice(2)+'</strong>');
+    }
+    if(typeof activeRangeStart !== 'undefined' && activeRangeStart && activeRangeEnd){
+      var p2=function(n){return n<10?'0'+n:String(n);};
+      chips.push('Período: <strong>'+p2(activeRangeStart.getDate())+'/'+p2(activeRangeStart.getMonth()+1)+' – '+p2(activeRangeEnd.getDate())+'/'+p2(activeRangeEnd.getMonth()+1)+'</strong>');
+    }
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all'){
+      chips.push('Fila: <strong>'+activeFilaOP+'</strong>');
+    }
+    if(typeof activeCliente !== 'undefined' && activeCliente){
+      var nome = (typeof EMPRESAS!=='undefined'&&EMPRESAS[activeCliente]&&EMPRESAS[activeCliente].nome)?EMPRESAS[activeCliente].nome:((typeof ENM2!=='undefined'&&ENM2[activeCliente])?ENM2[activeCliente]:activeCliente);
+      chips.push('Cliente: <strong>'+nome+'</strong>');
+    }
+  }
+  if(!chips.length) chips.push('<em style="color:var(--muted)">sem filtros aplicados</em>');
+
+  // Estados → cor
+  var eCores={'Aguardando Cliente':'var(--warn)','Aguardando Interno':'var(--purple)','Retorno Cliente':'var(--blue)','Em Atendimento':'var(--blue)','Aguardando Externo':'var(--orange)','Aberto':'var(--danger)','Fechado':'var(--ok)','Resolvido':'var(--ok)'};
+  function agingFmt(criado){
+    if(!criado) return {txt:'—',cls:''};
+    var dias = Math.floor((now-criado)/86400000);
+    var txt = dias===0?'hoje':dias===1?'1 dia':dias+' dias';
+    var cls = dias>=7?'cr':dias>=2?'wr':'ok';
+    return {txt:txt,cls:cls};
+  }
+
+  // Render lista (limita a 200 pra performance)
+  var maxShow = 200;
+  var visible = tickets.slice(0, maxShow);
+  var body;
+  if(!tickets.length){
+    body = '<div class="kdrill-empty">'
+      +'<div class="kdrill-empty-icon">📭</div>'
+      +'<div class="kdrill-empty-title">Nenhum chamado encontrado</div>'
+      +'<div class="kdrill-empty-msg">com os filtros aplicados</div>'
+    +'</div>';
+  } else {
+    body = visible.map(function(d){
+      var ag = agingFmt(d.criado);
+      var cor = eCores[d.estado] || 'var(--muted)';
+      var num = String(d.num||'');
+      var numEsc = num.replace(/'/g,"\\'");
+      var atend = d.atend ? String(d.atend).split('.')[0] : '—';
+      var cliNome = (typeof EMPRESAS!=='undefined'&&EMPRESAS[d.cli_id]&&EMPRESAS[d.cli_id].nome)?EMPRESAS[d.cli_id].nome:((typeof ENM2!=='undefined'&&ENM2[d.cli_id])?ENM2[d.cli_id]:(d.cli_id||'—'));
+      var prior = d.prior||'—';
+      var corPrior = prior==='Muito Alta'?'var(--danger)':prior==='Alta'?'var(--orange)':'var(--muted)';
+      var assuntoEsc = (d.assunto||'(sem assunto)').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div class="kdrill-row" tabindex="0" onclick="closeKpiDrill();openTicketDetail(\''+numEsc+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();closeKpiDrill();openTicketDetail(\''+numEsc+'\');}">'
+        +'<div class="kdrill-num">#'+num.slice(-8)+'</div>'
+        +'<div class="kdrill-main">'
+          +'<div class="kdrill-assunto">'+assuntoEsc+'</div>'
+          +'<div class="kdrill-meta">'
+            +'<span>👤 '+atend+'</span>'
+            +'<span class="kdrill-meta-sep">·</span>'
+            +'<span>🏢 '+cliNome+'</span>'
+            +'<span class="kdrill-meta-sep">·</span>'
+            +'<span style="color:'+corPrior+'">'+prior+'</span>'
+            +(d.fila?'<span class="kdrill-meta-sep">·</span><span>'+d.fila+'</span>':'')
+          +'</div>'
+        +'</div>'
+        +'<div class="kdrill-estado" style="background:'+cor+'22;color:'+cor+'">'+(d.estado||'—')+'</div>'
+        +'<div class="kdrill-aging '+ag.cls+'">'+ag.txt+'</div>'
+      +'</div>';
+    }).join('');
+  }
+
+  // Footer text
+  var footL = tickets.length>maxShow ? 'Mostrando '+maxShow+' de '+tickets.length+' chamados' : 'Clique numa linha pra abrir o ticket';
+
+  // Inject in modal
+  document.getElementById('kdrill-icon').textContent = icon;
+  document.getElementById('kdrill-title').textContent = titulo;
+  document.getElementById('kdrill-sub').textContent = subt;
+  document.getElementById('kdrill-count').textContent = tickets.length + (tickets.length===1?' chamado':' chamados');
+  document.getElementById('kdrill-filters').innerHTML = chips.map(function(c){return '<span class="kdrill-filter-chip">'+c+'</span>';}).join('');
+  document.getElementById('kdrill-body').innerHTML = body;
+  document.getElementById('kdrill-foot-left').textContent = footL;
+
+  // Open + bind ESC
+  var ov = document.getElementById('kdrill-overlay');
+  ov.classList.add('open');
+  document.addEventListener('keydown', _kdrillEscHandler);
+  // Focus management
+  setTimeout(function(){
+    var first = ov.querySelector('.kdrill-row');
+    if(first) first.focus(); else ov.querySelector('.kdrill-close').focus();
+  }, 50);
+}
+
+function closeKpiDrill(ev){
+  if(ev && ev.target && ev.target.id !== 'kdrill-overlay' && !ev.target.classList.contains('kdrill-close')) return;
+  var ov = document.getElementById('kdrill-overlay');
+  if(ov) ov.classList.remove('open');
+  document.removeEventListener('keydown', _kdrillEscHandler);
+}
+
+function _kdrillEscHandler(e){
+  if(e.key === 'Escape'){ closeKpiDrill(); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// KPI DRILL — wrappers nomeados (substituem onclick inline com &&)
+// Evita parser HTML strict tratando && como entity inválida.
+// ════════════════════════════════════════════════════════════════
+function _kdTotal(){ openKpiDrill({titulo:'Total de chamados',icon:'📊',filtro:function(d){return true;}}); }
+function _kdAbertos(){ openKpiDrill({titulo:'Chamados em aberto',icon:'📂',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdFechadosOk(){ openKpiDrill({titulo:'Chamados fechados / resolvidos',icon:'✅',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1;}}); }
+function _kdMuitoAlta(){ openKpiDrill({titulo:'Chamados prioridade Muito Alta',icon:'🚨',filtro:function(d){return d.prior==='Muito Alta';}}); }
+function _kdRespMedidos(){ openKpiDrill({titulo:'1ª Resposta — chamados com tempo medido',icon:'⏱️',filtro:function(d){return d.resp_min!=null && !isNaN(d.resp_min);}}); }
+function _kdSolMedidos(){ openKpiDrill({titulo:'Solução — chamados fechados com tempo',icon:'⏰',filtro:function(d){return ['Fechado','Resolvido'].indexOf(d.estado)!==-1 && d.sol_h!=null && !isNaN(d.sol_h);}}); }
+function _kdAguardCliente(){ openKpiDrill({titulo:'Aguardando cliente',icon:'⏸️',filtro:function(d){return d.estado==='Aguardando Cliente';}}); }
+function _kdEspera(){ openKpiDrill({titulo:'Chamados em espera (todos motivos)',icon:'⏸️',filtro:function(d){return ['Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'].indexOf(d.estado)!==-1;}}); }
+function _kdSemAtend(){ openKpiDrill({titulo:'Chamados sem atendente (triagem pendente)',icon:'🔍',filtro:function(d){return isOpenState(d.estado) && (!d.atend || d.atend==='—');}}); }
+function _kdBacklogTotal(){ openKpiDrill({titulo:'Backlog · Total em aberto',icon:'📋',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdBacklogMA(){ openKpiDrill({titulo:'Backlog · Muito Alta em aberto',icon:'🚨',filtro:function(d){return isOpenState(d.estado) && d.prior==='Muito Alta';}}); }
+function _kdBacklogAging(){ openKpiDrill({titulo:'Backlog · ordenado por aging',icon:'⏳',filtro:function(d){return isOpenState(d.estado);}}); }
+function _kdBacklogSemResp(){ openKpiDrill({titulo:'Backlog · sem resposta há mais de 2 dias',icon:'😴',filtro:function(d){return isOpenState(d.estado) && (d.resp_min==null || d.resp_min>2880);}}); }
+
+// SLA OTRS drill — usa regra por serviço/prioridade/cliente
+function _slaThreshold(d){
+  // Replica lógica de calcSLAOtrs pra drill consistente
+  if(typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0) return d.sla_first_response_min;
+  if(typeof getOTRSSLAThreshold === 'function') return getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+  return null;
+}
+function _kdSlaViolando(){
+  openKpiDrill({titulo:'Violando SLA · 1ª Resposta acima do limite OTRS',icon:'🔴',filtro:function(d){
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min > th;
+  }});
+}
+function _kdSlaRisco(){
+  openKpiDrill({titulo:'Em risco · próximos do limite SLA (80-100%)',icon:'🟡',filtro:function(d){
+    if(!isOpenState(d.estado)) return false;
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min >= th * 0.8 && d.resp_min <= th;
+  }});
+}
+function _kdSlaCumprindo(){
+  openKpiDrill({titulo:'Cumprindo SLA · dentro do limite OTRS',icon:'✅',filtro:function(d){
+    var th = _slaThreshold(d);
+    if(th == null) return false;
+    if(d.resp_min == null || isNaN(d.resp_min)) return false;
+    return d.resp_min <= th;
+  }});
+}
+
 function openTicketDetail(num){
   // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
   // Se achar, usa isso. Senão, cai no RAW_DATA do XLSX (histórico, pode estar defasado).
@@ -18414,10 +19627,124 @@ window._ctrSetQuarter = function(ano, q){
   _ctrSelQ = {ano: ano, q: q};
   renderContratosSSG();
 };
-function renderContratosSSG(){
-  var heroEl = document.getElementById('ctr-hero');
+
+// ════════════════════════════════════════════════════════════════
+// CONTRATOS SSG — helpers Sprint A (refator pós cro-advisor)
+// ════════════════════════════════════════════════════════════════
+// Estado de filtros da tabela executiva
+var _ctrFilter = 'all';   // 'all' | 'cobrar' | 'vai-estourar' | 'upsell'
+var _ctrSearch = '';
+
+window._ctrSetFilter = function(modo){
+  _ctrFilter = (_ctrFilter === modo) ? 'all' : modo;
+  if(typeof renderContratosSSG === 'function') renderContratosSSG();
+};
+window._ctrSetSearch = function(v){
+  _ctrSearch = (v||'').toLowerCase().trim();
+  if(typeof renderContratosSSG === 'function') renderContratosSSG();
+};
+
+// Scroll suave pro card detalhado do cliente clicado (na zona 5)
+window._ctrScrollToCard = function(alias){
+  var aliasN = String(alias||'').toUpperCase();
   var listEl = document.getElementById('ctr-list');
-  if(!heroEl || !listEl) return;
+  if(!listEl) return;
+  var cards = listEl.querySelectorAll('[data-alias]');
+  for(var i=0;i<cards.length;i++){
+    if(cards[i].getAttribute('data-alias') === aliasN){
+      cards[i].scrollIntoView({behavior:'smooth', block:'center'});
+      cards[i].style.boxShadow = '0 0 0 2px var(--teal)';
+      setTimeout(function(c){return function(){ c.style.boxShadow = ''; };}(cards[i]), 1500);
+      return;
+    }
+  }
+};
+
+// Quarter anterior (ano,q)
+function _ctrPrevQuarter(ano, q){
+  if(q === 1) return { ano: ano - 1, q: 4 };
+  return { ano: ano, q: q - 1 };
+}
+
+// Calcula uso/projeção de UM contrato em UM trimestre específico
+// Retorna { usoTrim, projTrim, pctProj, status }
+function _ctrCalcContratoTrim(cfg, ano, q, refDate){
+  refDate = refDate || new Date();
+  var anoNow = refDate.getFullYear();
+  var qNow = _ctrQuarterOf(refDate);
+  var trimMeses = _ctrQuarterMonths(ano, q);
+  var mesAtualKey = _ctrMonthKey(refDate);
+  var isTrimAtual = (ano === anoNow && q === qNow);
+  var tickets = _ctrGetTickets(cfg.alias);
+  var byMonth = {};
+  tickets.forEach(function(t){
+    var dt = _ctrParseDate(t.criado);
+    if(!dt) return;
+    var k = _ctrMonthKey(dt);
+    byMonth[k] = (byMonth[k] || 0) + 1;
+  });
+  var usoTrim = trimMeses.reduce(function(s,mk){ return s + (byMonth[mk]||0); }, 0);
+  var limiteTrim = cfg.limite_mes * 3;
+  var projTrim;
+  if(isTrimAtual){
+    var idxMesAtualNoTrim = trimMeses.indexOf(mesAtualKey);
+    var diasNoMes = _ctrDaysInMonth(refDate.getFullYear(), refDate.getMonth());
+    var diaHoje = refDate.getDate();
+    projTrim = 0;
+    trimMeses.forEach(function(mk, idx){
+      var nMes = byMonth[mk] || 0;
+      if(idx < idxMesAtualNoTrim) projTrim += nMes;
+      else if(idx === idxMesAtualNoTrim){
+        var fator = diasNoMes > 0 ? (diasNoMes / Math.max(1, diaHoje)) : 1;
+        projTrim += Math.round(nMes * fator);
+      }
+      // futuros = 0
+    });
+  } else {
+    projTrim = usoTrim;
+  }
+  var pctProj = limiteTrim > 0 ? (projTrim / limiteTrim) : 0;
+  var status = 'ok';
+  if(pctProj >= 1) status = 'crit';
+  else if(pctProj >= 0.8) status = 'warn';
+  if(usoTrim === 0) status = 'info';
+  var excedente = Math.max(0, projTrim - limiteTrim);
+  return {
+    usoTrim:usoTrim, limiteTrim:limiteTrim, projTrim:projTrim,
+    pctProj:pctProj, status:status, excedente:excedente, byMonth:byMonth
+  };
+}
+
+// Calcula snapshot agregado de UM trimestre (usado pra cards top + Q vs Q)
+function _ctrCalcSnap(ano, q){
+  var contratos = SSG_CONTRATOS.filter(function(c){return c.ativo;});
+  var stats = { ok:0, warn:0, crit:0, info:0, totalExcedente:0, nContratos:contratos.length };
+  contratos.forEach(function(c){
+    var r = _ctrCalcContratoTrim(c, ano, q);
+    stats[r.status]++;
+    stats.totalExcedente += r.excedente;
+  });
+  return stats;
+}
+
+// Cliente é candidato a upsell? (estouro recorrente em trims anteriores)
+// Critério: nos 2 trims anteriores, ambos status crit (estourou)
+function _ctrIsUpsellCandidate(cfg, anoSel, qSel){
+  var t1 = _ctrPrevQuarter(anoSel, qSel);          // T-1
+  var t2 = _ctrPrevQuarter(t1.ano, t1.q);          // T-2
+  var r1 = _ctrCalcContratoTrim(cfg, t1.ano, t1.q);
+  var r2 = _ctrCalcContratoTrim(cfg, t2.ano, t2.q);
+  return (r1.status === 'crit' && r2.status === 'crit');
+}
+function renderContratosSSG(){
+  // Refator v6 (cro-advisor): zonas separadas em vez de hero monolítico
+  var qBarEl   = document.getElementById('ctr-quarter-bar');
+  var cardsEl  = document.getElementById('ctr-cards-top');
+  var bannerEl = document.getElementById('ctr-banner-acao');
+  var resumoEl = document.getElementById('ctr-resumo-q');
+  var tabelaEl = document.getElementById('ctr-table-wrap');
+  var listEl   = document.getElementById('ctr-list');
+  if(!qBarEl || !cardsEl || !tabelaEl || !listEl) return;
 
   var now = new Date();
   var anoNow = now.getFullYear();
@@ -18519,88 +19846,232 @@ function renderContratosSSG(){
     return (b.pctProj||0) - (a.pctProj||0);
   });
 
-  // ── Hero ──
+  // ── Marca upsell candidates (estouro 2+ trims anteriores) ──
+  clientes.forEach(function(c){
+    c.isUpsell = _ctrIsUpsellCandidate(c.cfg, anoSel, qSel);
+  });
+
   var totalContratado = SSG_CONTRATOS.filter(function(c){return c.ativo;}).reduce(function(s,c){return s + c.limite_mes;}, 0);
-  // Botões de trimestre: ano atual (4Q) + ano anterior se relevante
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 0: Quarter selector + resumo do trim ativo
+  // ────────────────────────────────────────────────────────────
   var qBtnsHtml = '';
   var anosBtns = [anoNow];
-  if(anoNow > 2026) anosBtns.unshift(anoNow - 1); // adiciona ano anterior se aplicável
-  // (a partir de 2026 — corte combinado)
+  if(anoNow > 2026) anosBtns.unshift(anoNow - 1);
   anosBtns.forEach(function(ano){
     [1,2,3,4].forEach(function(q){
-      // Pular Q futuro do ano atual
       if(ano === anoNow && q > qNow + 1) return;
-      // Pular Q antes de 2026
       if(ano < 2026) return;
       if(ano === 2026 && q < 1) return;
       var ativo = (ano === anoSel && q === qSel);
       var isAtualBtn = (ano === anoNow && q === qNow);
       var isFuturoBtn = (ano > anoNow) || (ano === anoNow && q > qNow);
-      var corBtn = ativo
-        ? 'background:var(--blue);color:#fff;border-color:var(--blue)'
-        : (isFuturoBtn ? 'opacity:.5;cursor:not-allowed;color:var(--muted)' : 'color:var(--sub)');
+      var cls = 'ctr-q-btn' + (ativo ? ' active' : '') + (isFuturoBtn ? ' disabled' : '');
       var disabled = isFuturoBtn ? 'disabled' : '';
       var click = isFuturoBtn ? '' : 'onclick="_ctrSetQuarter('+ano+','+q+')"';
       var marker = isAtualBtn ? ' ●' : '';
-      qBtnsHtml += '<button '+disabled+' '+click+' style="'+corBtn+';background:'+(ativo?'var(--blue)':'var(--bg3)')+';border:1px solid '+(ativo?'var(--blue)':'var(--border)')+';border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.04em">Q'+q+'/'+String(ano).slice(-2)+marker+'</button>';
+      qBtnsHtml += '<button '+disabled+' '+click+' class="'+cls+'">Q'+q+'/'+String(ano).slice(-2)+marker+'</button>';
     });
   });
-  var trimSubLbl = isTrimAtual ? 'trimestre ativo · em andamento'
-                : isTrimPassado ? 'trimestre fechado · valores definitivos'
-                : 'trimestre futuro · sem dados';
-  heroEl.innerHTML =
-      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);align-items:center">'
-    +   '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-right:4px">Trimestre:</span>'
+  var trimSubLbl = isTrimAtual ? 'trim ativo · em andamento'
+                : isTrimPassado ? 'trim fechado · valores definitivos'
+                : 'trim futuro · sem dados';
+  qBarEl.className = 'ctr-quarter-bar';
+  qBarEl.innerHTML = ''
+    + '<div class="ctr-q-btns">'
+    +   '<span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-right:2px">Trimestre:</span>'
     +   qBtnsHtml
     + '</div>'
-    + '<div class="ctr-hero-grid">'
-    +   '<div>'
-    +     '<div class="ctr-hero-q">Q'+qSel+'/'+String(anoSel).slice(-2)+'</div>'
-    +     '<div class="ctr-hero-q-lbl">'+trimSubLbl+'</div>'
-    +     '<div class="ctr-hero-q-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+'</div>'
-    +   '</div>'
-    +   '<div class="ctr-hero-kpis">'
-    +     '<div class="ctr-hero-kpi"><div class="ctr-hero-kpi-num">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+'</div><div class="ctr-hero-kpi-lbl">clientes ativos</div></div>'
-    // Cor semântica só quando há valor; zero fica neutro (cinza) pra não criar
-    // alerta falso ("EM RISCO: 0" em laranja confunde).
-    +     '<div class="ctr-hero-kpi"' + (resumo.ok>0 ? ' style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.ok>0 ? ' style="color:var(--ok)"' : ' style="color:var(--muted)"') + '>'+resumo.ok+'</div><div class="ctr-hero-kpi-lbl">em dia</div></div>'
-    +     '<div class="ctr-hero-kpi"' + (resumo.warn>0 ? ' style="background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.warn>0 ? ' style="color:var(--warn)"' : ' style="color:var(--muted)"') + '>'+resumo.warn+'</div><div class="ctr-hero-kpi-lbl">em risco</div></div>'
-    +     '<div class="ctr-hero-kpi"' + (resumo.crit>0 ? ' style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.25)"' : '') + '><div class="ctr-hero-kpi-num"' + (resumo.crit>0 ? ' style="color:var(--danger)"' : ' style="color:var(--muted)"') + '>'+resumo.crit+'</div><div class="ctr-hero-kpi-lbl">'+(isTrimPassado?'estourou':'estourados')+'</div></div>'
-    +   '</div>'
-    + '</div>'
-    // Linha acionável — diz O QUE FAZER, não só o que existe.
-    // Prioriza alertas: estourados (cobrar) → risco (atenção) → tudo ok (✓)
-    + (function(){
-        var estourou = clientes.filter(function(c){return c.status==='crit';});
-        var emRisco  = clientes.filter(function(c){return c.status==='warn';});
-        var fechouTrim = trimMeses[2] + '-' + _ctrDaysInMonth(parseInt(trimMeses[2].split('-')[0],10), parseInt(trimMeses[2].split('-')[1],10)-1);
-        var msg = '', cor = 'var(--ok)', bg = 'rgba(16,185,129,.06)', borda = 'rgba(16,185,129,.25)', icon = '✓';
-        if(estourou.length){
-          var totalExcedente = estourou.reduce(function(s,c){return s + c.excedente;}, 0);
-          var nomes = estourou.map(function(c){return c.cfg.nome;}).join(', ');
-          msg = (isTrimPassado ? 'Trimestre fechou estourado: ' : 'Para fechar Q'+qSel+': cobrar ') + nomes + ' (+'+totalExcedente+' chamado'+(totalExcedente!==1?'s':'')+' excedente'+(totalExcedente!==1?'s':'')+')';
-          cor = 'var(--danger)'; bg = 'rgba(244,63,94,.08)'; borda = 'rgba(244,63,94,.3)'; icon = '🔴';
-        } else if(emRisco.length){
-          var nomesR = emRisco.map(function(c){return c.cfg.nome;}).join(', ');
-          msg = 'Atenção: ' + nomesR + ' próximo'+(emRisco.length!==1?'s':'')+' do limite. Acompanhar nas próximas semanas.';
-          cor = 'var(--warn)'; bg = 'rgba(245,158,11,.06)'; borda = 'rgba(245,158,11,.25)'; icon = '🟡';
-        } else if(isTrimPassado){
-          msg = 'Trimestre fechado sem cobrança extra. Todos os clientes dentro do contrato.';
-        } else {
-          msg = 'Trimestre tranquilo até agora. Nenhum cliente projetado pra estourar.';
-        }
-        return '<div style="margin-top:14px;padding:10px 14px;background:'+bg+';border:1px solid '+borda+';border-radius:8px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);font-weight:500">'
-          + '<span style="font-size:16px;line-height:1">'+icon+'</span>'
-          + '<span><strong style="color:'+cor+';font-weight:700">'+(estourou.length?'AÇÃO:':'STATUS:')+'</strong> '+msg+'</span>'
-        + '</div>';
-      })()
-    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)">'
-    +   'Total contratado: <strong style="color:var(--text)">'+totalContratado+' chamados/mês</strong> · '+(totalContratado*3)+' chamados/trimestre. Gatilho de cobrança fecha no último dia do trimestre.'
+    + '<div class="ctr-q-info">'
+    +   '<span class="ctr-q-info-tit">'+SSG_CONTRATOS.filter(function(c){return c.ativo;}).length+' clientes ativos · '+totalContratado+' chamados/mês · '+(totalContratado*3)+'/trim</span>'
+    +   '<span class="ctr-q-info-sub">'+trimMeses.map(_ctrFmtMes).join(' · ')+' · '+trimSubLbl+'</span>'
     + '</div>';
 
+  // ────────────────────────────────────────────────────────────
+  // ZONA 1: 3 cards acionáveis (padrão BH v5)
+  // ────────────────────────────────────────────────────────────
+  var nCobrar      = clientes.filter(function(c){return c.status==='crit';}).length;
+  var totExcedente = clientes.filter(function(c){return c.status==='crit';}).reduce(function(s,c){return s+c.excedente;},0);
+  var nVaiEstourar = clientes.filter(function(c){return c.status==='warn';}).length;
+  var nUpsell      = clientes.filter(function(c){return c.isUpsell;}).length;
+
+  function _ctrCardCobrar(){
+    var empty = nCobrar === 0;
+    var cls = 'ctr-acao cobrar' + (empty ? ' empty' : '') + (_ctrFilter==='cobrar' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'cobrar\')"';
+    var num = empty ? '✓' : nCobrar;
+    var sub = empty ? 'tudo em dia nesse trim' : nCobrar+' contrato'+(nCobrar!==1?'s':'')+' · +'+totExcedente+' chamado'+(totExcedente!==1?'s':'')+' excedente';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">filtrar tabela abaixo</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">💸</div>'
+      + '<div class="ctr-acao-lbl">'+(isTrimPassado?'Cobrar (trim fechado)':'Cobrar agora')+'</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  function _ctrCardVaiEstourar(){
+    var empty = nVaiEstourar === 0;
+    var cls = 'ctr-acao vai-estourar' + (empty ? ' empty' : '') + (_ctrFilter==='vai-estourar' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'vai-estourar\')"';
+    var num = empty ? '—' : nVaiEstourar;
+    var sub = empty ? 'nenhum próximo do limite' : nVaiEstourar+' contrato'+(nVaiEstourar!==1?'s':'')+' próximo'+(nVaiEstourar!==1?'s':'')+' do limite';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">avisar Weskley pra contatar</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">🟡</div>'
+      + '<div class="ctr-acao-lbl">Vai estourar</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  function _ctrCardUpsell(){
+    var empty = nUpsell === 0;
+    var cls = 'ctr-acao upsell' + (empty ? ' empty' : '') + (_ctrFilter==='upsell' ? ' active' : '');
+    var clickAttr = empty ? '' : ' tabindex="0" onclick="_ctrSetFilter(\'upsell\')"';
+    var num = empty ? '—' : nUpsell;
+    var sub = empty ? 'sem estouro recorrente' : nUpsell+' contrato'+(nUpsell!==1?'s':'')+' estourou 2+ trims · alvo de upsell';
+    var acao = empty ? '' : '<div class="ctr-acao-acao">propor aumento de limite</div>';
+    return '<div class="'+cls+'"'+clickAttr+'>'
+      + '<div class="ctr-acao-icon">📈</div>'
+      + '<div class="ctr-acao-lbl">Upsell alvo</div>'
+      + '<div class="ctr-acao-num">'+num+'</div>'
+      + '<div class="ctr-acao-sub">'+sub+'</div>'
+      + acao
+    + '</div>';
+  }
+  cardsEl.innerHTML = _ctrCardCobrar() + _ctrCardVaiEstourar() + _ctrCardUpsell();
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 2: Banner AÇÃO (preservado da versão antiga, refinado)
+  // ────────────────────────────────────────────────────────────
+  (function(){
+    var estourou = clientes.filter(function(c){return c.status==='crit';});
+    var emRisco  = clientes.filter(function(c){return c.status==='warn';});
+    var msg, cls, icon, tag;
+    if(estourou.length){
+      var nomes = estourou.slice(0,3).map(function(c){return c.cfg.nome;}).join(', ');
+      if(estourou.length > 3) nomes += ' +'+(estourou.length-3)+' outros';
+      msg = (isTrimPassado ? 'Trim fechou estourado: ' : 'Cobrar (fim Q'+qSel+'): ') + nomes + ' · +'+totExcedente+' chamados excedentes';
+      cls = 'crit'; icon = '🔴'; tag = isTrimPassado ? 'COBRAR:' : 'AÇÃO:';
+    } else if(emRisco.length){
+      var nomesR = emRisco.slice(0,3).map(function(c){return c.cfg.nome;}).join(', ');
+      if(emRisco.length > 3) nomesR += ' +'+(emRisco.length-3)+' outros';
+      msg = 'Atenção: ' + nomesR + ' próximo do limite. Avisar cliente proativamente.';
+      cls = 'warn'; icon = '🟡'; tag = 'ATENÇÃO:';
+    } else if(isTrimPassado){
+      msg = 'Trim fechado sem cobrança extra. Todos os clientes dentro do contrato.';
+      cls = 'ok'; icon = '✓'; tag = 'STATUS:';
+    } else {
+      msg = 'Trim tranquilo até agora. Nenhum cliente projetado pra estourar.';
+      cls = 'ok'; icon = '✓'; tag = 'STATUS:';
+    }
+    bannerEl.className = 'ctr-banner ' + cls;
+    bannerEl.innerHTML = ''
+      + '<span class="ctr-banner-icon">'+icon+'</span>'
+      + '<span><span class="ctr-banner-tag">'+tag+'</span>'+msg+'</span>';
+  })();
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 3: Resumo Q × Q (comparação trimestral)
+  // ────────────────────────────────────────────────────────────
+  var prevQ = _ctrPrevQuarter(anoSel, qSel);
+  var snapPrev = _ctrCalcSnap(prevQ.ano, prevQ.q);
+  var critAtual = nCobrar;
+  var critPrev = snapPrev.crit;
+  var deltaCrit = critAtual - critPrev;
+  var deltaPct = critPrev > 0 ? Math.round(Math.abs(deltaCrit)/critPrev*100) : (critAtual > 0 ? 100 : 0);
+  var deltaCls, deltaArrow;
+  if(deltaCrit > 0){ deltaCls = 'up'; deltaArrow = '↑'; }
+  else if(deltaCrit < 0){ deltaCls = 'dn'; deltaArrow = '↓'; }
+  else { deltaCls = 'nt'; deltaArrow = '▬'; }
+  var labelPrev = 'Q'+prevQ.q+'/'+String(prevQ.ano).slice(-2);
+  var labelAtual = 'Q'+qSel+'/'+String(anoSel).slice(-2);
+  resumoEl.className = 'ctr-resumo-q';
+  resumoEl.innerHTML = ''
+    + '<span class="ctr-resumo-q-icon">📊</span>'
+    + '<span class="ctr-resumo-q-titulo">'+labelPrev+' → '+labelAtual+'</span>'
+    + '<div class="ctr-resumo-q-itens">'
+    +   '<div class="ctr-resumo-q-item">'
+    +     '<span class="ctr-resumo-q-item-num" style="color:var(--danger)">'+critPrev+'</span>'
+    +     '<span class="ctr-resumo-q-item-lbl">estourou em '+labelPrev+'</span>'
+    +   '</div>'
+    +   '<div class="ctr-resumo-q-item">'
+    +     '<span class="ctr-resumo-q-item-num" style="color:var(--danger)">'+critAtual+'</span>'
+    +     '<span class="ctr-resumo-q-item-lbl">'+(isTrimAtual?'projeção '+labelAtual:'estourou em '+labelAtual)+'</span>'
+    +   '</div>'
+    +   '<div class="ctr-resumo-q-delta '+deltaCls+'">'+deltaArrow+' '+(deltaCrit>0?'+':'')+deltaCrit+' contrato'+(Math.abs(deltaCrit)!==1?'s':'')+(critPrev>0?' ('+deltaPct+'%)':'')+'</div>'
+    + '</div>';
+
+  // ────────────────────────────────────────────────────────────
+  // ZONA 4: Tabela executiva com busca/filtro
+  // ────────────────────────────────────────────────────────────
+  // Aplica filtro de status + busca
+  var clientesFiltrados = clientes.filter(function(c){
+    if(_ctrFilter === 'cobrar' && c.status !== 'crit') return false;
+    if(_ctrFilter === 'vai-estourar' && c.status !== 'warn') return false;
+    if(_ctrFilter === 'upsell' && !c.isUpsell) return false;
+    if(_ctrSearch){
+      var nm = (c.cfg.nome||'').toLowerCase();
+      var al = (c.cfg.alias||'').toLowerCase();
+      if(nm.indexOf(_ctrSearch) === -1 && al.indexOf(_ctrSearch) === -1) return false;
+    }
+    return true;
+  });
+
+  // Atualiza filter pill (mostra qual filtro ativo, clique pra limpar)
+  var filterPillEl = document.getElementById('ctr-filter-pill');
+  if(filterPillEl){
+    if(_ctrFilter === 'all'){ filterPillEl.style.display = 'none'; }
+    else {
+      var lblFilter = _ctrFilter === 'cobrar' ? 'Cobrar agora' : _ctrFilter === 'vai-estourar' ? 'Vai estourar' : 'Upsell alvo';
+      filterPillEl.style.display = '';
+      filterPillEl.innerHTML = 'Filtro: '+lblFilter+' ✕';
+    }
+  }
+
+  // Build tabela
+  var tabelaRows = clientesFiltrados.map(function(c){
+    var pctBar = Math.min(c.pctProj * 100, 100);
+    var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
+    var pctTxt = Math.round(c.pctProj * 100);
+    var excTxt = c.excedente > 0 ? '+'+c.excedente : '—';
+    var excCol = c.excedente > 0 ? 'var(--danger)' : 'var(--muted)';
+    var aliasEsc = String(c.cfg.alias||'').replace(/'/g,"\\'");
+    var trClass = c.status === 'crit' ? 'crit' : (c.status === 'warn' ? 'warn' : (c.isUpsell ? 'upsell-bg' : ''));
+    var upsellBadge = c.isUpsell ? '<span class="ctr-upsell-badge" title="Estourou 2+ trims consecutivos">📈 UPSELL</span>' : '';
+    return '<tr class="'+trClass+'" onclick="_ctrScrollToCard(\''+aliasEsc+'\')">'
+      + '<td><span class="ctr-st-pill '+c.status+'">'+c.statusLbl+'</span></td>'
+      + '<td><strong>'+c.cfg.nome+'</strong>'+upsellBadge+'<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px">'+c.cfg.alias+'</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px"><strong>'+c.limiteTrim+'</strong><div style="font-size:10px;color:var(--muted)">'+c.cfg.limite_mes+'/mês</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px">'+c.usoTrim+'<div class="ctr-mini-bar"><div class="ctr-mini-bar-fill" style="width:'+pctBar+'%;background:'+barColor+'"></div></div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:12px"><strong style="color:'+barColor+'">'+c.projTrim+'</strong><div style="font-size:10px;color:var(--muted)">'+pctTxt+'% do limite</div></td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:13px;color:'+excCol+';font-weight:700">'+excTxt+'</td>'
+      + '<td style="text-align:center;color:var(--muted);font-size:14px">↓</td>'
+    + '</tr>';
+  }).join('');
+  if(!tabelaRows){
+    tabelaRows = '<tr><td colspan="7" class="ctr-tabela-empty">Nenhum contrato com o filtro/busca aplicado</td></tr>';
+  }
+  tabelaEl.className = 'ctr-tabela-exec';
+  tabelaEl.innerHTML = '<table>'
+    + '<thead><tr>'
+    +   '<th>Status</th>'
+    +   '<th>Cliente</th>'
+    +   '<th style="text-align:right">Limite trim</th>'
+    +   '<th style="text-align:right">Acumulado</th>'
+    +   '<th style="text-align:right">'+(isTrimAtual?'Projeção':'Fechado')+'</th>'
+    +   '<th style="text-align:right">Excedente</th>'
+    +   '<th style="text-align:center">→</th>'
+    + '</tr></thead>'
+    + '<tbody>'+tabelaRows+'</tbody>'
+    + '</table>';
+
   // ── Lista por cliente (grid 2-por-linha, foco no trimestre) ──
+  // Respeita filtros aplicados via Zona 4 (cards do topo + busca)
   listEl.className = 'ctr-list';
-  listEl.innerHTML = clientes.map(function(c){
+  listEl.innerHTML = clientesFiltrados.map(function(c){
     var pctBar = Math.min(c.pctProj * 100, 100);
     var barColor = c.status === 'crit' ? 'var(--danger)' : (c.status === 'warn' ? 'var(--warn)' : (c.status === 'info' ? 'var(--muted)' : 'var(--ok)'));
     var statusTxt = c.statusLbl.toUpperCase();
@@ -18638,11 +20109,13 @@ function renderContratosSSG(){
       + '</div>';
     }).join('');
 
-    return '<div class="ctr-card s-'+c.status+'">'
+    var aliasUp = String(c.cfg.alias||'').toUpperCase();
+    var upsellTag = c.isUpsell ? '<span class="ctr-upsell-badge" style="margin-left:6px" title="Estourou 2+ trims consecutivos · alvo upsell">📈 UPSELL</span>' : '';
+    return '<div class="ctr-card s-'+c.status+'" data-alias="'+aliasUp+'" style="transition:box-shadow .3s">'
       // Header: nome + status
       + '<div class="ctr-c-hd">'
         + '<div class="ctr-c-hd-left">'
-          + '<div class="ctr-c-name">'+c.cfg.nome+'</div>'
+          + '<div class="ctr-c-name">'+c.cfg.nome+upsellTag+'</div>'
           + '<div class="ctr-c-sub">'+c.cfg.limite_mes+'/mês · '+c.limiteTrim+'/trim · '+c.cfg.alias+'</div>'
           + obsTxt
         + '</div>'
@@ -18824,6 +20297,27 @@ function renderBacklogTable(rows) {
 
 </script>
 
+
+<!-- ══════ KPI DRILL-DOWN MODAL — genérico ══════ -->
+<div id="kdrill-overlay" class="kdrill-overlay" onclick="closeKpiDrill(event)" role="dialog" aria-modal="true" aria-labelledby="kdrill-title">
+  <div class="kdrill-modal" onclick="event.stopPropagation()">
+    <div class="kdrill-head">
+      <div class="kdrill-icon" id="kdrill-icon">📋</div>
+      <div class="kdrill-title-wrap">
+        <div class="kdrill-title" id="kdrill-title">—</div>
+        <div class="kdrill-sub" id="kdrill-sub"></div>
+      </div>
+      <div class="kdrill-count" id="kdrill-count">—</div>
+      <button class="kdrill-close" onclick="closeKpiDrill()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="kdrill-filters" id="kdrill-filters"></div>
+    <div class="kdrill-body" id="kdrill-body"></div>
+    <div class="kdrill-foot">
+      <span id="kdrill-foot-left">Clique numa linha pra abrir o ticket</span>
+      <span id="kdrill-foot-right">ESC pra fechar</span>
+    </div>
+  </div>
+</div>
 
 <div id="at-modal-overlay" style="position:fixed;inset:0;z-index:700;background:rgba(8,11,16,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s" onclick="closeAtModal(event)" role="dialog" aria-modal="true" aria-labelledby="at-modal-name">
   <div id="at-modal" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);width:860px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;transform:scale(.95) translateY(14px);transition:transform .22s;overflow:hidden">
