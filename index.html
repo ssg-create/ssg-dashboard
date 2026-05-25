@@ -2983,6 +2983,106 @@ button:focus-visible,
 }
 @keyframes fadeInCli{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ POLISH ALERTAS CRÍTICOS — refator visível v6.1 ═════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Substitui os 3 KPIs minúsculos por 3 cards acionáveis (padrão BH) */
+
+/* Header de zona — versão compacta sem wrapper */
+.al-zona-hd{
+  display:flex;align-items:center;gap:10px;margin:18px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.al-zona-hd:first-child{margin-top:0}
+.al-zona-titulo{
+  font-size:11px;font-weight:800;color:var(--sub);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.al-zona-pill{
+  font-size:10px;font-weight:600;font-family:var(--mono);
+  padding:2px 8px;border-radius:10px;background:var(--bg3);
+  color:var(--muted);border:1px solid var(--border);
+}
+.al-zona-hint{
+  margin-left:auto;font-size:10px;color:var(--muted);font-style:italic;
+}
+
+/* 3 cards acionáveis no topo de Alertas */
+.al-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.al-acao{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.al-acao::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+}
+.al-acao:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.al-acao:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.al-acao.crit::before{background:var(--danger)}
+.al-acao.crit:hover{border-color:rgba(244,63,94,.4)}
+.al-acao.esp::before{background:var(--orange)}
+.al-acao.esp:hover{border-color:rgba(255,112,36,.4)}
+.al-acao.resp::before{background:var(--warn)}
+.al-acao.resp:hover{border-color:rgba(245,158,11,.4)}
+
+.al-acao-icon{font-size:22px;margin-bottom:4px;line-height:1}
+.al-acao-lbl{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sub);margin-bottom:6px;
+}
+.al-acao-num{
+  font-size:34px;font-weight:800;font-family:var(--display);
+  line-height:1;color:var(--text);
+}
+.al-acao.crit .al-acao-num{color:var(--danger)}
+.al-acao.esp .al-acao-num{color:var(--orange)}
+.al-acao.resp .al-acao-num{color:var(--warn)}
+.al-acao-sub{font-size:12px;color:var(--text);margin-top:6px;line-height:1.4}
+.al-acao-acao{
+  font-size:10.5px;color:var(--muted);margin-top:10px;
+  padding-top:10px;border-top:1px dashed var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+.al-acao-acao::before{content:"→";color:var(--teal);font-weight:700}
+
+/* Alert-card refinado — header maior estilo BH */
+#s-alertas .alert-card{
+  border-left:3px solid var(--danger);padding:18px 20px;
+  background:rgba(244,63,94,.04);
+}
+#s-alertas .alert-card-title{
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--danger);margin-bottom:14px;padding-bottom:10px;
+  border-bottom:1px solid rgba(244,63,94,.12);
+  display:flex;align-items:center;gap:8px;
+}
+#s-alertas .alert-card-title svg{width:16px;height:16px}
+#s-alertas #crit-count{
+  margin-left:auto;font-size:11px;font-weight:600;font-family:var(--mono);
+  color:var(--muted);opacity:1;
+  padding:2px 10px;border-radius:10px;background:rgba(244,63,94,.08);
+  border:1px solid rgba(244,63,94,.15);
+}
+
+/* Filtros mais visíveis na alert-card */
+#s-alertas #filtro-fila-btns,
+#s-alertas #filtro-atend-btns{align-items:center}
+
+/* Hide kpi-row antigo nessa aba (substituído pela al-cards-3) */
+#s-alertas .kpi-row.kpi-row-3.legacy-hide{display:none !important}
+
+/* Light theme */
+[data-theme="light"] #s-alertas .alert-card{
+  background:#fff5f5;border-left-color:#dc2626;
+}
+[data-theme="light"] #s-alertas .alert-card-title{
+  color:#b91c1c;border-bottom-color:#fecaca;
+}
+[data-theme="light"] #s-alertas #crit-count{
+  background:#fee2e2;border-color:#fecaca;color:#7f1d1d;
+}
+
 </style>
 <!-- Lottie web component pra mascote animado (GW Walker) — CDN -->
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
@@ -3559,15 +3659,50 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
         <div id="proj-mel-list" style="padding:8px 0"></div>
       </div>
-      <div class="kpi-row kpi-row-3">
-        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)" id="kpi-ma-abertos">37</div><div class="kpi-sub" id="kpi-ma-sub">exige atenção imediata</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Em Espera (totais)</div><div class="kpi-val" style="color:var(--orange)" id="kpi-bloq-aging">—</div><div class="kpi-sub" id="kpi-bloq-sub">aguardando ação</div></div>
-        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Sem 1ª resposta +30min</div><div class="kpi-val" style="color:var(--warn)" id="kpi-sem-resp">63</div><div class="kpi-sub">acima da meta</div></div>
+
+      <!-- ── ZONA: O QUE EXIGE AÇÃO AGORA ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📊 Panorama de risco operacional</span>
+        <span class="al-zona-hint">clique em qualquer card pra filtrar a lista abaixo</span>
+      </div>
+      <div class="al-cards-3">
+        <div class="al-acao crit" tabindex="0" onclick="document.getElementById('lista-criticos').scrollIntoView({behavior:'smooth',block:'start'})">
+          <div class="al-acao-icon">🚨</div>
+          <div class="al-acao-lbl">Muito Alta em aberto</div>
+          <div class="al-acao-num" id="kpi-ma-abertos">—</div>
+          <div class="al-acao-sub" id="kpi-ma-sub">exige atenção imediata</div>
+          <div class="al-acao-acao">ver lista crítica abaixo</div>
+        </div>
+        <div class="al-acao esp" tabindex="0" onclick="(function(){var n=document.querySelector('.nav[onclick*=&quot;s-bl&quot;]');if(n)n.click();})()">
+          <div class="al-acao-icon">⏸️</div>
+          <div class="al-acao-lbl">Em Espera (totais)</div>
+          <div class="al-acao-num" id="kpi-bloq-aging">—</div>
+          <div class="al-acao-sub" id="kpi-bloq-sub">aguardando ação externa</div>
+          <div class="al-acao-acao">abrir aba Em Espera</div>
+        </div>
+        <div class="al-acao resp" tabindex="0" onclick="(function(){var n=document.querySelector('.nav[onclick*=&quot;s-sl&quot;]');if(n)n.click();})()">
+          <div class="al-acao-icon">⏱️</div>
+          <div class="al-acao-lbl">Sem 1ª resposta +30min</div>
+          <div class="al-acao-num" id="kpi-sem-resp">—</div>
+          <div class="al-acao-sub">acima da meta de tempo de primeira resposta</div>
+          <div class="al-acao-acao">analisar SLA &amp; Tempos</div>
+        </div>
+      </div>
+      <div class="kpi-row kpi-row-3 legacy-hide" aria-hidden="true">
+        <div class="kpi"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Muito Alta em aberto</div><div class="kpi-val" style="color:var(--danger)">—</div><div class="kpi-sub">—</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Em Espera (totais)</div><div class="kpi-val" style="color:var(--orange)">—</div><div class="kpi-sub">—</div></div>
+        <div class="kpi"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Sem 1ª resposta +30min</div><div class="kpi-val" style="color:var(--warn)">—</div><div class="kpi-sub">—</div></div>
+      </div>
+
+      <!-- ── ZONA: LISTA CRÍTICA (Muito Alta) ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">🚨 Chamados Muito Alta em aberto</span>
+        <span class="al-zona-hint">clique numa linha pra abrir o ticket</span>
       </div>
       <div class="alert-card">
         <div class="alert-card-title" style="margin-bottom:12px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-          Chamados Muito Alta em Aberto
+          Lista de chamados críticos
           <span id="crit-count" style="margin-left:8px;font-size:10px;font-weight:400;opacity:.6"></span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
@@ -3587,6 +3722,12 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           </select>
         </div>
         <div id="lista-criticos"></div>
+      </div>
+
+      <!-- ── ZONA: ANÁLISE COMPLEMENTAR ── -->
+      <div class="al-zona-hd">
+        <span class="al-zona-titulo">📈 Análise de distribuição</span>
+        <span class="al-zona-hint">contexto pra entender onde concentra o problema</span>
       </div>
       <div class="grid2">
         <div class="card"><div class="card-title">Distribuição de espera</div><div id="bloq-dist"></div></div>
