@@ -5,7 +5,7 @@ on:
   # Backup: schedule do GitHub Actions (atrasa 1-2h em horário de pico, mas cobre se cron-job.org cair).
   workflow_dispatch:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/5 * * * *'
 
 jobs:
   sync:
