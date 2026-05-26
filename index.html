@@ -3525,10 +3525,39 @@ button:focus-visible,
   font-style:italic;margin-top:4px;line-height:1.5;
 }
 
+/* Tabela Capacidade por Fila (v2) */
+.cap-tabela-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.cap-tabela{width:100%;border-collapse:collapse;font-size:12.5px}
+.cap-tabela th{
+  text-align:left;padding:11px 14px;font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);
+  white-space:nowrap;
+}
+.cap-tabela td{
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  color:var(--text);vertical-align:middle;
+}
+.cap-tabela tbody tr:last-child td{border-bottom:none}
+.cap-tabela tbody tr.cap-tbl-row-crit td{background:rgba(244,63,94,.04)}
+.cap-tabela tbody tr.cap-tbl-row-warn td{background:rgba(245,158,11,.03)}
+.cap-tabela tbody tr.cap-tbl-row-idle td{background:rgba(79,142,247,.03)}
+
+.cap-saude{
+  display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;
+  padding:3px 9px;border-radius:10px;white-space:nowrap;font-family:var(--mono);
+}
+.cap-saude-ok{background:rgba(16,185,129,.12);color:var(--ok)}
+.cap-saude-warn{background:rgba(245,158,11,.12);color:var(--warn)}
+.cap-saude-crit{background:rgba(244,63,94,.12);color:var(--danger);font-weight:800}
+.cap-saude-idle{background:rgba(79,142,247,.12);color:var(--blue)}
+
 /* Light theme */
 [data-theme="light"] .cap-banner.cap-banner-crit{background:#fef2f2}
 [data-theme="light"] .cap-banner.cap-banner-warn{background:#fffbeb}
 [data-theme="light"] .cap-legend-item.cap-legend-crit{background:#fee2e2;color:#991b1b}
+[data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-crit td{background:#fef2f2}
+[data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-warn td{background:#fffbeb}
 
 /* CS KPIs clicáveis — feedback de interatividade */
 .cs-kpi[onclick]{cursor:pointer;transition:border-color .15s,background .15s;position:relative}
@@ -17143,46 +17172,185 @@ function _capDiasUteis(dtStart, dtEnd){
   return n;
 }
 
-// Calcula produtividade por fila usando RAW_DATA (últimos 30 dias)
-// CORRIGIDO: divide pelos dias úteis, não corridos (atendimento é seg-sex)
-// Respeita filtros activeFilaOP e activeCliente naturalmente
-function _capProdutividadePorFila(){
+// Normaliza display "Adriano Ribeiro" → login "adriano.ribeiro" pra cruzar com roster
+function _capNomeParaLogin(nome){
+  return String(nome||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .trim().replace(/\s+/g,'.');
+}
+
+// Inverte SQUADS → { 'SSG': Set(logins), 'DBA': Set(logins), ... }
+// Triagem é ignorada (não é capacidade operacional)
+function _capRosterPorFila(){
+  if(typeof SQUADS === 'undefined' || !SQUADS) return {};
+  var out = {};
+  Object.keys(SQUADS).forEach(function(k){
+    var s = SQUADS[k];
+    if(!s || s.tipo === 'triagem') return;
+    (s.filas||[]).forEach(function(f){
+      var fNorm = String(f||'').toUpperCase();
+      if(!out[fNorm]) out[fNorm] = {};
+      (s.allowed_logins||[]).forEach(function(l){ out[fNorm][l] = true; });
+    });
+  });
+  return out;
+}
+
+// Mediana de um array numérico
+function _capMediana(arr){
+  if(!arr || !arr.length) return 0;
+  var s = arr.slice().sort(function(a,b){ return a-b; });
+  var mid = Math.floor(s.length/2);
+  return s.length % 2 ? s[mid] : (s[mid-1] + s[mid])/2;
+}
+
+// Regressão linear simples sobre série diária. Retorna {m, b}
+function _capRegLin(pts){
+  if(!pts || !pts.length) return {m:0, b:0};
+  var n = pts.length;
+  var sx=0, sy=0, sxx=0, sxy=0;
+  pts.forEach(function(p, i){ sx+=i; sy+=p; sxx+=i*i; sxy+=i*p; });
+  var denom = (n*sxx - sx*sx);
+  if(denom === 0) return {m:0, b:sy/n};
+  var m = (n*sxy - sx*sy)/denom;
+  var b = (sy - m*sx)/n;
+  return {m:m, b:b};
+}
+
+// Calcula stats completas por fila — lógica dos 10 passos validada com Fabio.
+// Para cada fila:
+//   - N pessoas (roster ∩ histórico 30d)
+//   - Previsão de chamados no horizonte (regressão por fila, só d.ú.)
+//   - Produtividade mediana (chm/d.ú. dos atendentes ativos)
+//   - SLA OTRS mediano (1ª resposta)
+//   - Capacidade = N × prod × d.ú. horizonte
+//   - Utilização + saúde combinada
+// Respeita filtros activeFilaOP, activeCliente, ticketInFilter
+function _capStatsPorFila(diasHorizonte){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return null;
   var now = new Date();
   var dt30 = new Date(now.getTime() - 30*86400000);
-  // Dias úteis nos últimos 30 dias corridos (geralmente ~21-22)
-  var diasUteisJanela = _capDiasUteis(dt30, now);
-  if(diasUteisJanela < 1) diasUteisJanela = 22; // safety
-  var byFilaAtend = {};
+  var dt60 = new Date(now.getTime() - 60*86400000);
+  var diasUteisJanela = Math.max(_capDiasUteis(dt30, now), 1);
+  var fimHoriz = new Date(now.getTime() + diasHorizonte*86400000);
+  var diasUteisHoriz = Math.max(_capDiasUteis(now, fimHoriz), 1);
+  var roster = _capRosterPorFila();
+  // Agrega por fila:
+  //   - fechamentos por atendente (30d)
+  //   - série diária pra regressão (60d)
+  //   - thresholds OTRS (30d)
+  var byFila = {};
+  function bk(fila){
+    if(!byFila[fila]) byFila[fila] = { fechByAt: {}, diaria: {}, slas: [] };
+    return byFila[fila];
+  }
   RAW_DATA.forEach(function(d){
     if(!d || !d.criado) return;
-    if(d.criado < dt30) return;
     if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
     if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
     if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
-    // Conta SÓ tickets fechados/resolvidos (proxy de "produtividade real")
-    if(['Fechado','Resolvido'].indexOf(d.estado) === -1) return;
-    var fila = d.fila || 'SEM_FILA';
-    var atend = d.atend || '';
-    if(!atend || atend === '—') return;
-    if(!byFilaAtend[fila]) byFilaAtend[fila] = {};
-    byFilaAtend[fila][atend] = (byFilaAtend[fila][atend] || 0) + 1;
+    var fila = String(d.fila||'').toUpperCase();
+    if(!fila) return;
+    var entry = bk(fila);
+    // Série diária (últimos 60d) → regressão
+    if(d.criado >= dt60){
+      var k = d.criado.toISOString().slice(0,10);
+      entry.diaria[k] = (entry.diaria[k]||0) + 1;
+    }
+    // Fechamentos por atendente nos últimos 30d
+    if(d.criado >= dt30 && ['Fechado','Resolvido'].indexOf(d.estado) !== -1){
+      var atend = String(d.atend||'').trim();
+      if(atend && atend !== '—'){
+        entry.fechByAt[atend] = (entry.fechByAt[atend]||0) + 1;
+      }
+    }
+    // SLA OTRS dos tickets dos últimos 30d
+    if(d.criado >= dt30 && typeof getOTRSSLAThreshold === 'function'){
+      var th = (typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0)
+        ? d.sla_first_response_min
+        : getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+      if(th != null && th > 0) entry.slas.push(th);
+    }
   });
-  var resultado = { totalAtendentes: 0, capacidadeDiaUtil: 0, diasUteisJanela: diasUteisJanela, porFila: {} };
-  Object.keys(byFilaAtend).forEach(function(fila){
-    var atendCounts = byFilaAtend[fila];
-    // Filtro: só atendentes ativos (≥5 fechados nos últimos 30 dias)
-    var ativos = Object.keys(atendCounts).filter(function(a){ return atendCounts[a] >= 5; });
-    if(!ativos.length) return;
-    // Taxa POR DIA ÚTIL — divide pelos dias trabalhados, não corridos
-    var taxas = ativos.map(function(a){ return atendCounts[a] / diasUteisJanela; });
-    taxas.sort(function(a,b){ return a-b; });
-    var mid = Math.floor(taxas.length / 2);
-    var mediana = taxas.length % 2 ? taxas[mid] : (taxas[mid-1] + taxas[mid]) / 2;
-    var capDiaUtil = ativos.length * mediana;
-    resultado.porFila[fila] = { n: ativos.length, prodMediana: mediana, capDiaUtil: capDiaUtil };
-    resultado.totalAtendentes += ativos.length;
-    resultado.capacidadeDiaUtil += capDiaUtil;
+
+  // Pra cada fila com dados, calcula stats finais
+  var resultado = {};
+  Object.keys(byFila).forEach(function(fila){
+    var entry = byFila[fila];
+    var rosterFila = roster[fila] || {};
+    // PESSOAS = roster ∩ histórico (quem fechou ≥1 ticket nos últimos 30d E está no roster)
+    // Se a fila não tá no roster (ex: fila legada), usa só histórico
+    var rosterTemFila = Object.keys(rosterFila).length > 0;
+    var atendsComFechamento = Object.keys(entry.fechByAt);
+    var pessoasValidas = atendsComFechamento.filter(function(nome){
+      if(!rosterTemFila) return true; // sem roster → conta todos
+      var login = _capNomeParaLogin(nome);
+      return !!rosterFila[login];
+    });
+    if(!pessoasValidas.length) return; // sem ninguém → não calcula
+
+    // Produtividade — mediana(chm fechados ÷ d.ú. janela) entre as pessoas válidas
+    var taxas = pessoasValidas.map(function(nome){ return entry.fechByAt[nome] / diasUteisJanela; });
+    var prodMediana = _capMediana(taxas);
+
+    // Previsão — regressão linear sobre série diária dos últimos 60d (só d.ú.)
+    var dias = Object.keys(entry.diaria).sort();
+    var pts = dias.map(function(k){ return entry.diaria[k]; });
+    var reg = _capRegLin(pts);
+    // Projeta volume nos próximos `diasUteisHoriz` d.ú. (só seg-sex)
+    var lastX = pts.length - 1;
+    var prevHorizonte = 0;
+    var diaCur = new Date(now);
+    var dUteisContados = 0;
+    while(dUteisContados < diasUteisHoriz){
+      var dow = diaCur.getDay();
+      if(dow !== 0 && dow !== 6){
+        lastX++;
+        var pred = Math.max(0, reg.m * lastX + reg.b);
+        prevHorizonte += pred;
+        dUteisContados++;
+      }
+      diaCur.setDate(diaCur.getDate() + 1);
+    }
+    prevHorizonte = Math.round(prevHorizonte);
+
+    // SLA OTRS mediano (em minutos) dos tickets dos últimos 30d
+    var slaMed = _capMediana(entry.slas);
+
+    // Capacidade no horizonte
+    var capacidade = Math.round(pessoasValidas.length * prodMediana * diasUteisHoriz);
+    var utilizacao = capacidade > 0 ? prevHorizonte / capacidade : 0;
+    var pctUtil = Math.round(utilizacao * 100);
+
+    // Saúde combina utilização × pessoas (régua de bus factor)
+    // 1-2 pessoas: SPOF. 3-5: baixa redundância. 6+: robusto.
+    var nPess = pessoasValidas.length;
+    var saude;
+    if(utilizacao > 0.85){
+      saude = { cls: 'crit', label: nPess <= 2 ? 'Crítico · SPOF' : 'Sobrecarga' };
+    } else if(utilizacao > 0.75){
+      saude = { cls: nPess <= 2 ? 'crit' : 'warn', label: nPess <= 2 ? 'Apertado · SPOF' : 'Apertado' };
+    } else if(nPess <= 2){
+      saude = { cls: 'warn', label: 'Saudável · SPOF risco' };
+    } else if(nPess <= 5){
+      saude = { cls: utilizacao > 0.6 ? 'ok' : 'warn', label: utilizacao > 0.6 ? 'Saudável · baixa redundância' : 'Ociosa · baixa redundância' };
+    } else {
+      saude = { cls: utilizacao < 0.4 ? 'idle' : 'ok', label: utilizacao < 0.4 ? 'Ociosa · folga' : 'Saudável' };
+    }
+
+    resultado[fila] = {
+      fila: fila,
+      pessoas: nPess,
+      prevHorizonte: prevHorizonte,
+      capacidade: capacidade,
+      prodMediana: prodMediana,
+      utilizacao: utilizacao,
+      pctUtil: pctUtil,
+      slaMin: slaMed,
+      saude: saude,
+      diasUteisHoriz: diasUteisHoriz
+    };
   });
   return resultado;
 }
@@ -17195,109 +17363,97 @@ function _capClassificar(utilizacao){
   return                   { cls: 'idle', label: 'Ociosidade' };
 }
 
-// Renderiza o bloco "Capacidade vs Previsão" no topo da aba
-// forecasted: array [{d:'YYYY-MM-DD', pred:N}] dos dias previstos
-// Se for número, trata como total bruto (fallback legado)
+// Formata SLA mediano em texto curto
+function _capFmtSla(min){
+  if(!min || min <= 0) return '—';
+  if(min < 60) return Math.round(min)+'min';
+  if(min < 1440) return Math.round(min/60*10)/10+'h';
+  return Math.round(min/1440)+'d';
+}
+
+// Renderiza tabela "Capacidade por fila" (v2 — pós Fabio validar lógica)
+// forecasted: array [{d, pred}] — não usado mais (cada fila roda sua própria regressão)
 function _renderFvCapacity(diasHorizonte, forecasted){
   var el = document.getElementById('fv-capacity');
   if(!el) return;
-  // Calcula previsão SÓ dos dias úteis (atendimento é seg-sex)
-  // Se forecasted é array → soma apenas dias úteis
-  // Se forecasted é número → assume já bruto (regressão sobre dias corridos)
-  var previsaoTotal;
-  if(Array.isArray(forecasted)){
-    previsaoTotal = 0;
-    forecasted.forEach(function(f){
-      if(!f || f.pred == null) return;
-      // f.d pode ser 'YYYY-MM-DD' string
-      var dt = new Date(f.d + 'T12:00:00');
-      if(isNaN(dt)) return;
-      var dow = dt.getDay();
-      if(dow === 0 || dow === 6) return; // pula sáb/dom
-      previsaoTotal += f.pred;
-    });
-  } else {
-    previsaoTotal = forecasted; // fallback legado: total bruto
-  }
-  var prod = _capProdutividadePorFila();
-  if(!prod || prod.totalAtendentes === 0){
+  var stats = _capStatsPorFila(diasHorizonte);
+  if(!stats || !Object.keys(stats).length){
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--border);border-radius:10px">'
-      + 'Não foi possível calcular capacidade — sem atendentes ativos suficientes nos últimos 30 dias '
-      + '(filtro pode estar restrito demais ou base de dados pequena).</div>';
+      + 'Não foi possível calcular capacidade — sem dados suficientes nos últimos 30 dias '
+      + '(filtro pode estar restrito demais).</div>';
     return;
   }
-  // Conta dias úteis no horizonte (seg-sex) — equipe só atende dias úteis
-  var hoje = new Date();
-  var fimHoriz = new Date(hoje.getTime() + diasHorizonte*86400000);
-  var diasUteisHoriz = _capDiasUteis(hoje, fimHoriz);
-  // Produtividade já é POR DIA ÚTIL (corrigido em _capProdutividadePorFila)
-  var capDiaUtilNominal = prod.capacidadeDiaUtil;
-  var capDiaUtilEfetiva = capDiaUtilNominal * 0.80;
-  // Capacidade total no horizonte = prod_dia_util × dias_uteis_no_horizonte
-  var capHorizonteNom   = capDiaUtilNominal * diasUteisHoriz;
-  var capHorizonteEfet  = capDiaUtilEfetiva * diasUteisHoriz;
-  var utilizacao        = capHorizonteNom > 0 ? previsaoTotal / capHorizonteNom : 0;
-  var pctUtilizacao     = Math.round(utilizacao * 100);
-  var classif           = _capClassificar(utilizacao);
-  // Gap em pessoas pra operar no sweet spot (70%)
-  var capAlvo70         = previsaoTotal / 0.70;
-  var prodMediaEquipe   = capDiaUtilNominal / prod.totalAtendentes;
-  var atendAlvo         = (prodMediaEquipe * diasUteisHoriz) > 0 ? capAlvo70 / (prodMediaEquipe * diasUteisHoriz) : 0;
-  var gapPessoas        = atendAlvo - prod.totalAtendentes;
-  var gapTxt, gapCor;
-  if(gapPessoas > 0.5){       gapTxt = '+' + Math.ceil(gapPessoas) + ' faltam'; gapCor = 'var(--danger)'; }
-  else if(gapPessoas < -0.5){ gapTxt = Math.floor(gapPessoas) + ' sobram';      gapCor = 'var(--blue)'; }
-  else                      { gapTxt = '≈ 0 (alinhado)';                        gapCor = 'var(--ok)'; }
-  // Banner de ação
-  var bannerMsg, bannerIcon;
-  if(utilizacao >= 0.85){
-    if(gapPessoas > 0.5){
-      bannerMsg = 'Faltam ~' + Math.ceil(gapPessoas) + ' atendente' + (Math.ceil(gapPessoas)>1?'s':'') + ' pra cobrir os próximos ' + diasHorizonte + ' dias com folga. Opções: contratar, redistribuir entre filas, ou negociar SLA temporariamente.';
+  // Ordena por urgência: crit → warn → ok → idle, depois por util desc
+  var ordemCls = { crit:0, warn:1, ok:2, idle:3 };
+  var filas = Object.keys(stats).map(function(k){ return stats[k]; });
+  filas.sort(function(a,b){
+    var rA = ordemCls[a.saude.cls]||9, rB = ordemCls[b.saude.cls]||9;
+    if(rA !== rB) return rA - rB;
+    return b.utilizacao - a.utilizacao;
+  });
+
+  // Diagnóstico final — detecta filas críticas + filas com folga
+  var filasCrit = filas.filter(function(f){ return f.saude.cls === 'crit'; });
+  var filasFolga = filas.filter(function(f){ return f.utilizacao < 0.5 && f.pessoas >= 3; });
+  var diagMsg, diagCls;
+  if(filasCrit.length){
+    var nomesCrit = filasCrit.map(function(f){ return f.fila; }).join(', ');
+    if(filasFolga.length){
+      var nomesFolga = filasFolga.map(function(f){ return f.fila; }).join(', ');
+      diagMsg = '<strong>'+nomesCrit+'</strong> em '+(filasCrit.length>1?'sobrecarga':'sobrecarga')+'. '
+        + '<strong>'+nomesFolga+'</strong> com folga → avaliar redistribuição antes de contratar.';
     } else {
-      bannerMsg = 'Operação sobrecarregada. Tempo de espera dos tickets pode crescer rapidamente. Considere redistribuir carga entre filas.';
+      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. Nenhuma fila com folga real pra redistribuir — considerar contratação ou reduzir SLA temporariamente.';
     }
-    bannerIcon = '🔴';
-  } else if(utilizacao >= 0.75){
-    bannerMsg = 'Operação apertada — sem folga pra picos inesperados. Monitorar próximas semanas.';
-    bannerIcon = '🟠';
-  } else if(utilizacao >= 0.60){
-    bannerMsg = 'Operação saudável — capacidade alinhada à demanda com folga adequada.';
-    bannerIcon = '🟢';
+    diagCls = 'crit';
+  } else if(filas.some(function(f){ return f.saude.cls === 'warn'; })){
+    diagMsg = 'Operação apertada em algumas filas, mas sem sobrecarga crítica. Monitorar próximas semanas.';
+    diagCls = 'warn';
   } else {
-    bannerMsg = 'Capacidade ociosa de ~' + Math.round((1-utilizacao)*100) + '%. Considere captar mais clientes ou realocar parte da equipe.';
-    bannerIcon = '🟡';
+    diagMsg = 'Operação saudável em todas as filas — capacidade alinhada à demanda prevista.';
+    diagCls = 'ok';
   }
+
+  // Build tabela
+  var rows = filas.map(function(f){
+    var cls = f.saude.cls;
+    var corUtil = cls==='crit'?'var(--danger)':(cls==='warn'?'var(--warn)':(cls==='ok'?'var(--ok)':'var(--blue)'));
+    return '<tr class="cap-tbl-row cap-tbl-row-'+cls+'">'
+      + '<td><strong>'+f.fila+'</strong></td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+f.pessoas+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+f.prevHorizonte+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);color:var(--muted)">'+f.capacidade+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+corUtil+'">'+f.pctUtil+'%</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)">'+_capFmtSla(f.slaMin)+'</td>'
+      + '<td><span class="cap-saude cap-saude-'+cls+'">'+f.saude.label+'</span></td>'
+    + '</tr>';
+  }).join('');
+
   el.innerHTML = ''
-    + '<div class="cap-cards-3">'
-    +   '<div class="cap-card">'
-    +     '<div class="cap-card-icon">👥</div>'
-    +     '<div class="cap-card-lbl">Capacidade efetiva</div>'
-    +     '<div class="cap-card-num">'+Math.round(capHorizonteEfet)+'</div>'
-    +     '<div class="cap-card-sub">'+prod.totalAtendentes+' atendentes × '+(Math.round(prodMediaEquipe*10)/10)+' chm/dia útil × '+diasUteisHoriz+' d.ú. nos próximos '+diasHorizonte+'d × 80% folga</div>'
-    +   '</div>'
-    +   '<div class="cap-card cap-card-' + classif.cls + '">'
-    +     '<div class="cap-card-icon">📊</div>'
-    +     '<div class="cap-card-lbl">Utilização projetada</div>'
-    +     '<div class="cap-card-num">'+pctUtilizacao+'%</div>'
-    +     '<div class="cap-card-sub">'+classif.label+' · previsto ÷ capacidade nominal</div>'
-    +   '</div>'
-    +   '<div class="cap-card">'
-    +     '<div class="cap-card-icon">⚠️</div>'
-    +     '<div class="cap-card-lbl">Gap pessoas</div>'
-    +     '<div class="cap-card-num" style="color:'+gapCor+'">'+gapTxt+'</div>'
-    +     '<div class="cap-card-sub">pra operar com 70% utilização (sweet spot)</div>'
-    +   '</div>'
+    + '<div class="cap-tabela-wrap">'
+    +   '<table class="cap-tabela">'
+    +     '<thead><tr>'
+    +       '<th>Fila</th>'
+    +       '<th style="text-align:right">Pessoas</th>'
+    +       '<th style="text-align:right">Prev '+diasHorizonte+'d</th>'
+    +       '<th style="text-align:right">Capac.</th>'
+    +       '<th style="text-align:right">Util%</th>'
+    +       '<th style="text-align:right">SLA OTRS</th>'
+    +       '<th>Saúde</th>'
+    +     '</tr></thead>'
+    +     '<tbody>'+rows+'</tbody>'
+    +   '</table>'
     + '</div>'
-    + '<div class="cap-banner cap-banner-' + classif.cls + '">'
-    +   '<span class="cap-banner-icon">'+bannerIcon+'</span>'
-    +   '<span class="cap-banner-txt">'+bannerMsg+'</span>'
+    + '<div class="cap-banner cap-banner-' + diagCls + '">'
+    +   '<span class="cap-banner-icon">🎯</span>'
+    +   '<span class="cap-banner-txt"><strong>Diagnóstico:</strong> '+diagMsg+'</span>'
     + '</div>'
     + '<div class="cap-legend">'
-    +   '<span class="cap-legend-tag">📏 Como interpretar a utilização:</span>'
-    +   '<span class="cap-legend-item cap-legend-ok">🟢 60–75% saudável</span>'
-    +   '<span class="cap-legend-item cap-legend-warn">🟡 75–85% apertado</span>'
-    +   '<span class="cap-legend-item cap-legend-crit">🔴 acima de 85% — SLA degrada</span>'
-    +   '<span class="cap-legend-explain">Cálculo em <strong>dias úteis</strong> (seg-sex) — atendimento Groundwork não opera sáb/dom. Acima de 85% o tempo de espera dos tickets cresce <strong>exponencialmente</strong> (teoria de filas). 100% não é "limite" — é colapso. Por isso o sweet spot é 60–75%, não 100%.</span>'
+    +   '<span class="cap-legend-tag">📏 Saúde por fila:</span>'
+    +   '<span class="cap-legend-item cap-legend-ok">🟢 saudável</span>'
+    +   '<span class="cap-legend-item cap-legend-warn">🟡 apertado / SPOF risco</span>'
+    +   '<span class="cap-legend-item cap-legend-crit">🔴 sobrecarga / crítico</span>'
+    +   '<span class="cap-legend-explain">Combina utilização (chamados ÷ capacidade) com nº de pessoas (bus factor). Cálculo em dias úteis. Pessoas = roster da fila que fechou ≥1 ticket nos últimos 30d. SLA OTRS = mediana dos thresholds reais por serviço/prioridade/cliente.</span>'
     + '</div>';
 }
 
