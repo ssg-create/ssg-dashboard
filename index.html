@@ -4793,14 +4793,11 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           <button class="fv-horizon-btn" onclick="fvSetHorizon(30,this)">Próximos 30 dias</button>
         </div>
 
-        <!-- ── ZONA: Capacidade vs Previsão (Sprint A pós coo-advisor) ── -->
-        <div class="al-zona-hd">
-          <span class="al-zona-titulo">👥 Capacidade vs Previsão</span>
-          <span class="al-zona-hint">cruza previsão com produtividade real da equipe</span>
-        </div>
-        <div id="fv-capacity"></div>
+        <!-- ── ZONA: Capacidade vs Previsão — TEMPORARIAMENTE ESCONDIDA (Fabio 25/05)
+              Lógica precisa ser revalidada com fonte correta de "pessoas por fila" ── -->
+        <div id="fv-capacity" style="display:none"></div>
 
-        <div class="al-zona-hd" style="margin-top:18px">
+        <div class="al-zona-hd">
           <span class="al-zona-titulo">📈 Previsão detalhada</span>
           <span class="al-zona-hint">total previsto, média diária e tendência</span>
         </div>
@@ -17274,25 +17271,39 @@ function _capStatsPorFila(diasHorizonte){
     }
   });
 
-  // Pra cada fila com dados, calcula stats finais
+  // Pra cada fila no ROSTER, calcula stats finais.
+  // CORRIGIDO (Fabio): pessoas = roster oficial PURO (SQUADS[*].allowed_logins).
+  // Não filtra mais por "fechou ≥1 ticket nos últimos 30d" — esse era o erro
+  // que mostrava SSG com 3 pessoas (quando tem 20 cadastradas).
+  // Produtividade ainda é calculada dos que fecharam (estimativa típica).
   var resultado = {};
-  Object.keys(byFila).forEach(function(fila){
-    var entry = byFila[fila];
+  var todasFilasRoster = Object.keys(roster);
+  // Aplica filtro de fila ativo (se houver)
+  var filasParaCalc = todasFilasRoster.filter(function(fila){
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all'){
+      return fila === activeFilaOP;
+    }
+    return true;
+  });
+
+  filasParaCalc.forEach(function(fila){
     var rosterFila = roster[fila] || {};
-    // PESSOAS = roster ∩ histórico (quem fechou ≥1 ticket nos últimos 30d E está no roster)
-    // Se a fila não tá no roster (ex: fila legada), usa só histórico
-    var rosterTemFila = Object.keys(rosterFila).length > 0;
-    var atendsComFechamento = Object.keys(entry.fechByAt);
-    var pessoasValidas = atendsComFechamento.filter(function(nome){
-      if(!rosterTemFila) return true; // sem roster → conta todos
+    var nPessoasRoster = Object.keys(rosterFila).length;
+    if(nPessoasRoster === 0) return; // sem roster cadastrado pra essa fila
+
+    var entry = byFila[fila] || { fechByAt: {}, diaria: {}, slas: [] };
+
+    // Produtividade — mediana(chm fechados ÷ d.ú. janela) entre quem fechou ≥1
+    // E está no roster da fila. Se ninguém fechou, prod = 0 (fila ociosa nos 30d).
+    var atendsAtivos = Object.keys(entry.fechByAt).filter(function(nome){
       var login = _capNomeParaLogin(nome);
       return !!rosterFila[login];
     });
-    if(!pessoasValidas.length) return; // sem ninguém → não calcula
-
-    // Produtividade — mediana(chm fechados ÷ d.ú. janela) entre as pessoas válidas
-    var taxas = pessoasValidas.map(function(nome){ return entry.fechByAt[nome] / diasUteisJanela; });
-    var prodMediana = _capMediana(taxas);
+    var taxas = atendsAtivos.map(function(nome){ return entry.fechByAt[nome] / diasUteisJanela; });
+    var prodMediana = taxas.length ? _capMediana(taxas) : 0;
+    // Quantos do roster realmente atenderam no período (informativo)
+    var nAtivos = atendsAtivos.length;
+    var nPessoas = nPessoasRoster; // ← USA ROSTER OFICIAL, não intersecção
 
     // Previsão — regressão linear sobre série diária dos últimos 60d (só d.ú.)
     var dias = Object.keys(entry.diaria).sort();
@@ -17318,22 +17329,25 @@ function _capStatsPorFila(diasHorizonte){
     // SLA OTRS mediano (em minutos) dos tickets dos últimos 30d
     var slaMed = _capMediana(entry.slas);
 
-    // Capacidade no horizonte
-    var capacidade = Math.round(pessoasValidas.length * prodMediana * diasUteisHoriz);
-    var utilizacao = capacidade > 0 ? prevHorizonte / capacidade : 0;
+    // Capacidade no horizonte — usa N do ROSTER (todos da fila) × produtividade típica
+    var capacidade = Math.round(nPessoas * prodMediana * diasUteisHoriz);
+    var utilizacao = capacidade > 0 ? prevHorizonte / capacidade : (prevHorizonte > 0 ? 99 : 0);
     var pctUtil = Math.round(utilizacao * 100);
 
     // Saúde combina utilização × pessoas (régua de bus factor)
     // 1-2 pessoas: SPOF. 3-5: baixa redundância. 6+: robusto.
-    var nPess = pessoasValidas.length;
     var saude;
-    if(utilizacao > 0.85){
-      saude = { cls: 'crit', label: nPess <= 2 ? 'Crítico · SPOF' : 'Sobrecarga' };
+    if(prodMediana === 0 && prevHorizonte === 0){
+      saude = { cls: 'idle', label: 'Sem atividade' };
+    } else if(prodMediana === 0){
+      saude = { cls: 'warn', label: 'Sem fechamentos 30d' };
+    } else if(utilizacao > 0.85){
+      saude = { cls: 'crit', label: nPessoas <= 2 ? 'Crítico · SPOF' : 'Sobrecarga' };
     } else if(utilizacao > 0.75){
-      saude = { cls: nPess <= 2 ? 'crit' : 'warn', label: nPess <= 2 ? 'Apertado · SPOF' : 'Apertado' };
-    } else if(nPess <= 2){
+      saude = { cls: nPessoas <= 2 ? 'crit' : 'warn', label: nPessoas <= 2 ? 'Apertado · SPOF' : 'Apertado' };
+    } else if(nPessoas <= 2){
       saude = { cls: 'warn', label: 'Saudável · SPOF risco' };
-    } else if(nPess <= 5){
+    } else if(nPessoas <= 5){
       saude = { cls: utilizacao > 0.6 ? 'ok' : 'warn', label: utilizacao > 0.6 ? 'Saudável · baixa redundância' : 'Ociosa · baixa redundância' };
     } else {
       saude = { cls: utilizacao < 0.4 ? 'idle' : 'ok', label: utilizacao < 0.4 ? 'Ociosa · folga' : 'Saudável' };
@@ -17341,7 +17355,8 @@ function _capStatsPorFila(diasHorizonte){
 
     resultado[fila] = {
       fila: fila,
-      pessoas: nPess,
+      pessoas: nPessoas,           // ROSTER oficial
+      ativos: nAtivos,             // Dos que fecharam ≥1 ticket nos 30d
       prevHorizonte: prevHorizonte,
       capacidade: capacidade,
       prodMediana: prodMediana,
@@ -17418,9 +17433,12 @@ function _renderFvCapacity(diasHorizonte, forecasted){
   var rows = filas.map(function(f){
     var cls = f.saude.cls;
     var corUtil = cls==='crit'?'var(--danger)':(cls==='warn'?'var(--warn)':(cls==='ok'?'var(--ok)':'var(--blue)'));
+    var pessoasCol = '<strong>'+f.pessoas+'</strong>'
+      + '<div style="font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:2px">'
+      + f.ativos+' fecharam 30d</div>';
     return '<tr class="cap-tbl-row cap-tbl-row-'+cls+'">'
       + '<td><strong>'+f.fila+'</strong></td>'
-      + '<td style="text-align:right;font-family:var(--mono)">'+f.pessoas+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+pessoasCol+'</td>'
       + '<td style="text-align:right;font-family:var(--mono)">'+f.prevHorizonte+'</td>'
       + '<td style="text-align:right;font-family:var(--mono);color:var(--muted)">'+f.capacidade+'</td>'
       + '<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+corUtil+'">'+f.pctUtil+'%</td>'
@@ -17434,7 +17452,7 @@ function _renderFvCapacity(diasHorizonte, forecasted){
     +   '<table class="cap-tabela">'
     +     '<thead><tr>'
     +       '<th>Fila</th>'
-    +       '<th style="text-align:right">Pessoas</th>'
+    +       '<th style="text-align:right" title="Total no roster oficial / quantos fecharam ≥1 ticket nos últimos 30d">Pessoas</th>'
     +       '<th style="text-align:right">Prev '+diasHorizonte+'d</th>'
     +       '<th style="text-align:right">Capac.</th>'
     +       '<th style="text-align:right">Util%</th>'
@@ -17453,7 +17471,7 @@ function _renderFvCapacity(diasHorizonte, forecasted){
     +   '<span class="cap-legend-item cap-legend-ok">🟢 saudável</span>'
     +   '<span class="cap-legend-item cap-legend-warn">🟡 apertado / SPOF risco</span>'
     +   '<span class="cap-legend-item cap-legend-crit">🔴 sobrecarga / crítico</span>'
-    +   '<span class="cap-legend-explain">Combina utilização (chamados ÷ capacidade) com nº de pessoas (bus factor). Cálculo em dias úteis. Pessoas = roster da fila que fechou ≥1 ticket nos últimos 30d. SLA OTRS = mediana dos thresholds reais por serviço/prioridade/cliente.</span>'
+    +   '<span class="cap-legend-explain">Combina utilização (chamados ÷ capacidade) com nº de pessoas (bus factor). Cálculo em dias úteis. <strong>Pessoas = roster oficial cadastrado da fila</strong> (SQUADS). O número menor abaixo mostra <strong>quantos efetivamente fecharam ≥1 ticket nos últimos 30d</strong>. SLA OTRS = mediana dos thresholds reais por serviço/prioridade/cliente.</span>'
     + '</div>';
 }
 
@@ -17513,9 +17531,12 @@ function renderForecast() {
   var fvAvg = forecasted.length ? Math.round(fvTotal/forecasted.length*10)/10 : 0;
   var histAvg = hist30.length ? Math.round(hist30.reduce(function(s,p){return s+p.n;},0)/hist30.length*10)/10 : 0;
 
-  // Capacity planning — cruza previsão × produtividade real (Sprint A pós coo-advisor)
-  // Passa `forecasted` (array) pra somar apenas dias úteis — atendimento é seg-sex
-  try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
+  // Capacity planning — DESABILITADO temporariamente (Fabio 25/05)
+  // Lógica de "pessoas por fila" precisa ser revalidada com fonte certa.
+  // Card antigo (com números errados) está escondido até confirmar a fonte.
+  var _capEl = document.getElementById('fv-capacity');
+  if(_capEl){ _capEl.innerHTML = ''; _capEl.style.display = 'none'; }
+  // try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
   var trendPerDay = Math.round(reg.m*10)/10;
   var trendUp = reg.m > 0.05;
   var trendDown = reg.m < -0.05;
