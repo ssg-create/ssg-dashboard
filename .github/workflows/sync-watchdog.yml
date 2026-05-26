@@ -1,0 +1,118 @@
+name: Sync Watchdog
+
+# Monitora o workflow "GWMS Sync" e abre issue quando 3+ runs falham seguidas
+# ou quando passa > 1h sem run bem-sucedida.
+#
+# Roda a cada 30 minutos. Não interfere no sync — só observa e alerta.
+#
+# Criado em 26/05/2026 após incidente de suspensão da conta GitHub
+# (sync ficou ~3h sem rodar sem notificação clara).
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # a cada 30min
+  workflow_dispatch:           # permite teste manual
+
+permissions:
+  actions: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verificar saúde do GWMS Sync
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Lista últimas 10 runs do workflow GWMS Sync
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner, repo,
+              workflow_id: 'gwms-sync.yml',
+              per_page: 10
+            });
+
+            const items = runs.data.workflow_runs;
+            if (!items.length) {
+              core.info('Nenhuma run encontrada.');
+              return;
+            }
+
+            // Conta falhas consecutivas no topo
+            let consecFails = 0;
+            for (const r of items) {
+              if (r.conclusion === 'failure') consecFails++;
+              else break;
+            }
+
+            // Idade da última run bem-sucedida
+            const lastSuccess = items.find(r => r.conclusion === 'success');
+            const ageMin = lastSuccess
+              ? Math.round((Date.now() - new Date(lastSuccess.created_at).getTime()) / 60000)
+              : 9999;
+
+            core.info(`Falhas consecutivas: ${consecFails} · Última success há ${ageMin}min`);
+
+            // Decide se precisa abrir issue
+            let shouldAlert = false;
+            let reason = '';
+            if (consecFails >= 3) {
+              shouldAlert = true;
+              reason = `${consecFails} runs falharam seguidas`;
+            } else if (ageMin > 60) {
+              shouldAlert = true;
+              reason = `Última sync bem-sucedida há ${ageMin} minutos`;
+            }
+            if (!shouldAlert) {
+              core.info('Sync saudável — sem alerta.');
+              return;
+            }
+
+            // Verifica se já tem issue aberta pra não duplicar
+            const existing = await github.rest.issues.listForRepo({
+              owner, repo,
+              state: 'open',
+              labels: 'sync-watchdog'
+            });
+            if (existing.data.length) {
+              core.info(`Issue de alerta já existe (#${existing.data[0].number}). Atualizando.`);
+              // Comenta na issue existente
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: existing.data[0].number,
+                body: `🔔 Watchdog ainda detecta problema: **${reason}**\n\n_Verificação automática em ${new Date().toISOString()}_`
+              });
+              return;
+            }
+
+            // Cria issue nova
+            const lastRun = items[0];
+            const body = `## 🚨 GWMS Sync com problema
+
+**Motivo do alerta:** ${reason}
+
+### Diagnóstico
+- Última run: [#${lastRun.run_number}](${lastRun.html_url}) · ${lastRun.conclusion}
+- Falhas consecutivas: ${consecFails}
+- Última sync bem-sucedida: ${ageMin === 9999 ? 'nenhuma encontrada' : `há ${ageMin} minutos`}
+
+### Próximos passos
+1. Abrir o link da run e verificar o log do step "Checkout"
+2. Se aparecer "Your account is suspended" → conta GitHub bloqueada (appeal em https://support.github.com)
+3. Se for outro erro → investigar mensagem específica
+4. Após resolver, **feche esta issue** (watchdog vai criar outra se voltar a falhar)
+
+---
+_Gerado automaticamente pelo workflow Sync Watchdog._`;
+
+            const created = await github.rest.issues.create({
+              owner, repo,
+              title: `🚨 GWMS Sync travado · ${reason}`,
+              body,
+              labels: ['sync-watchdog', 'bug']
+            });
+            core.info(`Issue criada: #${created.data.number}`);
