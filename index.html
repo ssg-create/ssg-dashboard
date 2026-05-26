@@ -4793,11 +4793,14 @@ if(_u)_u.addEventListener("keydown",_enterKey);
           <button class="fv-horizon-btn" onclick="fvSetHorizon(30,this)">Próximos 30 dias</button>
         </div>
 
-        <!-- ── ZONA: Capacidade vs Previsão — TEMPORARIAMENTE ESCONDIDA (Fabio 25/05)
-              Lógica precisa ser revalidada com fonte correta de "pessoas por fila" ── -->
-        <div id="fv-capacity" style="display:none"></div>
-
+        <!-- ── ZONA: Capacidade vs Previsão (v3 — agrupado por SQUAD) ── -->
         <div class="al-zona-hd">
+          <span class="al-zona-titulo">👥 Capacidade por squad</span>
+          <span class="al-zona-hint">cada squad atende N filas com a mesma equipe (roster oficial)</span>
+        </div>
+        <div id="fv-capacity"></div>
+
+        <div class="al-zona-hd" style="margin-top:18px">
           <span class="al-zona-titulo">📈 Previsão detalhada</span>
           <span class="al-zona-hint">total previsto, média diária e tendência</span>
         </div>
@@ -17215,28 +17218,31 @@ function _capRegLin(pts){
   return {m:m, b:b};
 }
 
-// Calcula stats completas por fila — lógica dos 10 passos validada com Fabio.
-// Para cada fila:
-//   - N pessoas (roster ∩ histórico 30d)
-//   - Previsão de chamados no horizonte (regressão por fila, só d.ú.)
-//   - Produtividade mediana (chm/d.ú. dos atendentes ativos)
-//   - SLA OTRS mediano (1ª resposta)
+// Calcula stats por SQUAD (v3 — Fabio 25/05).
+// 1 squad atende N filas com a MESMA equipe. Agrupar por squad evita
+// inflar pessoas (SSG=20, MELHORIAS=20, PROTHEUS=20 quando são 20 mesmas).
+//
+// Por squad:
+//   - N pessoas = SQUADS[squad].allowed_logins (roster OFICIAL puro)
+//   - Filas atendidas = SQUADS[squad].filas
+//   - Previsão = soma das regressões das filas do squad (só d.ú.)
+//   - Produtividade = mediana(fechados/d.ú.) entre atendentes do roster
+//     que fecharam ≥1 ticket em QUALQUER fila do squad nos últimos 30d
+//   - SLA OTRS = mediana dos thresholds nas filas do squad
 //   - Capacidade = N × prod × d.ú. horizonte
-//   - Utilização + saúde combinada
+//
 // Respeita filtros activeFilaOP, activeCliente, ticketInFilter
-function _capStatsPorFila(diasHorizonte){
-  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return null;
+function _capStatsPorSquad(diasHorizonte){
+  if(typeof SQUADS === 'undefined' || !SQUADS) return null;
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA) return null;
   var now = new Date();
   var dt30 = new Date(now.getTime() - 30*86400000);
   var dt60 = new Date(now.getTime() - 60*86400000);
   var diasUteisJanela = Math.max(_capDiasUteis(dt30, now), 1);
   var fimHoriz = new Date(now.getTime() + diasHorizonte*86400000);
   var diasUteisHoriz = Math.max(_capDiasUteis(now, fimHoriz), 1);
-  var roster = _capRosterPorFila();
-  // Agrega por fila:
-  //   - fechamentos por atendente (30d)
-  //   - série diária pra regressão (60d)
-  //   - thresholds OTRS (30d)
+
+  // Agrega por fila (mesmo método de antes — base de cálculo)
   var byFila = {};
   function bk(fila){
     if(!byFila[fila]) byFila[fila] = { fechByAt: {}, diaria: {}, slas: [] };
@@ -17250,19 +17256,16 @@ function _capStatsPorFila(diasHorizonte){
     var fila = String(d.fila||'').toUpperCase();
     if(!fila) return;
     var entry = bk(fila);
-    // Série diária (últimos 60d) → regressão
     if(d.criado >= dt60){
       var k = d.criado.toISOString().slice(0,10);
       entry.diaria[k] = (entry.diaria[k]||0) + 1;
     }
-    // Fechamentos por atendente nos últimos 30d
-    if(d.criado >= dt30 && ['Fechado','Resolvido'].indexOf(d.estado) !== -1){
+    if(d.criado >= dt30 && ['Fechado','Resolvido','Fechado s/ Êxito'].indexOf(d.estado) !== -1){
       var atend = String(d.atend||'').trim();
       if(atend && atend !== '—'){
         entry.fechByAt[atend] = (entry.fechByAt[atend]||0) + 1;
       }
     }
-    // SLA OTRS dos tickets dos últimos 30d
     if(d.criado >= dt30 && typeof getOTRSSLAThreshold === 'function'){
       var th = (typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0)
         ? d.sla_first_response_min
@@ -17271,45 +17274,49 @@ function _capStatsPorFila(diasHorizonte){
     }
   });
 
-  // Pra cada fila no ROSTER, calcula stats finais.
-  // CORRIGIDO (Fabio): pessoas = roster oficial PURO (SQUADS[*].allowed_logins).
-  // Não filtra mais por "fechou ≥1 ticket nos últimos 30d" — esse era o erro
-  // que mostrava SSG com 3 pessoas (quando tem 20 cadastradas).
-  // Produtividade ainda é calculada dos que fecharam (estimativa típica).
+  // Para cada SQUAD, agrega as filas que ele atende
   var resultado = {};
-  var todasFilasRoster = Object.keys(roster);
-  // Aplica filtro de fila ativo (se houver)
-  var filasParaCalc = todasFilasRoster.filter(function(fila){
+  Object.keys(SQUADS).forEach(function(squadId){
+    var squad = SQUADS[squadId];
+    if(!squad || squad.tipo === 'triagem') return;
+    var filas = (squad.filas||[]).map(function(f){ return String(f||'').toUpperCase(); });
+    // Aplica filtro de fila ativo — squad entra se atende a fila filtrada
     if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all'){
-      return fila === activeFilaOP;
+      if(filas.indexOf(String(activeFilaOP).toUpperCase()) === -1) return;
     }
-    return true;
-  });
+    var logins = squad.allowed_logins || [];
+    var nPessoas = logins.length;
+    if(nPessoas === 0) return;
+    var loginsSet = {}; logins.forEach(function(l){ loginsSet[l] = true; });
 
-  filasParaCalc.forEach(function(fila){
-    var rosterFila = roster[fila] || {};
-    var nPessoasRoster = Object.keys(rosterFila).length;
-    if(nPessoasRoster === 0) return; // sem roster cadastrado pra essa fila
-
-    var entry = byFila[fila] || { fechByAt: {}, diaria: {}, slas: [] };
-
-    // Produtividade — mediana(chm fechados ÷ d.ú. janela) entre quem fechou ≥1
-    // E está no roster da fila. Se ninguém fechou, prod = 0 (fila ociosa nos 30d).
-    var atendsAtivos = Object.keys(entry.fechByAt).filter(function(nome){
-      var login = _capNomeParaLogin(nome);
-      return !!rosterFila[login];
+    // Soma fechamentos, diária e SLAs de TODAS as filas do squad
+    var fechByAtSquad = {};
+    var diariaSquad = {};
+    var slasSquad = [];
+    filas.forEach(function(fila){
+      var entry = byFila[fila];
+      if(!entry) return;
+      Object.keys(entry.fechByAt).forEach(function(nome){
+        var login = _capNomeParaLogin(nome);
+        if(!loginsSet[login]) return; // só conta atendentes do roster
+        fechByAtSquad[nome] = (fechByAtSquad[nome]||0) + entry.fechByAt[nome];
+      });
+      Object.keys(entry.diaria).forEach(function(k){
+        diariaSquad[k] = (diariaSquad[k]||0) + entry.diaria[k];
+      });
+      entry.slas.forEach(function(t){ slasSquad.push(t); });
     });
-    var taxas = atendsAtivos.map(function(nome){ return entry.fechByAt[nome] / diasUteisJanela; });
-    var prodMediana = taxas.length ? _capMediana(taxas) : 0;
-    // Quantos do roster realmente atenderam no período (informativo)
-    var nAtivos = atendsAtivos.length;
-    var nPessoas = nPessoasRoster; // ← USA ROSTER OFICIAL, não intersecção
 
-    // Previsão — regressão linear sobre série diária dos últimos 60d (só d.ú.)
-    var dias = Object.keys(entry.diaria).sort();
-    var pts = dias.map(function(k){ return entry.diaria[k]; });
-    var reg = _capRegLin(pts);
-    // Projeta volume nos próximos `diasUteisHoriz` d.ú. (só seg-sex)
+    // Produtividade — mediana entre os do roster que fecharam ≥1
+    var atendsAtivos = Object.keys(fechByAtSquad);
+    var taxas = atendsAtivos.map(function(nome){ return fechByAtSquad[nome] / diasUteisJanela; });
+    var prodMediana = taxas.length ? _capMediana(taxas) : 0;
+    var nAtivos = atendsAtivos.length;
+
+    // Previsão — regressão sobre série diária somada do squad (só d.ú.)
+    var dias = Object.keys(diariaSquad).sort();
+    var pts = dias.map(function(k){ return diariaSquad[k]; });
+    var reg = pts.length ? _capRegLin(pts) : {m:0, b:0};
     var lastX = pts.length - 1;
     var prevHorizonte = 0;
     var diaCur = new Date(now);
@@ -17325,17 +17332,13 @@ function _capStatsPorFila(diasHorizonte){
       diaCur.setDate(diaCur.getDate() + 1);
     }
     prevHorizonte = Math.round(prevHorizonte);
+    var slaMed = _capMediana(slasSquad);
 
-    // SLA OTRS mediano (em minutos) dos tickets dos últimos 30d
-    var slaMed = _capMediana(entry.slas);
-
-    // Capacidade no horizonte — usa N do ROSTER (todos da fila) × produtividade típica
+    // Capacidade = todos do roster × produtividade mediana × d.ú. horizonte
     var capacidade = Math.round(nPessoas * prodMediana * diasUteisHoriz);
     var utilizacao = capacidade > 0 ? prevHorizonte / capacidade : (prevHorizonte > 0 ? 99 : 0);
     var pctUtil = Math.round(utilizacao * 100);
 
-    // Saúde combina utilização × pessoas (régua de bus factor)
-    // 1-2 pessoas: SPOF. 3-5: baixa redundância. 6+: robusto.
     var saude;
     if(prodMediana === 0 && prevHorizonte === 0){
       saude = { cls: 'idle', label: 'Sem atividade' };
@@ -17353,10 +17356,13 @@ function _capStatsPorFila(diasHorizonte){
       saude = { cls: utilizacao < 0.4 ? 'idle' : 'ok', label: utilizacao < 0.4 ? 'Ociosa · folga' : 'Saudável' };
     }
 
-    resultado[fila] = {
-      fila: fila,
-      pessoas: nPessoas,           // ROSTER oficial
-      ativos: nAtivos,             // Dos que fecharam ≥1 ticket nos 30d
+    resultado[squadId] = {
+      squadId: squadId,
+      nome: squad.nome || squadId,
+      gestor: squad.gestor || '—',
+      filas: filas,
+      pessoas: nPessoas,           // ROSTER OFICIAL do squad
+      ativos: nAtivos,
       prevHorizonte: prevHorizonte,
       capacidade: capacidade,
       prodMediana: prodMediana,
@@ -17391,59 +17397,57 @@ function _capFmtSla(min){
 function _renderFvCapacity(diasHorizonte, forecasted){
   var el = document.getElementById('fv-capacity');
   if(!el) return;
-  var stats = _capStatsPorFila(diasHorizonte);
+  el.style.display = '';
+  var stats = _capStatsPorSquad(diasHorizonte);
   if(!stats || !Object.keys(stats).length){
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--border);border-radius:10px">'
-      + 'Não foi possível calcular capacidade — sem dados suficientes nos últimos 30 dias '
-      + '(filtro pode estar restrito demais).</div>';
+      + 'Não foi possível calcular capacidade — sem dados suficientes ou filtro restrito demais.</div>';
     return;
   }
-  // Ordena por urgência: crit → warn → ok → idle, depois por util desc
   var ordemCls = { crit:0, warn:1, ok:2, idle:3 };
-  var filas = Object.keys(stats).map(function(k){ return stats[k]; });
-  filas.sort(function(a,b){
+  var squads = Object.keys(stats).map(function(k){ return stats[k]; });
+  squads.sort(function(a,b){
     var rA = ordemCls[a.saude.cls]||9, rB = ordemCls[b.saude.cls]||9;
     if(rA !== rB) return rA - rB;
     return b.utilizacao - a.utilizacao;
   });
 
-  // Diagnóstico final — detecta filas críticas + filas com folga
-  var filasCrit = filas.filter(function(f){ return f.saude.cls === 'crit'; });
-  var filasFolga = filas.filter(function(f){ return f.utilizacao < 0.5 && f.pessoas >= 3; });
+  var squadsCrit = squads.filter(function(s){ return s.saude.cls === 'crit'; });
+  var squadsFolga = squads.filter(function(s){ return s.utilizacao < 0.5 && s.pessoas >= 3 && s.prodMediana > 0; });
   var diagMsg, diagCls;
-  if(filasCrit.length){
-    var nomesCrit = filasCrit.map(function(f){ return f.fila; }).join(', ');
-    if(filasFolga.length){
-      var nomesFolga = filasFolga.map(function(f){ return f.fila; }).join(', ');
-      diagMsg = '<strong>'+nomesCrit+'</strong> em '+(filasCrit.length>1?'sobrecarga':'sobrecarga')+'. '
-        + '<strong>'+nomesFolga+'</strong> com folga → avaliar redistribuição antes de contratar.';
+  if(squadsCrit.length){
+    var nomesCrit = squadsCrit.map(function(s){ return s.nome; }).join(', ');
+    if(squadsFolga.length){
+      var nomesFolga = squadsFolga.map(function(s){ return s.nome; }).join(', ');
+      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. <strong>'+nomesFolga+'</strong> com folga → avaliar redistribuição antes de contratar.';
     } else {
-      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. Nenhuma fila com folga real pra redistribuir — considerar contratação ou reduzir SLA temporariamente.';
+      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. Sem squad com folga pra redistribuir — considerar contratação ou reduzir SLA.';
     }
     diagCls = 'crit';
-  } else if(filas.some(function(f){ return f.saude.cls === 'warn'; })){
-    diagMsg = 'Operação apertada em algumas filas, mas sem sobrecarga crítica. Monitorar próximas semanas.';
+  } else if(squads.some(function(s){ return s.saude.cls === 'warn'; })){
+    diagMsg = 'Operação apertada em algum squad, sem sobrecarga crítica. Monitorar próximas semanas.';
     diagCls = 'warn';
   } else {
-    diagMsg = 'Operação saudável em todas as filas — capacidade alinhada à demanda prevista.';
+    diagMsg = 'Operação saudável em todos os squads — capacidade alinhada à demanda prevista.';
     diagCls = 'ok';
   }
 
-  // Build tabela
-  var rows = filas.map(function(f){
-    var cls = f.saude.cls;
+  var rows = squads.map(function(s){
+    var cls = s.saude.cls;
     var corUtil = cls==='crit'?'var(--danger)':(cls==='warn'?'var(--warn)':(cls==='ok'?'var(--ok)':'var(--blue)'));
-    var pessoasCol = '<strong>'+f.pessoas+'</strong>'
+    var pessoasCol = '<strong>'+s.pessoas+'</strong>'
       + '<div style="font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:2px">'
-      + f.ativos+' fecharam 30d</div>';
+      + s.ativos+' atenderam 30d</div>';
+    var filasCol = '<div style="font-size:11px;color:var(--sub);line-height:1.4">'+s.filas.join(' · ')+'</div>'
+      + '<div style="font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:2px">gestor: '+s.gestor+'</div>';
     return '<tr class="cap-tbl-row cap-tbl-row-'+cls+'">'
-      + '<td><strong>'+f.fila+'</strong></td>'
+      + '<td><strong>'+s.nome+'</strong>'+filasCol+'</td>'
       + '<td style="text-align:right;font-family:var(--mono)">'+pessoasCol+'</td>'
-      + '<td style="text-align:right;font-family:var(--mono)">'+f.prevHorizonte+'</td>'
-      + '<td style="text-align:right;font-family:var(--mono);color:var(--muted)">'+f.capacidade+'</td>'
-      + '<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+corUtil+'">'+f.pctUtil+'%</td>'
-      + '<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)">'+_capFmtSla(f.slaMin)+'</td>'
-      + '<td><span class="cap-saude cap-saude-'+cls+'">'+f.saude.label+'</span></td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+s.prevHorizonte+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);color:var(--muted)">'+s.capacidade+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+corUtil+'">'+s.pctUtil+'%</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)">'+_capFmtSla(s.slaMin)+'</td>'
+      + '<td><span class="cap-saude cap-saude-'+cls+'">'+s.saude.label+'</span></td>'
     + '</tr>';
   }).join('');
 
@@ -17451,8 +17455,8 @@ function _renderFvCapacity(diasHorizonte, forecasted){
     + '<div class="cap-tabela-wrap">'
     +   '<table class="cap-tabela">'
     +     '<thead><tr>'
-    +       '<th>Fila</th>'
-    +       '<th style="text-align:right" title="Total no roster oficial / quantos fecharam ≥1 ticket nos últimos 30d">Pessoas</th>'
+    +       '<th>Squad · Filas atendidas</th>'
+    +       '<th style="text-align:right" title="Pessoas no roster do squad / quantas atenderam ≥1 ticket nos últimos 30d">Pessoas</th>'
     +       '<th style="text-align:right">Prev '+diasHorizonte+'d</th>'
     +       '<th style="text-align:right">Capac.</th>'
     +       '<th style="text-align:right">Util%</th>'
@@ -17467,11 +17471,11 @@ function _renderFvCapacity(diasHorizonte, forecasted){
     +   '<span class="cap-banner-txt"><strong>Diagnóstico:</strong> '+diagMsg+'</span>'
     + '</div>'
     + '<div class="cap-legend">'
-    +   '<span class="cap-legend-tag">📏 Saúde por fila:</span>'
+    +   '<span class="cap-legend-tag">📏 Saúde:</span>'
     +   '<span class="cap-legend-item cap-legend-ok">🟢 saudável</span>'
-    +   '<span class="cap-legend-item cap-legend-warn">🟡 apertado / SPOF risco</span>'
+    +   '<span class="cap-legend-item cap-legend-warn">🟡 apertado / SPOF</span>'
     +   '<span class="cap-legend-item cap-legend-crit">🔴 sobrecarga / crítico</span>'
-    +   '<span class="cap-legend-explain">Combina utilização (chamados ÷ capacidade) com nº de pessoas (bus factor). Cálculo em dias úteis. <strong>Pessoas = roster oficial cadastrado da fila</strong> (SQUADS). O número menor abaixo mostra <strong>quantos efetivamente fecharam ≥1 ticket nos últimos 30d</strong>. SLA OTRS = mediana dos thresholds reais por serviço/prioridade/cliente.</span>'
+    +   '<span class="cap-legend-explain"><strong>Pessoas = roster oficial do squad</strong> (SQUADS.allowed_logins). Cada squad atende N filas com a MESMA equipe. O número menor mostra quantos atenderam ≥1 ticket nos últimos 30d. Cálculo em dias úteis (seg-sex). SLA OTRS = mediana real por serviço/prioridade/cliente.</span>'
     + '</div>';
 }
 
@@ -17531,12 +17535,8 @@ function renderForecast() {
   var fvAvg = forecasted.length ? Math.round(fvTotal/forecasted.length*10)/10 : 0;
   var histAvg = hist30.length ? Math.round(hist30.reduce(function(s,p){return s+p.n;},0)/hist30.length*10)/10 : 0;
 
-  // Capacity planning — DESABILITADO temporariamente (Fabio 25/05)
-  // Lógica de "pessoas por fila" precisa ser revalidada com fonte certa.
-  // Card antigo (com números errados) está escondido até confirmar a fonte.
-  var _capEl = document.getElementById('fv-capacity');
-  if(_capEl){ _capEl.innerHTML = ''; _capEl.style.display = 'none'; }
-  // try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
+  // Capacity planning v3 — POR SQUAD (cada squad atende N filas com mesma equipe)
+  try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
   var trendPerDay = Math.round(reg.m*10)/10;
   var trendUp = reg.m > 0.05;
   var trendDown = reg.m < -0.05;
