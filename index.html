@@ -1420,6 +1420,7 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-banner-sinal.upsell{border-left-color:#dc2626;background:rgba(220,38,38,.05)}
 .bh-banner-sinal.subutil{border-left-color:#8b5cf6;background:rgba(139,92,246,.05)}
 .bh-banner-sinal.envelhecido{border-left-color:#f59e0b;background:rgba(245,158,11,.05)}
+.bh-banner-sinal.aceleracao{border-left-color:#f59e0b;background:rgba(245,158,11,.05)}
 .bh-banner-sinal-hd{font-size:12px;color:var(--text);margin-bottom:8px}
 .bh-banner-sinal-list{display:flex;flex-wrap:wrap;gap:6px}
 .bh-banner-sinal-item{font-size:11px;background:var(--bg2);border:1px solid var(--border);padding:3px 9px;border-radius:12px;color:var(--sub);cursor:pointer;transition:all .12s}
@@ -9979,11 +9980,16 @@ function _renderBHBlocoCliente(cliId){
     if(livreH < 0){
       tendIcon = '🔴'; tendCls = 'crit';
       tendMsg = '<strong>Pool já estourado em ' + fmtH(Math.abs(livreH)) + '.</strong> Recomendamos alinhar aditivo de horas.';
-    } else if(t.zera_antes_do_prazo){
+    } else if(t.zera_antes_ambos){
       tendIcon = '🔴'; tendCls = 'crit';
       tendMsg = '<strong>No ritmo atual, o pool acaba em ~' + t.meses_ate_zerar + ' ' + (t.meses_ate_zerar==1?'mês':'meses') + '</strong>'
         + ' — antes do fim do contrato em ' + fimLbl + '.<br>'
-        + 'Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+        + 'Confirmado pelas duas projeções (últimos 3 meses e média do contrato). Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+    } else if(t.zera_antes_3m){
+      tendIcon = '🟡'; tendCls = 'warn';
+      tendMsg = '<strong>Aceleração nos últimos 3 meses</strong> (~' + t.meses_ate_zerar + ' ' + (t.meses_ate_zerar==1?'mês':'meses') + ' até zerar nesse ritmo), '
+        + 'mas o histórico do contrato indica que o pool ainda dura até o fim em ' + fimLbl + '.<br>'
+        + 'Recomendamos <strong>monitorar consumo nas próximas semanas</strong>.';
     } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 999){
       tendIcon = '🟢'; tendCls = 'ok';
       var pctProjetadoFim = c.meses_restantes_contrato > 0 && t.ritmo_medio_h > 0 ?
@@ -12981,10 +12987,15 @@ function exportPDFBancoHoras(cliId){
     if(livreH<0){
       tendColor='#dc2626';
       tendMsg='<strong>Pool já estourado em '+fmtH(Math.abs(livreH))+'.</strong> Recomendamos alinhar aditivo de horas pra continuidade do atendimento.';
-    } else if(t.zera_antes_do_prazo){
+    } else if(t.zera_antes_ambos){
       tendColor='#dc2626';
       tendMsg='<strong>No ritmo atual, o pool acaba em ~'+t.meses_ate_zerar+' '+(t.meses_ate_zerar==1?'mês':'meses')+'</strong>, antes do fim do contrato em '+fimLbl+'. '
-        +'Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+        +'Confirmado pelas duas projeções (últimos 3 meses e média do contrato). Recomendamos: <strong>alinhar aditivo ou ajustar ritmo de consumo</strong>.';
+    } else if(t.zera_antes_3m){
+      tendColor='#d97706';
+      tendMsg='<strong>Aceleração nos últimos 3 meses</strong> (~'+t.meses_ate_zerar+' '+(t.meses_ate_zerar==1?'mês':'meses')+' até zerar nesse ritmo), '
+        +'mas o histórico do contrato indica que o pool ainda dura até o fim em '+fimLbl+'. '
+        +'Recomendamos <strong>monitorar consumo nas próximas semanas</strong>.';
     } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 999){
       var pctProjFim = c.meses_restantes_contrato>0 && t.ritmo_medio_h>0 ?
         Math.min(100, Math.round(((consumidoH + t.ritmo_medio_h * c.meses_restantes_contrato)/poolH)*100)) :
@@ -19477,7 +19488,8 @@ function _bhAggregate(){
       else if(c.avisar_cliente.nivel === 'urgente' || c.avisar_cliente.nivel === 'tendencia') avisarUrgente++;
       else if(c.avisar_cliente.nivel === 'preventivo') avisarPreventivo++;
     }
-    if(c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo) poolZeraAntes++;
+    // v4.2: conta só os com consenso (ambas projeções concordam) — coerente com a régua de Crítico
+    if(c.tendencia_pool && c.tendencia_pool.zera_antes_ambos) poolZeraAntes++;
   });
   var healthMedia = contratos.length ? Math.round(contratos.reduce(function(s,c){return s+c.health;},0) / contratos.length) : 0;
   return {
@@ -19696,8 +19708,12 @@ function renderContratosBH(){
   // DADOS PRA 4 ZONAS (calculados uma vez)
   // ─────────────────────────────────────────────────────────────
   var cobranca = _bhCobrancaMetricas(contratos);
+  // v4.2: Renegociar exige consenso (3m E média do contrato). Aceleração só dos 3m é apenas "monitorar"
   var contratosRenegociar = contratos.filter(function(c){
-    return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;
+    return c.tendencia_pool && c.tendencia_pool.zera_antes_ambos;
+  }).sort(function(a,b){ return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999); });
+  var contratosAceleracao = contratos.filter(function(c){
+    return c.tendencia_pool && c.tendencia_pool.zera_antes_3m && !c.tendencia_pool.zera_antes_ambos;
   }).sort(function(a,b){ return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999); });
   var contratosRenovar = contratos.filter(function(c){ return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90; })
                                   .sort(function(a,b){ return a.dias_ate_fim - b.dias_ate_fim; });
@@ -19784,14 +19800,14 @@ function renderContratosBH(){
   // ZONA 2 · SINAIS DA SEMANA — 4 banners (só aparecem se houver)
   // ═════════════════════════════════════════════════════════════
   var banners = [];
-  // (a) Pool zerando antes do prazo — mantido como hoje
+  // (a) Pool zerando antes do prazo — v4.2: exige consenso (3m E média do contrato)
   if(contratosRenegociar.length){
     banners.push('<div class="bh-banner-tend">'
       + '<div class="bh-banner-tend-hd">'
         + '<span class="bh-banner-tend-icon">📉</span>'
         + '<div><div class="bh-banner-tend-titulo">'
           + contratosRenegociar.length + ' contrato' + (contratosRenegociar.length!==1?'s':'') + ' com POOL ACABANDO ANTES DO CONTRATO TERMINAR</div>'
-          + '<div class="bh-banner-tend-sub">No ritmo atual de consumo (média dos últimos 3 meses), o pool vai zerar antes da data de renovação. Renegociar ou avisar cliente.</div>'
+          + '<div class="bh-banner-tend-sub">Confirmado pelas duas projeções (últimos 3 meses E média do contrato). Renegociar ou avisar cliente.</div>'
         + '</div></div>'
         + '<div class="bh-banner-tend-list">'
         + contratosRenegociar.slice(0, 6).map(function(c){
@@ -19830,6 +19846,18 @@ function renderContratosBH(){
         }).join('')
         + (contratosRenegociar.length > 6 ? '<button class="bh-bt-vermais" onclick="_bhDrillDown(\'pool_zera\')">Ver todos os ' + contratosRenegociar.length + ' →</button>' : '')
       + '</div>');
+  }
+  // (a2) Aceleração recente — só 3 meses sinalizam, sem consenso histórico · monitorar (v4.2)
+  if(contratosAceleracao.length){
+    banners.push('<div class="bh-banner-sinal aceleracao">'
+      + '<div class="bh-banner-sinal-hd">🟡 <strong>' + contratosAceleracao.length + ' contrato' + (contratosAceleracao.length!==1?'s':'') + ' com aceleração nos últimos 3 meses</strong> · histórico do contrato ainda saudável — monitorar antes de renegociar</div>'
+      + '<div class="bh-banner-sinal-list">'
+      + contratosAceleracao.slice(0,5).map(function(c){
+          var idx = contratos.indexOf(c);
+          var pct = (c.tendencia_pool.pct_do_pool_mensal||0).toFixed(0);
+          return '<span class="bh-banner-sinal-item clickable" onclick="_bhDrillDownContrato(' + idx + ')">' + c.display + ' (' + pct + '%)</span>';
+        }).join('')
+      + '</div></div>');
   }
   // (b) Estourou 2 ciclos seguidos — alvo de UPSELL (CRO)
   if(contratosEstourou2x.length){
@@ -19908,13 +19936,15 @@ function renderContratosBH(){
             var pct = d.pct;
             return '<td class="c bh-hm-cel ' + celCls(pct) + '" title="' + mesLbl(m) + ': ' + d.cons + 'h (' + pct.toFixed(0) + '%)">' + pct.toFixed(0) + '%</td>';
           }).join('');
-          // Projeção: o que vai acontecer com o pool
+          // Projeção: o que vai acontecer com o pool (v4.2 — exige consenso pra vermelho)
           var t = c.tendencia_pool || {};
           var projCelCls = 'na', projCelTxt = '—';
           if(t.pool_ja_zerado){
             projCelCls = 'crit'; projCelTxt = 'zerou';
-          } else if(t.zera_antes_do_prazo){
+          } else if(t.zera_antes_ambos){
             projCelCls = 'crit'; projCelTxt = '🔴 zera em ' + t.meses_ate_zerar + 'm';
+          } else if(t.zera_antes_3m){
+            projCelCls = 'warn'; projCelTxt = '🟡 aceler. 3m';
           } else if(t.meses_ate_zerar != null && t.meses_ate_zerar < 2){
             projCelCls = 'warn'; projCelTxt = '🟡 ' + t.meses_ate_zerar + 'm';
           } else if(t.meses_ate_zerar != null){
@@ -20236,7 +20266,8 @@ function _bhAplicarFiltros(){
         if(m == null || m >= 10) { mostra = false; break; }
       }
       if(tipo === 'pool' && val === 'zera_antes'){
-        if(!c.tendencia_pool || !c.tendencia_pool.zera_antes_do_prazo) { mostra = false; break; }
+        // v4.2: exige consenso (ambas projeções) pra entrar no filtro de "zera antes"
+        if(!c.tendencia_pool || !c.tendencia_pool.zera_antes_ambos) { mostra = false; break; }
       }
     }
     r.style.display = mostra ? '' : 'none';
@@ -20272,9 +20303,13 @@ window._bhDrillDown = function(tipo){
     titulo = 'Renovações em até 90 dias'; icone = '📅';
     filtered = contratos.filter(function(c){return c.dias_ate_fim >= 0 && c.dias_ate_fim <= 90;});
   } else if(tipo === 'pool_zera'){
-    titulo = 'Pool zera antes do fim do contrato'; icone = '📉';
-    filtered = contratos.filter(function(c){return c.tendencia_pool && c.tendencia_pool.zera_antes_do_prazo;});
+    titulo = 'Pool zera antes do fim do contrato (confirmado pelas duas projeções)'; icone = '📉';
+    filtered = contratos.filter(function(c){return c.tendencia_pool && c.tendencia_pool.zera_antes_ambos;});
     // Ordenar pelos que zeram mais cedo
+    filtered.sort(function(a,b){return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999);});
+  } else if(tipo === 'pool_aceleracao'){
+    titulo = 'Aceleração recente (só últimos 3 meses sinalizam — sem consenso histórico)'; icone = '🟡';
+    filtered = contratos.filter(function(c){return c.tendencia_pool && c.tendencia_pool.zera_antes_3m && !c.tendencia_pool.zera_antes_ambos;});
     filtered.sort(function(a,b){return (a.tendencia_pool.meses_ate_zerar||999) - (b.tendencia_pool.meses_ate_zerar||999);});
   } else if(tipo === 'risco_mrr_90d'){
     titulo = 'MRR em risco (contratos vencendo em 90 dias)'; icone = '⚠️';
