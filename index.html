@@ -1803,6 +1803,16 @@ body[data-user-perfil="gestor"]:not([data-user-extras~="bh"]) .nav[onclick*="'s-
 body[data-user-perfil="gestor"]:not([data-user-extras~="bh"]) #s-bh{display:none !important}
 body[data-user-perfil="gestor_bh"] .nav[onclick*="'s-bh'"],
 body[data-user-perfil="gestor_bh"] #s-bh{display:block}
+
+/* Gestor SSG → apenas admin OU gestor com extra 'ssg' vê aba Contratos SSG.
+   Rodrigo Pinheiro (gestor_bh) NÃO deve ver Contratos SSG nem o bloco SSG
+   na Visão Cliente — só BH/operacional dele. Fabio 26/05. */
+body[data-user-perfil="gestor"]:not([data-user-extras~="ssg"]) .nav[onclick*="'s-ctr'"],
+body[data-user-perfil="gestor"]:not([data-user-extras~="ssg"]) #s-ctr,
+body[data-user-perfil="gestor"]:not([data-user-extras~="ssg"]) #co-ssg-bloco{display:none !important}
+body[data-user-perfil="gestor_bh"] .nav[onclick*="'s-ctr'"],
+body[data-user-perfil="gestor_bh"] #s-ctr,
+body[data-user-perfil="gestor_bh"] #co-ssg-bloco{display:none !important}
 /* Não-admin: esconde IA (view global executiva) */
 body[data-user-perfil="gestor"] #btn-ia,
 body[data-user-perfil="gestor_bh"] #btn-ia,
@@ -3696,7 +3706,7 @@ var _USERS = {
     nome: "Weskley",
     perfil: "admin",
     filas: "all",
-    extras: ["bh","executivo"]
+    extras: ["bh","executivo","ssg"]
   },
   "marcelo.david": {
     hash: _H_PWD_123456,
@@ -3738,7 +3748,7 @@ var _USERS = {
     nome: "Fabio Tavares",
     perfil: "admin",
     filas: "all",
-    extras: ["bh","executivo"]
+    extras: ["bh","executivo","ssg"]
   }
 };
 function _normLogin(s){return (s||"").toString().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();}
