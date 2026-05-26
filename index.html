@@ -3459,6 +3459,106 @@ button:focus-visible,
   background:#fee2e2;border-color:#fecaca;color:#7f1d1d;
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ CAPACITY PLANNING (s-fv) — Sprint A pós coo-advisor ═════ */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.cap-cards-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.cap-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;position:relative;overflow:hidden;
+}
+.cap-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);
+}
+.cap-card.cap-card-ok::before{background:var(--ok)}
+.cap-card.cap-card-warn::before{background:var(--warn)}
+.cap-card.cap-card-crit::before{background:var(--danger)}
+.cap-card.cap-card-idle::before{background:var(--blue)}
+
+.cap-card-icon{font-size:22px;line-height:1;margin-bottom:4px}
+.cap-card-lbl{
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--sub);margin-bottom:6px;
+}
+.cap-card-num{
+  font-size:34px;font-weight:800;font-family:var(--display);
+  line-height:1;color:var(--text);letter-spacing:-.02em;
+}
+.cap-card.cap-card-ok .cap-card-num{color:var(--ok)}
+.cap-card.cap-card-warn .cap-card-num{color:var(--warn)}
+.cap-card.cap-card-crit .cap-card-num{color:var(--danger)}
+.cap-card-sub{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.4}
+
+/* Banner de ação */
+.cap-banner{
+  padding:12px 16px;margin-bottom:12px;border-radius:8px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--text);font-weight:500;
+  border-left:3px solid var(--ok);background:rgba(16,185,129,.06);
+}
+.cap-banner.cap-banner-warn{border-left-color:var(--warn);background:rgba(245,158,11,.06)}
+.cap-banner.cap-banner-crit{border-left-color:var(--danger);background:rgba(244,63,94,.07)}
+.cap-banner.cap-banner-idle{border-left-color:var(--blue);background:rgba(79,142,247,.06)}
+.cap-banner-icon{font-size:18px;line-height:1;flex-shrink:0}
+.cap-banner-txt{flex:1}
+
+/* Legend visível da régua — CLAREZA da regra (Fabio 25/05) */
+.cap-legend{
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;font-size:11.5px;color:var(--sub);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;line-height:1.5;
+}
+.cap-legend-tag{
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;flex-shrink:0;
+}
+.cap-legend-item{
+  font-size:11.5px;font-family:var(--mono);font-weight:600;
+  padding:3px 9px;border-radius:6px;white-space:nowrap;
+}
+.cap-legend-item.cap-legend-ok{background:rgba(16,185,129,.1);color:var(--ok)}
+.cap-legend-item.cap-legend-warn{background:rgba(245,158,11,.1);color:var(--warn)}
+.cap-legend-item.cap-legend-crit{background:rgba(244,63,94,.1);color:var(--danger);font-weight:700}
+.cap-legend-explain{
+  flex-basis:100%;font-size:11px;color:var(--muted);
+  font-style:italic;margin-top:4px;line-height:1.5;
+}
+
+/* Tabela Capacidade por Fila (v2) */
+.cap-tabela-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.cap-tabela{width:100%;border-collapse:collapse;font-size:12.5px}
+.cap-tabela th{
+  text-align:left;padding:11px 14px;font-size:10px;font-weight:700;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.015);
+  white-space:nowrap;
+}
+.cap-tabela td{
+  padding:11px 14px;border-bottom:1px solid var(--border);
+  color:var(--text);vertical-align:middle;
+}
+.cap-tabela tbody tr:last-child td{border-bottom:none}
+.cap-tabela tbody tr.cap-tbl-row-crit td{background:rgba(244,63,94,.04)}
+.cap-tabela tbody tr.cap-tbl-row-warn td{background:rgba(245,158,11,.03)}
+.cap-tabela tbody tr.cap-tbl-row-idle td{background:rgba(79,142,247,.03)}
+
+.cap-saude{
+  display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;
+  padding:3px 9px;border-radius:10px;white-space:nowrap;font-family:var(--mono);
+}
+.cap-saude-ok{background:rgba(16,185,129,.12);color:var(--ok)}
+.cap-saude-warn{background:rgba(245,158,11,.12);color:var(--warn)}
+.cap-saude-crit{background:rgba(244,63,94,.12);color:var(--danger);font-weight:800}
+.cap-saude-idle{background:rgba(79,142,247,.12);color:var(--blue)}
+
+/* Light theme */
+[data-theme="light"] .cap-banner.cap-banner-crit{background:#fef2f2}
+[data-theme="light"] .cap-banner.cap-banner-warn{background:#fffbeb}
+[data-theme="light"] .cap-legend-item.cap-legend-crit{background:#fee2e2;color:#991b1b}
+[data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-crit td{background:#fef2f2}
+[data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-warn td{background:#fffbeb}
+
 /* CS KPIs clicáveis — feedback de interatividade */
 .cs-kpi[onclick]{cursor:pointer;transition:border-color .15s,background .15s;position:relative}
 .cs-kpi[onclick]:hover{border-color:var(--teal);background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%)}
@@ -3609,7 +3709,7 @@ document.getElementById("lb").addEventListener("click",async function(){
   // _H_GEST removido — admin agora é só via fabio.tavares no _USERS
   var h=await _chk(pwd);
   if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}
-  else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}
+  else if(h===_H_SQ_SSG){_enterSquad("ssg");}
   else if(h===_H_SQ_DBA){_enterSquad("dba");}
   else if(h===_H_SQ_GWMS){_enterSquad("gwms");}
   else if(h===_H_SQ_DAT){_enterSquad("datasul");}
@@ -4691,6 +4791,18 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         <div class="fv-horizon-btns">
           <button class="fv-horizon-btn on" onclick="fvSetHorizon(7,this)">Próximos 7 dias</button>
           <button class="fv-horizon-btn" onclick="fvSetHorizon(30,this)">Próximos 30 dias</button>
+        </div>
+
+        <!-- ── ZONA: Capacidade vs Previsão (v3 — agrupado por SQUAD) ── -->
+        <div class="al-zona-hd">
+          <span class="al-zona-titulo">👥 Capacidade por squad</span>
+          <span class="al-zona-hint">cada squad atende N filas com a mesma equipe (roster oficial)</span>
+        </div>
+        <div id="fv-capacity"></div>
+
+        <div class="al-zona-hd" style="margin-top:18px">
+          <span class="al-zona-titulo">📈 Previsão detalhada</span>
+          <span class="al-zona-hint">total previsto, média diária e tendência</span>
         </div>
         <div class="kpi-row kpi-row-4" id="fv-kpis">
           <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-lbl">Total previsto</div><div class="kpi-val" style="color:var(--purple)" id="fv-total">—</div><div class="kpi-sub" id="fv-total-sub">no período</div></div>
@@ -5877,17 +5989,47 @@ function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr
 // (ex: Marcio Guimaraes tem hist. SSG mas é GWMS) NÃO apareçam no seletor
 // nem possam logar via senha de squad alheia. Atualizar aqui + no .txt.
 var SQUADS = {
-  'ssg-protheus': {
-    nome: 'SSG · Protheus',
-    filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
+  // Estrutura nova (Fabio 25/05): separar SSG · Protheus em 3 squads.
+  // SSG-MELHORIAS é fila compartilhada — qualquer atendente dos squads SSG ou
+  // PROTHEUS pode atender. Roster com TODOS os 20 (pool comum).
+  'ssg': {
+    nome: 'SSG',
+    filas: ['SSG'],
     exclude_atendentes: ['Admin OTRS'],
-    gestor: 'Weskley',  // primeiro nome — usado em mensagens de cobrança
+    gestor: 'Weskley',
     allowed_logins: [
-      'adriano.ribeiro','alisson.silva','carlos.fernandes','cristiano.scaranci',
-      'debora.gomes','diego.cardoso','diego.carvalho','dyalef.santos',
-      'eduardo.candido','eduardo.souza','francisco.silva','gesiel.silva',
-      'geyson.albano','guilherme.silva','jean.rocha','ricardo.pinheiro',
-      'robert.santos','tiago.silva','vilante.alves','weskley.silva'
+      'carlos.fernandes','cristiano.scaranci','debora.gomes','diego.cardoso',
+      'dyalef.santos','robert.santos','tiago.silva'
+    ]
+  },
+  'protheus': {
+    nome: 'Protheus',
+    filas: ['PROTHEUS'],
+    exclude_atendentes: ['Admin OTRS'],
+    gestor: 'Weskley',
+    allowed_logins: [
+      'adriano.ribeiro','alisson.silva','diego.carvalho','eduardo.candido',
+      'eduardo.souza','francisco.silva','gesiel.silva','geyson.albano',
+      'guilherme.silva','jean.rocha','ricardo.pinheiro','vilante.alves',
+      'weskley.silva'
+    ]
+  },
+  'ssg-melhorias': {
+    // Fila compartilhada: qualquer atendente de SSG ou Protheus pode atender.
+    // Roster = união dos 2 squads (20 pessoas no pool comum).
+    nome: 'SSG-Melhorias',
+    filas: ['SSG-MELHORIAS'],
+    exclude_atendentes: ['Admin OTRS'],
+    gestor: 'Weskley',
+    allowed_logins: [
+      // SSG (7)
+      'carlos.fernandes','cristiano.scaranci','debora.gomes','diego.cardoso',
+      'dyalef.santos','robert.santos','tiago.silva',
+      // Protheus (13)
+      'adriano.ribeiro','alisson.silva','diego.carvalho','eduardo.candido',
+      'eduardo.souza','francisco.silva','gesiel.silva','geyson.albano',
+      'guilherme.silva','jean.rocha','ricardo.pinheiro','vilante.alves',
+      'weskley.silva'
     ]
   },
   'dba': {
@@ -17028,6 +17170,386 @@ function fvSetHorizon(h, el) {
   renderForecast();
 }
 
+// ════════════════════════════════════════════════════════════════
+// CAPACITY PLANNING (Fabio 25/05 · pós coo-advisor)
+//
+// Cruza Previsão de Volume × produtividade real da equipe pra dizer
+// "consegue ou não cobrir os próximos N dias?".
+//
+// REGRAS (definidas com coo-advisor):
+// - Produtividade = mediana(fechados/dia) últimos 30d POR FILA
+// - Considera só atendentes ativos (≥5 chamados fechados nos últimos 30d)
+// - Gestores INCLUÍDOS (Marcelo, Rodrigo etc também atendem)
+// - Capacidade efetiva = capacidade nominal × 0.80 (folga pra picos/imprevistos)
+// - Régua de cor baseada em teoria de filas (Erlang):
+//   • <60%   → ociosidade
+//   • 60-75% → saudável (sweet spot)
+//   • 75-85% → apertado
+//   • >85%   → SLA degrada exponencialmente
+// ════════════════════════════════════════════════════════════════
+
+// Conta dias úteis (seg-sex) entre dtStart e dtEnd, inclusivo.
+// Usado pra ajustar cálculos — atendimento Groundwork é só dia útil.
+function _capDiasUteis(dtStart, dtEnd){
+  var n = 0;
+  var d = new Date(dtStart.getFullYear(), dtStart.getMonth(), dtStart.getDate());
+  var fim = new Date(dtEnd.getFullYear(), dtEnd.getMonth(), dtEnd.getDate());
+  while(d <= fim){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) n++;
+    d.setDate(d.getDate() + 1);
+  }
+  return n;
+}
+
+// Normaliza display "Adriano Ribeiro" → login "adriano.ribeiro" pra cruzar com roster
+function _capNomeParaLogin(nome){
+  return String(nome||'')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .trim().replace(/\s+/g,'.');
+}
+
+// Inverte SQUADS → { 'SSG': Set(logins), 'DBA': Set(logins), ... }
+// Triagem é ignorada (não é capacidade operacional)
+function _capRosterPorFila(){
+  if(typeof SQUADS === 'undefined' || !SQUADS) return {};
+  var out = {};
+  Object.keys(SQUADS).forEach(function(k){
+    var s = SQUADS[k];
+    if(!s || s.tipo === 'triagem') return;
+    (s.filas||[]).forEach(function(f){
+      var fNorm = String(f||'').toUpperCase();
+      if(!out[fNorm]) out[fNorm] = {};
+      (s.allowed_logins||[]).forEach(function(l){ out[fNorm][l] = true; });
+    });
+  });
+  return out;
+}
+
+// Mediana de um array numérico
+function _capMediana(arr){
+  if(!arr || !arr.length) return 0;
+  var s = arr.slice().sort(function(a,b){ return a-b; });
+  var mid = Math.floor(s.length/2);
+  return s.length % 2 ? s[mid] : (s[mid-1] + s[mid])/2;
+}
+
+// Regressão linear simples sobre série diária. Retorna {m, b}
+function _capRegLin(pts){
+  if(!pts || !pts.length) return {m:0, b:0};
+  var n = pts.length;
+  var sx=0, sy=0, sxx=0, sxy=0;
+  pts.forEach(function(p, i){ sx+=i; sy+=p; sxx+=i*i; sxy+=i*p; });
+  var denom = (n*sxx - sx*sx);
+  if(denom === 0) return {m:0, b:sy/n};
+  var m = (n*sxy - sx*sy)/denom;
+  var b = (sy - m*sx)/n;
+  return {m:m, b:b};
+}
+
+// Calcula stats por SQUAD (v4 — WIP, Fabio 25/05).
+// Fórmula CORRETA pra MSP B2B: tickets ficam em WIP (work in progress)
+// vários dias. Não dá pra comparar "entrada/dia" com "fechamento/dia"
+// como se fosse linha de produção. O que importa é quantos ATIVOS cada
+// pessoa tem AGORA — mesmo critério da aba "Atendentes" (≥8 = sobrecarga).
+//
+// Por squad:
+//   - N pessoas = SQUADS[squad].allowed_logins (roster oficial)
+//   - Carga atual = chamados ABERTOS nas filas do squad (live UTIL_DATA/RAW_DATA)
+//   - Capacidade WIP = N × 8 (8 ativos/pessoa = threshold sobrecarga)
+//   - Sobrecarregados = pessoas com ≥8 ativos individualmente
+//   - Utilização = carga atual ÷ capacidade WIP
+//   - SLA OTRS = mediana dos thresholds (informativo)
+//   - Previsão entrada = info secundária (regressão linear)
+//
+// Saúde combina utilização agregada + nº de sobrecarregados.
+// Respeita filtros activeFilaOP, activeCliente, ticketInFilter
+function _capStatsPorSquad(diasHorizonte){
+  if(typeof SQUADS === 'undefined' || !SQUADS) return null;
+  var now = new Date();
+  var dt30 = new Date(now.getTime() - 30*86400000);
+  var dt60 = new Date(now.getTime() - 60*86400000);
+  var fimHoriz = new Date(now.getTime() + diasHorizonte*86400000);
+  var diasUteisHoriz = Math.max(_capDiasUteis(now, fimHoriz), 1);
+  var WIP_PER_PERSON = 8; // threshold sobrecarga (mesmo da aba Atendentes)
+
+  // 1) CARGA ATUAL por fila + sobrecarregados por fila — via UTIL_DATA (live GWMS)
+  //    UTIL_DATA.rows[i] = { atendente, ativos_total, em_atendimento, abertos, ... }
+  //    Pra mapear pessoa→fila, usa TICKETS_ATIVOS_DATA (tem fila por ticket)
+  var ativosPorFila = {};
+  var sobrecargaPorAtend = {}; // atend → tem ≥8 ativos?
+  if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+    var contagemPorAtend = {};
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+      if(!r || !r.atendente) return;
+      var fila = String(r.fila||'').toUpperCase();
+      if(!fila) return;
+      // Aplica filtros globais
+      if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && fila !== String(activeFilaOP).toUpperCase()) return;
+      if(typeof activeCliente !== 'undefined' && activeCliente && r.cli_id !== activeCliente) return;
+      // Estados dormentes (auto-fechados) não contam — mesmo critério da aba Atendentes
+      var stU = (r.estado||'').toUpperCase();
+      if(typeof _LIVE_DORMANT_STATES !== 'undefined' && _LIVE_DORMANT_STATES.indexOf(stU) !== -1) return;
+      ativosPorFila[fila] = (ativosPorFila[fila]||0) + 1;
+      contagemPorAtend[r.atendente] = (contagemPorAtend[r.atendente]||0) + 1;
+    });
+    Object.keys(contagemPorAtend).forEach(function(at){
+      if(contagemPorAtend[at] >= WIP_PER_PERSON) sobrecargaPorAtend[at] = true;
+    });
+  } else if(typeof RAW_DATA !== 'undefined' && RAW_DATA){
+    // Fallback: RAW_DATA filtrado por estados abertos
+    var openStates = ['Aberto','Em Atendimento','Aguardando Cliente','Aguardando Interno','Retorno Cliente','Aguardando Externo'];
+    var contagem2 = {};
+    RAW_DATA.forEach(function(d){
+      if(!d || !d.estado) return;
+      if(openStates.indexOf(d.estado) === -1) return;
+      if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+      if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+      if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+      var fila = String(d.fila||'').toUpperCase();
+      if(!fila) return;
+      ativosPorFila[fila] = (ativosPorFila[fila]||0) + 1;
+      if(d.atend && d.atend !== '—'){
+        contagem2[d.atend] = (contagem2[d.atend]||0) + 1;
+      }
+    });
+    Object.keys(contagem2).forEach(function(at){
+      if(contagem2[at] >= WIP_PER_PERSON) sobrecargaPorAtend[at] = true;
+    });
+  }
+
+  // 2) Série diária + SLA OTRS por fila (info secundária — previsão de entrada)
+  var byFila = {};
+  function bk(fila){
+    if(!byFila[fila]) byFila[fila] = { diaria: {}, slas: [] };
+    return byFila[fila];
+  }
+  if(typeof RAW_DATA !== 'undefined' && RAW_DATA){
+    RAW_DATA.forEach(function(d){
+      if(!d || !d.criado) return;
+      if(typeof ticketInFilter === 'function' && !ticketInFilter(d)) return;
+      if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all' && d.fila !== activeFilaOP) return;
+      if(typeof activeCliente !== 'undefined' && activeCliente && d.cli_id !== activeCliente) return;
+      var fila = String(d.fila||'').toUpperCase();
+      if(!fila) return;
+      var entry = bk(fila);
+      if(d.criado >= dt60){
+        var k = d.criado.toISOString().slice(0,10);
+        entry.diaria[k] = (entry.diaria[k]||0) + 1;
+      }
+      if(d.criado >= dt30 && typeof getOTRSSLAThreshold === 'function'){
+        var th = (typeof d.sla_first_response_min === 'number' && d.sla_first_response_min > 0)
+          ? d.sla_first_response_min
+          : getOTRSSLAThreshold(d.servico_full || d.servico, d.prior || d.prioridade, d.cli_id);
+        if(th != null && th > 0) entry.slas.push(th);
+      }
+    });
+  }
+
+  // 3) Para cada SQUAD, agrega WIP/previsão/SLA das filas que atende
+  var resultado = {};
+  Object.keys(SQUADS).forEach(function(squadId){
+    var squad = SQUADS[squadId];
+    if(!squad || squad.tipo === 'triagem') return;
+    var filas = (squad.filas||[]).map(function(f){ return String(f||'').toUpperCase(); });
+    if(typeof activeFilaOP !== 'undefined' && activeFilaOP && activeFilaOP !== 'all'){
+      if(filas.indexOf(String(activeFilaOP).toUpperCase()) === -1) return;
+    }
+    var logins = squad.allowed_logins || [];
+    var nPessoas = logins.length;
+    if(nPessoas === 0) return;
+    var loginsSet = {}; logins.forEach(function(l){ loginsSet[l] = true; });
+
+    // Carga atual: soma de ativos nas filas do squad
+    var cargaAtual = 0;
+    filas.forEach(function(fila){
+      cargaAtual += (ativosPorFila[fila]||0);
+    });
+
+    // Sobrecarregados no squad: atendentes do roster que têm ≥8 ativos
+    var sobrecarregados = 0;
+    Object.keys(sobrecargaPorAtend).forEach(function(atend){
+      var login = _capNomeParaLogin(atend);
+      if(loginsSet[login]) sobrecarregados++;
+    });
+
+    // Capacidade WIP = N pessoas × 8
+    var capacidadeWIP = nPessoas * WIP_PER_PERSON;
+    var utilizacao = capacidadeWIP > 0 ? cargaAtual / capacidadeWIP : 0;
+    var pctUtil = Math.round(utilizacao * 100);
+
+    // Previsão de entrada (info secundária — regressão linear nas filas)
+    var diariaSquad = {};
+    var slasSquad = [];
+    filas.forEach(function(fila){
+      var entry = byFila[fila];
+      if(!entry) return;
+      Object.keys(entry.diaria).forEach(function(k){
+        diariaSquad[k] = (diariaSquad[k]||0) + entry.diaria[k];
+      });
+      entry.slas.forEach(function(t){ slasSquad.push(t); });
+    });
+    var dias = Object.keys(diariaSquad).sort();
+    var pts = dias.map(function(k){ return diariaSquad[k]; });
+    var reg = pts.length ? _capRegLin(pts) : {m:0, b:0};
+    var lastX = pts.length - 1;
+    var prevHorizonte = 0;
+    var diaCur = new Date(now);
+    var dUteisContados = 0;
+    while(dUteisContados < diasUteisHoriz){
+      var dow = diaCur.getDay();
+      if(dow !== 0 && dow !== 6){
+        lastX++;
+        var pred = Math.max(0, reg.m * lastX + reg.b);
+        prevHorizonte += pred;
+        dUteisContados++;
+      }
+      diaCur.setDate(diaCur.getDate() + 1);
+    }
+    prevHorizonte = Math.round(prevHorizonte);
+    var slaMed = _capMediana(slasSquad);
+
+    // Saúde combina utilização + sobrecarregados
+    var saude;
+    if(utilizacao > 0.80 || sobrecarregados >= 3){
+      saude = { cls: 'crit', label: sobrecarregados >= 3 ? 'Sobrecarga · ≥3 pessoas no limite' : 'Sobrecarga' };
+    } else if(utilizacao > 0.50 || sobrecarregados >= 1){
+      saude = { cls: 'warn', label: sobrecarregados >= 1 ? 'Apertado · '+sobrecarregados+' no limite' : 'Apertado' };
+    } else if(cargaAtual === 0){
+      saude = { cls: 'idle', label: 'Sem carga ativa' };
+    } else {
+      saude = { cls: 'ok', label: 'Saudável' };
+    }
+
+    resultado[squadId] = {
+      squadId: squadId,
+      nome: squad.nome || squadId,
+      gestor: squad.gestor || '—',
+      filas: filas,
+      pessoas: nPessoas,
+      cargaAtual: cargaAtual,
+      capacidadeWIP: capacidadeWIP,
+      sobrecarregados: sobrecarregados,
+      utilizacao: utilizacao,
+      pctUtil: pctUtil,
+      prevHorizonte: prevHorizonte,  // info secundária
+      slaMin: slaMed,
+      saude: saude,
+      diasUteisHoriz: diasUteisHoriz
+    };
+  });
+  return resultado;
+}
+
+// Classifica utilização baseado em teoria de filas
+function _capClassificar(utilizacao){
+  if(utilizacao >= 0.85) return { cls: 'crit', label: 'SLA degradando' };
+  if(utilizacao >= 0.75) return { cls: 'warn', label: 'Apertado' };
+  if(utilizacao >= 0.60) return { cls: 'ok',   label: 'Saudável' };
+  return                   { cls: 'idle', label: 'Ociosidade' };
+}
+
+// Formata SLA mediano em texto curto
+function _capFmtSla(min){
+  if(!min || min <= 0) return '—';
+  if(min < 60) return Math.round(min)+'min';
+  if(min < 1440) return Math.round(min/60*10)/10+'h';
+  return Math.round(min/1440)+'d';
+}
+
+// Renderiza tabela "Capacidade por fila" (v2 — pós Fabio validar lógica)
+// forecasted: array [{d, pred}] — não usado mais (cada fila roda sua própria regressão)
+function _renderFvCapacity(diasHorizonte, forecasted){
+  var el = document.getElementById('fv-capacity');
+  if(!el) return;
+  el.style.display = '';
+  var stats = _capStatsPorSquad(diasHorizonte);
+  if(!stats || !Object.keys(stats).length){
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--border);border-radius:10px">'
+      + 'Não foi possível calcular capacidade — sem dados suficientes ou filtro restrito demais.</div>';
+    return;
+  }
+  var ordemCls = { crit:0, warn:1, ok:2, idle:3 };
+  var squads = Object.keys(stats).map(function(k){ return stats[k]; });
+  squads.sort(function(a,b){
+    var rA = ordemCls[a.saude.cls]||9, rB = ordemCls[b.saude.cls]||9;
+    if(rA !== rB) return rA - rB;
+    return b.utilizacao - a.utilizacao;
+  });
+
+  var squadsCrit = squads.filter(function(s){ return s.saude.cls === 'crit'; });
+  var squadsFolga = squads.filter(function(s){ return s.utilizacao < 0.30 && s.pessoas >= 3 && s.cargaAtual > 0; });
+  var diagMsg, diagCls;
+  if(squadsCrit.length){
+    var nomesCrit = squadsCrit.map(function(s){ return s.nome; }).join(', ');
+    if(squadsFolga.length){
+      var nomesFolga = squadsFolga.map(function(s){ return s.nome; }).join(', ');
+      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. <strong>'+nomesFolga+'</strong> com folga real → avaliar redistribuição.';
+    } else {
+      diagMsg = '<strong>'+nomesCrit+'</strong> em sobrecarga. Sem squad com folga pra redistribuir — considerar reforço.';
+    }
+    diagCls = 'crit';
+  } else if(squads.some(function(s){ return s.saude.cls === 'warn'; })){
+    var nomesWarn = squads.filter(function(s){return s.saude.cls==='warn';}).map(function(s){return s.nome;}).join(', ');
+    diagMsg = '<strong>'+nomesWarn+'</strong> apertado(s). Monitorar — alguém perto do limite individual.';
+    diagCls = 'warn';
+  } else {
+    diagMsg = 'Operação saudável em todos os squads — carga de WIP dentro do limite.';
+    diagCls = 'ok';
+  }
+
+  var rows = squads.map(function(s){
+    var cls = s.saude.cls;
+    var corUtil = cls==='crit'?'var(--danger)':(cls==='warn'?'var(--warn)':(cls==='ok'?'var(--ok)':'var(--blue)'));
+    var filasCol = '<div style="font-size:11px;color:var(--sub);line-height:1.4">'+s.filas.join(' · ')+'</div>'
+      + '<div style="font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:2px">gestor: '+s.gestor+'</div>';
+    var cargaCol = '<strong>'+s.cargaAtual+'</strong>'
+      + (s.sobrecarregados > 0
+        ? '<div style="font-size:9.5px;color:var(--danger);font-family:var(--mono);margin-top:2px">'+s.sobrecarregados+' sobrecarr.</div>'
+        : '<div style="font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:2px">nenhum no limite</div>');
+    var prevCol = '<span style="color:var(--muted);font-size:11px">~'+s.prevHorizonte+' em '+diasHorizonte+'d</span>';
+    return '<tr class="cap-tbl-row cap-tbl-row-'+cls+'">'
+      + '<td><strong>'+s.nome+'</strong>'+filasCol+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+s.pessoas+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono)">'+cargaCol+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);color:var(--muted)">'+s.capacidadeWIP+'</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+corUtil+'">'+s.pctUtil+'%</td>'
+      + '<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)">'+_capFmtSla(s.slaMin)+'</td>'
+      + '<td style="text-align:right">'+prevCol+'</td>'
+      + '<td><span class="cap-saude cap-saude-'+cls+'">'+s.saude.label+'</span></td>'
+    + '</tr>';
+  }).join('');
+
+  el.innerHTML = ''
+    + '<div class="cap-tabela-wrap">'
+    +   '<table class="cap-tabela">'
+    +     '<thead><tr>'
+    +       '<th>Squad · Filas atendidas</th>'
+    +       '<th style="text-align:right">Pessoas</th>'
+    +       '<th style="text-align:right" title="Chamados ativos AGORA nas filas do squad">Carga atual</th>'
+    +       '<th style="text-align:right" title="Capacidade WIP = N pessoas × 8 (threshold sobrecarga)">Cap WIP</th>'
+    +       '<th style="text-align:right">Util%</th>'
+    +       '<th style="text-align:right">SLA OTRS</th>'
+    +       '<th style="text-align:right">Entrada esperada</th>'
+    +       '<th>Saúde</th>'
+    +     '</tr></thead>'
+    +     '<tbody>'+rows+'</tbody>'
+    +   '</table>'
+    + '</div>'
+    + '<div class="cap-banner cap-banner-' + diagCls + '">'
+    +   '<span class="cap-banner-icon">🎯</span>'
+    +   '<span class="cap-banner-txt"><strong>Diagnóstico:</strong> '+diagMsg+'</span>'
+    + '</div>'
+    + '<div class="cap-legend">'
+    +   '<span class="cap-legend-tag">📏 Como calcula:</span>'
+    +   '<span class="cap-legend-item cap-legend-ok">🟢 saudável &lt;50% util · zero sobrecarregados</span>'
+    +   '<span class="cap-legend-item cap-legend-warn">🟡 50-80% util · ou 1-2 sobrecarregados</span>'
+    +   '<span class="cap-legend-item cap-legend-crit">🔴 &gt;80% util · ou ≥3 sobrecarregados</span>'
+    +   '<span class="cap-legend-explain"><strong>Capacidade WIP = N pessoas × 8</strong> (threshold de sobrecarga individual — mesmo da aba Atendentes). <strong>Carga atual</strong> = chamados ativos AGORA nas filas do squad (live GWMS). <strong>Sobrecarregados</strong> = pessoas com ≥8 ativos individualmente. Tickets em MSP ficam em WIP por dias — comparar entrada-vs-fechamento como linha de produção dá número errado.</span>'
+    + '</div>';
+}
+
 function renderForecast() {
   setTimeout(function(){try{populateFvHero();}catch(e){console.warn('fv hero:',e);}},100);
   var emEl = document.getElementById('fv-empty');
@@ -17083,6 +17605,9 @@ function renderForecast() {
   var fvTotal = forecasted.reduce(function(s,f){return s+f.pred;},0);
   var fvAvg = forecasted.length ? Math.round(fvTotal/forecasted.length*10)/10 : 0;
   var histAvg = hist30.length ? Math.round(hist30.reduce(function(s,p){return s+p.n;},0)/hist30.length*10)/10 : 0;
+
+  // Capacity planning v3 — POR SQUAD (cada squad atende N filas com mesma equipe)
+  try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
   var trendPerDay = Math.round(reg.m*10)/10;
   var trendUp = reg.m > 0.05;
   var trendDown = reg.m < -0.05;
@@ -26403,7 +26928,7 @@ var TRIAGEM_ESTADO_NOVO = 'NEW';
 // distribuir pra fila correta. Mantido aqui em vez de no SQUADS pra
 // não acoplar o config (filas múltiplas → 1 squad).
 var FILA_TO_SQUAD = {
-  'SSG':'ssg-protheus', 'SSG-MELHORIAS':'ssg-protheus', 'PROTHEUS':'ssg-protheus',
+  'SSG':'ssg', 'SSG-MELHORIAS':'ssg-melhorias', 'PROTHEUS':'protheus',
   'DBA':'dba',
   'NOC':'gwms','MONITORAMENTO':'gwms','GWMS':'gwms','TECNOLOGIA':'gwms',
   'DATASUL':'datasul',
@@ -26676,7 +27201,7 @@ window.renderTriagemView = function(){
       + recentTxt;
   }
 
-  var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
+  var squadIds = ['ssg','protheus','ssg-melhorias','dba','gwms','datasul','infra'];
 
   // ── Cards de chamados PENDENTES ────────────────────────────
   var pendentesHtml = tickets.map(function(t){
