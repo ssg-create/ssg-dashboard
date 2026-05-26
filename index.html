@@ -3559,6 +3559,40 @@ button:focus-visible,
 [data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-crit td{background:#fef2f2}
 [data-theme="light"] .cap-tabela tbody tr.cap-tbl-row-warn td{background:#fffbeb}
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* ═══ BANNER SYNC HEALTH (Fabio 26/05 · pós incidente) ═════════ */
+/* ═══════════════════════════════════════════════════════════════ */
+/* Banner discreto no topo que aparece SÓ quando algum dado live
+   está stale. Cor escalonada por severidade. Auto-esconde quando volta. */
+.gw-sync-alert{
+  position:fixed;top:0;left:0;right:0;z-index:9990;
+  display:none;align-items:center;gap:12px;
+  padding:8px 18px;font-size:12.5px;font-weight:500;
+  font-family:var(--font, 'Inter', system-ui, sans-serif);
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  transform:translateY(-100%);
+  transition:transform .3s ease;
+}
+.gw-sync-alert.show{display:flex;transform:translateY(0)}
+.gw-sync-alert.warn-light{background:rgba(79,142,247,.95);color:#fff}
+.gw-sync-alert.warn{background:rgba(245,158,11,.95);color:#fff}
+.gw-sync-alert.crit{background:rgba(220,38,38,.95);color:#fff}
+.gw-sync-alert-icon{font-size:14px;line-height:1;flex-shrink:0}
+.gw-sync-alert-text{flex:1;line-height:1.45}
+.gw-sync-alert-text strong{font-weight:700}
+.gw-sync-alert-text small{opacity:.85;font-size:11px;display:block;margin-top:1px}
+.gw-sync-alert-close{
+  background:transparent;border:1px solid rgba(255,255,255,.4);
+  color:#fff;width:24px;height:24px;border-radius:5px;
+  cursor:pointer;font-size:12px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  opacity:.85;transition:opacity .15s;flex-shrink:0;
+}
+.gw-sync-alert-close:hover{opacity:1;background:rgba(255,255,255,.15)}
+/* Quando banner ativo, empurra conteúdo do painel pra baixo */
+body.has-sync-alert{padding-top:36px}
+body.has-sync-alert .topbar{top:36px}
+
 /* CS KPIs clicáveis — feedback de interatividade */
 .cs-kpi[onclick]{cursor:pointer;transition:border-color .15s,background .15s;position:relative}
 .cs-kpi[onclick]:hover{border-color:var(--teal);background:linear-gradient(180deg,var(--bg2) 0%,rgba(0,212,168,.03) 100%)}
@@ -3571,6 +3605,15 @@ button:focus-visible,
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js"></script>
 </head>
 <body>
+
+<!-- Banner de saúde do sync (preenchido dinamicamente por _checkSyncHealth)
+     Aparece SÓ quando algum dado ao vivo está stale há > 30min -->
+<div id="gw-sync-alert" class="gw-sync-alert" role="alert" aria-live="polite">
+  <span class="gw-sync-alert-icon"></span>
+  <span class="gw-sync-alert-text"></span>
+  <button class="gw-sync-alert-close" onclick="_dismissSyncAlert()" aria-label="Fechar aviso">✕</button>
+</div>
+
 <div id="lo" style="position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 65% 35%,rgba(255,100,0,0.08) 0%,transparent 55%),radial-gradient(ellipse at 20% 75%,rgba(79,142,247,0.06) 0%,transparent 50%),#0D1B2E;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;">
   <div style="background:#fff;border-radius:22px;padding:48px 40px;width:420px;max-width:92vw;box-sizing:border-box;box-shadow:0 40px 100px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);position:relative;overflow:hidden;">
     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FF6400,#f59e0b,#FF6400);opacity:.9"></div>
@@ -7697,6 +7740,89 @@ function populateAtHero(data){
     ringFg.setAttribute('stroke-dashoffset', 565.48*(1-pct));
   }
 }
+// ════════════════════════════════════════════════════════════════
+// SYNC HEALTH MONITOR (Fabio 26/05 · pós incidente conta suspensa)
+// Detecta automaticamente quando algum dado live está stale e mostra
+// banner discreto no topo. Roda a cada 60s. Auto-esconde quando volta.
+// ════════════════════════════════════════════════════════════════
+var _syncAlertDismissed = false;  // se usuário fechou manualmente, não reabrir até refresh
+
+function _dismissSyncAlert(){
+  _syncAlertDismissed = true;
+  var el = document.getElementById('gw-sync-alert');
+  if(el){ el.classList.remove('show'); }
+  document.body.classList.remove('has-sync-alert');
+}
+
+function _checkSyncHealth(){
+  var el = document.getElementById('gw-sync-alert');
+  if(!el || _syncAlertDismissed) return;
+  // Fontes de dado live (todos têm generated_at em epoch UTC)
+  var sources = [];
+  if(typeof TICKETS_ATIVOS_DATA !== 'undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.generated_at){
+    sources.push({nome:'Tickets ativos (GWMS)', ga: TICKETS_ATIVOS_DATA.generated_at});
+  }
+  if(typeof UTIL_DATA !== 'undefined' && UTIL_DATA && UTIL_DATA.generated_at){
+    sources.push({nome:'Utilização (GWMS)', ga: UTIL_DATA.generated_at});
+  }
+  if(typeof SILENC_DATA !== 'undefined' && SILENC_DATA && SILENC_DATA.generated_at){
+    sources.push({nome:'Silenciosos', ga: SILENC_DATA.generated_at});
+  }
+  if(typeof REAB_DATA !== 'undefined' && REAB_DATA && REAB_DATA.generated_at){
+    sources.push({nome:'Reaberturas', ga: REAB_DATA.generated_at});
+  }
+  if(typeof TRI_DATA !== 'undefined' && TRI_DATA && TRI_DATA.generated_at){
+    sources.push({nome:'Triagem', ga: TRI_DATA.generated_at});
+  }
+  if(!sources.length){
+    // Nenhuma fonte carregada ainda — esconde banner
+    el.classList.remove('show');
+    document.body.classList.remove('has-sync-alert');
+    return;
+  }
+  // Idade mais antiga entre todas as fontes
+  var now = Date.now() / 1000;
+  var staleMax = 0;
+  var staleNome = null;
+  sources.forEach(function(s){
+    var idadeMin = (now - s.ga) / 60;
+    if(idadeMin > staleMax){
+      staleMax = idadeMin;
+      staleNome = s.nome;
+    }
+  });
+  var icon, sev, msg;
+  if(staleMax > 120){
+    // 2h+ → crítico
+    sev = 'crit'; icon = '🚨';
+    msg = '<strong>Sync parado há ' + Math.round(staleMax) + ' min</strong> · '+staleNome+' não atualizado'
+        + '<small>Dados ao vivo podem estar desatualizados. Histórico continua funcionando normal.</small>';
+  } else if(staleMax > 60){
+    // 1-2h → laranja
+    sev = 'warn'; icon = '⚠️';
+    msg = '<strong>Sync atrasado há ' + Math.round(staleMax) + ' min</strong> · '+staleNome
+        + '<small>Aguardando próxima atualização automática.</small>';
+  } else if(staleMax > 30){
+    // 30-60min → azul (atenção leve)
+    sev = 'warn-light'; icon = 'ℹ️';
+    msg = 'Última atualização há <strong>'+Math.round(staleMax)+' min</strong> — sync próximo do esperado.';
+  } else {
+    // < 30min → ok, esconde
+    el.classList.remove('show');
+    document.body.classList.remove('has-sync-alert');
+    return;
+  }
+  // Aplica
+  el.className = 'gw-sync-alert show ' + sev;
+  el.querySelector('.gw-sync-alert-icon').textContent = icon;
+  el.querySelector('.gw-sync-alert-text').innerHTML = msg;
+  document.body.classList.add('has-sync-alert');
+}
+
+// Inicia o monitor — roda a cada 60s + 1 imediata após boot
+setInterval(_checkSyncHealth, 60000);
+setTimeout(_checkSyncHealth, 3000);   // primeira checagem 3s após carregar (dá tempo dos fetches)
+
 function fetchUtilizacao(){
   fetch('/utilizacao.json?v='+Date.now())
     .then(function(r){return r.ok?r.json():null;})
