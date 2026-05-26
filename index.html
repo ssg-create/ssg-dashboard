@@ -17129,12 +17129,30 @@ function fvSetHorizon(h, el) {
 //   • >85%   → SLA degrada exponencialmente
 // ════════════════════════════════════════════════════════════════
 
+// Conta dias úteis (seg-sex) entre dtStart e dtEnd, inclusivo.
+// Usado pra ajustar cálculos — atendimento Groundwork é só dia útil.
+function _capDiasUteis(dtStart, dtEnd){
+  var n = 0;
+  var d = new Date(dtStart.getFullYear(), dtStart.getMonth(), dtStart.getDate());
+  var fim = new Date(dtEnd.getFullYear(), dtEnd.getMonth(), dtEnd.getDate());
+  while(d <= fim){
+    var dow = d.getDay();
+    if(dow !== 0 && dow !== 6) n++;
+    d.setDate(d.getDate() + 1);
+  }
+  return n;
+}
+
 // Calcula produtividade por fila usando RAW_DATA (últimos 30 dias)
+// CORRIGIDO: divide pelos dias úteis, não corridos (atendimento é seg-sex)
 // Respeita filtros activeFilaOP e activeCliente naturalmente
 function _capProdutividadePorFila(){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return null;
   var now = new Date();
   var dt30 = new Date(now.getTime() - 30*86400000);
+  // Dias úteis nos últimos 30 dias corridos (geralmente ~21-22)
+  var diasUteisJanela = _capDiasUteis(dt30, now);
+  if(diasUteisJanela < 1) diasUteisJanela = 22; // safety
   var byFilaAtend = {};
   RAW_DATA.forEach(function(d){
     if(!d || !d.criado) return;
@@ -17150,20 +17168,21 @@ function _capProdutividadePorFila(){
     if(!byFilaAtend[fila]) byFilaAtend[fila] = {};
     byFilaAtend[fila][atend] = (byFilaAtend[fila][atend] || 0) + 1;
   });
-  var resultado = { totalAtendentes: 0, capacidadeDia: 0, porFila: {} };
+  var resultado = { totalAtendentes: 0, capacidadeDiaUtil: 0, diasUteisJanela: diasUteisJanela, porFila: {} };
   Object.keys(byFilaAtend).forEach(function(fila){
     var atendCounts = byFilaAtend[fila];
     // Filtro: só atendentes ativos (≥5 fechados nos últimos 30 dias)
     var ativos = Object.keys(atendCounts).filter(function(a){ return atendCounts[a] >= 5; });
     if(!ativos.length) return;
-    var taxas = ativos.map(function(a){ return atendCounts[a] / 30; });
+    // Taxa POR DIA ÚTIL — divide pelos dias trabalhados, não corridos
+    var taxas = ativos.map(function(a){ return atendCounts[a] / diasUteisJanela; });
     taxas.sort(function(a,b){ return a-b; });
     var mid = Math.floor(taxas.length / 2);
     var mediana = taxas.length % 2 ? taxas[mid] : (taxas[mid-1] + taxas[mid]) / 2;
-    var capDia = ativos.length * mediana;
-    resultado.porFila[fila] = { n: ativos.length, prodMediana: mediana, capDia: capDia };
+    var capDiaUtil = ativos.length * mediana;
+    resultado.porFila[fila] = { n: ativos.length, prodMediana: mediana, capDiaUtil: capDiaUtil };
     resultado.totalAtendentes += ativos.length;
-    resultado.capacidadeDia += capDia;
+    resultado.capacidadeDiaUtil += capDiaUtil;
   });
   return resultado;
 }
@@ -17177,9 +17196,29 @@ function _capClassificar(utilizacao){
 }
 
 // Renderiza o bloco "Capacidade vs Previsão" no topo da aba
-function _renderFvCapacity(diasHorizonte, previsaoTotal){
+// forecasted: array [{d:'YYYY-MM-DD', pred:N}] dos dias previstos
+// Se for número, trata como total bruto (fallback legado)
+function _renderFvCapacity(diasHorizonte, forecasted){
   var el = document.getElementById('fv-capacity');
   if(!el) return;
+  // Calcula previsão SÓ dos dias úteis (atendimento é seg-sex)
+  // Se forecasted é array → soma apenas dias úteis
+  // Se forecasted é número → assume já bruto (regressão sobre dias corridos)
+  var previsaoTotal;
+  if(Array.isArray(forecasted)){
+    previsaoTotal = 0;
+    forecasted.forEach(function(f){
+      if(!f || f.pred == null) return;
+      // f.d pode ser 'YYYY-MM-DD' string
+      var dt = new Date(f.d + 'T12:00:00');
+      if(isNaN(dt)) return;
+      var dow = dt.getDay();
+      if(dow === 0 || dow === 6) return; // pula sáb/dom
+      previsaoTotal += f.pred;
+    });
+  } else {
+    previsaoTotal = forecasted; // fallback legado: total bruto
+  }
   var prod = _capProdutividadePorFila();
   if(!prod || prod.totalAtendentes === 0){
     el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--border);border-radius:10px">'
@@ -17187,17 +17226,23 @@ function _renderFvCapacity(diasHorizonte, previsaoTotal){
       + '(filtro pode estar restrito demais ou base de dados pequena).</div>';
     return;
   }
-  var capDiaNominal     = prod.capacidadeDia;
-  var capDiaEfetiva     = capDiaNominal * 0.80;
-  var capHorizonteNom   = capDiaNominal * diasHorizonte;
-  var capHorizonteEfet  = capDiaEfetiva * diasHorizonte;
+  // Conta dias úteis no horizonte (seg-sex) — equipe só atende dias úteis
+  var hoje = new Date();
+  var fimHoriz = new Date(hoje.getTime() + diasHorizonte*86400000);
+  var diasUteisHoriz = _capDiasUteis(hoje, fimHoriz);
+  // Produtividade já é POR DIA ÚTIL (corrigido em _capProdutividadePorFila)
+  var capDiaUtilNominal = prod.capacidadeDiaUtil;
+  var capDiaUtilEfetiva = capDiaUtilNominal * 0.80;
+  // Capacidade total no horizonte = prod_dia_util × dias_uteis_no_horizonte
+  var capHorizonteNom   = capDiaUtilNominal * diasUteisHoriz;
+  var capHorizonteEfet  = capDiaUtilEfetiva * diasUteisHoriz;
   var utilizacao        = capHorizonteNom > 0 ? previsaoTotal / capHorizonteNom : 0;
   var pctUtilizacao     = Math.round(utilizacao * 100);
   var classif           = _capClassificar(utilizacao);
   // Gap em pessoas pra operar no sweet spot (70%)
   var capAlvo70         = previsaoTotal / 0.70;
-  var prodMediaEquipe   = capDiaNominal / prod.totalAtendentes;
-  var atendAlvo         = (prodMediaEquipe * diasHorizonte) > 0 ? capAlvo70 / (prodMediaEquipe * diasHorizonte) : 0;
+  var prodMediaEquipe   = capDiaUtilNominal / prod.totalAtendentes;
+  var atendAlvo         = (prodMediaEquipe * diasUteisHoriz) > 0 ? capAlvo70 / (prodMediaEquipe * diasUteisHoriz) : 0;
   var gapPessoas        = atendAlvo - prod.totalAtendentes;
   var gapTxt, gapCor;
   if(gapPessoas > 0.5){       gapTxt = '+' + Math.ceil(gapPessoas) + ' faltam'; gapCor = 'var(--danger)'; }
@@ -17228,7 +17273,7 @@ function _renderFvCapacity(diasHorizonte, previsaoTotal){
     +     '<div class="cap-card-icon">👥</div>'
     +     '<div class="cap-card-lbl">Capacidade efetiva</div>'
     +     '<div class="cap-card-num">'+Math.round(capHorizonteEfet)+'</div>'
-    +     '<div class="cap-card-sub">'+prod.totalAtendentes+' atendentes × '+(Math.round(prodMediaEquipe*10)/10)+' chm/dia × '+diasHorizonte+'d × 80% folga</div>'
+    +     '<div class="cap-card-sub">'+prod.totalAtendentes+' atendentes × '+(Math.round(prodMediaEquipe*10)/10)+' chm/dia útil × '+diasUteisHoriz+' d.ú. nos próximos '+diasHorizonte+'d × 80% folga</div>'
     +   '</div>'
     +   '<div class="cap-card cap-card-' + classif.cls + '">'
     +     '<div class="cap-card-icon">📊</div>'
@@ -17252,7 +17297,7 @@ function _renderFvCapacity(diasHorizonte, previsaoTotal){
     +   '<span class="cap-legend-item cap-legend-ok">🟢 60–75% saudável</span>'
     +   '<span class="cap-legend-item cap-legend-warn">🟡 75–85% apertado</span>'
     +   '<span class="cap-legend-item cap-legend-crit">🔴 acima de 85% — SLA degrada</span>'
-    +   '<span class="cap-legend-explain">Acima de 85% o tempo de espera dos tickets cresce <strong>exponencialmente</strong> (teoria de filas). 100% não é "limite" — é colapso. Por isso o sweet spot é 60–75%, não 100%.</span>'
+    +   '<span class="cap-legend-explain">Cálculo em <strong>dias úteis</strong> (seg-sex) — atendimento Groundwork não opera sáb/dom. Acima de 85% o tempo de espera dos tickets cresce <strong>exponencialmente</strong> (teoria de filas). 100% não é "limite" — é colapso. Por isso o sweet spot é 60–75%, não 100%.</span>'
     + '</div>';
 }
 
@@ -17313,7 +17358,8 @@ function renderForecast() {
   var histAvg = hist30.length ? Math.round(hist30.reduce(function(s,p){return s+p.n;},0)/hist30.length*10)/10 : 0;
 
   // Capacity planning — cruza previsão × produtividade real (Sprint A pós coo-advisor)
-  try { _renderFvCapacity(horizon, fvTotal); } catch(e){ console.warn('fv capacity:',e); }
+  // Passa `forecasted` (array) pra somar apenas dias úteis — atendimento é seg-sex
+  try { _renderFvCapacity(horizon, forecasted); } catch(e){ console.warn('fv capacity:',e); }
   var trendPerDay = Math.round(reg.m*10)/10;
   var trendUp = reg.m > 0.05;
   var trendDown = reg.m < -0.05;
