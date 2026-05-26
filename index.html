@@ -3709,7 +3709,7 @@ document.getElementById("lb").addEventListener("click",async function(){
   // _H_GEST removido — admin agora é só via fabio.tavares no _USERS
   var h=await _chk(pwd);
   if(h===_H_TRIAGEM&&_TRIAGEM_LOGINS.indexOf(loginN)!==-1){_enterTriagem(loginN);}
-  else if(h===_H_SQ_SSG){_enterSquad("ssg-protheus");}
+  else if(h===_H_SQ_SSG){_enterSquad("ssg");}
   else if(h===_H_SQ_DBA){_enterSquad("dba");}
   else if(h===_H_SQ_GWMS){_enterSquad("gwms");}
   else if(h===_H_SQ_DAT){_enterSquad("datasul");}
@@ -5989,17 +5989,47 @@ function avg(arr){return arr.length?arr.reduce(function(a,b){return a+b;},0)/arr
 // (ex: Marcio Guimaraes tem hist. SSG mas é GWMS) NÃO apareçam no seletor
 // nem possam logar via senha de squad alheia. Atualizar aqui + no .txt.
 var SQUADS = {
-  'ssg-protheus': {
-    nome: 'SSG · Protheus',
-    filas: ['SSG','SSG-MELHORIAS','PROTHEUS'],
+  // Estrutura nova (Fabio 25/05): separar SSG · Protheus em 3 squads.
+  // SSG-MELHORIAS é fila compartilhada — qualquer atendente dos squads SSG ou
+  // PROTHEUS pode atender. Roster com TODOS os 20 (pool comum).
+  'ssg': {
+    nome: 'SSG',
+    filas: ['SSG'],
     exclude_atendentes: ['Admin OTRS'],
-    gestor: 'Weskley',  // primeiro nome — usado em mensagens de cobrança
+    gestor: 'Weskley',
     allowed_logins: [
-      'adriano.ribeiro','alisson.silva','carlos.fernandes','cristiano.scaranci',
-      'debora.gomes','diego.cardoso','diego.carvalho','dyalef.santos',
-      'eduardo.candido','eduardo.souza','francisco.silva','gesiel.silva',
-      'geyson.albano','guilherme.silva','jean.rocha','ricardo.pinheiro',
-      'robert.santos','tiago.silva','vilante.alves','weskley.silva'
+      'carlos.fernandes','cristiano.scaranci','debora.gomes','diego.cardoso',
+      'dyalef.santos','robert.santos','tiago.silva'
+    ]
+  },
+  'protheus': {
+    nome: 'Protheus',
+    filas: ['PROTHEUS'],
+    exclude_atendentes: ['Admin OTRS'],
+    gestor: 'Weskley',
+    allowed_logins: [
+      'adriano.ribeiro','alisson.silva','diego.carvalho','eduardo.candido',
+      'eduardo.souza','francisco.silva','gesiel.silva','geyson.albano',
+      'guilherme.silva','jean.rocha','ricardo.pinheiro','vilante.alves',
+      'weskley.silva'
+    ]
+  },
+  'ssg-melhorias': {
+    // Fila compartilhada: qualquer atendente de SSG ou Protheus pode atender.
+    // Roster = união dos 2 squads (20 pessoas no pool comum).
+    nome: 'SSG-Melhorias',
+    filas: ['SSG-MELHORIAS'],
+    exclude_atendentes: ['Admin OTRS'],
+    gestor: 'Weskley',
+    allowed_logins: [
+      // SSG (7)
+      'carlos.fernandes','cristiano.scaranci','debora.gomes','diego.cardoso',
+      'dyalef.santos','robert.santos','tiago.silva',
+      // Protheus (13)
+      'adriano.ribeiro','alisson.silva','diego.carvalho','eduardo.candido',
+      'eduardo.souza','francisco.silva','gesiel.silva','geyson.albano',
+      'guilherme.silva','jean.rocha','ricardo.pinheiro','vilante.alves',
+      'weskley.silva'
     ]
   },
   'dba': {
@@ -26857,7 +26887,7 @@ var TRIAGEM_ESTADO_NOVO = 'NEW';
 // distribuir pra fila correta. Mantido aqui em vez de no SQUADS pra
 // não acoplar o config (filas múltiplas → 1 squad).
 var FILA_TO_SQUAD = {
-  'SSG':'ssg-protheus', 'SSG-MELHORIAS':'ssg-protheus', 'PROTHEUS':'ssg-protheus',
+  'SSG':'ssg', 'SSG-MELHORIAS':'ssg-melhorias', 'PROTHEUS':'protheus',
   'DBA':'dba',
   'NOC':'gwms','MONITORAMENTO':'gwms','GWMS':'gwms','TECNOLOGIA':'gwms',
   'DATASUL':'datasul',
@@ -27130,7 +27160,7 @@ window.renderTriagemView = function(){
       + recentTxt;
   }
 
-  var squadIds = ['ssg-protheus','dba','gwms','datasul','infra'];
+  var squadIds = ['ssg','protheus','ssg-melhorias','dba','gwms','datasul','infra'];
 
   // ── Cards de chamados PENDENTES ────────────────────────────
   var pendentesHtml = tickets.map(function(t){
