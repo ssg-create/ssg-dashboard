@@ -1590,6 +1590,36 @@ body.squad-mode #rpt-btn{display:none!important}
 .cli-bh-tend-msg{font-size:13px;line-height:1.6;color:var(--text)}
 .cli-bh-tend-msg strong{color:var(--text);font-weight:700}
 @media(max-width:700px){.cli-bh-num-row{grid-template-columns:1fr;gap:8px}}
+
+/* ═══ Bloco Contrato SSG na Visão Cliente (Fase 3) ═══════════ */
+.cli-ssg-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:18px}
+.cli-ssg-titulo-row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.cli-ssg-titulo{font-family:var(--display);font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.cli-ssg-status{font-size:10.5px;font-weight:800;padding:5px 12px;border-radius:14px;text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.cli-ssg-status-crit{background:rgba(244,63,94,.12);color:var(--danger);border:1px solid rgba(244,63,94,.3)}
+.cli-ssg-status-warn{background:rgba(245,158,11,.12);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.cli-ssg-status-ok{background:rgba(16,185,129,.12);color:var(--ok);border:1px solid rgba(16,185,129,.3)}
+.cli-ssg-status-info{background:rgba(90,98,120,.12);color:var(--muted);border:1px solid var(--border)}
+.cli-ssg-sub{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-bottom:14px;line-height:1.4}
+.cli-ssg-obs{font-size:11.5px;color:var(--warn);font-style:italic;margin-bottom:12px;padding:8px 12px;background:rgba(245,158,11,.06);border-left:3px solid var(--warn);border-radius:4px}
+.cli-ssg-trim{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.cli-ssg-trim-label{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.cli-ssg-trim-num{font-family:var(--display);font-size:32px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-.02em;margin-bottom:8px}
+.cli-ssg-trim-slash{font-size:18px;color:var(--muted);font-weight:600;margin-left:2px}
+.cli-ssg-trim-bar{height:8px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.cli-ssg-trim-fill{height:100%;border-radius:6px;transition:width .3s ease}
+.cli-ssg-trim-proj{font-size:12.5px;color:var(--sub);line-height:1.5}
+.cli-ssg-trim-proj strong{color:var(--text)}
+.cli-ssg-meses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cli-ssg-mes{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.cli-ssg-mes-num{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1}
+.cli-ssg-mes-lbl{font-size:10.5px;color:var(--sub);margin-top:5px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.cli-ssg-mes-pct{font-size:9.5px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+@media(max-width:700px){.cli-ssg-meses{grid-template-columns:1fr;gap:8px}}
+[data-theme="light"] .cli-ssg-wrap{background:#ffffff}
+[data-theme="light"] .cli-ssg-trim,
+[data-theme="light"] .cli-ssg-mes{background:#f8fafc}
+
 /* Modo BH-only: cliente sem tickets SSG. Esconde cards SSG vazios e mostra aviso. */
 #co-content.bh-only-mode .co-kpis,
 #co-content.bh-only-mode .grid2,
@@ -4906,6 +4936,8 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
         <!-- 🕐 Bloco Banco de Horas (Fase 2) — só aparece se cliente tem contrato BH ativo -->
         <div id="co-bh-bloco" style="display:none"></div>
+        <!-- 📋 Bloco Contrato SSG (Fase 3 · Fabio 26/05) — só aparece se cliente tem contrato SSG ativo -->
+        <div id="co-ssg-bloco" style="display:none"></div>
         <div class="grid2">
           <div class="card"><div class="card-title">Chamados por mês</div><div class="cw" style="height:160px"><canvas id="c-comensal"></canvas></div></div>
           <div class="card"><div class="card-title">Por estado</div><div id="co-estados"></div></div>
@@ -9974,6 +10006,113 @@ function _renderBHBlocoCliente(cliId){
   el.innerHTML = html;
 }
 
+// ════════════════════════════════════════════════════════════════
+// 📋 Bloco Contrato SSG na Visão Cliente — Fase 3 (Fabio 26/05)
+//
+// Aparece quando cliente selecionado tem contrato SSG cadastrado em
+// SSG_CONTRATOS. Mostra:
+//   - Limite mensal e trimestral
+//   - Acumulado do trim atual (X/Y · %)
+//   - Projeção até fim do trim (extrapolação linear)
+//   - Mês a mês dentro do trim (3 mini-células)
+//   - Botão de detalhe → leva pra aba Contratos SSG focada nesse cliente
+//
+// Reusa as primitivas existentes: _ctrNormAlias, _ctrCalcContratoTrim,
+// _ctrQuarterOf, _ctrQuarterMonths, _ctrFmtMes. Sem inventar regra nova.
+//
+// Filtros respeitados:
+//   - Mês ativo NÃO afeta (bloco mostra trim corrente)
+//   - Permissão de cliente já foi tratada em loadEmpresa antes daqui
+//   - Filtro de fila não muda (contrato SSG é por cliente, não fila)
+// ════════════════════════════════════════════════════════════════
+function _renderSSGBlocoCliente(cliId){
+  var el = document.getElementById('co-ssg-bloco');
+  if(!el) return;
+  if(!cliId){ el.style.display = 'none'; return; }
+  if(typeof SSG_CONTRATOS === 'undefined' || !SSG_CONTRATOS){ el.style.display = 'none'; return; }
+  // Acha contrato SSG do cliente — match por alias OU nome (case-insensitive)
+  var cliNorm = typeof _ctrNormAlias === 'function' ? _ctrNormAlias(cliId) : String(cliId||'').toUpperCase();
+  var contrato = SSG_CONTRATOS.find(function(c){
+    if(!c || !c.ativo) return false;
+    var alNorm = typeof _ctrNormAlias === 'function' ? _ctrNormAlias(c.alias) : String(c.alias||'').toUpperCase();
+    return alNorm === cliNorm;
+  });
+  if(!contrato){ el.style.display = 'none'; return; }
+  // Calcula stats do trim atual usando primitiva da aba Contratos SSG
+  var now = new Date();
+  var anoNow = now.getFullYear();
+  var qNow = (typeof _ctrQuarterOf === 'function') ? _ctrQuarterOf(now) : (Math.floor(now.getMonth()/3) + 1);
+  if(typeof _ctrCalcContratoTrim !== 'function'){ el.style.display = 'none'; return; }
+  var stats = _ctrCalcContratoTrim(contrato, anoNow, qNow, now);
+  if(!stats){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  // Cores e status (mesmo critério da aba Contratos SSG)
+  var status = stats.status;  // 'crit' | 'warn' | 'ok' | 'info'
+  var statusTxt = status === 'crit' ? 'ESTOURADO' : status === 'warn' ? 'EM RISCO' : status === 'info' ? 'SEM CHAMADOS' : 'EM DIA';
+  var barColor = status === 'crit' ? 'var(--danger)' : (status === 'warn' ? 'var(--warn)' : (status === 'info' ? 'var(--muted)' : 'var(--ok)'));
+  var pctBar = Math.min(stats.pctProj * 100, 100);
+  var pctTxt = Math.round(stats.pctProj * 100);
+
+  // Mês a mês dentro do trim atual
+  var trimMeses = (typeof _ctrQuarterMonths === 'function') ? _ctrQuarterMonths(anoNow, qNow) : [];
+  var mesNowKey = (typeof _ctrMonthKey === 'function') ? _ctrMonthKey(now) : '';
+  var fmtMes = function(k){
+    if(typeof _ctrFmtMes === 'function') return _ctrFmtMes(k);
+    var MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    var p = k.split('-');
+    return MESES[parseInt(p[1],10)-1] + '/' + p[0].slice(-2);
+  };
+  var mesesHtml = trimMeses.map(function(mk){
+    var n = stats.byMonth[mk] || 0;
+    var ehAtual = (mk === mesNowKey);
+    var pctMes = contrato.limite_mes > 0 ? Math.round(n/contrato.limite_mes*100) : 0;
+    var corCelula = pctMes >= 100 ? 'var(--danger)' : pctMes >= 80 ? 'var(--warn)' : (n > 0 ? 'var(--ok)' : 'var(--muted)');
+    var lblMes = fmtMes(mk) + (ehAtual ? ' (parcial)' : '');
+    return ''
+      + '<div class="cli-ssg-mes">'
+      +   '<div class="cli-ssg-mes-num" style="color:'+corCelula+'">'+n+'</div>'
+      +   '<div class="cli-ssg-mes-lbl">'+lblMes+'</div>'
+      +   '<div class="cli-ssg-mes-pct">'+(contrato.limite_mes > 0 ? pctMes+'%' : '—')+' do mês</div>'
+      + '</div>';
+  }).join('');
+
+  // Linha de projeção/diagnóstico
+  var projLine;
+  if(status === 'info'){
+    projLine = 'Sem chamados no trimestre — pode ser cliente novo ou pausado.';
+  } else if(stats.excedente > 0){
+    projLine = 'Projeção fim Q'+qNow+': <strong style="color:'+barColor+'">'+stats.projTrim+' chamados</strong> · '
+      + '<strong style="color:var(--danger)">+'+stats.excedente+' a cobrar</strong>';
+  } else {
+    projLine = 'Projeção fim Q'+qNow+': <strong style="color:'+barColor+'">'+stats.projTrim+' chamados</strong> · '
+      + 'dentro do limite';
+  }
+
+  el.innerHTML = ''
+    + '<div class="cli-ssg-wrap">'
+    +   '<div class="cli-ssg-titulo-row">'
+    +     '<div class="cli-ssg-titulo">📋 Contrato SSG</div>'
+    +     '<div class="cli-ssg-status cli-ssg-status-'+status+'">'+statusTxt+'</div>'
+    +   '</div>'
+    +   '<div class="cli-ssg-sub">'
+    +     contrato.limite_mes + ' chamados/mês · ' + (contrato.limite_mes*3) + '/trim · '
+    +     'gatilho de cobrança fecha último dia do trimestre'
+    +   '</div>'
+    +   (contrato.obs ? '<div class="cli-ssg-obs">⚠ '+contrato.obs+'</div>' : '')
+    +   '<div class="cli-ssg-trim">'
+    +     '<div class="cli-ssg-trim-label">'
+    +       '<span>Acumulado Q'+qNow+'/'+String(anoNow).slice(-2)+'</span>'
+    +       '<span style="color:var(--muted)">limite: '+stats.limiteTrim+'</span>'
+    +     '</div>'
+    +     '<div class="cli-ssg-trim-num">'+stats.usoTrim+'<span class="cli-ssg-trim-slash">/'+stats.limiteTrim+'</span></div>'
+    +     '<div class="cli-ssg-trim-bar"><div class="cli-ssg-trim-fill" style="width:'+pctBar+'%;background:'+barColor+'"></div></div>'
+    +     '<div class="cli-ssg-trim-proj">'+projLine+'</div>'
+    +   '</div>'
+    +   '<div class="cli-ssg-meses">'+mesesHtml+'</div>'
+    + '</div>';
+}
+
 function renderPainel(d){
   var empty=document.getElementById('co-empty'),content=document.getElementById('co-content');
   if(!d){empty.style.display='block';content.style.display='none';return;}
@@ -10021,6 +10160,8 @@ function renderPainel(d){
   }
   // 🕐 Bloco Banco de Horas (Fase 2) — só aparece se cliente tem contrato BH
   try { _renderBHBlocoCliente(d.id); } catch(e){ console.warn('bh bloco cliente:', e); }
+  // 📋 Bloco Contrato SSG (Fase 3) — só aparece se cliente tem contrato SSG
+  try { _renderSSGBlocoCliente(d.id); } catch(e){ console.warn('ssg bloco cliente:', e); }
 }
 
 function renderTimeline(d){
