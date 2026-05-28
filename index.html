@@ -15642,6 +15642,31 @@ function _kdSlaCumprindo(){
   }});
 }
 
+// Conta rapidamente quantos similares existem (com short-circuit em 10).
+// Usado pra mostrar chip "💡 ver N similares" nos cards de squad.
+function countSimilarResolutions(target){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return 0;
+  if(!target || !target.assunto) return 0;
+  var STOPWORDS = {'para':1,'pelo':1,'pela':1,'sobre':1,'pelos':1,'pelas':1,'dos':1,'das':1,'nas':1,'nos':1,'erro':1,'cliente':1,'sistema':1,'help':1,'novo':1,'nova':1,'protheus':1,'datasul':1,'totvs':1};
+  var tw = target.assunto.toLowerCase()
+    .replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ')
+    .split(/\s+/)
+    .filter(function(w){ return w.length > 3 && !STOPWORDS[w]; });
+  if(!tw.length) return 0;
+  var count = 0;
+  for(var i=0; i<RAW_DATA.length; i++){
+    var c = RAW_DATA[i];
+    if(c.num === target.num) continue;
+    if(!c.resolucao_texto) continue;
+    var cw = (c.assunto||'').toLowerCase().replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ').split(/\s+/);
+    for(var j=0; j<tw.length; j++){
+      if(cw.indexOf(tw[j]) > -1){ count++; break; }
+    }
+    if(count >= 10) break;  // short-circuit pra performance
+  }
+  return count;
+}
+
 // Busca até 5 chamados similares com texto de resolução já preenchido.
 // Critério: palavras-chave do assunto em comum (>3 chars, sem stopwords).
 // Score: overlap de palavras + bônus mesma fila (+2) + bônus mesmo cliente (+1).
@@ -25578,6 +25603,14 @@ function _ticketCard(t){
     ? '<div class="sq-card-fala lvl'+fala.lvl+'">'+fala.texto.replace(/</g,'&lt;')+'</div>'
     : '';
 
+  // Chip "💡 ver N similares" — só aparece se houver resoluções parecidas
+  // no histórico. Clique no chip abre modal interno (não vai pro OTRS).
+  var simCount = 0;
+  try { simCount = countSimilarResolutions({num: num, assunto: t.assunto||'', fila: t.fila||'', cli_id: t.cliente||''}); } catch(e){}
+  var simChip = simCount > 0
+    ? '<div class="sq-card-sim" onclick="event.stopPropagation();openTicketDetail(\''+(num||'').replace(/\x27/g,"\\\\\\\'")+'\')" title="Ver chamados parecidos resolvidos antes" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;background:rgba(79,142,247,.10);border:1px solid rgba(79,142,247,.30);border-radius:6px;color:#4f8ef7;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(79,142,247,.20)\'" onmouseout="this.style.background=\'rgba(79,142,247,.10)\'">💡 ver ' + (simCount >= 10 ? '10+' : simCount) + ' similar' + (simCount > 1 ? 'es' : '') + '</div>'
+    : '';
+
   return '<div class="sq-card sla-'+sla.status+'" onclick="openTicketOTRS(\''+(num||'')+'\',event)" title="Clique para abrir '+num+' no OTRS">'
     + '<div class="sq-card-top">'
       + '<span class="sq-card-num">#' + (num||'—') + '<span class="sq-num-arrow">↗</span></span>'
@@ -25596,6 +25629,7 @@ function _ticketCard(t){
       + (pc ? '<span class="sq-card-prio '+pc+'">'+pl+'</span>' : '')
       + '<a class="sq-card-otrs" href="https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(num||'')+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ OTRS</a>'
     + '</div>'
+    + simChip
   + '</div>';
 }
 
