@@ -288,14 +288,7 @@ def q_historico_completo(session: requests.Session) -> list[dict]:
        WHERE a.ticket_id = t.id
          AND a.article_sender_type_id = 1
          AND a.is_visible_for_customer = 1
-         AND a.create_time > t.create_time)                      AS resp_min_raw,
-      (SELECT LEFT(a.body, 5000)
-       FROM article a
-       WHERE a.ticket_id = t.id
-         AND a.article_sender_type_id = 1
-         AND a.is_visible_for_customer = 1
-       ORDER BY a.create_time DESC
-       LIMIT 1)                                                   AS resolucao_texto
+         AND a.create_time > t.create_time)                      AS resp_min_raw
     FROM ticket t
     JOIN queue           q  ON t.queue_id           = q.id
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
