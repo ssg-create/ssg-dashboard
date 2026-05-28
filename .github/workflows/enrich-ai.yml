@@ -1,0 +1,52 @@
+name: Enrich Resoluções com IA
+
+# Roda a cada hora. Processa até 50 tickets fechados por rodada.
+# Free tier Gemini: 1M tokens/dia (~550 tickets) — sobra margem.
+#
+# Não interfere com gwms-sync.yml: arquivos diferentes (historico_ai.json
+# vs os 6 JSONs operacionais).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 * * * *'   # minuto 15 de cada hora
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Validar secrets
+        env:
+          GH_REPO:      ${{ secrets.GH_REPO }}
+          DEPLOY_TOKEN: ${{ secrets.GH_PAT_CROSS_REPO }}
+        run: |
+          MISSING=""
+          [ -z "$GH_REPO" ]      && MISSING="$MISSING GH_REPO"
+          [ -z "$DEPLOY_TOKEN" ] && MISSING="$MISSING GH_PAT_CROSS_REPO"
+          if [ -n "$MISSING" ]; then
+            echo "ERRO: secrets ausentes:$MISSING"
+            exit 1
+          fi
+          echo "Secrets OK"
+
+      - name: Enrich
+        env:
+          DEPLOY_TOKEN: ${{ secrets.GH_PAT_CROSS_REPO }}
+          GH_REPO:      ${{ secrets.GH_REPO }}
+          GH_BRANCH:    main
+        run: python scripts/enrich_resolucoes.py

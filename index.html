@@ -15713,12 +15713,14 @@ function renderSimilarResolutions(target, esc){
     +   '🔍 Resoluções similares'
     +   '<span style="background:rgba(79,142,247,.15);color:#4f8ef7;padding:2px 8px;border-radius:10px;font-size:10px;font-family:var(--mono)">' + hits.length + '</span>'
     + '</div>';
+  var aiCards = window._AI_CARDS || {};
   for(var k=0; k<hits.length; k++){
     var h = hits[k].t;
     var fullTxt = cleanText(resolMap[h.num] || '');
-    var txt = fullTxt.substring(0, 350);
     var when = h.criado ? String(h.criado).substring(0, 10) : '';
     var otrsHref = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=' + encodeURIComponent(h.num||'');
+
+    // Cabeçalho comum (mesmo pra cartão IA ou texto cru)
     html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px">'
       + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">'
       +   '<span style="color:#5eead4">#' + esc(h.num||'') + '</span>'
@@ -15728,11 +15730,40 @@ function renderSimilarResolutions(target, esc){
       +   ' · <a href="' + otrsHref + '" target="_blank" rel="noopener" style="color:#38bdf8;text-decoration:none">↗ OTRS</a>'
       + '</div>'
       + '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)">' + esc(h.assunto||'') + '</div>'
-      + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">por <b>' + esc((h.atendente||'').trim() || '—') + '</b></div>'
-      + '<div style="font-size:12px;line-height:1.5;color:#cdd2e0;background:rgba(255,255,255,.02);padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,.05);max-height:140px;overflow-y:auto;white-space:pre-wrap">'
-      +   esc(txt) + (fullTxt.length > 350 ? '...' : '')
-      + '</div>'
-      + '</div>';
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">por <b>' + esc((h.atendente||'').trim() || '—') + '</b></div>';
+
+    // Cartão IA se disponível e confiança não-baixa, senão fallback texto cru
+    var aic = aiCards[h.num];
+    if(aic && aic.confianca !== 'baixa' && (aic.problema || aic.solucao)){
+      var tagsHtml = (aic.tags||[]).slice(0,5).map(function(t){
+        return '<span style="display:inline-block;background:rgba(79,142,247,.10);color:#4f8ef7;padding:1px 7px;border-radius:4px;font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.04em;margin:0 4px 4px 0">' + esc(String(t)) + '</span>';
+      }).join('');
+      var confColor = aic.confianca === 'alta' ? '#3ecf8e' : '#f5a623';
+      var confLabel = aic.confianca === 'alta' ? 'IA · alta confiança' : 'IA · confiança média';
+      var tempoTxt = (aic.tempo_min != null && !isNaN(aic.tempo_min)) ? Math.round(aic.tempo_min) + ' min' : '—';
+
+      html += '<div style="background:rgba(79,142,247,.04);border-left:3px solid #4f8ef7;border-radius:0 6px 6px 0;padding:10px 12px;font-size:12px;line-height:1.55">'
+        + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-family:var(--mono);font-size:9px;letter-spacing:.05em">'
+        +   '<span style="color:' + confColor + '">● ' + confLabel + '</span>'
+        +   '<span style="color:var(--muted)">· ' + tempoTxt + '</span>'
+        + '</div>'
+        + '<div style="margin-bottom:8px"><span style="color:#f43f5e;font-weight:700">🔴 Problema:</span> ' + esc(aic.problema || '—') + '</div>'
+        + '<div style="margin-bottom:8px"><span style="color:#f5a623;font-weight:700">🟡 Causa:</span> ' + esc(aic.causa || '—') + '</div>'
+        + '<div style="margin-bottom:8px"><span style="color:#3ecf8e;font-weight:700">🟢 Solução:</span> <span style="white-space:pre-wrap">' + esc(aic.solucao || '—') + '</span></div>'
+        + (tagsHtml ? '<div style="margin-top:10px">' + tagsHtml + '</div>' : '')
+        + '<details style="margin-top:10px"><summary style="cursor:pointer;font-size:10px;color:var(--muted);letter-spacing:.04em">ver texto original do analista</summary>'
+        +   '<div style="margin-top:8px;padding:8px;background:rgba(0,0,0,.2);border-radius:4px;font-size:11px;color:#a0a8c0;max-height:140px;overflow-y:auto;white-space:pre-wrap">' + esc(fullTxt.substring(0,1500)) + (fullTxt.length>1500?'…':'') + '</div>'
+        + '</details>'
+        + '</div>';
+    } else {
+      // Fallback: texto cru (estado atual)
+      var txt = fullTxt.substring(0, 350);
+      html += '<div style="font-size:12px;line-height:1.5;color:#cdd2e0;background:rgba(255,255,255,.02);padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,.05);max-height:140px;overflow-y:auto;white-space:pre-wrap">'
+        +   esc(txt) + (fullTxt.length > 350 ? '...' : '')
+        + '</div>';
+    }
+
+    html += '</div>';
   }
   html += '</div>';
   return html;
@@ -21840,6 +21871,25 @@ function _restoreFilters(snap){
   try { if(typeof loadEmpresa      === 'function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]) loadEmpresa(snap.activeCliente); } catch(e){console.warn('[restore] loadEmpresa:',e);}
   try { if(typeof loadCS           === 'function' && snap.activeCliente && typeof EMPRESAS!=='undefined' && EMPRESAS[snap.activeCliente]) loadCS(snap.activeCliente); } catch(e){console.warn('[restore] loadCS:',e);}
 }
+
+// ────────────────────────────────────────────────────────────────────────
+// Cartões IA Gemini — carrega historico_ai.json em paralelo. Fallback
+// automático pro texto cru se não houver cartão IA pro ticket.
+// Independente do fluxo principal — não afeta nada se falhar.
+// ────────────────────────────────────────────────────────────────────────
+window._AI_CARDS = window._AI_CARDS || null;
+function fetchAICards(){
+  fetch("/historico_ai.json?v=" + Date.now())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if(d && d.cards){
+        window._AI_CARDS = d.cards;
+        try{ console.log('[AI] ' + Object.keys(d.cards).length + ' cartões IA carregados'); }catch(e){}
+      }
+    })
+    .catch(function(){ /* silent — renderSimilarResolutions faz fallback */ });
+}
+if(typeof window !== 'undefined'){ setTimeout(fetchAICards, 1500); }
 
 function autoFetchJSON(){
   if(_autoFetching)return;
