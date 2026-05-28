@@ -15642,6 +15642,75 @@ function _kdSlaCumprindo(){
   }});
 }
 
+// Busca até 5 chamados similares com texto de resolução já preenchido.
+// Critério: palavras-chave do assunto em comum (>3 chars, sem stopwords).
+// Score: overlap de palavras + bônus mesma fila (+2) + bônus mesmo cliente (+1).
+function renderSimilarResolutions(target, esc){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return '';
+  if(!target || !target.assunto) return '';
+  var STOPWORDS = {'para':1,'pelo':1,'pela':1,'sobre':1,'pelos':1,'pelas':1,'dos':1,'das':1,'nas':1,'nos':1,'erro':1,'cliente':1,'sistema':1,'help':1,'novo':1,'nova':1,'protheus':1,'datasul':1,'totvs':1};
+  var extractWords = function(s){
+    return (s||'').toLowerCase()
+      .replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ')
+      .split(/\s+/)
+      .filter(function(w){ return w.length > 3 && !STOPWORDS[w]; });
+  };
+  var tw = extractWords(target.assunto);
+  if(!tw.length) return '';
+  var hits = [];
+  for(var i=0; i<RAW_DATA.length; i++){
+    var c = RAW_DATA[i];
+    if(c.num === target.num) continue;
+    if(!c.resolucao_texto) continue;
+    var cw = extractWords(c.assunto);
+    var overlap = 0;
+    for(var j=0; j<tw.length; j++){ if(cw.indexOf(tw[j]) > -1) overlap++; }
+    if(overlap === 0) continue;
+    var score = overlap;
+    if(c.fila === target.fila) score += 2;
+    if(c.cli_id === target.cli_id) score += 1;
+    hits.push({t: c, score: score});
+  }
+  if(!hits.length) return '';
+  hits.sort(function(a,b){ return b.score - a.score; });
+  hits = hits.slice(0, 5);
+  var cleanText = function(s){
+    return (s||'')
+      .replace(/<[^>]+>/g,' ')
+      .replace(/&[a-z]+;/gi,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  };
+  var html = '<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:16px">'
+    + '<div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4f8ef7;margin-bottom:12px;text-transform:uppercase;display:flex;align-items:center;gap:8px">'
+    +   '🔍 Resoluções similares'
+    +   '<span style="background:rgba(79,142,247,.15);color:#4f8ef7;padding:2px 8px;border-radius:10px;font-size:10px;font-family:var(--mono)">' + hits.length + '</span>'
+    + '</div>';
+  for(var k=0; k<hits.length; k++){
+    var h = hits[k].t;
+    var fullTxt = cleanText(h.resolucao_texto);
+    var txt = fullTxt.substring(0, 350);
+    var when = h.criado ? String(h.criado).substring(0, 10) : '';
+    var otrsHref = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=' + encodeURIComponent(h.num||'');
+    html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px">'
+      + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">'
+      +   '<span style="color:#5eead4">#' + esc(h.num||'') + '</span>'
+      +   ' · <span style="color:#f5a623">' + esc(h.fila||'—') + '</span>'
+      +   ' · ' + esc(h.cli_id||'—')
+      +   ' · ' + when
+      +   ' · <a href="' + otrsHref + '" target="_blank" rel="noopener" style="color:#38bdf8;text-decoration:none">↗ OTRS</a>'
+      + '</div>'
+      + '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)">' + esc(h.assunto||'') + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">por <b>' + esc((h.atendente||'').trim() || '—') + '</b></div>'
+      + '<div style="font-size:12px;line-height:1.5;color:#cdd2e0;background:rgba(255,255,255,.02);padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,.05);max-height:140px;overflow-y:auto;white-space:pre-wrap">'
+      +   esc(txt) + (fullTxt.length > 350 ? '...' : '')
+      + '</div>'
+      + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 function openTicketDetail(num){
   // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
   // Se achar, usa isso. Senão, cai no RAW_DATA do XLSX (histórico, pode estar defasado).
@@ -15729,7 +15798,8 @@ function openTicketDetail(num){
     + cell('Criado',fmtDt(t.criado))
     + cell('Idade',idade)
     + cell('1ª Resposta',respTxt)
-    + '</div>';
+    + '</div>'
+    + renderSimilarResolutions(t, esc);
   var otrsLink = document.getElementById('tkd-otrs-link');
   if(otrsLink && t.num){
     otrsLink.href='https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.num);
