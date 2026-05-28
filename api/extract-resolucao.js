@@ -6,7 +6,7 @@
 // Risco: zero. Se Gemini cair, função retorna erro 503 e o caller
 // (Command Center) faz fallback pro texto cru.
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_MODEL = 'gemini-2.0-flash-lite';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_PROMPT = `Você é analista técnico sênior da Groundwork — empresa parceira TOTVS que atende com Protheus, Datasul, DBA, infraestrutura.
