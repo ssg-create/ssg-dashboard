@@ -15653,11 +15653,12 @@ function countSimilarResolutions(target){
     .split(/\s+/)
     .filter(function(w){ return w.length > 3 && !STOPWORDS[w]; });
   if(!tw.length) return 0;
+  var resolMap = window._RESOL_MAP || {};
   var count = 0;
   for(var i=0; i<RAW_DATA.length; i++){
     var c = RAW_DATA[i];
     if(c.num === target.num) continue;
-    if(!c.resolucao_texto) continue;
+    if(!resolMap[c.num]) continue;  // só conta se há texto de solução no sidemap
     var cw = (c.assunto||'').toLowerCase().replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ').split(/\s+/);
     for(var j=0; j<tw.length; j++){
       if(cw.indexOf(tw[j]) > -1){ count++; break; }
@@ -15682,11 +15683,12 @@ function renderSimilarResolutions(target, esc){
   };
   var tw = extractWords(target.assunto);
   if(!tw.length) return '';
+  var resolMap = window._RESOL_MAP || {};
   var hits = [];
   for(var i=0; i<RAW_DATA.length; i++){
     var c = RAW_DATA[i];
     if(c.num === target.num) continue;
-    if(!c.resolucao_texto) continue;
+    if(!resolMap[c.num]) continue;  // só inclui se há texto de solução
     var cw = extractWords(c.assunto);
     var overlap = 0;
     for(var j=0; j<tw.length; j++){ if(cw.indexOf(tw[j]) > -1) overlap++; }
@@ -15713,7 +15715,7 @@ function renderSimilarResolutions(target, esc){
     + '</div>';
   for(var k=0; k<hits.length; k++){
     var h = hits[k].t;
-    var fullTxt = cleanText(h.resolucao_texto);
+    var fullTxt = cleanText(resolMap[h.num] || '');
     var txt = fullTxt.substring(0, 350);
     var when = h.criado ? String(h.criado).substring(0, 10) : '';
     var otrsHref = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=' + encodeURIComponent(h.num||'');
@@ -21700,6 +21702,12 @@ var _STATE_OTRS_TO_XLSX = {
   'fechado sem êxito (auto)':'fechado sem êxito (auto)'
 };
 function _adaptJsonRowToXlsx(r){
+  // Sidemap: carrega resolucao_texto sem passar por parseR (que filtra colunas).
+  // Usado por countSimilarResolutions e renderSimilarResolutions.
+  if(r && r.num && r.resolucao_texto){
+    window._RESOL_MAP = window._RESOL_MAP || {};
+    window._RESOL_MAP[r.num] = r.resolucao_texto;
+  }
   var estRaw=(r.estado||'').toLowerCase().trim();
   var estMapped=_STATE_OTRS_TO_XLSX[estRaw]||estRaw;
   return {
