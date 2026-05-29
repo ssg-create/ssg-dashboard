@@ -19752,12 +19752,23 @@ function _bhEstourou2CiclosSeguidos(c){
   var ult = hist[hist.length-1], penult = hist[hist.length-2];
   return (ult && ult.pct >= 100) && (penult && penult.pct >= 100);
 }
-// 9) Subutilizado <50% no ciclo vigente (risco de churn por perceção de baixo valor)
+// 9) Subutilizado <50% no ciclo vigente (risco de churn por percepção de baixo valor)
+// v4.2: exclui clientes com sinal de aceleração recente — se o trimestre vigente
+// estourou ou os últimos 3 meses já projetam exaustão antes do fim, o cliente NÃO
+// é mais "risco de não-renovação por subuso", mesmo que o acumulado esteja baixo.
+// Caso real: ECAD aparecia em "subutilizando" (32% acumulado) e em "estouro trim"
+// ao mesmo tempo — confuso. Sinal recente vence o acumulado.
 function _bhSubutilizado(c){
   // Só considera contratos não-novos (>= 3 meses de vida vigente)
   var meses_ja_passados = (c.meses_contrato || 12) - Math.max(0, Math.floor((c.dias_ate_fim||0)/30));
   if(meses_ja_passados < 3) return false;
-  return c.pct_consumido_total < 50 && c.dias_ate_fim > 30;
+  if(c.pct_consumido_total >= 50) return false;
+  if(c.dias_ate_fim <= 30) return false;
+  // Exclusões por sinal recente
+  if(c.trimestre && c.trimestre.estourou) return false;       // estourou trim vigente
+  if(c.trimestre && c.trimestre.tendencia) return false;      // tendência forte de estouro trim
+  if(c.tendencia_pool && c.tendencia_pool.zera_antes_3m) return false; // aceleração nos últimos 3 meses
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════
