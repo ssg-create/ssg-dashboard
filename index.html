@@ -1129,6 +1129,7 @@ body.triagem-mode #at-user-pill{display:flex!important}
 .cap-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cap-count{font-size:22px;font-weight:900;font-family:var(--mono);line-height:1;margin-bottom:3px}
 .cap-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.cap-sub-ag{font-size:9px;color:var(--warn);font-family:var(--mono);margin:-3px 0 6px;opacity:.85}
 .cap-bar-track{height:3px;border-radius:2px;background:var(--bg);margin-bottom:6px}
 .cap-bar-fill{height:100%;border-radius:2px;transition:width .4s}
 .cap-status{font-size:9px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:10px;display:inline-block}
@@ -8466,15 +8467,23 @@ function renderComp(){
 function computeTeamCapacity(atendList) {
   var list=(atendList||[]).filter(function(a){return a.t>0;});
   if(!list.length) return [];
-  // median of ab (open tickets)
-  var sorted=list.map(function(a){return a.ab||0;}).slice().sort(function(a,b){return a-b;});
+  // v2026-06: carga REAL = "sob controle" (exclui aguardando cliente/fornecedor/terceiro).
+  // Disponível = 0 sob controle → pode pegar trabalho novo, mesmo que tenha vários
+  // aguardando retorno externo (a bola desses está com o cliente, não com o atendente).
+  // Fallback histórico (sem breakdown de estado): usa ab (total), como antes.
+  var hasBreakdown=list.some(function(a){return a.sob!=null;});
+  var loadOf=function(a){ return hasBreakdown ? (a.sob||0) : (a.ab||0); };
+  var sorted=list.map(loadOf).slice().sort(function(a,b){return a-b;});
   var mid=Math.floor(sorted.length/2);
   var median=sorted.length%2?sorted[mid]:(sorted[mid-1]+sorted[mid])/2;
-  var maxAb=sorted[sorted.length-1]||1;
+  var maxAb=Math.max.apply(null,list.map(function(a){return a.ab||0;}).concat([1]));
   return list.map(function(a){
     var ab=a.ab||0;
-    var status=ab===0?'dis':(ab>median*1.5&&ab>=3)?'sob':'nor';
-    return {n:a.n,t:a.t,f:a.f,ab:ab,rm:a.rm,tm:a.tm,status:status,barW:Math.round(ab/maxAb*100)};
+    var sob=(a.sob!=null?a.sob:ab);
+    var ag=a.ag||0;
+    var load=loadOf(a);
+    var status=load===0?'dis':(load>median*1.5&&load>=3)?'sob':'nor';
+    return {n:a.n,t:a.t,f:a.f,ab:ab,sob:sob,ag:ag,rm:a.rm,tm:a.tm,status:status,barW:Math.round(ab/maxAb*100)};
   });
 }
 
@@ -8507,8 +8516,13 @@ function renderTeamCapacity() {
       // que eram só auto-fechados antigos.
       var stU=(r.estado||'').toUpperCase();
       if(typeof _LIVE_DORMANT_STATES!=='undefined' && _LIVE_DORMANT_STATES.indexOf(stU)!==-1) return;
-      if(!byAt[r.atendente]) byAt[r.atendente]={n:r.atendente,t:0,f:0,ab:0,tm:null,rm:null,est:{}};
+      if(!byAt[r.atendente]) byAt[r.atendente]={n:r.atendente,t:0,f:0,ab:0,sob:0,ag:0,tm:null,rm:null,est:{}};
       byAt[r.atendente].t++; byAt[r.atendente].ab++;
+      // v2026-06: separa carga real (sob controle) de "aguardando retorno externo".
+      // Status de sobrecarga passa a olhar só sob controle — quem tem 17 sendo 16
+      // aguardando cliente NÃO está sobrecarregado.
+      if(typeof _eqEstadoForaDoControle==='function' && _eqEstadoForaDoControle(r.estado)) byAt[r.atendente].ag++;
+      else byAt[r.atendente].sob++;
       var st=r.estado||'Aberto';
       byAt[r.atendente].est[st]=(byAt[r.atendente].est[st]||0)+1;
     });
@@ -8522,13 +8536,17 @@ function renderTeamCapacity() {
   el.style.display='';
   var list=computeTeamCapacity(atendFilt);
   var totalOpen=list.reduce(function(s,a){return s+a.ab;},0);
+  var totalSob=list.reduce(function(s,a){return s+(a.sob||0);},0);
+  var totalAg=list.reduce(function(s,a){return s+(a.ag||0);},0);
   var nSob=list.filter(function(a){return a.status==='sob';}).length;
   var nDis=list.filter(function(a){return a.status==='dis';}).length;
   var STATUS_LABEL={sob:'Sobrecarr.',nor:'Normal',dis:'Disponível'};
   var barColors={sob:'#f43f5e',nor:'var(--blue)',dis:'var(--ok)'};
-  // Summary line
+  // Summary line — v2026-06: separa total / sob controle / aguardando cliente
   var sumHtml='<div class="cap-summary">'
     +'<span class="cap-sum-item">Total abertos: <strong>'+totalOpen+'</strong></span>'
+    +(_isLive && totalAg>0 ? '<span class="cap-sum-item" style="color:var(--blue)">Sob controle: <strong>'+totalSob+'</strong></span>'
+        +'<span class="cap-sum-item" style="color:var(--warn)">Aguardando cliente: <strong>'+totalAg+'</strong></span>' : '')
     +'<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
     +'<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
     +'</div>';
@@ -8548,16 +8566,26 @@ function renderTeamCapacity() {
         +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
       +'</span>'
       : '';
+    // v2026-06: número principal = carga real (sob controle). Aguardando cliente
+    // vira sublinha — não infla o status. No fallback histórico mostra ab (total).
+    var numPrincipal = _isLive ? (a.sob!=null?a.sob:a.ab) : a.ab;
+    var lblPrincipal = (_isLive && a.ag>0) ? 'sob controle' : 'abertos';
+    var subAguardando = (_isLive && a.ag>0)
+      ? '<div class="cap-sub-ag" title="Chamados aguardando retorno do cliente/fornecedor — fora do controle do atendente">+'+a.ag+' aguardando cliente</div>'
+      : '';
     cardsHtml+='<div class="cap-card'+(clickable?' cap-card-clickable':'')+'" '
       +(clickable?'data-nome="'+a.n.replace(/"/g,'&quot;')+'" ':'')
-      +'title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto · 1ª resp média: '+respTxt+' · Total mês: '+a.t+'">'
+      +'title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto'
+        +(_isLive&&a.ag>0?' ('+a.sob+' sob controle · '+a.ag+' aguardando cliente)':'')
+        +' · 1ª resp média: '+respTxt+' · Total mês: '+a.t+'">'
       +'<div class="cap-card-head">'
         +'<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
         +'<div class="cap-name">'+shortN+'</div>'
         +eyeIcon
       +'</div>'
-      +'<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
-      +'<div class="cap-lbl">abertos</div>'
+      +'<div class="cap-count" style="color:'+barColors[a.status]+'">'+numPrincipal+'</div>'
+      +'<div class="cap-lbl">'+lblPrincipal+'</div>'
+      +subAguardando
       +'<div class="cap-bar-track"><div class="cap-bar-fill" style="width:'+a.barW+'%;background:'+barColors[a.status]+'"></div></div>'
       +'<span class="cap-status '+a.status+'">'+STATUS_LABEL[a.status]+'</span>'
     +'</div>';
@@ -26014,8 +26042,11 @@ function renderBlock5Squad(allSquadTickets){
     if(excl.indexOf(_norm(a))!==-1) return;
     var stU = (r.estado||'').toUpperCase();
     if(DORMENT.indexOf(stU)!==-1) return;
-    if(!byAt[a]) byAt[a] = { n:a, t:0, f:0, ab:0, tm:null, rm:null, est:{} };
+    if(!byAt[a]) byAt[a] = { n:a, t:0, f:0, ab:0, sob:0, ag:0, tm:null, rm:null, est:{} };
     byAt[a].t++; byAt[a].ab++;
+    // v2026-06: breakdown sob controle vs aguardando externo (mesma régua do card de gestão)
+    if(typeof _eqEstadoForaDoControle==='function' && _eqEstadoForaDoControle(r.estado)) byAt[a].ag++;
+    else byAt[a].sob++;
     byAt[a].est[r.estado||'Aberto'] = (byAt[a].est[r.estado||'Aberto']||0)+1;
   });
   var atendList = Object.keys(byAt).map(function(k){return byAt[k];})
@@ -26027,6 +26058,8 @@ function renderBlock5Squad(allSquadTickets){
     : atendList.map(function(a){return {n:a.n,t:a.t,f:0,ab:a.ab,status:'nor',barW:50};});
 
   var totalOpen = list.reduce(function(s,a){return s+a.ab;},0);
+  var totalSob = list.reduce(function(s,a){return s+(a.sob||0);},0);
+  var totalAg = list.reduce(function(s,a){return s+(a.ag||0);},0);
   var nSob = list.filter(function(a){return a.status==='sob';}).length;
   var nDis = list.filter(function(a){return a.status==='dis';}).length;
   var STATUS_LABEL = {sob:'Sobrecarr.', nor:'Normal', dis:'Disponível'};
@@ -26056,6 +26089,8 @@ function renderBlock5Squad(allSquadTickets){
   // Linha de KPIs (idêntica ao "Carga Atual da Equipe" da gestão)
   var sum = '<div class="cap-summary">'
     + '<span class="cap-sum-item">Total abertos: <strong>'+totalOpen+'</strong></span>'
+    + (totalAg>0 ? '<span class="cap-sum-item" style="color:var(--blue)">Sob controle: <strong>'+totalSob+'</strong></span>'
+        + '<span class="cap-sum-item" style="color:var(--warn)">Aguardando cliente: <strong>'+totalAg+'</strong></span>' : '')
     + '<span class="cap-sum-item" style="color:var(--danger)">Sobrecarregados: <strong>'+nSob+'</strong></span>'
     + '<span class="cap-sum-item" style="color:var(--ok)">Disponíveis: <strong>'+nDis+'</strong></span>'
     + '</div>';
@@ -26073,16 +26108,24 @@ function renderBlock5Squad(allSquadTickets){
           + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
         + '</span>'
         : '';
+      // v2026-06: número = carga real (sob controle); aguardando vira sublinha
+      var numPrincipal = (a.sob!=null ? a.sob : a.ab);
+      var lblPrincipal = (a.ag>0) ? 'sob controle' : 'abertos';
+      var subAg = (a.ag>0)
+        ? '<div class="cap-sub-ag" title="Aguardando retorno do cliente/fornecedor">+'+a.ag+' aguardando cliente</div>'
+        : '';
       return '<div class="cap-card'+(clickable?' cap-card-clickable':'')+'"'
         + (clickable?' data-nome="'+a.n.replace(/"/g,'&quot;')+'"':'')
-        + ' title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto">'
+        + ' title="Clique para ver os '+a.ab+' chamado'+(a.ab!==1?'s':'')+' em aberto'
+          + (a.ag>0?' ('+a.sob+' sob controle · '+a.ag+' aguardando cliente)':'')+'">'
           + '<div class="cap-card-head">'
             + '<div class="cap-avatar-sm" style="background:'+col+'22;color:'+col+'">'+initials+'</div>'
             + '<div class="cap-name" style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+shortN+'</div>'
             + eyeIcon
           + '</div>'
-          + '<div class="cap-count" style="color:'+barColors[a.status]+'">'+a.ab+'</div>'
-          + '<div class="cap-lbl" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">abertos</div>'
+          + '<div class="cap-count" style="color:'+barColors[a.status]+'">'+numPrincipal+'</div>'
+          + '<div class="cap-lbl" style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">'+lblPrincipal+'</div>'
+          + subAg
           + '<div class="cap-bar-track"><div class="cap-bar-fill" style="width:'+a.barW+'%;background:'+barColors[a.status]+'"></div></div>'
           + '<span class="cap-status '+a.status+'">'+STATUS_LABEL[a.status]+'</span>'
         + '</div>';
