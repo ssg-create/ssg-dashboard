@@ -18737,72 +18737,116 @@ window._eqCopiarCobranca = function(nome, squadId){
 };
 
 // Cobrança individual POR FILA (Fabio 22/05) — só conta tickets do atendente NA FILA específica
-// Diferente da versão antiga: gestor vem de FILA_GESTOR_MAP, tickets filtrados por t.fila
-// v2026-06: exclui chamados "aguardando cliente/fornecedor/terceiro" — estão fora do
-// controle do atendente, cobrar nisso passa mensagem injusta.
+// v2026-06: separa "sob controle" vs "aguardando cliente" — cobrança injusta no aguardando externo
+// v2026-06b: lista tickets dos dois lados, alerta de avalanche e sugere redistribuição
+//            baseado em quem tem menor carga na mesma fila (IA looking at the data).
 window._eqCopiarCobrancaFila = function(nome, filaNome){
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   var primNome = nome.split(' ')[0];
   var gestor = FILA_GESTOR_MAP[filaNome] || '';
-  // Total na fila (todos os ativos, inclusive aguardando externo) — só pra mensagem informar contexto
+
+  // ── Helper de idade ──
+  var _diasDesde = function(criado){
+    if(!criado) return 0;
+    var dt = new Date(String(criado).replace(' ','T'));
+    return isNaN(dt.getTime()) ? 0 : Math.floor((Date.now() - dt.getTime())/(86400000));
+  };
+  var _fmtIdade = function(dias){
+    return dias === 0 ? 'hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
+  };
+  var _fmtLinhaTicket = function(t){
+    return '• #' + t.ticket + ' — ' + _fmtIdade(_diasDesde(t.criado)) + ' — ' + (t.assunto||'(sem assunto)').slice(0, 65);
+  };
+
+  // ── Tickets do atendente na fila ──
   var todosAtivos = TICKETS_ATIVOS_DATA.rows.filter(function(t){
     return t.atendente && t.atendente.trim() === nome.trim()
         && _eqAtivoState(t.estado)
         && t.fila && String(t.fila).trim() === filaNome;
   });
-  // Sob controle = exclui "aguardando externo" — só esses entram na cobrança
-  var meus = todosAtivos.filter(function(t){ return !_eqEstadoForaDoControle(t.estado); });
-  var nForaControle = todosAtivos.length - meus.length;
-  if(!meus.length){
-    // Atendente só tem chamados aguardando retorno externo — não tem o que cobrar
+  var sobControle = todosAtivos.filter(function(t){ return !_eqEstadoForaDoControle(t.estado); });
+  var aguardando = todosAtivos.filter(function(t){ return _eqEstadoForaDoControle(t.estado); });
+  sobControle.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+  aguardando.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+  var nSob = sobControle.length, nAg = aguardando.length, nTotal = todosAtivos.length;
+
+  if(!nTotal){
     var tEl0 = document.createElement('div');
     tEl0.className = 'eq-toast';
-    tEl0.textContent = '⚠ ' + primNome + ' não tem chamados sob controle direto na fila ' + filaNome
-      + (nForaControle ? ' (' + nForaControle + ' aguardando retorno externo)' : '');
+    tEl0.textContent = '⚠ ' + primNome + ' não tem chamados ativos na fila ' + filaNome;
     document.body.appendChild(tEl0);
-    setTimeout(function(){ tEl0.remove(); }, 3500);
+    setTimeout(function(){ tEl0.remove(); }, 3000);
     return;
   }
-  meus.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
-  var n = meus.length;
-  var top = meus.slice(0, 3);
-  var linhas = top.map(function(t){
-    var dt = new Date(String(t.criado||'').replace(' ','T'));
-    var dias = !isNaN(dt.getTime()) ? Math.floor((Date.now() - dt.getTime())/(86400000)) : 0;
-    var idade = dias === 0 ? 'hoje' : (dias === 1 ? '1 dia' : dias + ' dias');
-    var assunto = (t.assunto||'(sem assunto)').slice(0, 70);
-    return '• #' + t.ticket + ' — ' + idade + ' — ' + assunto;
-  }).join('\n');
-  var maisAntigoDias = (function(){
-    var dt = new Date(String(meus[0].criado||'').replace(' ','T'));
-    return !isNaN(dt.getTime()) ? Math.floor((Date.now() - dt.getTime())/(86400000)) : 0;
-  })();
-  var resto = n > 3 ? '\n\n(+ outros ' + (n - 3) + ' chamado' + (n-3!==1?'s':'') + ' na fila ' + filaNome + ')' : '';
-  var introExtra = maisAntigoDias >= 30
-    ? ' — chamando atenção pro mais antigo de ' + maisAntigoDias + ' dias parado'
-    : (maisAntigoDias >= 7 ? ' — o mais antigo já tem ' + maisAntigoDias + ' dias' : '');
+
+  // ── Listagem dos chamados (top 5 sob controle · top 3 aguardando) ──
+  var blocoSob = '';
+  if(nSob > 0){
+    var listaSob = sobControle.slice(0, 5).map(_fmtLinhaTicket).join('\n');
+    var restoSob = nSob > 5 ? '\n(+ outros ' + (nSob - 5) + ' sob controle)' : '';
+    blocoSob = '\n\n✋ *SOB SEU CONTROLE* — ' + nSob + ' chamado' + (nSob!==1?'s':'') + ' (você atua agora):\n' + listaSob + restoSob;
+  }
+  var blocoAg = '';
+  if(nAg > 0){
+    var listaAg = aguardando.slice(0, 3).map(_fmtLinhaTicket).join('\n');
+    var restoAg = nAg > 3 ? '\n(+ outros ' + (nAg - 3) + ' aguardando)' : '';
+    blocoAg = '\n\n⏳ *AGUARDANDO CLIENTE* — ' + nAg + ' chamado' + (nAg!==1?'s':'') + ' (bola fora do seu campo):\n' + listaAg + restoAg;
+  }
+
+  // ── Análise de avalanche: muito mais aguardando do que sob controle ──
+  var analise = '';
+  var temAvalanche = nAg >= 3 && nAg >= nSob * 2;
+  if(temAvalanche){
+    analise = '\n\n📊 *Atenção — risco de avalanche:* hoje você tem ' + nSob + ' sob controle e ' + nAg
+      + ' aguardando cliente.\nSe boa parte voltar junto (depois de feriado, fim de mês ou virada de fase),'
+      + ' você pula pra ' + nTotal + ' simultâneos — pode enrolar.';
+  }
+
+  // ── Sugestão IA: olha quem tem menor carga sob controle na mesma fila ──
+  var sugestao = '';
+  if(temAvalanche || nSob >= 8){
+    var outrosCarga = {};
+    TICKETS_ATIVOS_DATA.rows.forEach(function(t){
+      if(!t.atendente || t.atendente === 'Admin OTRS') return;
+      if(!_eqAtivoState(t.estado)) return;
+      if(!t.fila || String(t.fila).trim() !== filaNome) return;
+      var nm = t.atendente.trim();
+      if(nm === nome.trim()) return;
+      if(!outrosCarga[nm]) outrosCarga[nm] = 0;
+      if(!_eqEstadoForaDoControle(t.estado)) outrosCarga[nm]++;
+    });
+    var maisLeves = Object.keys(outrosCarga)
+      .map(function(nm){ return { nome: nm, sob: outrosCarga[nm] }; })
+      .filter(function(x){ return x.sob < nTotal; })  // só sugere quem tem menos que a carga total
+      .sort(function(a,b){ return a.sob - b.sob; })
+      .slice(0, 2);
+    if(maisLeves.length){
+      sugestao = '\n\n💡 *Sugestão pra alinhar com ' + (gestor || 'o gestor') + ':*\n'
+        + maisLeves.map(function(x){
+            var pn = x.nome.split(' ')[0];
+            var artigo = /a$/i.test(pn) ? 'ela' : 'ele';
+            return '• ' + pn + ' tá com ' + x.sob + ' sob controle — daria pra repassar 1-2 pra ' + artigo + '?';
+          }).join('\n');
+    }
+  }
+
+  // ── Fechamento (pool randômico) ──
   var fechamentosComGestor = [
-    'Que tal fazer uma nova triagem e redistribuir entre os companheiros? Você já alinhou com o {gestor}, gestor da fila ' + filaNome + '?\n\nSe precisar de apoio pra organizar, conta comigo — somos time GW e a gente resolve junto.\n\nValeu! 🚀',
-    'Bora dar uma nova triagem nesses da fila ' + filaNome + ' e ver o que dá pra distribuir? Vale alinhar com o {gestor} pra entender as prioridades.\n\nQualquer coisa me chama — time GW resolve em time.\n\nAbraço! 💪',
-    'Acho que vale uma re-triagem dos da fila ' + filaNome + ' e dividir alguns com os colegas. O {gestor} tá sabendo do cenário?\n\nMe avisa se quiser apoio. Time GW, a gente atravessa junto.\n\nValeu! 🙌'
+    'Vale alinhar com o {gestor} pra ajustar a distribuição. Conta comigo se precisar de apoio — time GW resolve em time.\n\nAbraço! 💪',
+    'Conversa com o {gestor} sobre redistribuir e me chama se precisar. Somos um time GW, atravessamos junto.\n\nValeu! 🙌',
+    'Alinha com o {gestor} a divisão da carga — qualquer coisa, conta comigo.\n\nAbraço! 🚀'
   ];
   var fechamentosGenericos = [
-    'Que tal fazer uma nova triagem e ver se algum desses da fila ' + filaNome + ' dá pra redistribuir?\n\nSe precisar de apoio pra organizar, conta comigo — somos time GW e a gente resolve junto.\n\nValeu! 🚀',
-    'Bora dar uma nova triagem nesses da fila ' + filaNome + ' e dividir o que der com os colegas?\n\nQualquer coisa me chama — time GW resolve em time.\n\nAbraço! 💪'
+    'Vê com a galera o que dá pra redistribuir. Me chama se precisar de apoio — time GW resolve em time.\n\nAbraço! 💪',
+    'Bora alinhar a divisão com os colegas. Conta comigo se precisar — somos um time GW.\n\nValeu! 🙌'
   ];
-  var pool = (gestor ? fechamentosComGestor : fechamentosGenericos);
-  var fechamento = pool[Math.floor(Math.random() * pool.length)].replace('{gestor}', gestor);
-  // Nota sobre chamados aguardando retorno externo (não entram na contagem da cobrança,
-  // mas o atendente saber que a gente sabe disso evita injustiça percebida)
-  var notaForaControle = nForaControle > 0
-    ? '\n\n(' + nForaControle + ' chamado' + (nForaControle!==1?'s':'') + ' '
-      + (nForaControle!==1?'estão':'está') + ' aguardando retorno do cliente/fornecedor — '
-      + 'não conto esses aqui, sei que foge do seu controle)'
-    : '';
-  var msg = 'Olá ' + primNome + '! Tudo bem?\n\n'
-    + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' sob seu controle na fila *' + filaNome + '*' + introExtra + '.\n\n'
-    + 'Os mais antigos são:\n' + linhas + resto + notaForaControle + '\n\n'
-    + fechamento;
+  var pool = gestor ? fechamentosComGestor : fechamentosGenericos;
+  var fechamento = '\n\n' + pool[Math.floor(Math.random() * pool.length)].replace('{gestor}', gestor);
+
+  // ── Montagem final ──
+  var intro = 'Olá ' + primNome + '! Tudo bem?\n\nOlha como tá sua fila *' + filaNome + '* hoje:';
+  var msg = intro + blocoSob + blocoAg + analise + sugestao + fechamento;
+
   try { if(navigator.clipboard) navigator.clipboard.writeText(msg); } catch(e){}
   var tEl = document.createElement('div');
   tEl.className = 'eq-toast';
