@@ -18541,10 +18541,25 @@ window._eqCobrancaColetiva = function(filaNome){
   });
   if(!consultores.length) return;
 
+  // Helper de nome curto: usa primeiro nome, e desambigua com sobrenome se houver
+  // outro atendente com mesmo primeiro nome na fila (ex: Diego Cardoso vs Diego Carvalho)
+  var contagemPrim = {};
+  consultores.forEach(function(c){
+    var p = c.nome.split(' ')[0];
+    contagemPrim[p] = (contagemPrim[p] || 0) + 1;
+  });
+  var _nomeCurto = function(nomeCompleto){
+    var parts = nomeCompleto.split(' ');
+    if(contagemPrim[parts[0]] > 1 && parts.length > 1){
+      return parts[0] + ' ' + parts[parts.length - 1];
+    }
+    return parts[0];
+  };
+
   // Linhas: 🔴/🟡/🟢 Primeiro Nome — *N chamados* (X sob controle · Y aguardam cliente · mais antigo: Z dias)
   var linhas = consultores.map(function(c){
     var emoji = c.status.key === 'crit' ? '🔴' : (c.status.key === 'warn' ? '🟡' : '🟢');
-    var primNome = c.nome.split(' ').slice(0,2).join(' '); // 2 primeiros nomes
+    var primNome = _nomeCurto(c.nome);
     var parts = [];
     // Breakdown sob controle vs aguardando cliente (só se houver fora-de-controle)
     if(c.nForaControle > 0){
@@ -18619,12 +18634,98 @@ window._eqCobrancaColetiva = function(filaNome){
   }
   var blocoClientes = '';
   if(top3Clientes.length){
+    // % de concentração relativo ao total da fila (sinaliza cliente concentrador)
     blocoClientes = '\n\n🏢 Top ' + top3Clientes.length + ' clientes na fila:\n'
       + top3Clientes.map(function(c){
-          return '• ' + _disp(c.cli) + ' — ' + c.n + ' chamado' + (c.n!==1?'s':'');
+          var pct = allTickets.length ? Math.round((c.n / allTickets.length) * 100) : 0;
+          var pctStr = pct >= 25 ? ' (' + pct + '% da fila)' : '';
+          return '• ' + _disp(c.cli) + ' — ' + c.n + ' chamado' + (c.n!==1?'s':'') + pctStr;
         }).join('\n');
   }
-  var blocoAging = (allTickets.length >= 3) ? ('\n\n⏱ Aging médio da fila: ' + agingMedio + ' dia' + (agingMedio!==1?'s':'')) : '';
+  var blocoAging = (allTickets.length >= 3) ? ('\n\n⏱ Aging médio da fila (sob controle): ' + agingMedio + ' dia' + (agingMedio!==1?'s':'')) : '';
+
+  // ───── ANÁLISE IA: riscos detectados + sugestão de ação ─────
+  // Olha a matriz consolidada de atendentes e identifica padrões:
+  // (a) avalanche — quem tem muito aguardando E ainda tem carga sob controle
+  //     (se nSob == 0, a pessoa já entra em "capacidade ociosa", não duplica)
+  // (b) 100% bloqueado — quem tem 0 sob controle e ≥1 aguardando (tem capacidade)
+  // (c) antigos +90d — atendentes com top antigos parados há +3 meses
+  var riscos = [];
+  var capacidade = [];  // atendentes 100% bloqueados (têm capacidade pra absorver)
+  consultores.forEach(function(c){
+    // Avalanche só pra quem tem carga sob controle E muito mais aguardando
+    if(c.nSobControle >= 1 && c.nForaControle >= 3 && c.nForaControle >= c.nSobControle * 2){
+      riscos.push('• ' + _nomeCurto(c.nome) + ' tem ' + c.nForaControle + ' aguardando vs ' + c.nSobControle
+        + ' sob controle — se voltarem juntos, vira ' + c.n + ' simultâneos');
+    }
+    if(c.nSobControle === 0 && c.nForaControle >= 1){
+      capacidade.push(c);
+    }
+  });
+  // Capacidade ociosa — agrupa nomes
+  if(capacidade.length){
+    var nomesOciosos = capacidade.map(function(c){ return _nomeCurto(c.nome) + ' (' + c.n + ')'; });
+    riscos.push('• ' + nomesOciosos.join(' e ') + ' '
+      + (capacidade.length === 1 ? 'está' : 'estão') + ' 100% bloqueado'
+      + (capacidade.length === 1 ? '' : 's') + ' — '
+      + (capacidade.length === 1 ? 'tem' : 'têm') + ' capacidade pra absorver carga');
+  }
+  // Antigos +90d sob controle — investigar (dedupa por atendente, pega o pior dele)
+  var antigos90 = top3Antigos.filter(function(it){ return _daysAgo(it._t.criado) >= 90; });
+  if(antigos90.length){
+    var piorPorAtend = {};
+    antigos90.forEach(function(it){
+      var nm = it._atend || '';
+      var dias = _daysAgo(it._t.criado);
+      if(!piorPorAtend[nm] || dias > piorPorAtend[nm]) piorPorAtend[nm] = dias;
+    });
+    var nomesAntigos = Object.keys(piorPorAtend).map(function(nm){
+      return _nomeCurto(nm) + ' (' + piorPorAtend[nm] + 'd)';
+    });
+    riscos.push('• ' + nomesAntigos.join(', ') + ' com chamado'
+      + (nomesAntigos.length === 1 ? '' : 's') + ' +90d — investigar bloqueio real');
+  }
+  var blocoRiscos = riscos.length
+    ? '\n\n⚠️ *Riscos detectados pela análise:*\n' + riscos.join('\n')
+    : '';
+
+  // ─── Sugestão IA de ação ───
+  var sugestoes = [];
+  // 1) Pessoa → pessoa: top 2 carregados (sob controle) → top 2 ociosos
+  var maisCarregados = consultores.slice()
+    .filter(function(c){ return c.nSobControle >= 3; })
+    .sort(function(a,b){ return b.nSobControle - a.nSobControle; })
+    .slice(0, 2);
+  var maisOciosos = consultores.slice()
+    .filter(function(c){ return c.nSobControle <= 1; })
+    .sort(function(a,b){ return a.nSobControle - b.nSobControle; })
+    .slice(0, 2);
+  if(maisCarregados.length && maisOciosos.length){
+    maisCarregados.forEach(function(carr){
+      var diff = carr.nSobControle - maisOciosos[0].nSobControle;
+      if(diff >= 3){
+        var alvos = maisOciosos.map(function(o){ return _nomeCurto(o.nome) + ' (' + o.nSobControle + ' sob)'; }).join(' ou ');
+        sugestoes.push('• ' + _nomeCurto(carr.nome) + ' (' + carr.nSobControle + ' sob controle) → repassar 1-2 pra ' + alvos);
+      }
+    });
+  }
+  // 2) Cliente concentrador (>= 25% da fila)
+  if(top3Clientes.length && allTickets.length){
+    var topCli = top3Clientes[0];
+    var pctTopCli = Math.round((topCli.n / allTickets.length) * 100);
+    if(pctTopCli >= 25){
+      sugestoes.push('• ' + _disp(topCli.cli) + ' concentra ' + pctTopCli + '% da fila — alinhar lote/priorização com o cliente pode destravar volume');
+    }
+  }
+  // 3) Investigar antigos +90d (resume se já mencionado, dedupa por atendente)
+  if(antigos90.length){
+    var nomesParaInvestigar = antigos90.map(function(it){ return _nomeCurto(it._atend || ''); })
+      .filter(function(v,i,a){ return a.indexOf(v) === i; });
+    sugestoes.push('• Focar 30min com ' + nomesParaInvestigar.join(' e ') + ' pra destravar chamados +90d');
+  }
+  var blocoSugestoes = sugestoes.length
+    ? '\n\n💡 *Sugestão IA de ação:*\n' + sugestoes.join('\n')
+    : '';
   // ──────────────────────────────────────────────────────────────────────
 
   var alinhaGestor = gestor
@@ -18641,11 +18742,14 @@ window._eqCobrancaColetiva = function(filaNome){
   var fech = fechamentos[Math.floor(Math.random() * fechamentos.length)];
 
   var msg = saud + ', bom dia! 👋\n\n'
-    + 'Olha como tá nossa pilha hoje:\n\n'
-    + linhas + '\n\n'
-    + '📊 ' + resumoLinha
+    + '📊 *Foto da fila hoje:*\n'
+    + resumoLinha + '\n\n'
+    + '👥 *Time:*\n'
+    + linhas
+    + blocoRiscos
     + blocoTop3
     + blocoClientes
+    + blocoSugestoes
     + blocoAging
     + '\n\n'
     + alinhaGestor
