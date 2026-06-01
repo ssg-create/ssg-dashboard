@@ -18511,43 +18511,59 @@ window._eqCobrancaColetiva = function(filaNome){
     byAtend[nome].push(t);
   });
   // Lista ordenada: crit > warn > ok, depois por count desc
+  // v2026-06: status e mais antigo agora consideram só "sob controle" — quem tem
+  // 17 sendo 16 aguardando cliente NÃO é sobrecarregado de fato.
   var rankStatus = { crit:0, warn:1, ok:2 };
   var consultores = Object.keys(byAtend).map(function(nome){
     var tickets = byAtend[nome];
-    var status = _eqStatusFromCount(tickets.length);
-    // mais antigo
-    tickets.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
-    var maisAntigo = tickets[0];
+    var sobControle = tickets.filter(function(t){ return !_eqEstadoForaDoControle(t.estado); });
+    var foraControle = tickets.filter(function(t){ return _eqEstadoForaDoControle(t.estado); });
+    var status = _eqStatusFromCount(sobControle.length);  // status pela carga REAL
+    // mais antigo SOB CONTROLE (cobrar dos aguardando cliente não faz sentido)
+    sobControle.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+    var maisAntigo = sobControle[0];
     var diasAntigo = 0;
     if(maisAntigo && maisAntigo.criado){
       var dt = new Date(String(maisAntigo.criado).replace(' ','T'));
       if(!isNaN(dt.getTime())) diasAntigo = Math.floor((Date.now() - dt.getTime())/(86400000));
     }
-    return { nome:nome, n:tickets.length, status:status, diasAntigo:diasAntigo };
+    return {
+      nome:nome, n:tickets.length,
+      nSobControle: sobControle.length,
+      nForaControle: foraControle.length,
+      status:status, diasAntigo:diasAntigo
+    };
   });
   consultores.sort(function(a,b){
     var ra = rankStatus[a.status.key], rb = rankStatus[b.status.key];
     if(ra !== rb) return ra - rb;
-    return b.n - a.n;
+    return b.nSobControle - a.nSobControle;  // desempata pelo que dá pra cobrar
   });
   if(!consultores.length) return;
 
-  // Linhas: 🔴/🟡/🟢 Primeiro Nome — N chamados (mais antigo: X dias)
+  // Linhas: 🔴/🟡/🟢 Primeiro Nome — *N chamados* (X sob controle · Y aguardam cliente · mais antigo: Z dias)
   var linhas = consultores.map(function(c){
     var emoji = c.status.key === 'crit' ? '🔴' : (c.status.key === 'warn' ? '🟡' : '🟢');
     var primNome = c.nome.split(' ').slice(0,2).join(' '); // 2 primeiros nomes
-    var sufixo = '';
-    if(c.status.key === 'crit' && c.diasAntigo >= 30){
-      sufixo = ' (mais antigo: ' + c.diasAntigo + ' dias)';
-    } else if(c.diasAntigo >= 30){
-      sufixo = ' (mais antigo: ' + c.diasAntigo + 'd)';
+    var parts = [];
+    // Breakdown sob controle vs aguardando cliente (só se houver fora-de-controle)
+    if(c.nForaControle > 0){
+      parts.push(c.nSobControle + ' sob controle');
+      parts.push(c.nForaControle + ' aguarda cliente');
     }
+    if(c.diasAntigo >= 30){
+      parts.push('mais antigo: ' + c.diasAntigo + 'd');
+    }
+    var sufixo = parts.length ? ' (' + parts.join(' · ') + ')' : '';
     return emoji + ' ' + primNome + ' — *' + c.n + ' chamado' + (c.n!==1?'s':'') + '*' + sufixo;
   }).join('\n');
   var totalChamados = consultores.reduce(function(s,c){return s + c.n;}, 0);
+  var totalSobControle = consultores.reduce(function(s,c){return s + c.nSobControle;}, 0);
+  var totalForaControle = consultores.reduce(function(s,c){return s + c.nForaControle;}, 0);
   var nCrit = consultores.filter(function(c){return c.status.key==='crit';}).length;
   var nWarn = consultores.filter(function(c){return c.status.key==='warn';}).length;
   var resumoLinha = totalChamados + ' chamados ativos'
+    + (totalForaControle > 0 ? ' (' + totalSobControle + ' sob controle · ' + totalForaControle + ' aguardam cliente)' : '')
     + (nCrit ? ' · *' + nCrit + ' sobrecarregado' + (nCrit!==1?'s':'') + '*' : '')
     + (nWarn ? ' · ' + nWarn + ' em atenção' : '');
 
@@ -18569,11 +18585,13 @@ window._eqCobrancaColetiva = function(filaNome){
     if(!cli) return '(sem cliente)';
     return (typeof ENM2 !== 'undefined' && ENM2[cli]) ? ENM2[cli] : cli;
   };
-  // Top 3 mais antigos da pilha do squad
-  var top3Antigos = allTickets.slice().sort(function(a,b){
+  // v2026-06: Top 3 mais antigos olha SÓ os SOB CONTROLE — destacar um chamado
+  // de 224d "aguardando cliente" na cobrança não tem sentido, a bola não é nossa.
+  var ticketsSobControle = allTickets.filter(function(it){ return !_eqEstadoForaDoControle(it._t.estado); });
+  var top3Antigos = ticketsSobControle.slice().sort(function(a,b){
     return (a._t.criado||'').localeCompare(b._t.criado||'');
   }).slice(0, 3);
-  // Top 3 clientes com mais chamados
+  // Top 3 clientes — mantém TOTAL (é visão de carga do cliente, não cobrança ao atendente)
   var byCli = {};
   allTickets.forEach(function(it){
     var k = (it._t.cli_id || '').trim() || '(sem cliente)';
@@ -18581,11 +18599,11 @@ window._eqCobrancaColetiva = function(filaNome){
   });
   var top3Clientes = Object.keys(byCli).map(function(k){return {cli:k, n:byCli[k]};})
     .sort(function(a,b){ return b.n - a.n; }).slice(0, 3);
-  // Aging médio
+  // Aging médio — só dos SOB CONTROLE (média da pilha que o time pode acelerar)
   var agingMedio = 0;
-  if(allTickets.length){
-    var total = allTickets.reduce(function(s, it){ return s + _daysAgo(it._t.criado); }, 0);
-    agingMedio = Math.round(total / allTickets.length);
+  if(ticketsSobControle.length){
+    var total = ticketsSobControle.reduce(function(s, it){ return s + _daysAgo(it._t.criado); }, 0);
+    agingMedio = Math.round(total / ticketsSobControle.length);
   }
   // Monta os 3 blocos
   var blocoTop3 = '';
