@@ -1801,7 +1801,20 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-det-risco-bloco label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 /* Aviso de estimativa no bloco trimestre */
 .bh-det-aviso-estimativa{font-size:11px;color:var(--muted);background:rgba(245,158,11,.06);border-left:3px solid var(--warn);padding:8px 12px;border-radius:4px;margin-bottom:10px;line-height:1.5;font-style:italic}
-@media(max-width:900px){.bh-det-grid{grid-template-columns:repeat(2,1fr)}.bh-hero-cards{grid-template-columns:repeat(2,1fr)}}
+/* BH v6 — Bloco baseline contratual (régua manual) */
+.bh-det-baseline{margin:10px 0 14px;padding:12px 14px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.06));border:1px solid rgba(34,197,94,.25);border-radius:8px}
+.bh-det-baseline-hd{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.bh-det-baseline-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(34,197,94,.18);color:#22c55e;border:1px solid rgba(34,197,94,.4);letter-spacing:.04em}
+.bh-det-baseline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;margin-bottom:8px}
+.bh-det-baseline-cell{display:flex;flex-direction:column;gap:4px}
+.bh-det-baseline-cell label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.bh-det-baseline-cell strong{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.bh-det-baseline-cell strong.baseline{color:#22c55e}
+.bh-det-baseline-cell strong.aporte{color:#f59e0b}
+.bh-det-baseline-cell strong.subdim{color:#ef4444}
+.bh-det-baseline-meta{font-size:11px;color:var(--muted);line-height:1.5;border-top:1px dashed rgba(255,255,255,.08);padding-top:8px;margin-top:4px}
+.bh-det-baseline-meta em{color:var(--sub);font-style:normal}
+@media(max-width:900px){.bh-det-grid{grid-template-columns:repeat(2,1fr)}.bh-hero-cards{grid-template-columns:repeat(2,1fr)}.bh-det-baseline-grid{grid-template-columns:repeat(2,1fr)}}
 /* Gate de visibilidade: nav-gestao-only só aparece em mode=gestao (script abaixo) */
 body[data-mode="squad"] .nav-gestao-only,
 body[data-mode="atendente"] .nav-gestao-only,
@@ -19982,6 +19995,15 @@ function _bhGetContratos(){
     var trim = _bhAnaliseTrimestre(c);
     var tendPool = _bhTendenciaPool(c);
     var tipoBanco = _bhTipoBanco(c);
+    // ── BH v6: baseline contratual manual ──
+    var baselineMes = _bhBaselineFor(c.cli, c.projeto, c.tarefa);
+    var temBaselineManual = _bhTemBaselineManual(c.cli, c.projeto, c.tarefa);
+    var baselineMeta = _bhBaselineMeta(c.cli, c.projeto, c.tarefa);
+    var aportesAcumH = temBaselineManual ? Math.max(0, poolMes - baselineMes) : 0;
+    var subdimPortalH = temBaselineManual ? Math.max(0, baselineMes - poolMes) : 0;
+    var excedenteBaselineH = Math.max(0, consMes - baselineMes);
+    var receitaExcedenteBaseline = excedenteBaselineH * (valHora || 0);
+    var pctMesBaseline = baselineMes > 0 ? (consMes/baselineMes)*100 : 0;
     // Receita excedente:
     //   1) Se pool total negativo → todo o excedente × valor_hora (cobrança final)
     //   2) Senão se estourou trimestre → estouro trimestral × valor_hora (cobrança parcial)
@@ -20044,7 +20066,16 @@ function _bhGetContratos(){
       _api_cli_alias: c._api_cli_alias,
       _api_cli_id: c._api_cli_id,
       _api_proj_id: c._api_proj_id,
-      _api_tarefa_id: c._api_tarefa_id
+      _api_tarefa_id: c._api_tarefa_id,
+      // ── BH v6 — baseline contratual manual ──
+      baseline_mes_h: baselineMes,
+      tem_baseline_manual: temBaselineManual,
+      baseline_meta: baselineMeta,
+      aportes_acumulados_h: aportesAcumH,
+      subdim_portal_h: subdimPortalH,
+      excedente_baseline_mes_h: excedenteBaselineH,
+      receita_excedente_baseline: receitaExcedenteBaseline,
+      pct_mes_baseline: pctMesBaseline
     };
   });
 }
@@ -20976,6 +21007,42 @@ function _bhCardDetalhe(c, idx, full){
       + '</div>'
     + '</div>'
     + (c.motivo_risco ? '<div class="bh-det-motivo"><label>Motivo do risco</label><strong>' + c.motivo_risco + '</strong></div>' : '')
+    // BH v6 — Bloco BASELINE CONTRATUAL (régua manual)
+    // Mostra: contratado (manual) vs portal hoje vs aportes acumulados
+    // Só aparece quando há baseline manual cadastrada
+    + (c.tem_baseline_manual ? (function(){
+        var meta = c.baseline_meta || {};
+        var baselineH = c.baseline_mes_h;
+        var portalH = c.pool_mes_h;
+        var aportesH = c.aportes_acumulados_h;
+        var subdimH = c.subdim_portal_h;
+        var diffLabel, diffClass, diffValue;
+        if(aportesH > 0){
+          diffLabel = 'Aportes acumulados';
+          diffClass = 'aporte';
+          diffValue = '+' + _bhHToHHMM(aportesH) + ' h/mês';
+        } else if(subdimH > 0){
+          diffLabel = 'Subdimensionado no portal';
+          diffClass = 'subdim';
+          diffValue = '-' + _bhHToHHMM(subdimH) + ' h/mês';
+        } else {
+          diffLabel = 'Diferença';
+          diffClass = '';
+          diffValue = '0 h/mês ✓';
+        }
+        var obsHtml = meta.observacao ? ' · <em>' + meta.observacao + '</em>' : '';
+        var autorHtml = meta.atualizado_por ? meta.atualizado_por : '—';
+        var dataHtml = meta.atualizado_em ? meta.atualizado_em.split('-').reverse().join('/') : '—';
+        return '<div class="bh-det-baseline">'
+          + '<div class="bh-det-baseline-hd">📋 BASELINE CONTRATUAL <span class="bh-det-baseline-badge">Régua manual</span></div>'
+          + '<div class="bh-det-baseline-grid">'
+            + '<div class="bh-det-baseline-cell"><label>Pool mensal contratado</label><strong class="baseline">' + _bhHToHHMM(baselineH) + ' h/mês</strong></div>'
+            + '<div class="bh-det-baseline-cell"><label>Portal hoje cadastra</label><strong>' + _bhHToHHMM(portalH) + ' h/mês</strong></div>'
+            + '<div class="bh-det-baseline-cell"><label>' + diffLabel + '</label><strong class="' + diffClass + '">' + diffValue + '</strong></div>'
+          + '</div>'
+          + '<div class="bh-det-baseline-meta">Atualizado em ' + dataHtml + ' por ' + autorHtml + obsHtml + '</div>'
+        + '</div>';
+    })() : '')
     // Risco de Consumo vs Risco Comercial — diferenciados (Fabio spec item 4)
     // v4.2: Crítico por trim.estourou exige consenso da projeção histórica
     + (function(){
@@ -21026,6 +21093,28 @@ function _bhCardDetalhe(c, idx, full){
       + '<div class="bh-det-cell"><label>Dias até fim</label><strong class="' + (c.dias_ate_fim<=30?'crit':c.dias_ate_fim<=90?'warn':'') + '">' + diasFimDisp + '</strong></div>'
       + '<div class="bh-det-cell"><label>Avisar cliente?</label><strong>' + c.avisar_cliente.texto + '</strong></div>'
     + '</div>'
+    // BH v6 — Bloco EXCEDENTE DO MÊS SOBRE BASELINE (só com baseline manual)
+    + (c.tem_baseline_manual ? (function(){
+        var excH = c.excedente_baseline_mes_h;
+        var receitaExc = c.receita_excedente_baseline;
+        var consMes = c.cons_mes_h;
+        var baselineH = c.baseline_mes_h;
+        var pctMes = c.pct_mes_baseline;
+        var pctCls = pctMes >= 150 ? 'crit' : (pctMes >= 100 ? 'warn' : '');
+        var excCls = excH > 0 ? 'crit' : '';
+        var statusTxt = excH > 0
+          ? '⚠ Cobrar avulso (' + _bhHToHHMM(excH) + ' h × ' + (c.valor_hora ? _bhFmtBRL(c.valor_hora) : 'N/A') + ')'
+          : '✓ Dentro do contratado';
+        return '<div class="bh-det-section-lbl">💼 Excedente do mês sobre baseline</div>'
+          + '<div class="bh-det-grid">'
+            + '<div class="bh-det-cell"><label>Consumo do mês</label><strong>' + _bhHToHHMM(consMes) + ' h</strong></div>'
+            + '<div class="bh-det-cell"><label>Baseline contratada</label><strong>' + _bhHToHHMM(baselineH) + ' h/mês</strong></div>'
+            + '<div class="bh-det-cell"><label>% sobre baseline</label><strong class="' + pctCls + '">' + pctMes.toFixed(0) + '%</strong></div>'
+            + '<div class="bh-det-cell"><label>Excedente do mês</label><strong class="' + excCls + '">' + _bhHToHHMM(excH) + ' h</strong></div>'
+            + '<div class="bh-det-cell"><label>Receita excedente (mês)</label><strong class="' + excCls + '">' + _bhFmtBRL(receitaExc) + '</strong></div>'
+          + '</div>'
+          + '<div class="bh-det-aviso-estimativa" style="font-style:normal;color:var(--sub)">' + statusTxt + ' — valor a ser conferido com emissão de NF avulsa.</div>';
+    })() : '')
     // 📉 Tendência do pool (v4.2 — dupla projeção: 3 meses + média do contrato)
     + (c.tendencia_pool ? (function(t){
         var fmtData = function(d){ return d ? (('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear()) : '—'; };
