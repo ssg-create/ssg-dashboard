@@ -19112,6 +19112,251 @@ var BH_CONTRATOS = [
   {cli:"TOTVS SA",projeto:"Projeto Fadel",tarefa:"Sustentação do ambiente - Extras",inicio:"2024-04-01",fim:"2027-03-31",meses:36,pool:"1440:00",livre:"537:30",max_exc:"120:00",pool_mes:"43:20",cons_mes:"34:00",pct_mes:78.46,saldo_mes:"09:20",ultimo_snap:"2026-05"},
 ];
 
+// ════════════════════════════════════════════════════════════
+// BH v6 — RÉGUA CONTRATUAL MANUAL (baseline)
+// ════════════════════════════════════════════════════════════
+// PROBLEMA: portal de apontamento sobrescreve o pool quando faz aporte,
+// perdendo a referência do que foi originalmente contratado.
+// SOLUÇÃO: mapa manual com pool_mensal contratual real.
+// Chave: cli||projeto||tarefa (mesmo padrão de BH_HISTORICO).
+// Painel calcula excedente sobre BASELINE manual (quando existir),
+// mantendo pool do portal só pra exibir aportes acumulados.
+// ════════════════════════════════════════════════════════════
+var BH_BASELINE = {
+  // NSX — contrato real 60h/mês, excedente cobrado avulso
+  "NSX BRASIL SA||PBH202506-01A - Banco de Horas Sustentação Protheus||Banco de horas": {
+    pool_mensal: 60,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Contrato real 60h/mês. Excedente cobrado avulso conforme uso."
+  },
+  // AUTOZONE — separado por subtarefa
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Atendimento Power Plataforms": {
+    pool_mensal: 40,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Mediana arredondada do consumo histórico (5m)."
+  },
+  "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Banco de horas Cloud Infra DBA": {
+    pool_mensal: 120,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Mediana arredondada do consumo histórico (5m). Cliente consumindo 2x do que o portal mostra."
+  },
+  // TOTVS — 3 subprojetos
+  "TOTVS SA||Clientes do contrato de parceiro||Atendimento Totvs RS Fluig": {
+    pool_mensal: 30,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Mediana arredondada (média de consumo ~22h, pool cadastrado 64h)."
+  },
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Comercial": {
+    pool_mensal: 80,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Mantém pool cadastrado — sem consumo registrado nos últimos 5 meses (reserva contratual)."
+  },
+  "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Extras": {
+    pool_mensal: 40,
+    atualizado_em: "2026-05-26",
+    atualizado_por: "Fabio",
+    observacao: "Mediana arredondada do consumo histórico (5m)."
+  }
+};
+
+// Helper: retorna baseline manual se existir, senão pool_mes do portal.
+// Sempre retorna número de horas decimais (ex: 60, 83.33).
+function _bhBaselineFor(cli, projeto, tarefa){
+  var key = cli + "||" + projeto + "||" + tarefa;
+  if (BH_BASELINE[key]) return BH_BASELINE[key].pool_mensal;
+  // Fallback: pool_mes do contrato
+  var ctr = BH_CONTRATOS.find(function(c){
+    return c.cli === cli && c.projeto === projeto && c.tarefa === tarefa;
+  });
+  if (!ctr) return 0;
+  return _bhHHMMtoH(ctr.pool_mes);
+}
+
+// Helper: tem baseline manual?
+function _bhTemBaselineManual(cli, projeto, tarefa){
+  var key = cli + "||" + projeto + "||" + tarefa;
+  return !!BH_BASELINE[key];
+}
+
+// Helper: metadata da baseline (atualizado_em, atualizado_por, observacao)
+function _bhBaselineMeta(cli, projeto, tarefa){
+  var key = cli + "||" + projeto + "||" + tarefa;
+  return BH_BASELINE[key] || null;
+}
+
+// Helper: diferença entre pool do portal e baseline manual.
+// Retorna número signed:
+//   > 0  → portal MAIOR que contratado (aportes acumulados sem rastreio — caso NSX)
+//   < 0  → portal MENOR que contratado (cadastro subdimensionado — caso AUTOZONE)
+//   = 0  → portal == contratado (consistente) ou não tem baseline manual
+function _bhDiscrepanciaPortal(cli, projeto, tarefa){
+  if (!_bhTemBaselineManual(cli, projeto, tarefa)) return 0;
+  var ctr = BH_CONTRATOS.find(function(c){
+    return c.cli === cli && c.projeto === projeto && c.tarefa === tarefa;
+  });
+  if (!ctr) return 0;
+  var poolPortal = _bhHHMMtoH(ctr.pool_mes);
+  var baseline = _bhBaselineFor(cli, projeto, tarefa);
+  return poolPortal - baseline;
+}
+
+// Helper: aportes acumulados (só lado positivo da discrepância).
+// Útil pra mostrar "X horas/mês adicionadas via aportes que não estavam no contrato original".
+function _bhAportesAcumulados(cli, projeto, tarefa){
+  return Math.max(0, _bhDiscrepanciaPortal(cli, projeto, tarefa));
+}
+
+// Helper: subdimensionamento do portal (só lado negativo).
+// Útil pra alertar "X horas/mês que o cliente contratou mas não estão refletidas no portal".
+function _bhSubdimensionamentoPortal(cli, projeto, tarefa){
+  return Math.max(0, -_bhDiscrepanciaPortal(cli, projeto, tarefa));
+}
+
+// ════════════════════════════════════════════════════════════
+// BH v6 — MÉTRICAS SOBRE BASELINE
+// ════════════════════════════════════════════════════════════
+// Helpers de cálculo que usam baseline manual quando existir.
+// Mantêm pool_mes do portal pra exibir aportes/discrepância.
+// ════════════════════════════════════════════════════════════
+
+// Pool/mês efetivo do contrato — baseline manual ou pool cadastrado
+function _bhPoolMesEfetivo(c){
+  if (!c) return 0;
+  return _bhBaselineFor(c.cli, c.projeto, c.tarefa);
+}
+
+// Excedente do mês sobre baseline
+//   c          = objeto BH_CONTRATOS
+//   consumoMes = horas consumidas no mês (default: c.cons_mes)
+function _bhExcedenteEfetivoMes(c, consumoMes){
+  if (!c) return 0;
+  var cons = (consumoMes == null) ? _bhHHMMtoH(c.cons_mes) : consumoMes;
+  var baseline = _bhPoolMesEfetivo(c);
+  return Math.max(0, cons - baseline);
+}
+
+// % consumo do mês sobre baseline efetiva
+function _bhPctMesEfetivo(c, consumoMes){
+  if (!c) return 0;
+  var cons = (consumoMes == null) ? _bhHHMMtoH(c.cons_mes) : consumoMes;
+  var baseline = _bhPoolMesEfetivo(c);
+  return baseline > 0 ? (cons/baseline)*100 : 0;
+}
+
+// Valor/hora pra cobrança de excedente.
+// Prioridade: BH_VALOR_HORA (snapshot do apontamento) → BH_RENT.valor_hora → 0
+function _bhValorHoraExcedente(c){
+  if (!c) return 0;
+  var kVH = c.cli + '||' + c.tarefa;
+  if (typeof BH_VALOR_HORA !== 'undefined' && BH_VALOR_HORA[kVH] != null) {
+    return BH_VALOR_HORA[kVH];
+  }
+  var kRent = c.cli + '||' + c.projeto + '||' + c.tarefa;
+  if (typeof BH_RENT !== 'undefined' && BH_RENT[kRent] && BH_RENT[kRent].valor_hora) {
+    return BH_RENT[kRent].valor_hora;
+  }
+  return 0;
+}
+
+// Receita de excedente do mês sobre baseline (R$)
+function _bhReceitaExcedenteEfetivaMes(c, consumoMes){
+  var exc = _bhExcedenteEfetivoMes(c, consumoMes);
+  return exc * _bhValorHoraExcedente(c);
+}
+
+// MRR contratual sobre baseline (R$/mês) — receita "garantida" por contrato vigente
+// Independe de consumo. Reflete o que o cliente paga mensalmente pela baseline.
+function _bhMrrBaseline(c){
+  if (!c) return 0;
+  return _bhPoolMesEfetivo(c) * _bhValorHoraExcedente(c);
+}
+
+// Métricas consolidadas pra um contrato (usa baseline quando há)
+function _bhMetricasContrato(c){
+  if (!c) return null;
+  var consMes = _bhHHMMtoH(c.cons_mes);
+  var baseline = _bhPoolMesEfetivo(c);
+  var poolPortal = _bhHHMMtoH(c.pool_mes);
+  var temManual = _bhTemBaselineManual(c.cli, c.projeto, c.tarefa);
+  var disc = temManual ? (poolPortal - baseline) : 0;
+  var excedente = Math.max(0, consMes - baseline);
+  var valorHora = _bhValorHoraExcedente(c);
+  return {
+    tem_baseline_manual: temManual,
+    baseline_pool_mes: baseline,
+    portal_pool_mes: poolPortal,
+    discrepancia: disc,                       // signed
+    aportes_acumulados: Math.max(0, disc),    // só lado +
+    subdim_portal: Math.max(0, -disc),        // só lado -
+    consumo_mes: consMes,
+    excedente_mes: excedente,
+    pct_mes: baseline > 0 ? (consMes/baseline)*100 : 0,
+    valor_hora: valorHora,
+    receita_excedente_mes: excedente * valorHora,
+    mrr_baseline: baseline * valorHora,
+    meta: _bhBaselineMeta(c.cli, c.projeto, c.tarefa)
+  };
+}
+
+// Métricas agregadas por CLIENTE (soma de todos os subprojetos ATIVOS)
+// Usado pelos cards "por cliente" (Opção 1) e pelo Hero/Radar.
+function _bhMetricasCliente(cli){
+  if (!cli) return null;
+  var contratos = BH_CONTRATOS.filter(function(c){
+    if (c.cli !== cli) return false;
+    // Filtra inativos (tarefa ou projeto contendo "(Inativo)")
+    var isInat = /\(Inativo\)/i.test(c.tarefa || '') || /\(Inativo\)/i.test(c.projeto || '');
+    return !isInat;
+  });
+  if (!contratos.length) return null;
+  var agg = {
+    cli: cli,
+    qtd_subprojetos: contratos.length,
+    baseline_total: 0,
+    portal_total: 0,
+    consumo_total: 0,
+    excedente_total: 0,
+    receita_excedente_total: 0,
+    mrr_baseline_total: 0,
+    aportes_total: 0,
+    subdim_total: 0,
+    qtd_com_baseline_manual: 0,
+    subprojetos: []
+  };
+  contratos.forEach(function(c){
+    var m = _bhMetricasContrato(c);
+    agg.baseline_total += m.baseline_pool_mes;
+    agg.portal_total += m.portal_pool_mes;
+    agg.consumo_total += m.consumo_mes;
+    agg.excedente_total += m.excedente_mes;
+    agg.receita_excedente_total += m.receita_excedente_mes;
+    agg.mrr_baseline_total += m.mrr_baseline;
+    agg.aportes_total += m.aportes_acumulados;
+    agg.subdim_total += m.subdim_portal;
+    if (m.tem_baseline_manual) agg.qtd_com_baseline_manual++;
+    agg.subprojetos.push({contrato: c, metricas: m});
+  });
+  agg.pct_consumo_total = agg.baseline_total > 0 ? (agg.consumo_total/agg.baseline_total)*100 : 0;
+  return agg;
+}
+
+// Lista todos os clientes únicos com pelo menos 1 contrato ativo
+function _bhClientesAtivos(){
+  var seen = {};
+  var out = [];
+  BH_CONTRATOS.forEach(function(c){
+    var isInat = /\(Inativo\)/i.test(c.tarefa || '') || /\(Inativo\)/i.test(c.projeto || '');
+    if (isInat) return;
+    if (!seen[c.cli]) { seen[c.cli] = true; out.push(c.cli); }
+  });
+  return out;
+}
+
 // Histórico mensal por contrato (chave = cli||projeto||tarefa)
 var BH_HISTORICO = {
   "AGROSUL MAQUINAS LTDA||PBH202106-02A - Banco de horas||Banco de horas 2025-2026": [{m:"2026-01",cons:"05:15",pct:18.31}, {m:"2026-02",cons:"14:45",pct:51.45}, {m:"2026-03",cons:"22:00",pct:76.74}, {m:"2026-04",cons:"27:03",pct:94.4}, {m:"2026-05",cons:"30:15",pct:105.52}],
