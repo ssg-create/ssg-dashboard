@@ -1801,10 +1801,12 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-det-risco-bloco label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 /* Aviso de estimativa no bloco trimestre */
 .bh-det-aviso-estimativa{font-size:11px;color:var(--muted);background:rgba(245,158,11,.06);border-left:3px solid var(--warn);padding:8px 12px;border-radius:4px;margin-bottom:10px;line-height:1.5;font-style:italic}
-/* BH v6 — Bloco baseline contratual (régua manual) */
+/* BH v6 — Bloco baseline contratual */
 .bh-det-baseline{margin:10px 0 14px;padding:12px 14px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(59,130,246,.06));border:1px solid rgba(34,197,94,.25);border-radius:8px}
+.bh-det-baseline.portal{background:linear-gradient(135deg,rgba(148,163,184,.08),rgba(100,116,139,.05));border:1px solid rgba(148,163,184,.25)}
 .bh-det-baseline-hd{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
 .bh-det-baseline-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(34,197,94,.18);color:#22c55e;border:1px solid rgba(34,197,94,.4);letter-spacing:.04em}
+.bh-det-baseline-badge.portal{background:rgba(148,163,184,.18);color:#94a3b8;border:1px solid rgba(148,163,184,.4)}
 .bh-det-baseline-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;margin-bottom:8px}
 .bh-det-baseline-cell{display:flex;flex-direction:column;gap:4px}
 .bh-det-baseline-cell label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
@@ -19136,45 +19138,68 @@ var BH_CONTRATOS = [
 // mantendo pool do portal só pra exibir aportes acumulados.
 // ════════════════════════════════════════════════════════════
 var BH_BASELINE = {
+  // ── MANUAIS (validadas pelo Fabio) ──
   // NSX — contrato real 60h/mês, excedente cobrado avulso
   "NSX BRASIL SA||PBH202506-01A - Banco de Horas Sustentação Protheus||Banco de horas": {
-    pool_mensal: 60,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 60, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Contrato real 60h/mês. Excedente cobrado avulso conforme uso."
   },
   // AUTOZONE — separado por subtarefa
   "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Atendimento Power Plataforms": {
-    pool_mensal: 40,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 40, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Mediana arredondada do consumo histórico (5m)."
   },
   "AUTOZONE BRASIL COMERCIO DE AUTOPECAS LTDA.||PAMS20231212-01E - Sustentação do ambiente||Banco de horas Cloud Infra DBA": {
-    pool_mensal: 120,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 120, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Mediana arredondada do consumo histórico (5m). Cliente consumindo 2x do que o portal mostra."
   },
   // TOTVS — 3 subprojetos
   "TOTVS SA||Clientes do contrato de parceiro||Atendimento Totvs RS Fluig": {
-    pool_mensal: 30,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 30, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Mediana arredondada (média de consumo ~22h, pool cadastrado 64h)."
   },
   "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Comercial": {
-    pool_mensal: 80,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 80, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Mantém pool cadastrado — sem consumo registrado nos últimos 5 meses (reserva contratual)."
   },
   "TOTVS SA||Projeto Fadel||Sustentação do ambiente - Extras": {
-    pool_mensal: 40,
-    atualizado_em: "2026-05-26",
-    atualizado_por: "Fabio",
+    pool_mensal: 40, tipo: "manual",
+    atualizado_em: "2026-05-26", atualizado_por: "Fabio",
     observacao: "Mediana arredondada do consumo histórico (5m)."
-  }
+  },
+  // ── PORTAL (valor do apontamento, a validar contra contrato real) ──
+  "AGROSUL MAQUINAS LTDA||PBH202106-02A - Banco de horas||Banco de horas 2025-2026": { pool_mensal: 28.67, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (28:40 h/mês). Aguardando confirmação do contrato real." },
+  "ASTRA S A INDUSTRIA E COMERCIO||PHA202602-02A - Horas abertas atuação datasul||Banco de horas": { pool_mensal: 41.67, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (41:40 h/mês). Aguardando confirmação do contrato real." },
+  "ATITUS EDUCACAO S.A||PBH202201-02A - Banco de horas 2025 (Inativo)||PBH202201-02A - Banco de horas 2025 (Inativo)": { pool_mensal: 38.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (38:00 h/mês). Aguardando confirmação do contrato real." },
+  "ATITUS EDUCACAO S.A||PBH202502-06A - Banco de horas 2026||Banco de horas": { pool_mensal: 38.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (38:00 h/mês). Aguardando confirmação do contrato real." },
+  "AUMOVIO ADVANCED ANTENNA AUTOMOTIVA LTDA (CONTINENTAL)||PSG202512-02A - Banco de horas Datasul||Banco de horas": { pool_mensal: 36.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (36:00 h/mês). Aguardando confirmação do contrato real." },
+  "BUNTECH TECNOLOGIA EM INSUMOS LTDA||PBH202012-6A - Banco de horas||Banco de horas 2026": { pool_mensal: 50.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (50:00 h/mês). Aguardando confirmação do contrato real." },
+  "CAL NORTE NORDESTE S/A||BH202503-02A - Banco de horas||Banco de Horas 2025 (Inativo)": { pool_mensal: 15.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (15:00 h/mês). Aguardando confirmação do contrato real." },
+  "COMPANHIA BRASILEIRA DE EDUCACAO E SISTEMAS DE ENSINO S.A||POT202512-01A - Sustentação do ambiente 2026||Banco de horas": { pool_mensal: 50.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (50:00 h/mês). Aguardando confirmação do contrato real." },
+  "DKT DO BRASIL PRODUTOS DE USO PESSOAL||PBH202510-04A - Banco de horas PROTHEUS||Banco de horas": { pool_mensal: 40.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (40:00 h/mês). Aguardando confirmação do contrato real." },
+  "DUAL DUARTE ALBUQUERQUE COMERCIO E INDUSTRIA LTDA||PBH202207-04A - Banco de horas 25-26||Banco de horas": { pool_mensal: 15.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (15:00 h/mês). Aguardando confirmação do contrato real." },
+  "ESCRITORIO CENTRAL DE ARRECADACAO E DISTRIBUICAO ECAD||PBH202410-05A - Banco de horas||Banco de horas 2026": { pool_mensal: 40.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (40:00 h/mês). Aguardando confirmação do contrato real." },
+  "FADEL TRANSPORTES||PBH202512-01A - Atendimentos gerais||Banco de horas": { pool_mensal: 15.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (15:00 h/mês). Aguardando confirmação do contrato real." },
+  "FINPEC AGRONEGOCIOS LTDA||PSG202512-01A - Sustentação Protheus||Banco de horas": { pool_mensal: 24.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (24:00 h/mês). Aguardando confirmação do contrato real." },
+  "HELMAG DO BRASIL MERCANTIL LTDA||PBH202307-01A - Banco de horas 25-26||Banco de horas": { pool_mensal: 20.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (20:00 h/mês). Aguardando confirmação do contrato real." },
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 25-26 (Inativo)": { pool_mensal: 20.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (20:00 h/mês). Aguardando confirmação do contrato real." },
+  "IMCD BRASIL COMERCIO E INDUSTRIA DE PRODUTOS QUIMICOS LTDA||PBH202203-01A - Banco de horas infra Totvs DBA||Banco de horas 26-27": { pool_mensal: 20.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (20:00 h/mês). Aguardando confirmação do contrato real." },
+  "INTEGRADA COOPERATIVA AGROINDUSTRIAL||PBH202410-01A - Banco de horas||Banco de horas 2025-2026": { pool_mensal: 40.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (40:00 h/mês). Aguardando confirmação do contrato real." },
+  "JATOBÁ COMERCIO IMPORTAÇÃO E EXPORTAÇÃO EIRELI||PBH202508-05A - Sustentação banco de dados||Banco de horas": { pool_mensal: 15.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (15:00 h/mês). Aguardando confirmação do contrato real." },
+  "METALNOX INDUSTRIA E COMERCIO LTDA||PBH202312-03A - Banco de horas DBA||Banco de horas DBA 2025-2026": { pool_mensal: 20.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (20:00 h/mês). Aguardando confirmação do contrato real." },
+  "PAM INDUSTRIA DE PLASTICOS INJETADOS LTDA||PBH202304-02A - Banco de horas||Banco de horas 2025-2026 (Inativo)": { pool_mensal: 56.08, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (56:05 h/mês). Aguardando confirmação do contrato real." },
+  "PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de desenvolvimento (Inativo)": { pool_mensal: 10.67, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (10:40 h/mês). Aguardando confirmação do contrato real." },
+  "PECVAL INDUSTRIA LTDA||PBH202404-04F - Sustentação de ambiente (Inativo)||Banco de horas de sustentação (Inativo)": { pool_mensal: 56.67, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (56:40 h/mês). Aguardando confirmação do contrato real." },
+  "PLASTIGLAS D MEXICO||PBH202406-01A Suporte Datasul||Sustentação Datasul": { pool_mensal: 50.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (50:00 h/mês). Aguardando confirmação do contrato real." },
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2025-2026 (Inativo)": { pool_mensal: 78.33, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (78:20 h/mês). Aguardando confirmação do contrato real." },
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas 2026-2027": { pool_mensal: 70.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (70:00 h/mês). Aguardando confirmação do contrato real." },
+  "SERVENG CIVILSAN SA||PBH202403-01A - Suporte infraestrutura Totvs||Banco de horas de estouro (Inativo)": { pool_mensal: 100.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (100:00 h/mês). Aguardando confirmação do contrato real." },
+  "TELETEX COMPUTADORES E SISTEMAS LTDA||PBH202112-01A - Banco de horas GWMS e DBA 2025-27||Banco de horas GWMS e DBA": { pool_mensal: 64.0, tipo: "portal", atualizado_em: "2026-05-26", atualizado_por: "portal-apontamento", observacao: "Valor do portal (64:00 h/mês). Aguardando confirmação do contrato real." }
 };
 
 // Helper: retorna baseline manual se existir, senão pool_mes do portal.
@@ -21007,17 +21032,22 @@ function _bhCardDetalhe(c, idx, full){
       + '</div>'
     + '</div>'
     + (c.motivo_risco ? '<div class="bh-det-motivo"><label>Motivo do risco</label><strong>' + c.motivo_risco + '</strong></div>' : '')
-    // BH v6 — Bloco BASELINE CONTRATUAL (régua manual)
-    // Mostra: contratado (manual) vs portal hoje vs aportes acumulados
-    // Só aparece quando há baseline manual cadastrada
+    // BH v6 — Bloco BASELINE CONTRATUAL
+    // Mostra: contratado (baseline) vs portal hoje vs aportes/diferença
+    // tipo "manual" = validada pelo gestor; tipo "portal" = valor do portal a validar
     + (c.tem_baseline_manual ? (function(){
         var meta = c.baseline_meta || {};
+        var tipo = meta.tipo || 'manual';
         var baselineH = c.baseline_mes_h;
         var portalH = c.pool_mes_h;
         var aportesH = c.aportes_acumulados_h;
         var subdimH = c.subdim_portal_h;
         var diffLabel, diffClass, diffValue;
-        if(aportesH > 0){
+        if(tipo === 'portal'){
+          diffLabel = 'Status';
+          diffClass = '';
+          diffValue = '⏳ A validar';
+        } else if(aportesH > 0){
           diffLabel = 'Aportes acumulados';
           diffClass = 'aporte';
           diffValue = '+' + _bhHToHHMM(aportesH) + ' h/mês';
@@ -21030,13 +21060,17 @@ function _bhCardDetalhe(c, idx, full){
           diffClass = '';
           diffValue = '0 h/mês ✓';
         }
+        var badgeClass = tipo === 'portal' ? 'portal' : 'manual';
+        var badgeText = tipo === 'portal' ? '⏳ Portal — a validar' : '✓ Régua manual';
+        var blocoClass = tipo === 'portal' ? 'bh-det-baseline portal' : 'bh-det-baseline';
+        var poolClass = tipo === 'portal' ? '' : 'baseline';
         var obsHtml = meta.observacao ? ' · <em>' + meta.observacao + '</em>' : '';
         var autorHtml = meta.atualizado_por ? meta.atualizado_por : '—';
         var dataHtml = meta.atualizado_em ? meta.atualizado_em.split('-').reverse().join('/') : '—';
-        return '<div class="bh-det-baseline">'
-          + '<div class="bh-det-baseline-hd">📋 BASELINE CONTRATUAL <span class="bh-det-baseline-badge">Régua manual</span></div>'
+        return '<div class="' + blocoClass + '">'
+          + '<div class="bh-det-baseline-hd">📋 BASELINE CONTRATUAL <span class="bh-det-baseline-badge ' + badgeClass + '">' + badgeText + '</span></div>'
           + '<div class="bh-det-baseline-grid">'
-            + '<div class="bh-det-baseline-cell"><label>Pool mensal contratado</label><strong class="baseline">' + _bhHToHHMM(baselineH) + ' h/mês</strong></div>'
+            + '<div class="bh-det-baseline-cell"><label>Pool mensal contratado</label><strong class="' + poolClass + '">' + _bhHToHHMM(baselineH) + ' h/mês</strong></div>'
             + '<div class="bh-det-baseline-cell"><label>Portal hoje cadastra</label><strong>' + _bhHToHHMM(portalH) + ' h/mês</strong></div>'
             + '<div class="bh-det-baseline-cell"><label>' + diffLabel + '</label><strong class="' + diffClass + '">' + diffValue + '</strong></div>'
           + '</div>'
