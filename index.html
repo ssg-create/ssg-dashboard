@@ -4722,9 +4722,9 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         </div>
       </div>
       <div class="kpi-row kpi-row-3">
-        <div class="kpi" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub">do volume</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdEspera()"><div class="kpi-accent" style="background:var(--danger)"></div><div class="kpi-lbl">Total em espera</div><div class="kpi-val" style="color:var(--danger)" id="bl-kpi-total">—</div><div class="kpi-sub" id="bl-kpi-total-sub">do volume</div></div>
         <div class="kpi" tabindex="0" onclick="_kdSemAtend()"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-lbl">Sem Atendente</div><div class="kpi-val" style="color:var(--orange)" id="bl-kpi-semat">—</div><div class="kpi-sub" id="bl-kpi-semat-sub">triagem pendente</div></div>
-        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub">principal motivo</div></div>
+        <div class="kpi" tabindex="0" onclick="_kdAguardCliente()"><div class="kpi-accent" style="background:var(--warn)"></div><div class="kpi-lbl">Aguardando cliente</div><div class="kpi-val" style="color:var(--warn)" id="bl-kpi-cli">—</div><div class="kpi-sub" id="bl-kpi-cli-sub">principal motivo</div></div>
       </div>
       <div class="card"><div class="card-title">Motivos da espera</div><div id="bloq-list"></div></div>
     </div>
@@ -6607,9 +6607,19 @@ function populateBlHero(){
   hero.textContent=total+' EM ESPERA';
   // Atualizar 3 KPIs da aba s-bl (Total / Sem Atendente / Aguardando Cliente)
   var elTotal=g('bl-kpi-total'); if(elTotal) elTotal.textContent=total;
+  // Sub do KPI Total: % dos abertos (live) — antes ficava "0% do volume" estático
+  var elTotalSub=g('bl-kpi-total-sub');
+  if(elTotalSub){
+    if(liveMode && ls && ls.abertos){
+      elTotalSub.textContent=Math.round(total/ls.abertos*100)+'% dos abertos';
+    } else {
+      elTotalSub.textContent='do volume';
+    }
+  }
   var elSemAt=g('bl-kpi-semat'); if(elSemAt) elSemAt.textContent=(liveMode?semAtend:'—');
   var elSemAtSub=g('bl-kpi-semat-sub'); if(elSemAtSub) elSemAtSub.textContent=(liveMode?(semAtend===0?'fila triada':'triagem pendente'):'só visível em modo live');
   var elCli=g('bl-kpi-cli'); if(elCli) elCli.textContent=aguarCli;
+  var elCliSub=g('bl-kpi-cli-sub'); if(elCliSub) elCliSub.textContent=(total>0 && aguarCli>0 ? Math.round(aguarCli/total*100)+'% da espera' : 'principal motivo');
   if(sub){
     var line1='<strong>'+aguarCli+'</strong> aguardando cliente · '
       +'<strong>'+aguarInt+'</strong> aguardando interno · '
@@ -9755,8 +9765,43 @@ window._pmCloseDrill = function(){
   if(el) el.remove();
 };
 
+// Constrói lista de motivos da espera a partir dos tickets vivos (modo live).
+// Espelha o formato de buildBloqEntry {l, n, c} pra reusar a renderização.
+function _blBloqFromLive(rows){
+  var ct=function(arr){return rows.filter(function(r){var e=(r.estado||'').toUpperCase();return arr.indexOf(e)!==-1;}).length;};
+  return[
+    {l:'Aguardando Cliente',n:ct(['AGUARDANDO CLIENTE']),c:'var(--warn)'},
+    {l:'Retorno Cliente',n:ct(['RETORNO CLIENTE']),c:'var(--blue)'},
+    {l:'Aguardando Interno',n:ct(['AGUARDANDO INTERNO']),c:'var(--purple)'},
+    {l:'Aguardando Externo',n:ct(['AGUARDANDO EXTERNO','AGUARDANDO AGENTES EXTERNOS']),c:'var(--orange)'}
+  ];
+}
+
 function renderBl(){
   try{populateBlHero();}catch(e){console.warn('bl hero:',e);}
+  var liveMode = (typeof _shouldShowLive==='function') && _shouldShowLive();
+  var ls = liveMode && typeof liveStats==='function' ? liveStats() : null;
+
+  // ── MODO LIVE ──
+  // populateBlHero() já preencheu os 3 KPIs e o hero com dados do GWMS ao vivo.
+  // Aqui só montamos a lista "Motivos da espera" a partir dos mesmos rows,
+  // sem sobrescrever os KPIs (bug v6.1: bloqData histórico zerava tudo em live).
+  if(ls && ls.rows){
+    var bloqLive=_blBloqFromLive(ls.rows);
+    var totalLive=bloqLive.reduce(function(a,b){return a+b.n;},0);
+    var semAtLive=ls.semAtendente||0;
+    var ph0=document.querySelector('#s-bl .page-header p');
+    if(ph0)ph0.textContent=totalLive+' aguardando retorno · '+semAtLive+' sem atendente — risco de aging e insatisfação';
+    document.getElementById('bloq-list').innerHTML=bloqLive.filter(function(s){return s.n>0;}).map(function(s){
+      var p=Math.round(s.n/(totalLive||1)*100);
+      return'<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:'+s.c+'"></div><span>'+s.l+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+p+'%</span>'
+        +'<span style="font-family:var(--mono);font-size:13px">'+s.n+'</span></div></div>';
+    }).join('') || '<div class="sl-item" style="opacity:.6">Nenhum chamado em espera no escopo atual</div>';
+    return;
+  }
+
+  // ── MODO HISTÓRICO ──
   var bloqData;
   if(activeRangeStart && activeRangeEnd) {
     bloqData = buildBloqEntry(buildOPFromRange().estado || {});
@@ -9775,17 +9820,17 @@ function renderBl(){
   var totalGeral=getActiveOP().total||OP.total;
   var kpis=document.querySelectorAll('#s-bl .kpi');
   if(kpis[0]){var v=kpis[0].querySelector('.kpi-val'),s=kpis[0].querySelector('.kpi-sub');if(v)v.textContent=totalBloq;if(s)s.textContent=Math.round(totalBloq/(totalGeral||1)*100)+'% do volume';}
-  if(kpis[1]){var v2=kpis[1].querySelector('.kpi-val'),s2=kpis[1].querySelector('.kpi-sub');var dq=totalGeral-totalBloq;if(v2)v2.textContent=dq;if(s2)s2.textContent=Math.round(dq/(totalGeral||1)*100)+'% fluindo';}
+  // KPI 2 em histórico: "Aguardando Interno" (não há "sem atendente" no XLSX agregado)
+  if(kpis[1]){var v2=kpis[1].querySelector('.kpi-val'),s2=kpis[1].querySelector('.kpi-sub');var aint=(bloqData.find(function(b){return b.l.indexOf('Interno')!==-1;})||{n:0}).n;if(v2)v2.textContent=aint;if(s2)s2.textContent='aguardando interno';}
   if(kpis[2]){var v3=kpis[2].querySelector('.kpi-val');var ac2=bloqData.find(function(b){return b.l.indexOf('Cliente')!==-1;})||{n:0};if(v3)v3.textContent=ac2.n;}
   var ph=document.querySelector('#s-bl .page-header p');
   if(ph)ph.textContent=totalBloq+' aguardando ação — risco de aging e insatisfação';
-  var maxB=Math.max.apply(null,bloqData.map(function(s){return s.n;})||[1]);
   document.getElementById('bloq-list').innerHTML=bloqData.filter(function(s){return s.n>0;}).map(function(s){
     var p=Math.round(s.n/(totalBloq||1)*100);
     return'<div class="sl-item"><div class="sl-left"><div class="sl-dot" style="background:'+s.c+'"></div><span>'+s.l+'</span></div>'
       +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+p+'%</span>'
       +'<span style="font-family:var(--mono);font-size:13px">'+s.n+'</span></div></div>';
-  }).join('');
+  }).join('') || '<div class="sl-item" style="opacity:.6">Nenhum chamado em espera no período</div>';
 }
 
 // ════════════════════════════════════════════════════════════
