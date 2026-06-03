@@ -1439,6 +1439,9 @@ body.squad-mode #rpt-btn{display:none!important}
 .bh-luz.na{background:#374151;color:rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.08);opacity:.7}
 .bh-luz.na::before{content:"—";font-size:9px}
 .bh-row-sub{font-size:10px;color:var(--muted);margin-top:2px;font-weight:400}
+/* BH v6.2 — tag de projeto (distingue contratos do mesmo cliente) */
+.bh-proj-tag{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,.14);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);margin-left:4px;vertical-align:middle}
+.bh-det-proj{color:#a5b4fc;font-weight:500}
 /* Linhas da carteira com mais respiro */
 .bh-zona3 .bh-table tbody tr.bh-row{transition:background .12s;cursor:pointer}
 .bh-zona3 .bh-table tbody tr.bh-row:hover{background:rgba(255,255,255,.03)}
@@ -20300,6 +20303,49 @@ function _bhAggregate(){
 function _bhContratoChave(c){
   return (c._api_cli_alias||c.cli_apo||'') + '||' + (c._api_proj_id||c.projeto||'') + '||' + (c._api_tarefa_id||c.tarefa||'');
 }
+
+// BH v6.2 — rótulo distintivo pra clientes com MAIS DE UM contrato.
+// Problema: DKT (e IMDEPA) têm 2 contratos com a mesma tarefa "Banco de horas",
+// diferindo só no PROJETO — na tabela/heatmap apareciam idênticos.
+// Solução: quando o cliente tem >1 contrato, mostra a descrição do projeto.
+
+// Extrai descrição limpa do nome do projeto (remove o código PBH.../POT... no início)
+function _bhProjLabelCurto(projeto){
+  if(!projeto) return '';
+  // Remove prefixo de código: "PBH202510-04A - ", "POT202512-01A - ", "PAMS20231212-01E - " etc.
+  // Aceita código de 2-5 letras + 4-12 dígitos + sufixo opcional "-NNL".
+  var s = String(projeto).replace(/^[A-Z]{2,5}\d{4,12}[-\s]?\d*[A-Z]?\s*-\s*/i, '').trim();
+  // Se sobrou vazio (nome era só código), usa o projeto inteiro
+  return s || String(projeto).trim();
+}
+
+// Retorna um Set com os cli_apo (nome do cliente apontamento) que têm >1 contrato na lista
+function _bhClientesMultiContrato(contratos){
+  var cnt = {};
+  contratos.forEach(function(c){
+    var k = c.cli_apo || c.display || '';
+    cnt[k] = (cnt[k]||0) + 1;
+  });
+  var set = {};
+  Object.keys(cnt).forEach(function(k){ if(cnt[k] > 1) set[k] = true; });
+  return set;
+}
+
+// Monta o subtítulo do contrato na tabela/heatmap.
+// Cliente com 1 contrato → só a tarefa (como antes).
+// Cliente com 2+ contratos → tarefa + descrição do projeto, pra distinguir.
+function _bhContratoSubLabel(c, multiSet){
+  var tarefa = c.tarefa || '';
+  var k = c.cli_apo || c.display || '';
+  if(multiSet && multiSet[k]){
+    var proj = _bhProjLabelCurto(c.projeto);
+    // Evita repetir se a tarefa já contém a info do projeto
+    if(proj && proj.toLowerCase() !== tarefa.toLowerCase()){
+      return tarefa + ' · <span class="bh-proj-tag">' + proj + '</span>';
+    }
+  }
+  return tarefa;
+}
 // 2) Estado do funil de cobrança (5 estágios) — persistido em localStorage
 //    Substituído por integração financeira depois. Owner: Rodrigo.
 //    estagios: 'identificado' | 'validado' | 'comunicado' | 'faturado' | 'pago'
@@ -20492,6 +20538,8 @@ function renderContratosBH(){
   var contratos = _bhGetContratos().sort(function(a,b){
     return _bhPrioRisco(a) - _bhPrioRisco(b);
   });
+  // BH v6.2 — clientes com >1 contrato (pra rótulo distintivo na tabela/heatmap)
+  var bhMultiSet = _bhClientesMultiContrato(contratos);
   // Snapshot label legível
   var snapLabel = (function(){
     var mes = parseInt((BH_SNAPSHOT_DATE||'').slice(5),10);
@@ -20747,7 +20795,7 @@ function renderContratosBH(){
           }
           var idx = contratos.indexOf(c);
           return '<tr class="clickable" onclick="_bhDrillDownContrato(' + idx + ')">'
-            + '<td class="bh-hm-cli"><strong>' + c.display + '</strong> · <span class="bh-hm-tarefa">' + c.tarefa + '</span></td>'
+            + '<td class="bh-hm-cli"><strong>' + c.display + '</strong> · <span class="bh-hm-tarefa">' + _bhContratoSubLabel(c, bhMultiSet) + '</span></td>'
             + cels
             + '<td class="c bh-hm-cel ' + projCelCls + '" title="ritmo médio ' + (t.pct_do_pool_mensal||0).toFixed(0) + '% do pool mensal · contrato termina em ' + (t.meses_ate_fim||0) + 'm">' + projCelTxt + '</td>'
             + '<td class="c">' + emoji + '</td>'
@@ -20816,7 +20864,7 @@ function renderContratosBH(){
           + '<span class="bh-luz ' + luzes.prazo + '" title="Prazo: ' + luzes.prazoDesc + '">●</span>'
           + '<span class="bh-luz ' + luzes.receita + '" title="Receita: ' + luzes.receitaDesc + '">●</span>'
         + '</td>'
-        + '<td><strong>' + c.display + '</strong>' + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente bh-badge-sm" title="Contrato ficou inativo neste mês">📌</span>' : '') + '<div class="bh-row-sub">' + c.tarefa + '</div></td>'
+        + '<td><strong>' + c.display + '</strong>' + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente bh-badge-sm" title="Contrato ficou inativo neste mês">📌</span>' : '') + '<div class="bh-row-sub">' + _bhContratoSubLabel(c, bhMultiSet) + '</div></td>'
         + '<td class="r ' + pctConsCls + '">' + c.pct_consumido_total.toFixed(1) + '%</td>'
         + '<td class="r ' + diasCls + '">' + c.dias_ate_fim + 'd</td>'
         + '<td class="r ' + excCls + '">' + excTxt + '</td>'
@@ -21167,7 +21215,9 @@ function _bhCardDetalhe(c, idx, full){
       + '<div><div class="bh-det-cli">' + emoji + ' ' + c.display
           + (c._api_inativo_recente ? ' <span class="bh-badge-inativo-recente">📌 inativo este mês</span>' : '')
         + '</div>'
-      + '<div class="bh-det-tarefa">' + c.tarefa + ' · <em>' + c.tipo_banco + '</em></div></div>'
+      + '<div class="bh-det-tarefa">' + c.tarefa + ' · <em>' + c.tipo_banco + '</em>'
+          + (c.projeto ? '<span class="bh-det-proj"> · 📁 ' + _bhProjLabelCurto(c.projeto) + '</span>' : '')
+        + '</div></div>'
       + '<div class="bh-det-hd-right">'
         + '<span class="bh-aviso-pill ' + c.avisar_cliente.cor + '">' + c.avisar_cliente.texto + '</span>'
         + '<span class="bh-health-pill ' + (c.health<30?'crit':c.health<60?'warn':'ok') + '">' + c.health + '</span>'
