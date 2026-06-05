@@ -16949,12 +16949,85 @@ function csPriorColor(p) {
   return m[p] || 'var(--muted)';
 }
 
+// ════════════════════════════════════════════════════════════
+// CS — Carteira inclui CONTRATOS ATIVOS do apontamento (BH) + SSG
+// Pedido do Fabio: CS é saúde da carteira de clientes; deve listar quem tem
+// contrato ativo, não só quem abriu chamado. Cliente sem ticket ganha health
+// derivado do consumo do pool (subutilização / vencimento = risco de churn).
+// ════════════════════════════════════════════════════════════
+function _csCarteiraContratos(){
+  var out = {}; // chave (cli_id mapeado OU 'BHO::nome') → agregado por cliente
+  // ── Banco de Horas (fonte live/snapshot) ──
+  try {
+    var fonte = (typeof _bhSourceData === 'function') ? _bhSourceData() : [];
+    fonte.forEach(function(c){
+      var inat = /\(Inativo\)/i.test(c.tarefa||'') || /\(Inativo\)/i.test(c.projeto||'');
+      if(inat) return;
+      if(c._api_em_vigencia === false) return; // contrato fora de vigência
+      var cliNome = c.cli;
+      var cliId = (typeof BH_MAPA_APONTA !== 'undefined' && BH_MAPA_APONTA[cliNome]) || null;
+      var disp  = (typeof _bhDispCli === 'function') ? _bhDispCli(cliNome) : cliNome;
+      var chave = cliId || ('BHO::' + disp);
+      if(!out[chave]) out[chave] = { nome: disp, tipo:'BH', cli_id: cliId, nCtr:0, consumo:0, baseline:0, vencDiasMin: 99999, estourou:false };
+      var o = out[chave];
+      o.nCtr++;
+      var consMes  = _bhHHMMtoH(c.cons_mes);
+      var baseline = (typeof _bhBaselineFor === 'function') ? _bhBaselineFor(c.cli, c.projeto, c.tarefa) : _bhHHMMtoH(c.pool_mes);
+      o.consumo  += consMes;
+      o.baseline += baseline;
+      var fim = new Date((c.fim||'') + 'T00:00:00');
+      if(!isNaN(fim.getTime())){
+        var dias = Math.floor((fim.getTime() - Date.now())/86400000);
+        if(dias < o.vencDiasMin) o.vencDiasMin = dias;
+      }
+      if(baseline > 0 && consMes > baseline) o.estourou = true;
+    });
+  } catch(e){ console.warn('csCarteiraContratos BH:', e); }
+  // ── SSG (limite mensal de chamados) ──
+  try {
+    (typeof SSG_CONTRATOS !== 'undefined' ? SSG_CONTRATOS : []).forEach(function(s){
+      if(!s.ativo) return;
+      var chave = s.alias;
+      if(out[chave]) { out[chave].tambemSSG = true; return; } // já tem BH, só marca
+      out[chave] = { nome: s.nome || s.alias, tipo:'SSG', cli_id: s.alias, nCtr:1, ssgLimite: s.limite_mes, vencDiasMin: 99999, estourou:false, consumo:0, baseline:0 };
+    });
+  } catch(e){ console.warn('csCarteiraContratos SSG:', e); }
+  Object.keys(out).forEach(function(k){
+    var o = out[k];
+    o.pctConsumo = o.baseline > 0 ? (o.consumo/o.baseline)*100 : null;
+  });
+  return out;
+}
+// Health 0-100 derivado do contrato (sem ticket): subutilização e vencimento = risco.
+// IMPORTANTE: consumo só vira sinal de saúde quando HÁ dado real. Cliente novo
+// sem histórico de consumo (consumo=0) é "Monitorar" (neutro), não "Atenção" —
+// senão todo contrato recém-cadastrado parece subutilizado por falta de dado.
+function _csHealthPool(o){
+  var score = 70, status = 'Monitorar';
+  var pct = o.pctConsumo, venc = o.vencDiasMin;
+  var temConsumo = (o.consumo > 0);
+  if(temConsumo && pct != null){
+    if(pct < 30)            { score = 48; status = 'Atenção'; }   // subutiliza c/ dado → risco churn
+    else if(pct <= 110)     { score = 80; status = 'Saudável'; }  // consumo saudável
+    else if(pct <= 160)     { score = 55; status = 'Atenção'; }   // pressão no pool
+    else                    { score = 38; status = 'Crítico'; }   // estouro grande
+  }
+  // vencimento sempre pesa (independe de ter consumo)
+  if(venc != null && venc !== 99999){
+    if(venc < 0)            { score = Math.min(score, 30); status = 'Crítico'; }      // vencido
+    else if(venc <= 30)     { score = Math.min(score, 35); status = 'Crítico'; }
+    else if(venc <= 90 && (status === 'Saudável' || status === 'Monitorar')) { score = Math.min(score, 55); status = 'Atenção'; }
+  }
+  return { score: Math.round(score), status: status };
+}
+
 function renderCSHealthList() {
   var el = document.getElementById('cs-all-health');
   if(!el) return;
   // P3 fix: filtra por total>0 NO ESCOPO atual, não no agregado global.
   // Antes mostrava 45 clientes sempre; quando filtro=Mar/26 vários ficavam 0/0/0%.
   var rowsData = [];
+  var vistos = {}; // cli_id já incluído (pra não duplicar com contratos)
   Object.keys(EMPRESAS).forEach(function(k){
     if(!k || k.indexOf('@')!==-1) return;
     // POC permissão: lista só clientes que tenham tickets em filas permitidas
@@ -16962,16 +17035,72 @@ function renderCSHealthList() {
     if(typeof userCanSeeCliente==='function' && !userCanSeeCliente(k)) return;
     var d = (typeof getFilteredEmpresa==='function') ? (getFilteredEmpresa(EMPRESAS[k]) || null) : EMPRESAS[k];
     if(!d || !d.total) return; // sem chamado no escopo → fora da lista
-    rowsData.push({k:k, d:d});
+    rowsData.push({k:k, d:d, _tipo:'ticket'});
+    vistos[k] = true;
   });
-  rowsData.sort(function(a,b){ return b.d.total - a.d.total; });
+  // ── Une clientes com CONTRATO ATIVO (BH/SSG) que não têm ticket no escopo ──
+  try {
+    var contratos = _csCarteiraContratos();
+    Object.keys(contratos).forEach(function(chave){
+      var o = contratos[chave];
+      var cliId = o.cli_id;
+      // se já tem ticket no escopo, não duplica (mantém a linha rica de ticket)
+      if(cliId && vistos[cliId]) return;
+      // permissão: se mapeado pra cli_id conhecido, respeita userCanSeeCliente
+      if(cliId && typeof userCanSeeCliente==='function' && !userCanSeeCliente(cliId)) return;
+      var h = _csHealthPool(o);
+      rowsData.push({ k: cliId || chave, _tipo:'contrato', _contrato:o, _health:h });
+      if(cliId) vistos[cliId] = true;
+    });
+  } catch(e){ console.warn('CS merge contratos:', e); }
+  rowsData.sort(function(a,b){
+    var ta = a._tipo==='ticket' ? (a.d.total||0) : -1;  // contratos vão pro fim, ordenados por score
+    var tb = b._tipo==='ticket' ? (b.d.total||0) : -1;
+    if(ta !== tb) return tb - ta;
+    var sa = a._health ? a._health.score : 0, sb = b._health ? b._health.score : 0;
+    return sa - sb; // entre contratos, pior health primeiro
+  });
   if(!rowsData.length){
-    el.innerHTML='<div style="padding:14px;color:var(--muted);font-size:12px;text-align:center">Nenhum cliente com chamado no escopo atual</div>';
+    el.innerHTML='<div style="padding:14px;color:var(--muted);font-size:12px;text-align:center">Nenhum cliente na carteira</div>';
     return;
   }
 
+  var nContrato = 0;
   var rows = rowsData.map(function(rd){
     var k = rd.k;
+    var cell = function(v, color){ return '<td style="padding:9px 12px;text-align:center;font-family:var(--mono);font-size:11px;color:'+(color||'var(--sub)')+'">'+v+'</td>'; };
+
+    // ── Linha de CONTRATO (cliente sem ticket no escopo) ──
+    if(rd._tipo === 'contrato'){
+      nContrato++;
+      var o = rd._contrato, h = rd._health;
+      var score = h.score, status = h.status;
+      var emoji = score>=70?'🟢':score>=50?'🟡':'🔴';
+      var scoreColor = score>=70?'var(--ok)':score>=50?'var(--warn)':'var(--danger)';
+      var temCli = !!o.cli_id;
+      var tipoBadge = '<span style="display:inline-block;margin-left:6px;font-size:8px;font-weight:700;padding:1px 6px;border-radius:4px;background:rgba(99,102,241,.14);color:#a5b4fc;border:1px solid rgba(99,102,241,.3);vertical-align:middle">📋 '+(o.tipo==='SSG'?'SSG':'BH')+(o.tambemSSG?'+SSG':'')+'</span>';
+      // Subtexto: o que dá visibilidade do contrato — consumo do pool e vencimento
+      var subPartes = ['sem chamados no período'];
+      if(o.pctConsumo != null) subPartes.push(Math.round(o.pctConsumo)+'% do pool');
+      if(o.vencDiasMin!=null && o.vencDiasMin!==99999) subPartes.push(o.vencDiasMin<0?'vencido':('vence em '+o.vencDiasMin+'d'));
+      var subTxt = subPartes.join(' · ');
+      var onclickAttr = temCli ? ' onclick="document.getElementById(\'cs-sel-empresa\').value=\''+k+'\';loadCS(\''+k+'\')"' : '';
+      var cursor = temCli ? 'cursor:pointer;' : 'cursor:default;opacity:.92;';
+      return '<tr style="'+cursor+'border-bottom:1px solid var(--border)"'+onclickAttr+' onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'+
+        '<td style="padding:9px 12px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+          '<div style="font-size:12px;font-weight:600;color:var(--text)">'+o.nome+tipoBadge+'</div>'+
+          '<div style="font-size:9.5px;color:var(--muted);margin-top:1px">'+subTxt+'</div>'+
+        '</td>'+
+        '<td style="padding:9px 12px;text-align:center;font-size:16px">'+emoji+'</td>'+
+        '<td style="padding:9px 12px;min-width:90px"><div style="display:flex;align-items:center;gap:6px">'+
+          '<div style="flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+score+'%;background:'+scoreColor+';border-radius:3px"></div></div>'+
+          '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:'+scoreColor+';min-width:28px;text-align:right">'+score+'</span></div></td>'+
+        '<td style="padding:9px 12px;text-align:center;font-size:10px;color:'+scoreColor+';font-family:var(--mono);font-weight:600">'+status+'</td>'+
+        cell('—') + cell('—') + cell('—') + cell('—') + cell('—') + cell('—') +
+      '</tr>';
+    }
+
+    // ── Linha de TICKET (comportamento original) ──
     var d = rd.d;
     var score = calcCSScore(d);
     var total = d.total||0;
@@ -17012,8 +17141,11 @@ function renderCSHealthList() {
   var th = function(t){ return '<th style="padding:6px 12px;text-align:center;font-size:9px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-weight:600;white-space:nowrap">'+t+'</th>'; };
   // P3: título reflete escopo. "Carteira" + label do período + nº de clientes na lista.
   var scopeLbl = _csScopeLabel();
+  var nTicket = rowsData.length - nContrato;
   var titleHtml = 'Health Score — Carteira ('+rowsData.length+' cliente'+(rowsData.length!==1?'s':'')+')';
-  var subHtml = scopeLbl + ' · clique numa linha pra detalhar';
+  var subHtml = scopeLbl
+    + (nContrato>0 ? ' · '+nTicket+' com chamados + '+nContrato+' só contrato' : '')
+    + ' · clique numa linha pra detalhar';
   el.innerHTML = '<div class="card">'+
     '<div class="card-title">'+titleHtml+'<span class="card-title-right" style="font-size:10px;color:var(--muted)">'+subHtml+'</span></div>'+
     '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+
