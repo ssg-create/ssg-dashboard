@@ -18572,6 +18572,16 @@ function _eqEstadoForaDoControle(estado){
       || e.indexOf('aguardando externo') >= 0
       || e.indexOf('aguardando agentes externos') >= 0;
 }
+// Categoria do estado pra MENSAGEM de cobrança (3 grupos distintos, pedido do Fabio):
+//   'retorno'    → cliente JÁ respondeu, atendente precisa RETOMAR (prioridade)
+//   'aguardando' → esperando o cliente/fornecedor/externo (bola fora)
+//   'sob'        → em atendimento / aberto (atendente trabalhando)
+function _eqCategoria(estado){
+  var e = (estado||'').toLowerCase();
+  if(e.indexOf('retorno cliente') >= 0) return 'retorno';
+  if(_eqEstadoForaDoControle(estado)) return 'aguardando';
+  return 'sob';
+}
 // ════════════════════════════════════════════════════════════
 // Mapeamento FILA → GESTOR (Fabio 22/05)
 // ════════════════════════════════════════════════════════════
@@ -19213,11 +19223,14 @@ window._eqCopiarCobrancaFila = function(nome, filaNome){
         && _eqAtivoState(t.estado)
         && t.fila && String(t.fila).trim() === filaNome;
   });
-  var sobControle = todosAtivos.filter(function(t){ return !_eqEstadoForaDoControle(t.estado); });
-  var aguardando = todosAtivos.filter(function(t){ return _eqEstadoForaDoControle(t.estado); });
+  // 3 categorias (pedido do Fabio): retorno cliente · sob controle · aguardando cliente
+  var retornoCli  = todosAtivos.filter(function(t){ return _eqCategoria(t.estado) === 'retorno'; });
+  var sobControle = todosAtivos.filter(function(t){ return _eqCategoria(t.estado) === 'sob'; });
+  var aguardando  = todosAtivos.filter(function(t){ return _eqCategoria(t.estado) === 'aguardando'; });
+  retornoCli.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
   sobControle.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
   aguardando.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
-  var nSob = sobControle.length, nAg = aguardando.length, nTotal = todosAtivos.length;
+  var nRet = retornoCli.length, nSob = sobControle.length, nAg = aguardando.length, nTotal = todosAtivos.length;
 
   if(!nTotal){
     var tEl0 = document.createElement('div');
@@ -19228,13 +19241,22 @@ window._eqCopiarCobrancaFila = function(nome, filaNome){
     return;
   }
 
-  // ── Listagem dos chamados (top 5 sob controle · top 3 aguardando) ──
+  // ── Listagem dos chamados em 3 blocos ──
+  // 1) RETORNO DO CLIENTE — cliente respondeu, precisa retomar (prioridade máxima)
+  var blocoRet = '';
+  if(nRet > 0){
+    var listaRet = retornoCli.slice(0, 5).map(_fmtLinhaTicket).join('\n');
+    var restoRet = nRet > 5 ? '\n(+ outros ' + (nRet - 5) + ' com retorno)' : '';
+    blocoRet = '\n\n🔴 *RETORNO DO CLIENTE* — ' + nRet + ' chamado' + (nRet!==1?'s':'') + ' (cliente respondeu, retome já):\n' + listaRet + restoRet;
+  }
+  // 2) SOB SEU CONTROLE — em atendimento / aberto
   var blocoSob = '';
   if(nSob > 0){
     var listaSob = sobControle.slice(0, 5).map(_fmtLinhaTicket).join('\n');
     var restoSob = nSob > 5 ? '\n(+ outros ' + (nSob - 5) + ' sob controle)' : '';
     blocoSob = '\n\n✋ *SOB SEU CONTROLE* — ' + nSob + ' chamado' + (nSob!==1?'s':'') + ' (você atua agora):\n' + listaSob + restoSob;
   }
+  // 3) AGUARDANDO CLIENTE — esperando o cliente/externo (bola fora)
   var blocoAg = '';
   if(nAg > 0){
     var listaAg = aguardando.slice(0, 3).map(_fmtLinhaTicket).join('\n');
@@ -19292,9 +19314,9 @@ window._eqCopiarCobrancaFila = function(nome, filaNome){
   var pool = gestor ? fechamentosComGestor : fechamentosGenericos;
   var fechamento = '\n\n' + pool[Math.floor(Math.random() * pool.length)].replace('{gestor}', gestor);
 
-  // ── Montagem final ──
+  // ── Montagem final ── (ordem: retorno cliente → sob controle → aguardando)
   var intro = 'Olá ' + primNome + '! Tudo bem?\n\nOlha como tá sua fila *' + filaNome + '* hoje:';
-  var msg = intro + blocoSob + blocoAg + analise + sugestao + fechamento;
+  var msg = intro + blocoRet + blocoSob + blocoAg + analise + sugestao + fechamento;
 
   try { if(navigator.clipboard) navigator.clipboard.writeText(msg); } catch(e){}
   var tEl = document.createElement('div');
