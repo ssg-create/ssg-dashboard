@@ -15830,63 +15830,122 @@ function _kdSlaCumprindo(){
   }});
 }
 
-// Conta rapidamente quantos similares existem (com short-circuit em 10).
-// Usado pra mostrar chip "💡 ver N similares" nos cards de squad.
+// ════════════════════════════════════════════════════════════
+// RESOLUÇÕES SIMILARES v2 (2026-06-05)
+// Antes: casava por QUALQUER palavra do assunto em comum (>3 chars).
+// Resultado: falsos positivos — "SIGATAF::Alteração SESI/SENAI" (folha)
+// casava com "Alteração de loja" (faturamento) só porque ambos têm "alteração".
+// Agora:
+//   1) Stopwords expandido com termos genéricos de chamado (alteração, ajuste...)
+//   2) Extrai o MÓDULO do assunto (prefixo "SIGATAF ::") — discriminador forte
+//   3) Threshold de relevância: módulo diferente exige 2+ termos técnicos
+//   4) Empty state honesto quando não há similar relevante (evita ruído)
+// ════════════════════════════════════════════════════════════
+var _SIM_STOPWORDS = {
+  // estruturais
+  'para':1,'pelo':1,'pela':1,'sobre':1,'pelos':1,'pelas':1,'dos':1,'das':1,'nas':1,'nos':1,
+  'com':1,'sem':1,'por':1,'que':1,'uma':1,'uns':1,'umas':1,'ate':1,'até':1,
+  // genéricos de TI / chamado
+  'erro':1,'cliente':1,'sistema':1,'help':1,'novo':1,'nova':1,'protheus':1,'datasul':1,'totvs':1,
+  'alteracao':1,'alteração':1,'alterar':1,'ajuste':1,'ajustes':1,'ajustar':1,
+  'solicitacao':1,'solicitação':1,'solicito':1,'solicita':1,'problema':1,'problemas':1,
+  'duvida':1,'dúvida':1,'duvidas':1,'dúvidas':1,'configuracao':1,'configuração':1,'config':1,
+  'criacao':1,'criação':1,'criar':1,'inclusao':1,'inclusão':1,'incluir':1,
+  'exclusao':1,'exclusão':1,'excluir':1,'atualizacao':1,'atualização':1,'atualizar':1,
+  'verificacao':1,'verificação':1,'verificar':1,'analise':1,'análise':1,'analisar':1,
+  'suporte':1,'acesso':1,'liberacao':1,'liberação':1,'liberar':1,'cadastro':1,'cadastrar':1,
+  'geracao':1,'geração':1,'gerar':1,'relatorio':1,'relatório':1,'importacao':1,'importação':1,
+  'exportacao':1,'exportação':1,'integracao':1,'integração':1,'manutencao':1,'manutenção':1,
+  'parametrizacao':1,'parametrização':1,'favor':1,'gentileza':1,'segue':1,'anexo':1,
+  'referente':1,'quanto':1,'como':1,'nao':1,'não':1,'sim':1,'mesmo':1,'este':1,'esta':1,
+  'esse':1,'essa':1,'todos':1,'todas':1,'quando':1,'onde':1,'qual':1,'fazer':1,'feito':1,
+  'realizar':1,'realizado':1,'necessario':1,'necessário':1,'preciso':1,'gostaria':1,'poderia':1,
+  'urgente':1,'duvidaa':1,'reabertura':1,'chamado':1,'ticket':1
+};
+function _simExtractWords(s){
+  return (s||'').toLowerCase()
+    .replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ')
+    .split(/\s+/)
+    .filter(function(w){ return w.length > 3 && !_SIM_STOPWORDS[w]; });
+}
+// Extrai o módulo do assunto: "SIGATAF :: Alteração..." → "SIGATAF"
+// Módulos Protheus (SIGA*) são o discriminador técnico mais forte.
+function _simModulo(assunto){
+  if(!assunto) return '';
+  var m = String(assunto).match(/^\s*([A-Za-z]{4,10})\s*::/);          // "SIGATAF :: ..."
+  if(m) return m[1].toUpperCase();
+  var m2 = String(assunto).match(/^\s*(SIGA[A-Z]{2,4})\b/i);            // "SIGAFAT ..." sem ::
+  return m2 ? m2[1].toUpperCase() : '';
+}
+// Avalia similaridade entre target e candidato c.
+// Retorna {score, overlap, moduloMatch, relevante}.
+function _simAvaliar(target, c, tw, targetMod){
+  var cw = _simExtractWords(c.assunto);
+  var overlap = 0;
+  for(var j=0;j<tw.length;j++){ if(cw.indexOf(tw[j])>-1) overlap++; }
+  var cMod = _simModulo(c.assunto);
+  var moduloMatch = !!(targetMod && cMod && targetMod === cMod);
+  var score = overlap;
+  if(moduloMatch) score += 6;          // mesmo módulo = sinal técnico forte
+  else if(targetMod && cMod) score -= 3; // módulos diferentes e ambos conhecidos = penaliza
+  if(c.fila === target.fila) score += 2;
+  if(c.cli_id === target.cli_id) score += 1;
+  // Relevância: mesmo módulo basta 1 termo técnico; módulo diferente exige 2+.
+  var relevante = moduloMatch
+    ? (overlap >= 1 || score >= 6)
+    : (overlap >= 2 && score >= 3);
+  return { score: score, overlap: overlap, moduloMatch: moduloMatch, cMod: cMod, relevante: relevante };
+}
+
+// Conta rapidamente quantos similares RELEVANTES existem (short-circuit em 10).
 function countSimilarResolutions(target){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return 0;
   if(!target || !target.assunto) return 0;
-  var STOPWORDS = {'para':1,'pelo':1,'pela':1,'sobre':1,'pelos':1,'pelas':1,'dos':1,'das':1,'nas':1,'nos':1,'erro':1,'cliente':1,'sistema':1,'help':1,'novo':1,'nova':1,'protheus':1,'datasul':1,'totvs':1};
-  var tw = target.assunto.toLowerCase()
-    .replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ')
-    .split(/\s+/)
-    .filter(function(w){ return w.length > 3 && !STOPWORDS[w]; });
-  if(!tw.length) return 0;
+  var tw = _simExtractWords(target.assunto);
+  var targetMod = _simModulo(target.assunto);
+  if(!tw.length && !targetMod) return 0;
   var resolMap = window._RESOL_MAP || {};
   var count = 0;
   for(var i=0; i<RAW_DATA.length; i++){
     var c = RAW_DATA[i];
     if(c.num === target.num) continue;
-    if(!resolMap[c.num]) continue;  // só conta se há texto de solução no sidemap
-    var cw = (c.assunto||'').toLowerCase().replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ').split(/\s+/);
-    for(var j=0; j<tw.length; j++){
-      if(cw.indexOf(tw[j]) > -1){ count++; break; }
-    }
-    if(count >= 10) break;  // short-circuit pra performance
+    if(!resolMap[c.num]) continue;
+    if(_simAvaliar(target, c, tw, targetMod).relevante){ count++; }
+    if(count >= 10) break;
   }
   return count;
 }
 
-// Busca até 5 chamados similares com texto de resolução já preenchido.
-// Critério: palavras-chave do assunto em comum (>3 chars, sem stopwords).
-// Score: overlap de palavras + bônus mesma fila (+2) + bônus mesmo cliente (+1).
+// Busca até 5 chamados similares RELEVANTES com texto de resolução.
 function renderSimilarResolutions(target, esc){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return '';
   if(!target || !target.assunto) return '';
-  var STOPWORDS = {'para':1,'pelo':1,'pela':1,'sobre':1,'pelos':1,'pelas':1,'dos':1,'das':1,'nas':1,'nos':1,'erro':1,'cliente':1,'sistema':1,'help':1,'novo':1,'nova':1,'protheus':1,'datasul':1,'totvs':1};
-  var extractWords = function(s){
-    return (s||'').toLowerCase()
-      .replace(/[^a-zA-ZÀ-ſ0-9 ]/g,' ')
-      .split(/\s+/)
-      .filter(function(w){ return w.length > 3 && !STOPWORDS[w]; });
-  };
-  var tw = extractWords(target.assunto);
-  if(!tw.length) return '';
+  var tw = _simExtractWords(target.assunto);
+  var targetMod = _simModulo(target.assunto);
+  if(!tw.length && !targetMod) return '';
   var resolMap = window._RESOL_MAP || {};
   var hits = [];
   for(var i=0; i<RAW_DATA.length; i++){
     var c = RAW_DATA[i];
     if(c.num === target.num) continue;
     if(!resolMap[c.num]) continue;  // só inclui se há texto de solução
-    var cw = extractWords(c.assunto);
-    var overlap = 0;
-    for(var j=0; j<tw.length; j++){ if(cw.indexOf(tw[j]) > -1) overlap++; }
-    if(overlap === 0) continue;
-    var score = overlap;
-    if(c.fila === target.fila) score += 2;
-    if(c.cli_id === target.cli_id) score += 1;
-    hits.push({t: c, score: score});
+    var av = _simAvaliar(target, c, tw, targetMod);
+    if(!av.relevante) continue;
+    hits.push({t: c, score: av.score, overlap: av.overlap, moduloMatch: av.moduloMatch, cMod: av.cMod});
   }
-  if(!hits.length) return '';
+  // Empty state honesto — evita o ruído de mostrar falsos positivos
+  if(!hits.length){
+    var modTxt = targetMod ? (' do módulo <strong>' + esc(targetMod) + '</strong>') : '';
+    return '<div style="margin-top:18px;border-top:1px solid var(--border);padding-top:16px">'
+      + '<div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4f8ef7;margin-bottom:10px;text-transform:uppercase;display:flex;align-items:center;gap:8px">'
+      +   '🔍 Resoluções similares'
+      +   '<span style="background:rgba(148,163,184,.15);color:#94a3b8;padding:2px 8px;border-radius:10px;font-size:10px;font-family:var(--mono)">0</span>'
+      + '</div>'
+      + '<div style="font-size:12px;color:var(--muted);line-height:1.6;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:12px 14px">'
+      +   'Nenhuma resolução similar relevante encontrada' + modTxt + '. '
+      +   'Este parece ser um caso específico — a busca <strong>ignora</strong> chamados que só coincidem em palavras genéricas (ex: "alteração", "ajuste"), pra não gerar precedente falso.'
+      + '</div></div>';
+  }
   hits.sort(function(a,b){ return b.score - a.score; });
   hits = hits.slice(0, 5);
   var cleanText = function(s){
@@ -15900,6 +15959,7 @@ function renderSimilarResolutions(target, esc){
     + '<div style="font-size:12px;font-weight:700;letter-spacing:.08em;color:#4f8ef7;margin-bottom:12px;text-transform:uppercase;display:flex;align-items:center;gap:8px">'
     +   '🔍 Resoluções similares'
     +   '<span style="background:rgba(79,142,247,.15);color:#4f8ef7;padding:2px 8px;border-radius:10px;font-size:10px;font-family:var(--mono)">' + hits.length + '</span>'
+    +   (targetMod ? '<span style="background:rgba(99,102,241,.14);color:#a5b4fc;padding:2px 8px;border-radius:10px;font-size:9px;font-family:var(--mono)">módulo ' + esc(targetMod) + '</span>' : '')
     + '</div>';
   for(var k=0; k<hits.length; k++){
     var h = hits[k].t;
@@ -15907,13 +15967,23 @@ function renderSimilarResolutions(target, esc){
     var txt = fullTxt.substring(0, 350);
     var when = h.criado ? String(h.criado).substring(0, 10) : '';
     var otrsHref = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=' + encodeURIComponent(h.num||'');
+    // Motivo do match (transparência): mesmo módulo / termos / fila / cliente
+    var motivos = [];
+    if(hits[k].moduloMatch) motivos.push('mesmo módulo');
+    if(hits[k].overlap > 0) motivos.push(hits[k].overlap + (hits[k].overlap===1?' termo':' termos') + ' em comum');
+    if(h.fila === target.fila) motivos.push('mesma fila');
+    if(h.cli_id === target.cli_id) motivos.push('mesmo cliente');
+    var matchBadge = hits[k].moduloMatch
+      ? '<span style="background:rgba(34,197,94,.15);color:#22c55e;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:600;border:1px solid rgba(34,197,94,.3)">✓ ' + esc(motivos.join(' · ')) + '</span>'
+      : '<span style="background:rgba(245,158,11,.12);color:#f59e0b;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:600;border:1px solid rgba(245,158,11,.3)">' + esc(motivos.join(' · ')) + '</span>';
     html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px">'
-      + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">'
+      + '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
       +   '<span style="color:#5eead4">#' + esc(h.num||'') + '</span>'
       +   ' · <span style="color:#f5a623">' + esc(h.fila||'—') + '</span>'
       +   ' · ' + esc(h.cli_id||'—')
       +   ' · ' + when
       +   ' · <a href="' + otrsHref + '" target="_blank" rel="noopener" style="color:#38bdf8;text-decoration:none">↗ OTRS</a>'
+      +   ' ' + matchBadge
       + '</div>'
       + '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text)">' + esc(h.assunto||'') + '</div>'
       + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">por <b>' + esc((h.atendente||'').trim() || '—') + '</b></div>'
