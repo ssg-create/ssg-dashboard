@@ -15860,8 +15860,38 @@ var _SIM_STOPWORDS = {
   'referente':1,'quanto':1,'como':1,'nao':1,'não':1,'sim':1,'mesmo':1,'este':1,'esta':1,
   'esse':1,'essa':1,'todos':1,'todas':1,'quando':1,'onde':1,'qual':1,'fazer':1,'feito':1,
   'realizar':1,'realizado':1,'necessario':1,'necessário':1,'preciso':1,'gostaria':1,'poderia':1,
-  'urgente':1,'duvidaa':1,'reabertura':1,'chamado':1,'ticket':1
+  'urgente':1,'duvidaa':1,'reabertura':1,'chamado':1,'ticket':1,
+  // v4 — ruído de e-mail/corpo (saudação, despedida, assinatura, LGPD) — defensivo
+  // (o _simLimparCorpo já corta a maior parte; estes pegam o que escapar)
+  'olá':1,'ola':1,'prezado':1,'prezados':1,'prezada':1,'caro':1,'cara':1,'conforme':1,
+  'atenciosamente':1,'atenciosa':1,'cordialmente':1,'grato':1,'grata':1,'obrigado':1,'obrigada':1,
+  'disposição':1,'disposicao':1,'disposicão':1,'precisando':1,'mensagem':1,'destinatario':1,
+  'destinatário':1,'remetente':1,'aviso':1,'legal':1,'notice':1,'please':1,'solutions':1,
+  'delivery':1,'cumpre':1,'informar':1,'dados':1,'pessoais':1,'confidencial':1,'reportá':1,
+  'reportar':1,'excluí':1,'imediatamente':1,'organização':1,'organizacao':1,'recipient':1,
+  'message':1,'information':1,'personal':1,'shared':1,'treated':1,'should':1,'stored':1,
+  'print':1,'boa':1,'tarde':1,'noite':1,'manhã':1,'manha':1
 };
+// Limpa o corpo da conversa antes de extrair termos: corta assinatura/rodapé/LGPD,
+// remove citações (>), saudação inicial, telefones, e-mails, URLs, [cid:..], [N].
+function _simLimparCorpo(txt){
+  if(!txt) return '';
+  var s = String(txt).replace(/<[^>]+>/g,' ').replace(/&[a-z]+;/gi,' ');
+  // remove linhas de citação (respostas anteriores citadas com ">")
+  s = s.split(/\r?\n/).filter(function(l){ return l.replace(/^\s+/,'').charAt(0) !== '>'; }).join('\n');
+  // corta no primeiro marcador de despedida/assinatura/LGPD (se já houver conteúdo antes)
+  var corte = s.search(/\b(atenciosamente|atenciosa|cordialmente|abra[çc]o|aviso legal|legal notice|it solutions delivery|precisando,?\s*estou|estou [àa] disposi[çc][ãa]o|fico [àa] disposi[çc][ãa]o|qualquer d[úu]vida|fico no aguardo)\b/i);
+  if(corte > 25) s = s.substring(0, corte);
+  s = s.replace(/\[cid:[^\]]*\]/gi,' ')
+       .replace(/\[\d+\]/g,' ')
+       .replace(/https?:\/\/\S+/gi,' ')
+       .replace(/[\w.+-]+@[\w.-]+/g,' ')
+       .replace(/\(?\d{2}\)?\s*\d{4,5}[-.\s]?\d{4}/g,' ');
+  // remove saudação + nome próprio inicial ("Olá Antonio", "Prezado João").
+  // (não usa \b porque "olá" termina em char acentuado — quebra a borda \b)
+  s = s.replace(/^\s*(ol[áa]|oi|prezad[oa]s?|car[oa]s?|sr[ao]?\.?)\s+[^\s,;:.\n]+/i,' ');
+  return s.substring(0, 600); // limita pra não tokenizar threads gigantes
+}
 // Normaliza plural pt-BR simples pra casar "saldo"/"saldos", "alteração"/"alterações".
 function _simNorm(w){
   if(w.length > 4){
@@ -15887,6 +15917,17 @@ function _simModulo(assunto){
   if(m) return m[1].toUpperCase();
   var m2 = String(assunto).match(/^\s*(SIGA[A-Z]{2,4})\b/i);            // "SIGAFAT ..." sem ::
   return m2 ? m2[1].toUpperCase() : '';
+}
+// v4 — termos do TICKET-ALVO: assunto (sempre) + corpo da conversa (quando há).
+// A conversa do próprio alvo (window._RESOL_MAP[num]) traz a substância técnica
+// que o assunto curto não tem. Retorna array de termos únicos.
+function _simTermosAlvo(target){
+  var seen = {}, out = [];
+  var push = function(arr){ for(var i=0;i<arr.length;i++){ if(!seen[arr[i]]){ seen[arr[i]]=1; out.push(arr[i]); } } };
+  push(_simExtractWords(target.assunto));
+  var rm = (typeof window!=='undefined' && window._RESOL_MAP) ? window._RESOL_MAP[target.num] : null;
+  if(rm) push(_simExtractWords(_simLimparCorpo(rm)));
+  return out;
 }
 // Avalia similaridade entre target e candidato c.
 // v3: compara termos do assunto-alvo contra o ASSUNTO e o TEXTO DE RESOLUÇÃO
@@ -15938,7 +15979,7 @@ function _simAvaliar(target, c, tw, targetMod, resolText){
 function countSimilarResolutions(target){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return 0;
   if(!target || !target.assunto) return 0;
-  var tw = _simExtractWords(target.assunto);
+  var tw = _simTermosAlvo(target);
   var targetMod = _simModulo(target.assunto);
   if(!tw.length && !targetMod) return 0;
   var resolMap = window._RESOL_MAP || {};
@@ -15957,7 +15998,7 @@ function countSimilarResolutions(target){
 function renderSimilarResolutions(target, esc){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return '';
   if(!target || !target.assunto) return '';
-  var tw = _simExtractWords(target.assunto);
+  var tw = _simTermosAlvo(target);
   var targetMod = _simModulo(target.assunto);
   if(!tw.length && !targetMod) return '';
   var resolMap = window._RESOL_MAP || {};
