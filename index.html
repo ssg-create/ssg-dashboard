@@ -18556,13 +18556,21 @@ function _eqAtivoState(estado){
 // Usado pra excluir da cobrança individual — cobrar isso passa mensagem injusta,
 // o atendente não tem governança sobre o tempo de retorno externo.
 // Continua contando no painel geral de pilha (que é visão de carga, não de cobrança).
+//
+// IMPORTANTE: "Retorno Cliente" NÃO entra aqui. Esse estado significa que o
+// cliente JÁ RESPONDEU e a bola voltou pro atendente — é responsabilidade dele
+// agir agora. Antes estava classificado como "fora do controle" (bug reportado
+// pelo Fabio: chamado do Edu com retorno do cliente vinha em "AGUARDANDO CLIENTE").
 function _eqEstadoForaDoControle(estado){
   var e = (estado||'').toLowerCase();
+  // "retorno" sem ser "retorno cliente"? No OTRS só existe "Retorno Cliente" (bola
+  // de volta pro atendente), então tratamos qualquer "retorno cliente" como SOB controle.
+  if(e.indexOf('retorno cliente') >= 0) return false;
   return e.indexOf('aguardando cliente') >= 0
       || e.indexOf('aguardando fornec') >= 0
       || e.indexOf('aguardando terceiro') >= 0
       || e.indexOf('aguardando externo') >= 0
-      || e.indexOf('retorno cliente') >= 0;
+      || e.indexOf('aguardando agentes externos') >= 0;
 }
 // ════════════════════════════════════════════════════════════
 // Mapeamento FILA → GESTOR (Fabio 22/05)
