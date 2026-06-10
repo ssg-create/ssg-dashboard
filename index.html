@@ -1011,7 +1011,7 @@ body.atendente-mode #mf-cs,
 body.atendente-mode #fs-btn,
 body.atendente-mode #rpt-btn{display:none!important}
 #at-piloto-badge{display:none;background:linear-gradient(135deg,#FF6400,#f59e0b);color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-left:10px}
-body.atendente-mode #at-piloto-badge{display:inline-block!important}
+body.espelho-mode #at-piloto-badge{display:inline-block!important}
 body.atendente-mode #at-user-pill,
 body.triagem-mode #at-user-pill{display:flex!important}
 #at-user-pill{display:none;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:12px;color:var(--text);margin-left:8px;cursor:pointer;transition:all .15s}
@@ -26460,22 +26460,39 @@ function _resolveAtendByLogin(login){
 function _tryAutoIdentify(){
   // Mode 'atendente' OU espelho de gestor: identidade é fixa via sessionStorage.atendNome,
   // independe de match nome↔login. Garante visão estável mesmo se localStorage zerar.
+  // AUTO-CURA: o nome guardado (forçado ou em cache) só é aceito se AINDA existir no
+  // roster real de tickets. Se a grafia mudou no OTRS (ex.: nome curto antigo virou
+  // nome completo), o nome velho fica stale e zerava a pilha do atendente — aqui ele é
+  // descartado e re-resolvido pelo login. No espelho, o gestor escolheu explicitamente,
+  // então confiamos sempre.
+  // Retorno: true = existe no roster · false = roster carregado e nome ausente · null = roster ainda não carregou
+  function _nomeNoRoster(nome){
+    if(!nome) return false;
+    var ks = (typeof _collectKnownAtendNames === 'function') ? _collectKnownAtendNames() : [];
+    if(!ks || !ks.length) return null; // roster ainda não carregou → indefinido (não descarta)
+    for(var i=0;i<ks.length;i++){ if(ks[i] === nome) return true; }
+    return false;
+  }
+  var _espelho = (typeof window.isEspelhoMode === 'function') && window.isEspelhoMode();
+  var _atendMode = (typeof isAtendenteMode === 'function') && isAtendenteMode();
   var forcedNome = sessionStorage.getItem('atendNome');
-  if(forcedNome && (
-       (typeof isAtendenteMode === 'function' && isAtendenteMode()) ||
-       (typeof window.isEspelhoMode === 'function' && window.isEspelhoMode())
-     )){
-    setCurrentAtendente(forcedNome);
-    return true;
+  if(forcedNome && (_atendMode || _espelho)){
+    // Espelho: confia sempre. Atendente real: só confia se o nome ainda existe no
+    // roster (ou se o roster ainda não carregou). Senão, re-resolve pelo login abaixo.
+    if(_espelho || _nomeNoRoster(forcedNome) !== false){
+      setCurrentAtendente(forcedNome);
+      return true;
+    }
   }
   var login = sessionStorage.getItem('atendLogin');
   if(!login) return false;
-  // Se já tem atendente salvo e bate com o login, OK
+  // Se já tem atendente salvo e bate com o login, OK — desde que o nome em cache
+  // ainda exista no roster real. Senão (cache stale), re-resolve e regrava o certo.
   var atual = getCurrentAtendente();
   if(atual){
     var atualN = _stripAccents(atual).replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
     var loginN = _stripAccents(login).replace(/[._\-\s]+/g, ' ').trim();
-    if(atualN === loginN) return true;
+    if(atualN === loginN && _nomeNoRoster(atual) !== false) return true;
   }
   var match = _resolveAtendByLogin(login);
   if(match){
