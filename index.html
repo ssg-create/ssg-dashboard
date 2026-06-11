@@ -934,6 +934,11 @@ body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-dist"],
 body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-hoje"],
 body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-pad"],
 body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-perf"]{display:none!important}
+/* Abas Atendentes e Cobrança da triagem reusam o #view-op (#s-at / #s-eq).
+   Quando ativas (tr-sec-op), mostra o view-op e esconde as views da triagem. */
+body.triagem-mode.tr-sec-op #view-op{display:block!important}
+body.triagem-mode.tr-sec-op #view-triagem{display:none!important}
+body.triagem-mode.tr-sec-op #view-sq{display:none!important}
 /* ── HERO IMPACTANTE da squad-view (atendente/espelho/squad) ─── */
 .sq-greeting.sq-hero-mode{display:block;padding:0;margin-bottom:22px}
 .sq-hero-impacto{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(255,112,36,.25);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:30px 38px 28px;min-height:170px}
@@ -4149,6 +4154,8 @@ if(_u)_u.addEventListener("keydown",_enterKey);
   <div id="nav-triagem" style="display:none">
     <div class="sb-head">Triagem</div>
     <div class="nav on" data-tr-sec="tr-fila" onclick="goSecTriagem('tr-fila',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Fila Agora<span class="nav-badge" id="badge-tri-fila">0</span></div>
+    <div class="nav" data-tr-sec="tr-atend" onclick="goSecTriagem('tr-atend',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Atendentes</div>
+    <div class="nav" data-tr-sec="tr-cobr" onclick="goSecTriagem('tr-cobr',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11l-3 3-2-2"/></svg>Cobrança</div>
     <div class="nav" data-tr-sec="tr-dist" onclick="goSecTriagem('tr-dist',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="12"/><line x1="12" y1="12" x2="20" y2="6"/></svg>Distribuição</div>
     <div class="nav" data-tr-sec="tr-hoje" onclick="goSecTriagem('tr-hoje',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Atividade Hoje</div>
     <div class="nav" data-tr-sec="tr-pad" onclick="goSecTriagem('tr-pad',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 12l4-4 4 4 6-6"/></svg>Padrões</div>
@@ -29783,23 +29790,34 @@ window.isTriagemMode = function(){
 var TR_CUR_SEC = 'tr-fila';
 window.goSecTriagem = function(secId, el){
   TR_CUR_SEC = secId;
-  // 'tr-fila' usa o visual da sq-triagem-shell original — controla via classe no body
-  if(secId === 'tr-fila'){
-    document.body.classList.add('tr-sec-fila');
-  } else {
-    document.body.classList.remove('tr-sec-fila');
-  }
-  ['tr-fila','tr-dist','tr-hoje','tr-pad','tr-perf'].forEach(function(id){
-    var s = document.getElementById(id);
-    if(s) s.style.display = (id===secId) ? 'block' : 'none';
-  });
-  var navs = document.querySelectorAll('#nav-triagem .nav');
-  navs.forEach(function(n){ n.classList.remove('on'); });
+  // tr-atend / tr-cobr = visões reaproveitadas do #view-op (Atendentes / Cobrança)
+  var isOp = (secId === 'tr-atend' || secId === 'tr-cobr');
+  document.body.classList.toggle('tr-sec-fila', secId === 'tr-fila');
+  document.body.classList.toggle('tr-sec-op', isOp);
+
+  // Marca o item ativo no menu da triagem
+  document.querySelectorAll('#nav-triagem .nav').forEach(function(n){ n.classList.remove('on'); });
   if(el) el.classList.add('on');
   else {
     var match = document.querySelector('#nav-triagem .nav[data-tr-sec="'+secId+'"]');
     if(match) match.classList.add('on');
   }
+
+  if(isOp){
+    // Mostra só a seção alvo dentro do #view-op e renderiza com a lógica existente
+    var opId = (secId === 'tr-atend') ? 's-at' : 's-eq';
+    document.querySelectorAll('#view-op .sec').forEach(function(s){ s.classList.remove('on'); });
+    var sec = document.getElementById(opId);
+    if(sec) sec.classList.add('on');
+    if(typeof renderSec === 'function'){ try { renderSec(opId); } catch(e){ console.warn('tr op sec:',e); } }
+    return;
+  }
+
+  // Seções nativas da triagem
+  ['tr-fila','tr-dist','tr-hoje','tr-pad','tr-perf'].forEach(function(id){
+    var s = document.getElementById(id);
+    if(s) s.style.display = (id===secId) ? 'block' : 'none';
+  });
   try { renderTriagemAba(secId); } catch(e){ console.warn('tr aba:',e); }
 };
 
