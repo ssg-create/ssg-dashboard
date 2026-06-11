@@ -939,7 +939,10 @@ body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-perf"]{display:none!importan
 body.triagem-mode.tr-sec-op #view-op{display:block!important}
 body.triagem-mode.tr-sec-op #view-triagem{display:none!important}
 body.triagem-mode.tr-sec-op #view-sq{display:none!important}
-/* Na aba Atendentes, mostra só o filtro de FILA (esconde o de mês) na lateral */
+/* Na aba Atendentes, libera o #nav-op só pra mostrar o filtro de FILA
+   (mf-op é filho de nav-op; esconde todo o resto do nav-op e o filtro de mês). */
+body.triagem-mode.tr-sec-atend #nav-op{display:block!important}
+body.triagem-mode.tr-sec-atend #nav-op > :not(#mf-op){display:none!important}
 body.triagem-mode.tr-sec-atend #mf-op{display:block!important}
 body.triagem-mode.tr-sec-atend #mf-op > span.month-filter-lbl:first-of-type,
 body.triagem-mode.tr-sec-atend #mf-op #mth-btns-op,
