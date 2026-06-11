@@ -928,6 +928,12 @@ body.triagem-mode.tr-sec-fila #view-triagem #tr-fila{display:none!important}
 body.triagem-mode.tr-sec-fila .sq-topbar{display:none!important}
 body.triagem-mode.tr-sec-fila #sq-shell{display:none!important}
 body.triagem-mode.tr-sec-fila #sq-triagem-shell{display:block!important;padding:24px 0!important}
+/* MAX (triagem) foca só na Fila Agora — abas secundárias escondidas até terem
+   dado real (Distribuição/Atividade/Padrões/Performance dependem de histórico). */
+body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-dist"],
+body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-hoje"],
+body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-pad"],
+body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-perf"]{display:none!important}
 /* ── HERO IMPACTANTE da squad-view (atendente/espelho/squad) ─── */
 .sq-greeting.sq-hero-mode{display:block;padding:0;margin-bottom:22px}
 .sq-hero-impacto{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(255,112,36,.25);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:30px 38px 28px;min-height:170px}
@@ -2020,6 +2026,8 @@ body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
 .tri-pick-load.ok{color:var(--ok)}
 .tri-pick-cobrar{padding:3px 9px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-left:8px;transition:all .15s}
 .tri-pick-cobrar:hover{color:var(--orange);border-color:var(--orange)}
+/* Texto da mensagem de cobrança no modal de preview */
+.tri-cobr-text{white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:12px;line-height:1.55;color:var(--text);background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:0;max-height:52vh;overflow-y:auto}
 /* Modal — escolher atendente da squad escolhida */
 .tri-pick-overlay{position:fixed;inset:0;z-index:9000;background:rgba(8,11,16,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center}
 .tri-pick-overlay.on{display:flex}
@@ -5650,6 +5658,23 @@ if(_u)_u.addEventListener("keydown",_enterKey);
     </div>
     <div class="tri-pick-foot">
       <button class="tri-pick-cancel" onclick="_triClosePick()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de COBRANÇA — mostra a mensagem antes de copiar (sem copiar às cegas) -->
+<div id="tri-cobr-overlay" class="tri-pick-overlay" onclick="if(event.target===this)_triCloseCobranca()">
+  <div class="tri-pick-modal" style="width:580px;max-width:94vw">
+    <div class="tri-pick-hd">
+      <div class="tri-pick-title" id="tri-cobr-title">Cobrança</div>
+      <div class="tri-pick-sub">Confira a mensagem — depois é só copiar e colar no WhatsApp</div>
+    </div>
+    <div class="tri-pick-body">
+      <pre id="tri-cobr-text" class="tri-cobr-text"></pre>
+    </div>
+    <div class="tri-pick-foot" style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="tri-pick-cancel" onclick="_triCloseCobranca()">Fechar</button>
+      <button class="tri-pick-cancel" style="border-color:var(--orange);color:var(--orange);font-weight:700" onclick="_triCopiarCobrancaModal()">📋 Copiar mensagem</button>
     </div>
   </div>
 </div>
@@ -19022,7 +19047,7 @@ window._eqToggleAllSquads = function(action){ window._eqToggleAllFilas(action); 
 // Antes: byAtend filtrava por allowed_logins da squad (roster cadastral) e
 // somava tickets de TODAS as filas do atendente. Agora: filtra por t.fila
 // (só os tickets dessa fila específica).
-window._eqCobrancaColetiva = function(filaNome){
+window._eqCobrancaColetiva = function(filaNome, preview){
   if(!filaNome) return;
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   // POC permissão: bloqueia gerar cobrança de fila não permitida
@@ -19285,6 +19310,11 @@ window._eqCobrancaColetiva = function(filaNome){
     + alinhaGestor
     + fech;
 
+  // Preview (visão MAX): mostra a mensagem num modal antes de copiar.
+  if(preview && typeof _triShowCobranca === 'function'){
+    _triShowCobranca('Cobrança coletiva · ' + filaNome, msg);
+    return;
+  }
   try { if(navigator.clipboard) navigator.clipboard.writeText(msg); } catch(e){}
   var tEl = document.createElement('div');
   tEl.className = 'eq-toast';
@@ -19295,7 +19325,7 @@ window._eqCobrancaColetiva = function(filaNome){
 
 // Versão antiga (squad) — mantida pra compat com chamadas antigas em outros pontos
 // v2026-06: aplica mesma exclusão de "aguardando externo" da versão por fila
-window._eqCopiarCobranca = function(nome, squadId){
+window._eqCopiarCobranca = function(nome, squadId, preview){
   if(typeof TICKETS_ATIVOS_DATA === 'undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return;
   var primNome = nome.split(' ')[0];
   var gestor = (squadId && SQUADS[squadId] && SQUADS[squadId].gestor) ? SQUADS[squadId].gestor : '';
@@ -19359,6 +19389,11 @@ window._eqCopiarCobranca = function(nome, squadId){
     + 'Vi que você está com ' + n + ' chamado' + (n!==1?'s':'') + ' sob seu controle' + introExtra + '.\n\n'
     + 'Os mais antigos são:\n' + linhas + resto + notaForaControle + '\n\n'
     + fechamento;
+  // Preview (visão MAX): mostra a mensagem num modal antes de copiar.
+  if(preview && typeof _triShowCobranca === 'function'){
+    _triShowCobranca('Cobrança · ' + primNome, msg);
+    return;
+  }
   try {
     if(navigator.clipboard) navigator.clipboard.writeText(msg);
   } catch(e){}
@@ -28887,7 +28922,7 @@ window._triRenderTopo = function(){
     var nome = cfg ? cfg.nome.replace('· Protheus','').trim() : sid;
     var fila = _TRI_COBR_FILA[sid] || '';
     var cobrar = (c.sob>0 && fila)
-      ? '<button class="tri-carga-chip-cobrar" onclick="_eqCobrancaColetiva(\''+fila+'\')" title="Gerar mensagem de cobrança coletiva da fila '+fila+'">cobrar</button>'
+      ? '<button class="tri-carga-chip-cobrar" onclick="_eqCobrancaColetiva(\''+fila+'\',true)" title="Ver e copiar a mensagem de cobrança coletiva da fila '+fila+'">cobrar</button>'
       : '';
     return '<div class="tri-carga-chip '+st+'" title="'+c.sob+' sob controle · '+c.fora+' aguardando cliente">'
       + '<span>'+nome+'</span>'
@@ -28901,6 +28936,33 @@ window._triRenderTopo = function(){
   + '</div>';
 
   host.innerHTML = thermo + cargaHtml;
+};
+
+// ── Modal de cobrança: mostra a mensagem ANTES de copiar ──────
+// (feedback do Fabio: copiar às cegas é horrível — a pessoa precisa ver
+//  o que está cobrando). Reaproveita o texto gerado pelas funções do s-eq.
+window._triShowCobranca = function(titulo, texto){
+  var ov = document.getElementById('tri-cobr-overlay');
+  var t  = document.getElementById('tri-cobr-title');
+  var b  = document.getElementById('tri-cobr-text');
+  if(!ov || !b){ try{ if(navigator.clipboard) navigator.clipboard.writeText(texto||''); }catch(e){} return; }
+  if(t) t.textContent = titulo || 'Cobrança';
+  b.textContent = texto || '';
+  ov._txt = texto || '';
+  ov.classList.add('on');
+};
+window._triCloseCobranca = function(){
+  var ov = document.getElementById('tri-cobr-overlay');
+  if(ov) ov.classList.remove('on');
+};
+window._triCopiarCobrancaModal = function(){
+  var ov = document.getElementById('tri-cobr-overlay');
+  var txt = ov ? (ov._txt||'') : '';
+  try{ if(navigator.clipboard) navigator.clipboard.writeText(txt); }catch(e){}
+  var _t = document.createElement('div'); _t.className='eq-toast';
+  _t.textContent = '✓ Mensagem copiada — cola no WhatsApp da equipe';
+  document.body.appendChild(_t); setTimeout(function(){ _t.remove(); }, 3000);
+  _triCloseCobranca();
 };
 
 window.renderTriagemView = function(){
@@ -29192,7 +29254,7 @@ window._triPickSquad = function(ticket, squadId){
     var emoji = p.status==='crit'?'🔴':(p.status==='warn'?'🟡':'🟢');
     var foraTxt = p.fora ? ' <span style="opacity:.55">(+'+p.fora+' aguard.)</span>' : '';
     var cobrar = p.sob>0
-      ? '<button class="tri-pick-cobrar" onclick="event.stopPropagation();_eqCopiarCobranca(\''+nEsc+'\',\''+squadId+'\')" title="Copiar mensagem de cobrança">cobrar</button>'
+      ? '<button class="tri-pick-cobrar" onclick="event.stopPropagation();_eqCopiarCobranca(\''+nEsc+'\',\''+squadId+'\',true)" title="Ver e copiar a mensagem de cobrança">cobrar</button>'
       : '';
     return '<div class="tri-pick-item" onclick="_triAssign(\''+ticket+'\',\''+squadId+'\',\''+nEsc+'\')">'
       + '<div class="tri-pick-item-avatar">'+ini+'</div>'
