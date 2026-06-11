@@ -939,6 +939,11 @@ body.triagem-mode #nav-triagem .nav[data-tr-sec="tr-perf"]{display:none!importan
 body.triagem-mode.tr-sec-op #view-op{display:block!important}
 body.triagem-mode.tr-sec-op #view-triagem{display:none!important}
 body.triagem-mode.tr-sec-op #view-sq{display:none!important}
+/* Na aba Atendentes, mostra só o filtro de FILA (esconde o de mês) na lateral */
+body.triagem-mode.tr-sec-atend #mf-op{display:block!important}
+body.triagem-mode.tr-sec-atend #mf-op > span.month-filter-lbl:first-of-type,
+body.triagem-mode.tr-sec-atend #mf-op #mth-btns-op,
+body.triagem-mode.tr-sec-atend #mf-op #dr-op{display:none!important}
 /* ── HERO IMPACTANTE da squad-view (atendente/espelho/squad) ─── */
 .sq-greeting.sq-hero-mode{display:block;padding:0;margin-bottom:22px}
 .sq-hero-impacto{position:relative;overflow:hidden;border-radius:16px;border:1px solid rgba(255,112,36,.25);background:linear-gradient(135deg,#0e1620 0%,#131d2a 60%,#1a2534 100%);padding:30px 38px 28px;min-height:170px}
@@ -29794,6 +29799,8 @@ window.goSecTriagem = function(secId, el){
   var isOp = (secId === 'tr-atend' || secId === 'tr-cobr');
   document.body.classList.toggle('tr-sec-fila', secId === 'tr-fila');
   document.body.classList.toggle('tr-sec-op', isOp);
+  document.body.classList.toggle('tr-sec-atend', secId === 'tr-atend');
+  document.body.classList.toggle('tr-sec-cobr', secId === 'tr-cobr');
 
   // Marca o item ativo no menu da triagem
   document.querySelectorAll('#nav-triagem .nav').forEach(function(n){ n.classList.remove('on'); });
@@ -29809,6 +29816,10 @@ window.goSecTriagem = function(secId, el){
     document.querySelectorAll('#view-op .sec').forEach(function(s){ s.classList.remove('on'); });
     var sec = document.getElementById(opId);
     if(sec) sec.classList.add('on');
+    // Garante os botões do filtro de fila montados (Atendentes usa esse filtro)
+    if(secId === 'tr-atend' && typeof buildFilaBtns === 'function'){
+      try { buildFilaBtns('fila-btns-op', (typeof activeFilaOP!=='undefined'?activeFilaOP:'all'), setFilaOP); } catch(e){ console.warn('tr fila btns:',e); }
+    }
     if(typeof renderSec === 'function'){ try { renderSec(opId); } catch(e){ console.warn('tr op sec:',e); } }
     return;
   }
