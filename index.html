@@ -28801,40 +28801,65 @@ function _triKeywords(s){
     .replace(/[^a-z0-9\s]/g,' ').split(/\s+/)
     .filter(function(w){ return w.length>=4 && !_TRI_STOP[w]; });
 }
-// Sugestão de squad: pontua tickets já triados parecidos com o atual.
-// Parecido = mesmo cliente (peso alto) E/OU palavras-chave do assunto/serviço
-// em comum (peso menor). Histórico vem de TICKETS_ATIVOS_DATA já com atendente.
+// Override manual cliente → squad (Fabio calibra). Vence tudo quando bate.
+// Chave = trecho do nome do cliente (UPPER). Ex.: TJBA é cliente de GWMS.
+var _TRI_CLIENTE_SQUAD = {
+  'TJBA': 'gwms'
+};
+// Sugestão de squad — prioridade decrescente de confiança:
+//   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD)
+//   2) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
+//   3) similaridade por palavras-chave do assunto/descrição (último recurso)
+// O cliente manda mais que palavra-chave solta — evita o caso "TJBA (GWMS)"
+// virar Protheus só porque 'dashboard/topologia' apareceu em chamados Protheus.
 function _triSugerirSquad(t){
   if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return null;
   var alvoCli = _triExtractCliente(t).toUpperCase();
   var temCli = alvoCli && alvoCli !== 'DESCONHECIDO';
+
+  // 1) Override manual por cliente
+  if(temCli){
+    for(var k in _TRI_CLIENTE_SQUAD){
+      if(alvoCli.indexOf(k.toUpperCase()) !== -1){
+        return { squadId: _TRI_CLIENTE_SQUAD[k], pct: 100, total: 0, motivo: 'cliente_fixo' };
+      }
+    }
+  }
+
+  // 2) Squad dominante do histórico do próprio cliente
+  if(temCli){
+    var cliBy = {}, cliTot = 0;
+    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
+      if(!r.atendente || r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER) return;
+      if(r.fila === FILA_TRIAGEM) return;
+      var sq = FILA_TO_SQUAD[r.fila]; if(!sq) return;
+      if((r.cliente||'').toUpperCase().indexOf(alvoCli) === -1) return;
+      cliBy[sq] = (cliBy[sq]||0) + 1; cliTot++;
+    });
+    var cliKeys = Object.keys(cliBy);
+    if(cliTot >= 2 && cliKeys.length){
+      cliKeys.sort(function(a,b){return cliBy[b]-cliBy[a];});
+      return { squadId: cliKeys[0], pct: Math.round(cliBy[cliKeys[0]]/cliTot*100), total: cliTot, motivo: 'cliente_hist' };
+    }
+  }
+
+  // 3) Similaridade por palavras-chave (assunto + descrição)
   var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
   var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
-  if(!temCli && !kw.length) return null;
+  if(!kw.length) return null;
   var bySquad = {}, totalScore = 0, totalSim = 0;
   TICKETS_ATIVOS_DATA.rows.forEach(function(r){
     if(!r.atendente || r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER) return;
-    if(r.fila === FILA_TRIAGEM) return; // ignora outros NOC ainda em triagem
-    var sq = FILA_TO_SQUAD[r.fila];
-    if(!sq) return;
-    var score = 0;
-    if(temCli){
-      var rCli = (r.cliente||'').toUpperCase();
-      var rAss = (r.assunto||'').toUpperCase();
-      if(rCli.indexOf(alvoCli)!==-1 || rAss.indexOf(alvoCli)!==-1) score += 3;
-    }
-    if(kw.length){
-      var rkw = _triKeywords((r.assunto||'') + ' ' + (r.servico||''));
-      var hit = 0; for(var i=0;i<rkw.length;i++){ if(kwSet[rkw[i]]) hit++; }
-      if(hit) score += Math.min(hit, 3); // limita o peso de keywords
-    }
-    if(score > 0){ bySquad[sq] = (bySquad[sq]||0) + score; totalScore += score; totalSim++; }
+    if(r.fila === FILA_TRIAGEM) return;
+    var sq = FILA_TO_SQUAD[r.fila]; if(!sq) return;
+    var rkw = _triKeywords((r.assunto||'') + ' ' + (r.servico||''));
+    var hit = 0; for(var i=0;i<rkw.length;i++){ if(kwSet[rkw[i]]) hit++; }
+    if(hit){ var score = Math.min(hit, 3); bySquad[sq] = (bySquad[sq]||0) + score; totalScore += score; totalSim++; }
   });
   var keys = Object.keys(bySquad);
   if(!keys.length) return null;
   keys.sort(function(a,b){return bySquad[b]-bySquad[a];});
-  var top = keys[0];
-  return { squadId: top, pct: Math.round(bySquad[top]/totalScore*100), total: totalSim };
+  return { squadId: keys[0], pct: Math.round(bySquad[keys[0]]/totalScore*100), total: totalSim, motivo: 'keyword' };
 }
 function _triMinutosDesde(iso){
   if(!iso) return 0;
@@ -29235,7 +29260,16 @@ window.renderTriagemView = function(){
     if(sug){
       var sugCfg = SQUADS[sug.squadId];
       var sugNome = sugCfg ? sugCfg.nome : sug.squadId;
-      sugLine = '<div class="tri-card-sugestao">💡 Histórico diz: <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' parecido'+(sug.total!==1?'s':'')+')</div>';
+      var txtSug;
+      if(sug.motivo === 'cliente_fixo'){
+        txtSug = '✅ <strong>'+cli+'</strong> é cliente de <strong>'+sugNome+'</strong>';
+      } else if(sug.motivo === 'cliente_hist'){
+        txtSug = '👥 <strong>'+cli+'</strong> costuma ir pra <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' do cliente)';
+      } else {
+        var fraco = sug.pct < 50 ? ' · palpite fraco, confira' : '';
+        txtSug = '💡 Parecido com <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' parecido'+(sug.total!==1?'s':'')+fraco+')';
+      }
+      sugLine = '<div class="tri-card-sugestao">'+txtSug+'</div>';
     } else {
       sugLine = '<div class="tri-card-sugestao">💡 Sem histórico desse cliente — você decide.</div>';
     }
