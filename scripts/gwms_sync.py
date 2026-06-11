@@ -405,7 +405,17 @@ def q_tickets_ativos(session: requests.Session) -> list[dict]:
       sl.name                                                    AS sla_name,
       sl.first_response_time                                     AS sla_first_response_min,
       sl.update_time                                             AS sla_update_min,
-      sl.solution_time                                           AS sla_solution_min
+      sl.solution_time                                           AS sla_solution_min,
+      -- Corpo do chamado (1º artigo) — só pros tickets EM TRIAGEM (NOC + NEW),
+      -- pra alimentar a triagem inteligente sem inflar o JSON dos 3000 ativos.
+      CASE WHEN UPPER(ts.name) = 'NEW' AND q.name REGEXP '^NOC(::|$)' THEN (
+        SELECT LEFT(adm.a_body, 4000)
+        FROM article a
+        JOIN article_data_mime adm ON adm.article_id = a.id
+        WHERE a.ticket_id = t.id
+        ORDER BY a.create_time ASC
+        LIMIT 1
+      ) ELSE NULL END                                            AS descricao
     FROM ticket t
     JOIN queue           q  ON t.queue_id           = q.id
     JOIN ticket_state    ts ON t.ticket_state_id    = ts.id
