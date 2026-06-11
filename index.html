@@ -1986,6 +1986,40 @@ body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
 .tri-undo-btn:hover{color:var(--danger);border-color:var(--danger)}
 .tri-section-divider{margin:18px 4px 10px;padding-bottom:6px;border-bottom:1px dashed var(--border)}
 .tri-section-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+/* ── Termômetro do dia + carga das squads ──────────────────── */
+#tri-topo{margin:4px 0 18px}
+.tri-thermo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.tri-thermo-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;position:relative;overflow:hidden}
+.tri-thermo-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--muted)}
+.tri-thermo-item.ok::before{background:var(--ok)}
+.tri-thermo-item.warn::before{background:var(--warn)}
+.tri-thermo-item.danger::before{background:var(--danger)}
+.tri-thermo-num{font-family:var(--display);font-size:26px;font-weight:800;color:var(--text);line-height:1}
+.tri-thermo-item.warn .tri-thermo-num{color:var(--warn)}
+.tri-thermo-item.danger .tri-thermo-num{color:var(--danger)}
+.tri-thermo-lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px;font-weight:600}
+.tri-carga{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 16px}
+.tri-carga-hd{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tri-carga-chips{display:flex;gap:8px;flex-wrap:wrap}
+.tri-carga-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;font-size:12px;font-weight:600;color:var(--text)}
+.tri-carga-chip.crit{border-color:rgba(244,63,94,.4);background:rgba(244,63,94,.08)}
+.tri-carga-chip.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.07)}
+.tri-carga-chip-n{font-family:var(--mono);font-size:12px;font-weight:700}
+.tri-carga-chip.crit .tri-carga-chip-n{color:var(--danger)}
+.tri-carga-chip.warn .tri-carga-chip-n{color:var(--warn)}
+.tri-carga-chip-cobrar{padding:2px 8px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.tri-carga-chip-cobrar:hover{color:var(--orange);border-color:var(--orange)}
+/* Chamado parado (sem movimento há muito tempo) */
+.tri-card.parado{border-color:rgba(244,63,94,.35);box-shadow:inset 3px 0 0 var(--danger)}
+.tri-parado-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(244,63,94,.12);color:var(--danger);border:1px solid rgba(244,63,94,.3);border-radius:5px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+/* Carga viva dentro do pick de atendente */
+.tri-pick-item{justify-content:space-between}
+.tri-pick-load{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);margin-left:auto}
+.tri-pick-load.crit{color:var(--danger)}
+.tri-pick-load.warn{color:var(--warn)}
+.tri-pick-load.ok{color:var(--ok)}
+.tri-pick-cobrar{padding:3px 9px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-left:8px;transition:all .15s}
+.tri-pick-cobrar:hover{color:var(--orange);border-color:var(--orange)}
 /* Modal — escolher atendente da squad escolhida */
 .tri-pick-overlay{position:fixed;inset:0;z-index:9000;background:rgba(8,11,16,.94);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center}
 .tri-pick-overlay.on{display:flex}
@@ -5536,6 +5570,8 @@ if(_u)_u.addEventListener("keydown",_enterKey);
         <div class="tri-head-meta-lbl">aguardando</div>
       </div>
     </div>
+    <!-- Termômetro do dia + carga das squads (injetado por _triRenderTopo) -->
+    <div id="tri-topo"></div>
     <div id="tri-list" class="tri-list">
       <div class="tri-loading">Carregando fila de triagem…</div>
     </div>
@@ -28637,30 +28673,49 @@ function _triExtractCliente(t){
   if(m) return m[1].trim();
   return cli || 'desconhecido';
 }
-// Sugestão de squad: conta fila destino de tickets parecidos.
-// Parecidos = mesmo cliente (nome extraído) — histórico em
-// TICKETS_ATIVOS_DATA com atendente atribuído (já triados).
+// Palavras genéricas que não ajudam a distinguir squad (ruído).
+var _TRI_STOP = {'erro':1,'sistema':1,'chamado':1,'cliente':1,'favor':1,'ajuste':1,'problema':1,
+  'solicito':1,'solicitacao':1,'solicitacão':1,'para':1,'com':1,'sem':1,'que':1,'por':1,'uma':1,
+  'dos':1,'das':1,'nao':1,'nova':1,'novo':1,'urgente':1,'duvida':1,'acesso':1,'usuario':1,'usuário':1};
+function _triKeywords(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ').split(/\s+/)
+    .filter(function(w){ return w.length>=4 && !_TRI_STOP[w]; });
+}
+// Sugestão de squad: pontua tickets já triados parecidos com o atual.
+// Parecido = mesmo cliente (peso alto) E/OU palavras-chave do assunto/serviço
+// em comum (peso menor). Histórico vem de TICKETS_ATIVOS_DATA já com atendente.
 function _triSugerirSquad(t){
   if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return null;
   var alvoCli = _triExtractCliente(t).toUpperCase();
-  if(!alvoCli || alvoCli === 'DESCONHECIDO') return null;
-  var bySquad = {};
+  var temCli = alvoCli && alvoCli !== 'DESCONHECIDO';
+  var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||''));
+  var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
+  if(!temCli && !kw.length) return null;
+  var bySquad = {}, totalScore = 0, totalSim = 0;
   TICKETS_ATIVOS_DATA.rows.forEach(function(r){
     if(!r.atendente || r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER) return;
     if(r.fila === FILA_TRIAGEM) return; // ignora outros NOC ainda em triagem
-    var rCli = (r.cliente||'').toUpperCase();
-    var rAss = (r.assunto||'').toUpperCase();
-    if(rCli.indexOf(alvoCli)===-1 && rAss.indexOf(alvoCli)===-1) return;
     var sq = FILA_TO_SQUAD[r.fila];
     if(!sq) return;
-    bySquad[sq] = (bySquad[sq]||0) + 1;
+    var score = 0;
+    if(temCli){
+      var rCli = (r.cliente||'').toUpperCase();
+      var rAss = (r.assunto||'').toUpperCase();
+      if(rCli.indexOf(alvoCli)!==-1 || rAss.indexOf(alvoCli)!==-1) score += 3;
+    }
+    if(kw.length){
+      var rkw = _triKeywords((r.assunto||'') + ' ' + (r.servico||''));
+      var hit = 0; for(var i=0;i<rkw.length;i++){ if(kwSet[rkw[i]]) hit++; }
+      if(hit) score += Math.min(hit, 3); // limita o peso de keywords
+    }
+    if(score > 0){ bySquad[sq] = (bySquad[sq]||0) + score; totalScore += score; totalSim++; }
   });
   var keys = Object.keys(bySquad);
   if(!keys.length) return null;
-  var total = keys.reduce(function(s,k){return s+bySquad[k];},0);
   keys.sort(function(a,b){return bySquad[b]-bySquad[a];});
   var top = keys[0];
-  return { squadId: top, pct: Math.round(bySquad[top]/total*100), total: total };
+  return { squadId: top, pct: Math.round(bySquad[top]/totalScore*100), total: totalSim };
 }
 function _triMinutosDesde(iso){
   if(!iso) return 0;
@@ -28764,6 +28819,90 @@ function _triMediaMin(deltas){
   var avg = deltas.reduce(function(s,d){return s+d;}, 0) / deltas.length;
   return Math.round(avg / 60000); // ms → min
 }
+
+// ── Carga viva por squad (reaproveita a lógica do s-eq) ───────
+// Conta tickets ATIVOS por atendente nas filas de cada squad. Separa
+// "sob controle" (atendente trabalhando) de "aguardando cliente" (bola
+// fora) pra não sinalizar/cobrar injustamente quem depende do cliente.
+function _triCargaPorSquad(){
+  var out = {};
+  if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return out;
+  var ativo  = (typeof _eqAtivoState==='function') ? _eqAtivoState : function(){return true;};
+  var foraCt = (typeof _eqEstadoForaDoControle==='function') ? _eqEstadoForaDoControle : function(){return false;};
+  TICKETS_ATIVOS_DATA.rows.forEach(function(t){
+    if(!t.atendente || t.atendente === 'Admin OTRS') return;
+    if(!ativo(t.estado)) return;
+    var sq = FILA_TO_SQUAD[t.fila];
+    if(!sq) return;
+    if(!out[sq]) out[sq] = { total:0, sob:0, fora:0, atend:{} };
+    var nome = t.atendente.trim();
+    if(!out[sq].atend[nome]) out[sq].atend[nome] = { nome:nome, total:0, sob:0, fora:0 };
+    out[sq].total++; out[sq].atend[nome].total++;
+    if(foraCt(t.estado)){ out[sq].fora++; out[sq].atend[nome].fora++; }
+    else { out[sq].sob++; out[sq].atend[nome].sob++; }
+  });
+  return out;
+}
+// Status de carga da squad inteira (limiar maior que o individual)
+function _triSquadStatus(sob){ return sob>=40?'crit':(sob>=20?'warn':'ok'); }
+// Fila operacional pra cobrança coletiva por squad (evita NOC, que é a própria triagem)
+var _TRI_COBR_FILA = { 'ssg':'SSG','protheus':'PROTHEUS','ssg-melhorias':'SSG-MELHORIAS',
+  'dba':'DBA','gwms':'GWMS','datasul':'DATASUL','infra':'INFRAESTUTURA' };
+
+// ── Termômetro do dia + carga das squads (topo da Fila Agora) ──
+window._triRenderTopo = function(){
+  var host = document.getElementById('tri-topo');
+  if(!host) return;
+  if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA){ host.innerHTML=''; return; }
+  var fNoc = FILA_TRIAGEM, atPh = TRIAGEM_ATENDENTE_PLACEHOLDER;
+  var pend = (TICKETS_ATIVOS_DATA.rows||[]).filter(function(r){
+    return r.fila===fNoc && r.atendente===atPh && (r.estado||'').toUpperCase()===TRIAGEM_ESTADO_NOVO;
+  });
+  var naFila = pend.length;
+  var maisAntigo = 0;
+  pend.forEach(function(t){ var m=_triMinutosDesde(t.criado); if(m>maisAntigo) maisAntigo=m; });
+  var nowSec = Math.floor(Date.now()/1000);
+  var slaRisco = pend.filter(function(t){
+    return typeof t.escalation_time==='number' && t.escalation_time>0 && (t.escalation_time-nowSec) <= 30*60;
+  }).length;
+  var stats = (typeof _triStatsHoje==='function') ? _triStatsHoje() : {count:0};
+
+  var filaCls   = naFila>=10?'danger':naFila>=5?'warn':'ok';
+  var antigoCls = maisAntigo>=60?'danger':maisAntigo>=30?'warn':'ok';
+  var slaCls    = slaRisco>0?'danger':'ok';
+
+  var thermo = '<div class="tri-thermo">'
+    + '<div class="tri-thermo-item '+filaCls+'"><div class="tri-thermo-num">'+naFila+'</div><div class="tri-thermo-lbl">na fila agora</div></div>'
+    + '<div class="tri-thermo-item '+antigoCls+'"><div class="tri-thermo-num">'+(maisAntigo?_triFmtIdade(maisAntigo):'—')+'</div><div class="tri-thermo-lbl">mais antigo</div></div>'
+    + '<div class="tri-thermo-item '+slaCls+'"><div class="tri-thermo-num">'+slaRisco+'</div><div class="tri-thermo-lbl">SLA estourando</div></div>'
+    + '<div class="tri-thermo-item ok"><div class="tri-thermo-num">'+(stats.count||0)+'</div><div class="tri-thermo-lbl">triados hoje</div></div>'
+  + '</div>';
+
+  var carga = _triCargaPorSquad();
+  var ordem = ['ssg','protheus','ssg-melhorias','dba','gwms','datasul','infra'];
+  var chips = ordem.map(function(sid){
+    var c = carga[sid] || {sob:0,fora:0,total:0};
+    var st = _triSquadStatus(c.sob);
+    var cfg = SQUADS[sid];
+    var nome = cfg ? cfg.nome.replace('· Protheus','').trim() : sid;
+    var fila = _TRI_COBR_FILA[sid] || '';
+    var cobrar = (c.sob>0 && fila)
+      ? '<button class="tri-carga-chip-cobrar" onclick="_eqCobrancaColetiva(\''+fila+'\')" title="Gerar mensagem de cobrança coletiva da fila '+fila+'">cobrar</button>'
+      : '';
+    return '<div class="tri-carga-chip '+st+'" title="'+c.sob+' sob controle · '+c.fora+' aguardando cliente">'
+      + '<span>'+nome+'</span>'
+      + '<span class="tri-carga-chip-n">'+c.sob+'</span>'
+      + cobrar
+    + '</div>';
+  }).join('');
+  var cargaHtml = '<div class="tri-carga">'
+    + '<div class="tri-carga-hd">⚖️ Carga das squads <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(chamados sob controle — quem está mais cheio)</span></div>'
+    + '<div class="tri-carga-chips">'+chips+'</div>'
+  + '</div>';
+
+  host.innerHTML = thermo + cargaHtml;
+};
+
 window.renderTriagemView = function(){
   var listEl = document.getElementById('tri-list');
   var subEl  = document.getElementById('tri-head-sub');
@@ -28804,14 +28943,25 @@ window.renderTriagemView = function(){
     return;
   }
 
+  // Termômetro do dia + carga das squads (roda mesmo com fila vazia)
+  if(typeof _triRenderTopo==='function') _triRenderTopo();
+
   // Filtra triagem (pendentes em NOC)
   var tickets = (TICKETS_ATIVOS_DATA.rows||[]).filter(function(r){
     return r.fila === FILA_TRIAGEM
         && r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER
         && (r.estado||'').toUpperCase() === TRIAGEM_ESTADO_NOVO;
   });
-  // Ordena por mais antigo primeiro
-  tickets.sort(function(a,b){ return (a.criado||'').localeCompare(b.criado||''); });
+  // Ordena por URGÊNCIA: quem tem SLA mais perto de vencer primeiro,
+  // depois os sem SLA por mais antigo. (antes era só por idade)
+  tickets.sort(function(a,b){
+    var ea = (typeof a.escalation_time==='number' && a.escalation_time>0) ? a.escalation_time : null;
+    var eb = (typeof b.escalation_time==='number' && b.escalation_time>0) ? b.escalation_time : null;
+    if(ea!==null && eb!==null) return ea - eb;   // ambos com SLA: vence antes primeiro
+    if(ea!==null) return -1;                       // só A tem SLA → A na frente
+    if(eb!==null) return 1;                        // só B tem SLA → B na frente
+    return (a.criado||'').localeCompare(b.criado||''); // sem SLA: mais antigo primeiro
+  });
 
   // Recém triados (Feature 2): persistem por 5min na lista, com aparência diferente.
   // Se sync confirma que ticket saiu de NOC → mantém como "triado" (ela acertou).
@@ -28902,6 +29052,13 @@ window.renderTriagemView = function(){
     var minutos = _triMinutosDesde(t.criado);
     var ageClass = minutos >= 60 ? 'danger' : (minutos >= 30 ? 'warn' : '');
     var urgentClass = minutos >= 60 ? ' urgent' : '';
+    // Chamado PARADO: esperando triagem há +1h, ou SLA já vencido
+    var _slaVenc = (typeof t.escalation_time==='number' && t.escalation_time>0 && (t.escalation_time - Math.floor(Date.now()/1000)) <= 0);
+    var parado = minutos >= 60 || _slaVenc;
+    var paradoClass = parado ? ' parado' : '';
+    var paradoBadge = parado
+      ? '<span class="tri-parado-badge" title="Esse chamado está parado na triagem há muito tempo — prioridade">⚠ parado</span>'
+      : '';
     var sug = _triSugerirSquad(t);
     var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
 
@@ -28940,11 +29097,12 @@ window.renderTriagemView = function(){
       return '<button class="tri-squad-btn'+sugClass+'" onclick="_triPickSquad(\''+ticketEsc+'\',\''+sid+'\')">'+sCfg.nome.replace('· Protheus','').replace(/^Infraestrutura$/,'Infra')+pctTxt+'</button>';
     }).join('');
 
-    return '<div class="tri-card'+urgentClass+'">'
+    return '<div class="tri-card'+urgentClass+paradoClass+'">'
       + '<div class="tri-card-hd">'
         + '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="tri-card-num" title="Abrir no OTRS">#'+t.ticket+'</a>'
         + '<div class="tri-card-cli">'+cli+'</div>'
         + slaHtml
+        + paradoBadge
         + '<div class="tri-card-age '+ageClass+'">há '+_triFmtIdade(minutos)+'</div>'
       + '</div>'
       + '<div class="tri-card-assunto">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
@@ -29008,25 +29166,41 @@ window._triPickSquad = function(ticket, squadId){
   var list    = document.getElementById('tri-pick-list');
   if(!overlay||!list) return;
   title.textContent = 'Atendente de ' + cfg.nome;
-  sub.textContent   = 'Chamado #' + ticket + ' — escolha quem vai atender';
-  // Lista atendentes da squad (deriva do allowed_logins → nome)
+  sub.textContent   = 'Chamado #' + ticket + ' — quem está mais livre aparece no topo';
+  // Lista atendentes da squad (roster = allowed_logins) com CARGA VIVA dos dados.
   var logins = cfg.allowed_logins || [];
   if(!logins.length){
     list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atendentes cadastrados nessa squad.</div>';
-  } else {
-    var nomes = logins.map(function(l){
-      // login "primeiro.ultimo" → "Primeiro Ultimo" (capitalize)
-      return l.split('.').map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ');
-    }).sort();
-    list.innerHTML = nomes.map(function(n){
-      var ini = n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
-      var nEsc = n.replace(/"/g,'&quot;');
-      return '<div class="tri-pick-item" onclick="_triAssign(\''+ticket+'\',\''+squadId+'\',\''+nEsc+'\')">'
-        + '<div class="tri-pick-item-avatar">'+ini+'</div>'
-        + '<span>'+n+'</span>'
-      + '</div>';
-    }).join('');
+    overlay.classList.add('on'); return;
   }
+  // Casa o login do roster com o nome real dos dados (pra puxar a carga)
+  var cargaSquad = (_triCargaPorSquad()[squadId] || {atend:{}}).atend;
+  var n2l = (typeof _eqNameToLogin==='function') ? _eqNameToLogin : function(x){return (x||'').toLowerCase();};
+  var loginToCarga = {};
+  Object.keys(cargaSquad).forEach(function(real){ loginToCarga[n2l(real)] = cargaSquad[real]; });
+  var statusFn = (typeof _eqStatusFromCount==='function') ? _eqStatusFromCount : function(){return {key:'ok'};};
+  var pessoas = logins.map(function(l){
+    var c = loginToCarga[l];
+    var nome = c ? c.nome : l.split('.').map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ');
+    var sob = c ? c.sob : 0, fora = c ? c.fora : 0;
+    return { login:l, nome:nome, sob:sob, fora:fora, status:statusFn(sob).key };
+  });
+  pessoas.sort(function(a,b){ return a.sob - b.sob; }); // mais livre primeiro
+  list.innerHTML = pessoas.map(function(p){
+    var ini = p.nome.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
+    var nEsc = p.nome.replace(/"/g,'&quot;').replace(/'/g,'’'); // evita quebrar o onclick
+    var emoji = p.status==='crit'?'🔴':(p.status==='warn'?'🟡':'🟢');
+    var foraTxt = p.fora ? ' <span style="opacity:.55">(+'+p.fora+' aguard.)</span>' : '';
+    var cobrar = p.sob>0
+      ? '<button class="tri-pick-cobrar" onclick="event.stopPropagation();_eqCopiarCobranca(\''+nEsc+'\',\''+squadId+'\')" title="Copiar mensagem de cobrança">cobrar</button>'
+      : '';
+    return '<div class="tri-pick-item" onclick="_triAssign(\''+ticket+'\',\''+squadId+'\',\''+nEsc+'\')">'
+      + '<div class="tri-pick-item-avatar">'+ini+'</div>'
+      + '<span style="flex:1">'+p.nome+'</span>'
+      + '<span class="tri-pick-load '+p.status+'">'+emoji+' '+p.sob+' ativo'+(p.sob!==1?'s':'')+foraTxt+'</span>'
+      + cobrar
+    + '</div>';
+  }).join('');
   overlay.classList.add('on');
 };
 window._triClosePick = function(){
@@ -29047,6 +29221,17 @@ window._triAssign = function(ticket, squadId, atendente){
   // com badge "aguardando confirmação OTRS"; quando próximo sync confirmar
   // que saiu de NOC, vira "✓ confirmado".
   _triMarkRecent(ticket, squadId, sNome, atendente);
+  // Feedback gostoso: contador do dia sobe + frase de incentivo
+  try {
+    var _st = (typeof _triStatsHoje==='function') ? _triStatsHoje() : {count:0};
+    var _n = _st.count || 0;
+    var _frases = ['boa! 👏','mandou bem 🎯','voando 🚀','no ritmo 🔥','fila andando 💪','isso! 🙌'];
+    var _t = document.createElement('div');
+    _t.className = 'eq-toast';
+    _t.textContent = '✓ #'+ticket+' → '+sNome+' · '+atendente+'   ·   '+_n+' triado'+(_n!==1?'s':'')+' hoje — '+_frases[_n % _frases.length];
+    document.body.appendChild(_t);
+    setTimeout(function(){ _t.remove(); }, 3500);
+  } catch(e){}
   // Abre OTRS no ticket
   var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(ticket);
   window.open(tkUrl, '_blank', 'noopener');
