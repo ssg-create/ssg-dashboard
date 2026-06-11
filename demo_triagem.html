@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem Groundwork — Demonstração</title>
+<style>
+:root{
+  --bg:#0b0f16; --bg2:#131d2a; --bg3:#16202e; --border:#243043; --border2:#2a3a4e;
+  --text:#e6edf3; --sub:#8a97a6; --muted:#5a6b7e; --orange:#FF6400; --amber:#f59e0b;
+  --teal:#00d4a8; --blue:#4f8ef7; --danger:#f43f5e; --ok:#10b981;
+  --mono:'SFMono-Regular',Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:#070b11;color:var(--text);overflow:hidden;height:100vh}
+#stage{position:absolute;inset:0 0 76px 0;overflow:hidden}
+.screen{position:absolute;inset:0;opacity:0;transition:opacity .5s ease;pointer-events:none;padding:34px 44px;display:flex;flex-direction:column}
+.screen.on{opacity:1}
+
+/* fake cursor */
+#cursor{position:absolute;width:22px;height:22px;z-index:9999;left:50%;top:50%;transition:left .9s cubic-bezier(.4,.1,.2,1),top .9s cubic-bezier(.4,.1,.2,1);pointer-events:none}
+#cursor svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+#cursor.click::after{content:'';position:absolute;left:-9px;top:-9px;width:34px;height:34px;border-radius:50%;border:2px solid var(--orange);animation:rip .5s ease-out}
+@keyframes rip{from{transform:scale(.2);opacity:.9}to{transform:scale(1.3);opacity:0}}
+
+/* topbar */
+.tb{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1c2736;padding-bottom:16px;margin-bottom:20px}
+.tb .brand{display:flex;align-items:center;gap:11px}
+.tb .hex{width:30px;height:30px;background:linear-gradient(135deg,var(--orange),var(--amber));border-radius:7px}
+.tb .bn{font-size:15px;font-weight:800}.tb .bs{font-size:9.5px;color:var(--muted)}
+.tb .pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:11px;color:#9fe;display:flex;gap:7px;align-items:center}
+.tb .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+
+/* login */
+.login{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0b1018,#0e1620 60%,#13202e)}
+.login .card{background:#fff;color:#15202b;border-radius:16px;padding:30px 30px 26px;width:360px;border-top:4px solid var(--orange)}
+.login .hex{width:34px;height:34px;background:linear-gradient(135deg,var(--orange),var(--amber));border-radius:8px;margin-bottom:14px}
+.login h2{font-size:18px}.login p{font-size:12px;color:#69788a;margin:3px 0 18px}
+.login label{font-size:11px;font-weight:700;color:#3a4757}
+.login .inp{border:1px solid #d8dee6;border-radius:9px;padding:11px 13px;margin:5px 0 14px;font-size:13px;color:#15202b}
+.login .inp.fill{border-color:var(--orange)}
+.login .btn{background:var(--orange);color:#fff;text-align:center;font-weight:700;padding:12px;border-radius:9px;font-size:14px}
+
+.ttl{font-size:26px;font-weight:800;color:var(--orange);letter-spacing:-.5px}
+.ttlsub{color:var(--sub);font-size:12.5px;margin-top:3px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.aguard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 22px;text-align:center}
+.aguard .v{font-size:24px;font-weight:800}.aguard .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--ok);border-radius:11px;padding:12px 15px}
+.kpi.warn{border-left-color:var(--amber)}.kpi.dng{border-left-color:var(--danger)}
+.kpi .v{font-size:23px;font-weight:800}.kpi.warn .v{color:var(--amber)}.kpi.dng .v{color:var(--danger)}
+.kpi .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+
+.carga{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:16px}
+.carga .hd{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;display:flex;gap:7px;align-items:center}
+.chip.crit{border-color:#5b2230;background:#1e1216}
+.chip .n{font-family:var(--mono);font-weight:700}.chip.crit .n{color:var(--danger)}
+.chip .cb{border:1px solid #2c3a4c;border-radius:5px;padding:2px 7px;font-size:9px;color:var(--muted)}
+
+.filtros{display:flex;gap:7px;margin-bottom:13px;align-items:center}
+.flbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:3px}
+.fchip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 13px;font-size:12px;color:#cdd8e4}
+.fchip.on{background:linear-gradient(135deg,rgba(255,100,0,.2),rgba(255,100,0,.07));border-color:rgba(255,100,0,.5);color:#FF8c42}
+
+.tcard{background:#0f1824;border:1px solid #233246;border-radius:13px;padding:15px 18px;margin-bottom:11px;transition:border-color .3s,box-shadow .3s}
+.tcard.urg{border-color:rgba(244,63,94,.4);box-shadow:inset 4px 0 0 var(--danger)}
+.tcard.pick{border-color:var(--teal);box-shadow:0 0 0 2px rgba(0,212,168,.3)}
+.tcard .hd2{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.tnum{color:var(--teal);background:rgba(0,212,168,.1);border:1px solid rgba(0,212,168,.25);border-radius:6px;padding:3px 9px;font-family:var(--mono);font-size:11px}
+.tcli{font-weight:800;font-size:14px}
+.tmod{background:rgba(79,142,247,.12);color:#7fb0ff;border:1px solid rgba(79,142,247,.3);border-radius:5px;padding:3px 8px;font-size:9.5px;font-weight:700}
+.tage{margin-left:auto;color:var(--muted);font-family:var(--mono);font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 9px}
+.tass{color:#aeb9c6;font-style:italic;font-size:12.5px;background:#0b121b;border-left:3px solid var(--border);border-radius:0 7px 7px 0;padding:9px 12px;margin-bottom:8px}
+.tprev{color:var(--sub);font-size:11.5px;margin-bottom:8px;line-height:1.5}
+.tsug{font-size:12px;color:var(--sub);margin-bottom:11px}.tsug b{color:var(--teal)}
+.tsug.urg{color:#f08c9e;font-weight:600}
+.tacts{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.tacts .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:3px}
+.sqbtn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:#cdd8e4;font-size:11.5px;font-weight:600;padding:7px 13px}
+.sqbtn.on{background:linear-gradient(135deg,rgba(0,212,168,.18),rgba(0,212,168,.06));border-color:rgba(0,212,168,.45);color:var(--teal)}
+
+/* modal */
+.ov{position:absolute;inset:0;background:rgba(8,11,16,.7);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .4s;pointer-events:none}
+.ov.on{opacity:1}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:430px;overflow:hidden}
+.modal .mh{padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal .mt{font-weight:800;font-size:15px}.modal .ms{font-size:11px;color:var(--muted);margin-top:3px}
+.modal .mb{padding:14px 18px}
+.arow{display:flex;align-items:center;gap:11px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-bottom:7px}
+.av{width:26px;height:26px;border-radius:50%;background:#1d2a3a;color:#7fb0ff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.anm{flex:1;font-size:13px}
+.aload{font-family:var(--mono);font-size:11.5px;font-weight:700}
+.aload.ok{color:var(--ok)}.aload.warn{color:var(--amber)}.aload.crit{color:var(--danger)}
+.mcobr{white-space:pre-wrap;font-family:var(--mono);font-size:11.5px;line-height:1.6;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:14px;color:#cdd8e4;max-height:300px;overflow:auto}
+.mfoot{padding:12px 18px;border-top:1px solid var(--border);text-align:right}
+.copybtn{background:transparent;border:1px solid var(--orange);color:var(--orange);font-weight:700;border-radius:8px;padding:8px 14px;font-size:12px}
+
+/* atendentes */
+.athero{background:linear-gradient(135deg,#0e1620,#131d2a);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:16px}
+.athero .t{color:var(--amber);font-size:30px;font-weight:800}
+.athero .s{color:var(--sub);font-size:12px;margin-top:6px}
+.atgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+.atc{background:#0f1824;border:1px solid #233246;border-radius:11px;padding:13px 15px}
+.atc.crit{border-top:2px solid var(--danger)}
+.atc .an{font-size:12px;font-weight:700;color:#cdd8e4;margin-bottom:6px}
+.atc .av2{font-size:24px;font-weight:800;color:var(--danger)}.atc .av2.ok{color:var(--blue)}
+.atc .al{font-size:8.5px;text-transform:uppercase;color:var(--muted);letter-spacing:.04em;margin-top:2px}
+
+/* toast */
+#toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#0f1824;border:1px solid var(--teal);color:#cfe;border-radius:10px;padding:11px 18px;font-size:13px;opacity:0;transition:all .4s;z-index:500}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* sidebar nav (mini) */
+.app{display:flex;height:100%}
+.side{width:172px;flex-shrink:0;border-right:1px solid #1c2736;padding-right:18px;margin-right:22px}
+.side .sh{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;font-size:12.5px;color:var(--sub);margin-bottom:4px}
+.nav.on{background:rgba(79,142,247,.12);color:#9fc0ff}
+.nav .ic{width:15px;height:15px;border:1.6px solid currentColor;border-radius:4px;opacity:.7}
+.main{flex:1;overflow:hidden}
+
+/* control bar */
+#bar{position:absolute;left:0;right:0;bottom:0;height:76px;background:#0a0e14;border-top:1px solid #1a2330;display:flex;align-items:center;gap:16px;padding:0 22px;z-index:1000}
+#bar .btn{width:42px;height:42px;border-radius:50%;background:#11161f;border:1px solid #222d3a;color:#cdd8e4;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+#bar .btn:hover{border-color:var(--orange);color:var(--orange)}
+#cap{flex:1;font-size:15px;color:#e6edf3;font-weight:500}
+#cap b{color:var(--orange)}
+#dots{display:flex;gap:6px;flex-wrap:wrap;max-width:420px;justify-content:flex-end}
+.dot{width:24px;height:5px;border-radius:3px;background:#222d3a;cursor:pointer;transition:background .3s}
+.dot.on{background:var(--orange)}
+.dot.done{background:#46627f}
+#prog{position:absolute;top:0;left:0;height:3px;background:var(--orange);width:0;transition:width .2s linear}
+.kbd{position:absolute;right:22px;bottom:84px;font-size:10px;color:var(--muted)}
+.svg-ic{width:18px;height:18px}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <!-- LOGIN -->
+  <div class="screen" id="sc-login">
+    <div class="login">
+      <div class="card">
+        <div class="hex"></div>
+        <h2>Groundwork Command Center</h2>
+        <p>Entre com suas credenciais para continuar</p>
+        <label>Usuário</label>
+        <div class="inp fill" id="lg-user">triagem.gw</div>
+        <label>Senha</label>
+        <div class="inp" id="lg-pass">••••••••••••</div>
+        <div class="btn" id="lg-btn">Entrar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP (fila / atendentes / cobranca) -->
+  <div class="screen" id="sc-app">
+    <div class="app">
+      <div class="side">
+        <div class="sh">Triagem</div>
+        <div class="nav on" id="nv-fila"><span class="ic"></span>Fila Agora</div>
+        <div class="nav" id="nv-at"><span class="ic"></span>Atendentes</div>
+        <div class="nav" id="nv-cob"><span class="ic"></span>Cobrança</div>
+      </div>
+      <div class="main">
+        <!-- TOPBAR -->
+        <div class="tb">
+          <div class="brand"><div class="hex"></div><div><div class="bn">Groundwork Command Center</div><div class="bs">Operações em tempo real</div></div></div>
+          <div class="pill"><span class="dot"></span>Triagem</div>
+        </div>
+        <!-- VIEW FILA -->
+        <div id="v-fila">
+          <div class="head">
+            <div><div class="ttl">Pra onde vai?</div><div class="ttlsub">2 chamados aguardando você definir pra onde vão</div></div>
+            <div class="aguard"><div class="v">2</div><div class="l">Aguardando</div></div>
+          </div>
+          <div class="kpis">
+            <div class="kpi"><div class="v">2</div><div class="l">Na fila agora</div></div>
+            <div class="kpi warn"><div class="v">38min</div><div class="l">Mais antigo</div></div>
+            <div class="kpi dng"><div class="v">1</div><div class="l">SLA estourando</div></div>
+            <div class="kpi"><div class="v">7</div><div class="l">Triados hoje</div></div>
+          </div>
+          <div class="carga">
+            <div class="hd">⚖ Carga das squads · quem está mais cheio</div>
+            <div class="chips">
+              <span class="chip crit">SSG <span class="n">31</span><span class="cb">cobrar</span></span>
+              <span class="chip crit">Protheus <span class="n">22</span><span class="cb">cobrar</span></span>
+              <span class="chip">DBA <span class="n">11</span><span class="cb">cobrar</span></span>
+              <span class="chip">GWMS <span class="n">1</span><span class="cb">cobrar</span></span>
+              <span class="chip">Datasul <span class="n">8</span><span class="cb">cobrar</span></span>
+              <span class="chip">Infra <span class="n">4</span><span class="cb">cobrar</span></span>
+            </div>
+          </div>
+          <div class="filtros"><span class="flbl">Filtrar:</span><span class="fchip on">Todas 2</span><span class="fchip">GWMS 1</span><span class="fchip">FISCAL 1</span></div>
+          <div class="tcard" id="card-tjba">
+            <div class="hd2"><span class="tnum">#…0167</span><span class="tcli">TJBA</span><span class="tmod">INTEGRAÇÃO</span><span class="tage">há 12min</span></div>
+            <div class="tass">Dashboard de Topologia automática</div>
+            <div class="tprev">Prévia: “Precisamos habilitar o painel de topologia automática no monitoramento, está em branco para todos os usuários…”</div>
+            <div class="tsug">💡 <b>TJBA</b> é cliente de <b>GWMS</b></div>
+            <div class="tacts"><span class="l">Mandar pra:</span>
+              <span class="sqbtn">SSG</span><span class="sqbtn on" id="btn-gwms">GWMS</span><span class="sqbtn">DBA</span><span class="sqbtn">Datasul</span><span class="sqbtn">Infra</span>
+            </div>
+          </div>
+          <div class="tcard urg">
+            <div class="hd2"><span class="tnum">#…0182</span><span class="tcli">FADEL</span><span class="tmod">FISCAL</span><span class="tage" style="color:var(--danger);border-color:#5b2230">há 38min</span></div>
+            <div class="tass">NF-e não transmite — SEFAZ rejeita</div>
+            <div class="tsug urg">🚨 Sinais de urgência: SEFAZ rejeita, não transmite — OTRS diz “Normal”, texto indica URGENTE</div>
+            <div class="tacts"><span class="l">Mandar pra:</span>
+              <span class="sqbtn on">SSG</span><span class="sqbtn">Protheus</span><span class="sqbtn">GWMS</span><span class="sqbtn">DBA</span>
+            </div>
+          </div>
+        </div>
+        <!-- VIEW ATENDENTES -->
+        <div id="v-at" style="display:none">
+          <div class="athero"><div class="t">ATENÇÃO</div><div class="s">30 atendentes com carga · 107 em atendimento · 1 sobrecarregado · 23 com folga</div></div>
+          <div class="filtros"><span class="flbl">Filtrar por fila:</span><span class="fchip on">Todas</span><span class="fchip">GWMS</span><span class="fchip">Protheus</span><span class="fchip">SSG</span><span class="fchip">DBA</span></div>
+          <div class="atgrid">
+            <div class="atc crit"><div class="an">Jean P.</div><div class="av2">11</div><div class="al">abertos · sobrecarr.</div></div>
+            <div class="atc crit"><div class="an">Cristiano S.</div><div class="av2">7</div><div class="al">sob controle</div></div>
+            <div class="atc"><div class="an">Débora G.</div><div class="av2 ok">2</div><div class="al">sob controle</div></div>
+            <div class="atc"><div class="an">Fábio L.</div><div class="av2 ok">0</div><div class="al">com folga</div></div>
+          </div>
+        </div>
+        <!-- VIEW COBRANCA -->
+        <div id="v-cob" style="display:none">
+          <div class="head"><div><div class="ttl" style="color:var(--text);font-size:22px">Equipes & Cobrança</div><div class="ttlsub">Carga viva por fila · mensagem de cobrança pronta</div></div></div>
+          <div class="carga"><div class="hd">GWMS · 12 chamados ativos · 1 sobrecarregado</div>
+            <div class="chips">
+              <span class="chip crit">Adriano <span class="n">16</span><span class="cb">cobrar</span></span>
+              <span class="chip">João <span class="n">3</span><span class="cb">cobrar</span></span>
+              <span class="chip">Pedro <span class="n">8</span><span class="cb">cobrar</span></span>
+              <span class="chip" style="border-color:var(--orange);color:var(--orange)">📢 Cobrança coletiva</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL escolher atendente -->
+  <div class="ov" id="ov-pick">
+    <div class="modal">
+      <div class="mh"><div class="mt">Atendente de GWMS</div><div class="ms">Chamado #…0167 — quem está mais livre aparece no topo</div></div>
+      <div class="mb">
+        <div class="arow" id="pick-vm"><span class="av">VM</span><span class="anm">Vinicius Mendes</span><span class="aload ok">🟢 1 ativo</span></div>
+        <div class="arow"><span class="av">JS</span><span class="anm">João Santos</span><span class="aload ok">🟢 3 ativos</span></div>
+        <div class="arow"><span class="av">PL</span><span class="anm">Pedro Luiz</span><span class="aload warn">🟡 8 ativos</span></div>
+        <div class="arow"><span class="av">AL</span><span class="anm">Adriano Luiz</span><span class="aload crit">🔴 16 ativos</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL cobranca preview -->
+  <div class="ov" id="ov-cob">
+    <div class="modal" style="width:480px">
+      <div class="mh"><div class="mt">Cobrança coletiva · GWMS</div><div class="ms">Confira a mensagem — depois é só copiar e colar no WhatsApp</div></div>
+      <div class="mb"><div class="mcobr">Galera GWMS, bom dia! 👋
+
+📊 Foto da fila hoje:
+12 chamados ativos · 1 sobrecarregado
+
+👥 Time:
+🔴 Adriano — 16 chamados
+🟢 João — 3 chamados
+
+🔥 Mais antigo: #…0142 — 9 dias — Adriano
+Bora dar uma re-triagem e dividir? 🙌</div></div>
+      <div class="mfoot"><span class="copybtn">📋 Copiar mensagem</span></div>
+    </div>
+  </div>
+
+  <div id="toast">✓ #…0167 → GWMS · Vinicius Mendes · 8 triados hoje 🚀</div>
+
+  <!-- cursor -->
+  <div id="cursor">
+    <svg class="svg-ic" viewBox="0 0 24 24" fill="#fff" stroke="#222" stroke-width="1"><path d="M5 3l14 8-6 1.5L11 19z"/></svg>
+  </div>
+</div>
+
+<div id="bar">
+  <div id="prog"></div>
+  <div class="btn" id="b-play" title="Pausar/Tocar">❚❚</div>
+  <div class="btn" id="b-restart" title="Reiniciar">⟲</div>
+  <div id="cap">Carregando…</div>
+  <div id="dots"></div>
+</div>
+<div class="kbd">← → para navegar · espaço pausa</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var cursor=$('cursor'), stage=$('stage');
+
+  function show(id){ ['sc-login','sc-app'].forEach(function(s){ $(s).classList.toggle('on', s===id); }); }
+  function view(v){ ['fila','at','cob'].forEach(function(x){ var e=$('v-'+x); if(e) e.style.display=(x===v?'':'none'); });
+    $('nv-fila').classList.toggle('on',v==='fila'); $('nv-at').classList.toggle('on',v==='at'); $('nv-cob').classList.toggle('on',v==='cob'); }
+  function ov(id,on){ var e=$(id); if(e) e.classList.toggle('on',!!on); }
+  function moveTo(el){ if(!el){return;} var r=el.getBoundingClientRect(); cursor.style.left=(r.left+r.width*0.5)+'px'; cursor.style.top=(r.top+r.height*0.5)+'px'; }
+  function click(){ cursor.classList.remove('click'); void cursor.offsetWidth; cursor.classList.add('click'); }
+  function toast(on){ $('toast').classList.toggle('on',!!on); }
+
+  // cada cena: caption + setup() que prepara a tela + alvo do cursor
+  var SCENES=[
+    {cap:'O MAX entra na <b>tela auxiliar</b> com o login dele. Nada muda no trabalho dele — é só uma mãozinha.',
+     run:function(){ show('sc-login'); ov('ov-pick',0); ov('ov-cob',0); toast(0); setTimeout(function(){moveTo($('lg-btn'));},200); setTimeout(click,1100); }},
+    {cap:'Esta é a <b>Fila Agora</b>: os chamados novos que ainda não têm dono caem aqui pra ele distribuir.',
+     run:function(){ show('sc-app'); view('fila'); ov('ov-pick',0); toast(0); moveTo($('card-tjba')); }},
+    {cap:'No topo, o <b>resumo do dia</b> — quantos na fila, o mais antigo, quantos com prazo estourando.',
+     run:function(){ moveTo(document.querySelector('.kpis .kpi.dng')); }},
+    {cap:'E a <b>carga das squads</b>: quem está mais cheio (vermelho). Ajuda a não jogar em cima de quem está afogado.',
+     run:function(){ moveTo(document.querySelector('.carga .chips .chip.crit')); }},
+    {cap:'Cada chamado é um <b>card</b>: cliente, uma prévia do texto e um <b>palpite</b> de pra onde mandar.',
+     run:function(){ view('fila'); moveTo($('card-tjba')); }},
+    {cap:'Aqui o palpite diz: <b>TJBA é cliente de GWMS</b>. O botão sugerido fica verde. O MAX confere e decide.',
+     run:function(){ moveTo($('btn-gwms')); }},
+    {cap:'Repare no 2º card em <b>vermelho</b>: o texto diz “SEFAZ rejeita”. A tela avisa que é urgente, mesmo o OTRS dizendo “Normal”.',
+     run:function(){ moveTo(document.querySelector('.tcard.urg')); }},
+    {cap:'Ele clica na squad escolhida — <b>GWMS</b>.',
+     run:function(){ view('fila'); moveTo($('btn-gwms')); setTimeout(click,900); }},
+    {cap:'Abre o quadro de atendentes da squad com a <b>carga de cada um</b> — o mais livre aparece no topo.',
+     run:function(){ ov('ov-pick',1); setTimeout(function(){moveTo($('pick-vm'));},350); }},
+    {cap:'Clica no atendente mais livre (<b>Vinicius, 1 ativo</b>) e o ticket abre no OTRS pra finalizar o “Move”.',
+     run:function(){ ov('ov-pick',1); moveTo($('pick-vm')); setTimeout(click,900); }},
+    {cap:'Pronto! A tela confirma com o <b>contador do dia</b>. Rápido e sem adivinhação.',
+     run:function(){ ov('ov-pick',0); toast(1); }},
+    {cap:'Na aba <b>Atendentes</b> ele vê a carga de toda a equipe — quem está sobrecarregado e quem tem folga.',
+     run:function(){ toast(0); view('at'); moveTo($('nv-at')); }},
+    {cap:'E na aba <b>Cobrança</b> ele gera a mensagem pronta pra cobrar quem está com chamado parado.',
+     run:function(){ view('cob'); moveTo($('nv-cob')); }},
+    {cap:'A mensagem aparece <b>antes de copiar</b> — ele confere e só então manda no WhatsApp. Nada às cegas.',
+     run:function(){ view('cob'); ov('ov-cob',1); setTimeout(function(){moveTo(document.querySelector('#ov-cob .copybtn'));},350); }},
+    {cap:'É isso! Bater o olho, seguir o palpite (ou não), mandar pra quem tem espaço. <b>Bora triar 🚀</b>',
+     run:function(){ ov('ov-cob',0); view('fila'); moveTo($('card-tjba')); }}
+  ];
+
+  var i=0, playing=true, timer=null, prog=null, DUR=4200;
+  var dots=$('dots');
+  SCENES.forEach(function(_,k){ var d=document.createElement('div'); d.className='dot'; d.onclick=function(){ go(k); }; dots.appendChild(d); });
+
+  function paint(){
+    Array.prototype.forEach.call(dots.children,function(d,k){ d.className='dot'+(k===i?' on':(k<i?' done':'')); });
+    $('cap').innerHTML=SCENES[i].cap;
+  }
+  function startProg(){
+    var p=$('prog'), t0=Date.now();
+    clearInterval(prog);
+    prog=setInterval(function(){ if(!playing){return;} var f=Math.min(1,(Date.now()-t0)/DUR); p.style.width=(f*100)+'%'; if(f>=1){ p.style.width='0%'; t0=Date.now(); } },60);
+  }
+  function schedule(){ clearTimeout(timer); if(!playing){return;} timer=setTimeout(function(){ next(); }, DUR); }
+  function render(){ try{ SCENES[i].run(); }catch(e){} paint(); schedule(); }
+  function go(k){ i=(k+SCENES.length)%SCENES.length; $('prog').style.width='0%'; render(); if(playing) startProg(); }
+  function next(){ go(i+1); }
+  function prev(){ go(i-1); }
+
+  $('b-play').onclick=function(){ playing=!playing; this.textContent=playing?'❚❚':'►'; if(playing){ startProg(); schedule(); } else { clearTimeout(timer); } };
+  $('b-restart').onclick=function(){ go(0); };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ next(); } else if(e.key==='ArrowLeft'){ prev(); }
+    else if(e.key===' '){ e.preventDefault(); $('b-play').click(); }
+  });
+
+  // start
+  show('sc-login'); playing=true; render(); startProg();
+})();
+</script>
+</body>
+</html>
