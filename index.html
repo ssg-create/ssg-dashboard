@@ -1969,6 +1969,12 @@ body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
 .tri-card-assunto{font-size:13px;color:var(--sub);margin-bottom:10px;line-height:1.5;padding:10px 12px;background:var(--bg3);border-left:3px solid var(--border);border-radius:0 6px 6px 0;font-style:italic}
 .tri-card-sugestao{font-size:11.5px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .tri-card-sugestao strong{color:var(--teal);font-weight:700}
+/* Enriquecimento determinístico (sem LLM): prévia, módulo, urgência */
+.tri-card-preview{font-size:12px;color:var(--sub);margin:-2px 0 10px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:.85}
+.tri-mod-badge{display:inline-flex;align-items:center;padding:3px 9px;background:rgba(79,142,247,.12);color:var(--blue);border:1px solid rgba(79,142,247,.3);border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.tri-urg-flag{font-size:11.5px;color:var(--danger);background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;font-weight:600;line-height:1.45}
+.tri-urg-flag strong{color:var(--danger);font-weight:800}
+.tri-card.urgtexto{border-color:rgba(244,63,94,.4);box-shadow:inset 3px 0 0 var(--danger)}
 .tri-card-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tri-card-actions-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:4px}
 .tri-squad-btn{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.02em}
@@ -28721,6 +28727,72 @@ function _triExtractCliente(t){
   return cli || 'desconhecido';
 }
 // Palavras genéricas que não ajudam a distinguir squad (ruído).
+// ── Enriquecimento determinístico do card (SEM LLM) ───────────
+// Lê assunto + descrição (corpo do 1º artigo, vindo do sync). Tudo regra
+// transparente e calibrável — nada de caixa-preta nem custo de IA.
+function _triNorm(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+}
+// Corpo do chamado: HTML → texto limpo, cortado em 'max' chars.
+function _triBodyText(t, max){
+  var raw = (t && t.descricao) ? String(t.descricao) : '';
+  if(!raw) return '';
+  var txt = raw
+    .replace(/<style[\s\S]*?<\/style>/gi,' ')
+    .replace(/<script[\s\S]*?<\/script>/gi,' ')
+    .replace(/<br\s*\/?>/gi,' ')
+    .replace(/<\/(p|div|li|tr|h\d)>/gi,' ')
+    .replace(/<[^>]+>/g,' ')
+    .replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>')
+    .replace(/\s+/g,' ').trim();
+  if(max && txt.length > max) txt = txt.slice(0, max).trim() + '…';
+  return txt;
+}
+// Dicionário MÓDULO → termos (1ª categoria que bater vence; ordem = específico→genérico)
+var _TRI_MODULOS = [
+  ['FISCAL',         ['nf-e','nfe','nota fiscal','sefaz','sped','ct-e','cte','mdf-e','mdfe','danfe','nfs-e','nfse','icms','tributo','fiscal','reinf','efd','difal']],
+  ['FATURAMENTO',    ['faturar','faturamento','pedido de venda','nota de saida','romaneio','expedicao','sc5','sc6']],
+  ['FINANCEIRO',     ['titulo','boleto','contas a pagar','contas a receber','fluxo de caixa','financeiro','cnab','remessa bancaria','bordero','se1','se2','baixa de titulo']],
+  ['ESTOQUE',        ['saldo em estoque','inventario','movimentacao de estoque','armazem','estoque','sb1','sb2','sd1','sd2']],
+  ['COMPRAS',        ['pedido de compra','cotacao','requisicao de compra','sc7','fornecedor']],
+  ['RH/FOLHA',       ['folha de pagamento','holerite','ponto eletronico','rescisao','esocial','gfip','admissao','ferias','recursos humanos','sra']],
+  ['CONTABIL',       ['lancamento contabil','balancete','razao contabil','contabilidade','contabil','ctb']],
+  ['PRODUCAO/PCP',   ['ordem de producao','apontamento de producao','pcp','mrp','estrutura de produto','roteiro de producao']],
+  ['EAI/INTEGRACAO', ['integracao','eai','webservice','web service','edi','soap','schedule','job de integracao']],
+  ['RELATORIOS',     ['relatorio','layout de impressao','spool','crystal','impressao do']],
+  ['ACESSO/AMBIENTE',['nao consigo acessar','nao consigo entrar','senha','login','lentidao','travando','travou','fora do ar','conexao','servidor','vpn','rdp','ambiente']]
+];
+function _triModulo(t){
+  var hay = _triNorm((t.assunto||'') + ' ' + _triBodyText(t, 600) + ' ' + (t.servico||''));
+  if(!hay.trim()) return null;
+  for(var i=0;i<_TRI_MODULOS.length;i++){
+    var termos = _TRI_MODULOS[i][1];
+    for(var j=0;j<termos.length;j++){
+      if(hay.indexOf(_triNorm(termos[j])) !== -1) return _TRI_MODULOS[i][0];
+    }
+  }
+  return null;
+}
+// Sinais de URGÊNCIA real no texto (calibrável)
+var _TRI_URG_SINAIS = ['parado','parou','nao funciona','nao consigo','nao emite','nao transmite',
+  'sefaz rejeita','rejeitada','faturamento parado','faturamento travado','producao parada',
+  'todos os usuarios','ninguem consegue','fora do ar','sistema fora','travou tudo','perda de dado',
+  'urgentissimo','vence hoje','prazo legal','prazo fiscal','multa','bloqueado'];
+function _triPrioBaixa(p){
+  var n = _triNorm(p);
+  return n.indexOf('normal')!==-1 || n.indexOf('baixa')!==-1 || n.indexOf('low')!==-1;
+}
+function _triUrgenciaTexto(t){
+  var hay = _triNorm((t.assunto||'') + ' ' + _triBodyText(t, 1200));
+  if(!hay.trim()) return null;
+  var achados = [];
+  for(var i=0;i<_TRI_URG_SINAIS.length;i++){
+    if(hay.indexOf(_TRI_URG_SINAIS[i]) !== -1) achados.push(_TRI_URG_SINAIS[i]);
+    if(achados.length >= 3) break;
+  }
+  if(!achados.length) return null;
+  return { sinais: achados, subdimensionado: _triPrioBaixa(t.prioridade) };
+}
 var _TRI_STOP = {'erro':1,'sistema':1,'chamado':1,'cliente':1,'favor':1,'ajuste':1,'problema':1,
   'solicito':1,'solicitacao':1,'solicitacão':1,'para':1,'com':1,'sem':1,'que':1,'por':1,'uma':1,
   'dos':1,'das':1,'nao':1,'nova':1,'novo':1,'urgente':1,'duvida':1,'acesso':1,'usuario':1,'usuário':1};
@@ -28736,7 +28808,7 @@ function _triSugerirSquad(t){
   if(typeof TICKETS_ATIVOS_DATA==='undefined' || !TICKETS_ATIVOS_DATA || !TICKETS_ATIVOS_DATA.rows) return null;
   var alvoCli = _triExtractCliente(t).toUpperCase();
   var temCli = alvoCli && alvoCli !== 'DESCONHECIDO';
-  var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||''));
+  var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
   var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
   if(!temCli && !kw.length) return null;
   var bySquad = {}, totalScore = 0, totalSim = 0;
@@ -29134,6 +29206,11 @@ window.renderTriagemView = function(){
       ? '<span class="tri-parado-badge" title="Esse chamado está parado na triagem há muito tempo — prioridade">⚠ parado</span>'
       : '';
     var sug = _triSugerirSquad(t);
+    // Enriquecimento determinístico (sem LLM) a partir do corpo do chamado
+    var modulo  = _triModulo(t);
+    var urg     = _triUrgenciaTexto(t);
+    var preview = _triBodyText(t, 170);
+    var urgClass = (urg && urg.subdimensionado) ? ' urgtexto' : '';
     var tkUrl = 'https://atendimento.groundwork.com.br/otrs/index.pl?Action=AgentTicketZoom;TicketNumber='+encodeURIComponent(t.ticket);
 
     // SLA badge (Feature 1) — ampulheta com tempo restante. Atualiza via _triTickSLA.
@@ -29163,6 +29240,17 @@ window.renderTriagemView = function(){
       sugLine = '<div class="tri-card-sugestao">💡 Sem histórico desse cliente — você decide.</div>';
     }
 
+    // Selo de módulo (palavras-chave) + flag de urgência lida no texto
+    var modBadge = modulo ? '<span class="tri-mod-badge" title="Módulo detectado por palavras-chave">'+modulo+'</span>' : '';
+    var urgLine = '';
+    if(urg){
+      var subTxt = urg.subdimensionado
+        ? ' <strong>— OTRS diz "'+(t.prioridade||'?').replace(/</g,'&lt;')+'", texto indica URGENTE</strong>'
+        : '';
+      urgLine = '<div class="tri-urg-flag">🚨 Sinais de urgência: '+urg.sinais.join(', ')+subTxt+'</div>';
+    }
+    var previewLine = preview ? '<div class="tri-card-preview">'+preview.replace(/</g,'&lt;')+'</div>' : '';
+
     var btns = squadIds.map(function(sid){
       var sCfg = SQUADS[sid];
       var sugClass = (sug && sug.squadId === sid) ? ' sugerido' : '';
@@ -29171,15 +29259,18 @@ window.renderTriagemView = function(){
       return '<button class="tri-squad-btn'+sugClass+'" onclick="_triPickSquad(\''+ticketEsc+'\',\''+sid+'\')">'+sCfg.nome.replace('· Protheus','').replace(/^Infraestrutura$/,'Infra')+pctTxt+'</button>';
     }).join('');
 
-    return '<div class="tri-card'+urgentClass+paradoClass+'">'
+    return '<div class="tri-card'+urgentClass+paradoClass+urgClass+'">'
       + '<div class="tri-card-hd">'
         + '<a href="'+tkUrl+'" target="_blank" rel="noopener" class="tri-card-num" title="Abrir no OTRS">#'+t.ticket+'</a>'
         + '<div class="tri-card-cli">'+cli+'</div>'
+        + modBadge
         + slaHtml
         + paradoBadge
         + '<div class="tri-card-age '+ageClass+'">há '+_triFmtIdade(minutos)+'</div>'
       + '</div>'
       + '<div class="tri-card-assunto">'+(t.assunto||'(sem assunto)').replace(/</g,'&lt;')+'</div>'
+      + previewLine
+      + urgLine
       + sugLine
       + '<div class="tri-card-actions">'
         + '<span class="tri-card-actions-lbl">Mandar pra:</span>'
