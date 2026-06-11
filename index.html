@@ -1975,6 +1975,13 @@ body[data-user-perfil="gestor_bh"] .rpt-type-exec{display:none!important}
 .tri-urg-flag{font-size:11.5px;color:var(--danger);background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);border-radius:6px;padding:7px 11px;margin-bottom:10px;font-weight:600;line-height:1.45}
 .tri-urg-flag strong{color:var(--danger);font-weight:800}
 .tri-card.urgtexto{border-color:rgba(244,63,94,.4);box-shadow:inset 3px 0 0 var(--danger)}
+/* Filtro por squad sugerida (Fila Agora) */
+.tri-filtro{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tri-filtro-lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-right:2px}
+.tri-filtro-chip{padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--sub);font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.tri-filtro-chip span{font-family:var(--mono);font-size:10px;opacity:.65}
+.tri-filtro-chip:hover{border-color:var(--blue);color:var(--text)}
+.tri-filtro-chip.on{background:linear-gradient(135deg,rgba(255,100,0,.18),rgba(255,100,0,.06));border-color:rgba(255,100,0,.45);color:#FF7024}
 .tri-card-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tri-card-actions-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:4px}
 .tri-squad-btn{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;letter-spacing:.02em}
@@ -28801,11 +28808,48 @@ function _triKeywords(s){
     .replace(/[^a-z0-9\s]/g,' ').split(/\s+/)
     .filter(function(w){ return w.length>=4 && !_TRI_STOP[w]; });
 }
-// Override manual cliente → squad (Fabio calibra). Vence tudo quando bate.
-// Chave = trecho do nome do cliente (UPPER). Ex.: TJBA é cliente de GWMS.
-var _TRI_CLIENTE_SQUAD = {
-  'TJBA': 'gwms'
-};
+// Índice cliente → squad DERIVADO DO DADO (cruza cliente × fila do XLSX
+// histórico + snapshot ativo). É o "cliente versus fila" que o filtro já mostra —
+// agora computado uma vez (cache por assinatura) pra alimentar a sugestão.
+var _TRI_CLI_IDX = null, _TRI_CLI_SIG = '';
+function _triBuildCliIdx(){
+  var nRaw = (typeof RAW_DATA!=='undefined' && RAW_DATA) ? RAW_DATA.length : 0;
+  var nAtv = (typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows) ? TICKETS_ATIVOS_DATA.rows.length : 0;
+  var sig = nRaw + '/' + nAtv;
+  if(_TRI_CLI_IDX && _TRI_CLI_SIG === sig) return _TRI_CLI_IDX;
+  var idx = {};
+  function add(cli, fila){
+    if(!cli || !fila) return;
+    var sq = FILA_TO_SQUAD[fila]; if(!sq) return;
+    var k = String(cli).toUpperCase().trim();
+    if(!k || k.indexOf('@') !== -1) return;
+    if(!idx[k]) idx[k] = {};
+    idx[k][sq] = (idx[k][sq]||0) + 1;
+  }
+  if(nRaw) RAW_DATA.forEach(function(r){ add(r.cliente || r.cli_id, r.fila); });
+  if(nAtv) TICKETS_ATIVOS_DATA.rows.forEach(function(r){ if(r.fila !== FILA_TRIAGEM) add(r.cliente || r.cli_id, r.fila); });
+  _TRI_CLI_IDX = idx; _TRI_CLI_SIG = sig; return idx;
+}
+// Squad dominante de um cliente, somando todas as entradas que casam o nome.
+function _triClienteSquad(alvoCli){
+  if(!alvoCli) return null;
+  var idx = _triBuildCliIdx();
+  var agg = idx[alvoCli] ? Object.assign({}, idx[alvoCli]) : {};
+  if(!Object.keys(agg).length){
+    Object.keys(idx).forEach(function(k){
+      if(k === alvoCli || k.indexOf(alvoCli) !== -1 || alvoCli.indexOf(k) !== -1){
+        var c = idx[k]; for(var s in c){ agg[s] = (agg[s]||0) + c[s]; }
+      }
+    });
+  }
+  var keys = Object.keys(agg); if(!keys.length) return null;
+  var tot = 0; keys.forEach(function(s){ tot += agg[s]; });
+  keys.sort(function(a,b){ return agg[b]-agg[a]; });
+  return { squadId: keys[0], n: agg[keys[0]], total: tot };
+}
+// Override manual OPCIONAL (escape hatch). Vazio: o dado acima resolve sozinho.
+// Só preencher se algum cliente sem histórico precisar de regra fixa.
+var _TRI_CLIENTE_SQUAD = {};
 // Sugestão de squad — prioridade decrescente de confiança:
 //   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD)
 //   2) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
@@ -28826,20 +28870,13 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 2) Squad dominante do histórico do próprio cliente
+  // 2) Squad dominante do histórico do próprio cliente (derivado do dado:
+  //    cliente × fila do XLSX + snapshot ativo). Sem lista manual — o TJBA
+  //    vira GWMS porque os chamados dele moram nas filas do GWMS.
   if(temCli){
-    var cliBy = {}, cliTot = 0;
-    TICKETS_ATIVOS_DATA.rows.forEach(function(r){
-      if(!r.atendente || r.atendente === TRIAGEM_ATENDENTE_PLACEHOLDER) return;
-      if(r.fila === FILA_TRIAGEM) return;
-      var sq = FILA_TO_SQUAD[r.fila]; if(!sq) return;
-      if((r.cliente||'').toUpperCase().indexOf(alvoCli) === -1) return;
-      cliBy[sq] = (cliBy[sq]||0) + 1; cliTot++;
-    });
-    var cliKeys = Object.keys(cliBy);
-    if(cliTot >= 2 && cliKeys.length){
-      cliKeys.sort(function(a,b){return cliBy[b]-cliBy[a];});
-      return { squadId: cliKeys[0], pct: Math.round(cliBy[cliKeys[0]]/cliTot*100), total: cliTot, motivo: 'cliente_hist' };
+    var ch = _triClienteSquad(alvoCli);
+    if(ch && ch.n >= 1){
+      return { squadId: ch.squadId, pct: Math.round(ch.n/ch.total*100), total: ch.total, motivo: 'cliente_hist' };
     }
   }
 
@@ -29047,6 +29084,14 @@ window._triRenderTopo = function(){
   host.innerHTML = thermo + cargaHtml;
 };
 
+// Filtro da Fila Agora por SQUAD SUGERIDA (não por fila do OTRS — a fila aqui
+// é sempre NOC). Mostra só os cards cuja sugestão aponta pra squad escolhida.
+var _TRI_FILTRO_SQUAD = 'all';
+window._triSetFiltroSquad = function(sid){
+  _TRI_FILTRO_SQUAD = sid || 'all';
+  if(typeof renderTriagemView === 'function') renderTriagemView();
+};
+
 // ── Modal de cobrança: mostra a mensagem ANTES de copiar ──────
 // (feedback do Fabio: copiar às cegas é horrível — a pessoa precisa ver
 //  o que está cobrando). Reaproveita o texto gerado pelas funções do s-eq.
@@ -29217,8 +29262,24 @@ window.renderTriagemView = function(){
 
   var squadIds = ['ssg','protheus','ssg-melhorias','dba','gwms','datasul','infra'];
 
+  // ── Filtro por squad sugerida ──────────────────────────────
+  var _sugCount = {};
+  tickets.forEach(function(t){ var s=_triSugerirSquad(t); if(s) _sugCount[s.squadId]=(_sugCount[s.squadId]||0)+1; });
+  var filtroBar = '';
+  if(tickets.length >= 2){
+    var chips = '<button class="tri-filtro-chip'+(_TRI_FILTRO_SQUAD==='all'?' on':'')+'" onclick="_triSetFiltroSquad(\'all\')">Todas <span>'+tickets.length+'</span></button>';
+    squadIds.forEach(function(sid){
+      var n = _sugCount[sid]||0; if(!n && _TRI_FILTRO_SQUAD!==sid) return;
+      var nm = SQUADS[sid] ? SQUADS[sid].nome.replace('· Protheus','').replace(/^Infraestrutura$/,'Infra').trim() : sid;
+      chips += '<button class="tri-filtro-chip'+(_TRI_FILTRO_SQUAD===sid?' on':'')+'" onclick="_triSetFiltroSquad(\''+sid+'\')">'+nm+' <span>'+n+'</span></button>';
+    });
+    filtroBar = '<div class="tri-filtro"><span class="tri-filtro-lbl">Filtrar por squad sugerida</span>'+chips+'</div>';
+  }
+  var ticketsView = (_TRI_FILTRO_SQUAD==='all') ? tickets
+    : tickets.filter(function(t){ var s=_triSugerirSquad(t); return s && s.squadId===_TRI_FILTRO_SQUAD; });
+
   // ── Cards de chamados PENDENTES ────────────────────────────
-  var pendentesHtml = tickets.map(function(t){
+  var pendentesHtml = ticketsView.map(function(t){
     var cli = _triExtractCliente(t);
     var minutos = _triMinutosDesde(t.criado);
     var ageClass = minutos >= 60 ? 'danger' : (minutos >= 30 ? 'warn' : '');
@@ -29340,7 +29401,9 @@ window.renderTriagemView = function(){
     }).join('');
   }
 
-  listEl.innerHTML = pendentesHtml + recentHtml;
+  var corpoCards = ticketsView.length ? pendentesHtml
+    : '<div class="tri-card-empty" style="padding:34px 24px">Nenhum chamado sugerido pra essa squad. <a href="#" onclick="_triSetFiltroSquad(\'all\');return false" style="color:var(--teal);text-decoration:none">ver todas</a></div>';
+  listEl.innerHTML = filtroBar + corpoCards + recentHtml;
 };
 // Tick local pra ampulheta de SLA — atualiza só os badges sem re-render full.
 // Evita flicker da animação a cada 30s do refresh de dados.
