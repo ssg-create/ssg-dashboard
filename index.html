@@ -28904,8 +28904,17 @@ function _triContratoSSG(alvoCli){
 // combina 3 evidências com peso: conteúdo do chamado (45%), histórico
 // do cliente (35%) e contrato SSG no cadastro (20%). Tudo transparente:
 // o card mostra as palavras que pesaram e os conflitos.
+// E-mail é identidade do solicitante, não conteúdo — fora do aprendizado.
+// (Caso real 12/06: 'totvs' do e-mail do solicitante puxou SSG indevido.)
+function _triStripEmails(s){
+  return String(s||'').replace(/\S+@\S+\.\S+/g,' ');
+}
 // Índice token→squad: aprendido 1x por carga de dados (cache por assinatura).
-var _TRI_TOK_IDX = null, _TRI_TOK_SIG = '';
+// _TRI_TOK_DOCS = quantos chamados rotulados alimentaram o índice — com
+// base pequena (página recém-aberta, histórico ainda baixando) o motor
+// NÃO opina por conteúdo: melhor silêncio que palpite errado que se
+// corrige sozinho 30s depois (comportamento visto pelo Fabio em 12/06).
+var _TRI_TOK_IDX = null, _TRI_TOK_SIG = '', _TRI_TOK_DOCS = 0;
 function _triBuildTokenIdx(){
   var nRaw = (typeof RAW_DATA!=='undefined' && RAW_DATA) ? RAW_DATA.length : 0;
   var nAtv = (typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows) ? TICKETS_ATIVOS_DATA.rows.length : 0;
@@ -28916,11 +28925,12 @@ function _triBuildTokenIdx(){
   Object.keys(_triBuildCliIdx()).forEach(function(k){
     _triKeywords(k).forEach(function(w){ cliTok[w] = 1; });
   });
-  var counts = {}; // token → {squadId: n}
+  var counts = {}, docs = 0; // token → {squadId: n}
   function feed(assunto, servico, fila){
     var sq = FILA_TO_SQUAD[fila]; if(!sq) return;
+    docs++;
     var seen = {};
-    _triKeywords((assunto||'') + ' ' + (servico||'')).forEach(function(w){
+    _triKeywords(_triStripEmails((assunto||'') + ' ' + (servico||''))).forEach(function(w){
       if(seen[w] || cliTok[w]) return; seen[w] = 1;
       if(!counts[w]) counts[w] = {};
       counts[w][sq] = (counts[w][sq]||0) + 1;
@@ -28938,7 +28948,7 @@ function _triBuildTokenIdx(){
       idx[w] = { squadId: top, w: (topN/tot) * Math.log(1+tot) };
     }
   });
-  _TRI_TOK_IDX = idx; _TRI_TOK_SIG = sig;
+  _TRI_TOK_IDX = idx; _TRI_TOK_SIG = sig; _TRI_TOK_DOCS = docs;
   return idx;
 }
 // Score combinado por squad. Retorna ranking + explicação legível.
@@ -28947,17 +28957,21 @@ function _triScoreSquads(t, alvoCli, temCli){
   var scores = {}, expl = { palavras: [], cliSquad: null, cliPct: 0, contrato: false, termo: null };
   function add(sq, v){ scores[sq] = (scores[sq]||0) + v; }
 
-  // Evidência 1: CONTEÚDO — palavras do chamado vs dicionário aprendido
+  // Evidência 1: CONTEÚDO — palavras do chamado vs dicionário aprendido.
+  // Só vale com base de aprendizado decente (≥300 chamados rotulados);
+  // na janela de boot (histórico ainda baixando) fica de fora.
   var idx = _triBuildTokenIdx();
   var contScores = {}, contTot = 0, matched = [];
-  var seen = {};
-  _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600)).forEach(function(w){
-    if(seen[w]) return; seen[w] = 1;
-    var e = idx[w]; if(!e) return;
-    contScores[e.squadId] = (contScores[e.squadId]||0) + e.w;
-    contTot += e.w;
-    matched.push({ w: w, squadId: e.squadId, peso: e.w });
-  });
+  if(_TRI_TOK_DOCS >= 300){
+    var seen = {};
+    _triKeywords(_triStripEmails((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600))).forEach(function(w){
+      if(seen[w]) return; seen[w] = 1;
+      var e = idx[w]; if(!e) return;
+      contScores[e.squadId] = (contScores[e.squadId]||0) + e.w;
+      contTot += e.w;
+      matched.push({ w: w, squadId: e.squadId, peso: e.w });
+    });
+  }
   // Termo técnico manual (_TRI_TERMOS) reforça o conteúdo — garante casos
   // óbvios (backup de banco → DBA) mesmo com histórico fino.
   var termo = _triTermoTecnico(t);
@@ -28994,7 +29008,13 @@ function _triScoreSquads(t, alvoCli, temCli){
   var wTot = (temCont?W_CONT:0) + (temCliEv?W_CLI:0) + (temCtr?W_CTR:0);
   keys.sort(function(a,b){ return scores[b]-scores[a]; });
   var top = keys[0];
-  return { squadId: top, pct: Math.round(scores[top]/wTot*100), expl: expl, segundo: keys[1]||null };
+  var pct = Math.round(scores[top]/wTot*100);
+  // Honestidade: conteúdo como única evidência e com 1 palavra só não
+  // sustenta confiança alta — cap em 40% (card mostra 'palpite fraco').
+  if(temCont && !temCliEv && !temCtr && matched.length < 2 && !expl.termo){
+    pct = Math.min(pct, 40);
+  }
+  return { squadId: top, pct: pct, expl: expl, segundo: keys[1]||null };
 }
 // Sugestão de squad:
 //   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD) — override absoluto
@@ -29031,6 +29051,11 @@ function _triSugerirSquad(t){
     }
     return { squadId: sc.squadId, pct: sc.pct, total: 0, motivo: 'score', expl: sc.expl, alt: alt };
   }
+
+  // Sem base de aprendizado carregada, NÃO cai no fallback de similaridade
+  // (ele compara só com os tickets ativos — mesmo viés do bug do 'totvs').
+  // Melhor sem sugestão por alguns segundos; o re-render de 30s corrige.
+  if(_TRI_TOK_DOCS < 300) return null;
 
   // 3) Similaridade por palavras-chave (assunto + descrição) — fallback
   var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
