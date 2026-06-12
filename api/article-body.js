@@ -2,10 +2,10 @@
 // Usado pelo botão "Expandir" no gw-consult.html
 // Suporta duas fontes: 'cst' (totvscst.zendesk.com) e 'central' (centraldeatendimento.totvs.com)
 
+import { guard } from './_guard.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (!guard(req, res, 'GET, OPTIONS')) return;
 
   const { id, source = 'cst' } = req.query;
   if (!id || !/^\d+$/.test(id)) {
