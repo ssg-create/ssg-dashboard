@@ -2,14 +2,14 @@
   "version": 2,
   "ignoreCommand": "bash vercel-ignore-build.sh",
   "rewrites": [
-    { "source": "/historico_completo.json", "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/historico_completo.json" },
-    { "source": "/tickets_ativos.json",     "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/tickets_ativos.json" },
-    { "source": "/utilizacao.json",         "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/utilizacao.json" },
-    { "source": "/gwms-insights.json",      "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/gwms-insights.json" },
-    { "source": "/aios-insights.json",      "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/aios-insights.json" },
-    { "source": "/silenciosos.json",        "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/silenciosos.json" },
-    { "source": "/triagem.json",            "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/triagem.json" },
-    { "source": "/reaberturas.json",        "destination": "https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/reaberturas.json" }
+    { "source": "/historico_completo.json", "destination": "/api/data?file=historico_completo.json" },
+    { "source": "/tickets_ativos.json",     "destination": "/api/data?file=tickets_ativos.json" },
+    { "source": "/utilizacao.json",         "destination": "/api/data?file=utilizacao.json" },
+    { "source": "/gwms-insights.json",      "destination": "/api/data?file=gwms-insights.json" },
+    { "source": "/aios-insights.json",      "destination": "/api/data?file=aios-insights.json" },
+    { "source": "/silenciosos.json",        "destination": "/api/data?file=silenciosos.json" },
+    { "source": "/triagem.json",            "destination": "/api/data?file=triagem.json" },
+    { "source": "/reaberturas.json",        "destination": "/api/data?file=reaberturas.json" }
   ],
   "headers": [
     {
