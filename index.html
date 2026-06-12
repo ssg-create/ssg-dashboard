@@ -16143,21 +16143,42 @@ function renderAnalisePlaybook(t, esc){
       + '<a href="'+_pbTdnLink(pb)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#4f8ef7;text-decoration:none">🔎 Buscar no TDN / gwoogle</a>'
     + '</div>';
 }
+// PERF: índice dos candidatos com texto de resolução, construído UMA vez por
+// base (RAW_DATA). Antes, count/render varriam os ~4.5k registros do histórico
+// a cada card e a cada re-render. Agora iteram só o subconjunto resolvido e a
+// contagem é memoizada por chamado. Reconstrói quando a base muda (novo sync).
+// Mesmos candidatos, mesma ordem → resultado idêntico.
+function _simResolList(){
+  if(typeof RAW_DATA === 'undefined' || !RAW_DATA) return [];
+  if(window._SIM_RESOL_SRC === RAW_DATA && window._SIM_RESOL_LIST) return window._SIM_RESOL_LIST;
+  var resolMap = window._RESOL_MAP || {};
+  var list = [], i = 0;
+  for(i=0; i<RAW_DATA.length; i++){ var c = RAW_DATA[i]; if(c && c.num && resolMap[c.num]) list.push(c); }
+  window._SIM_RESOL_SRC = RAW_DATA;
+  window._SIM_RESOL_LIST = list;
+  window._SIM_COUNT_CACHE = {};   // base mudou → invalida contagens memoizadas
+  return list;
+}
 function countSimilarResolutions(target){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return 0;
   if(!target || !target.assunto) return 0;
+  var list = _simResolList();   // chamar antes do cache (pode invalidá-lo se a base mudou)
+  var cache = window._SIM_COUNT_CACHE || (window._SIM_COUNT_CACHE = {});
+  var key = target.num || ('a:' + target.assunto);
+  if(cache[key] !== undefined) return cache[key];
   var tw = _simTermosAlvo(target);
   var targetMod = _simModulo(target.assunto);
-  if(!tw.length && !targetMod) return 0;
+  if(!tw.length && !targetMod){ cache[key] = 0; return 0; }
   var resolMap = window._RESOL_MAP || {};
   var count = 0;
-  for(var i=0; i<RAW_DATA.length; i++){
-    var c = RAW_DATA[i];
+  for(var i=0; i<list.length; i++){
+    var c = list[i];
     if(c.num === target.num) continue;
     if(!resolMap[c.num]) continue;
     if(_simAvaliar(target, c, tw, targetMod, resolMap[c.num]).relevante){ count++; }
     if(count >= 10) break;
   }
+  cache[key] = count;
   return count;
 }
 
@@ -16169,9 +16190,10 @@ function renderSimilarResolutions(target, esc){
   var targetMod = _simModulo(target.assunto);
   if(!tw.length && !targetMod) return '';
   var resolMap = window._RESOL_MAP || {};
+  var _list = _simResolList();
   var hits = [];
-  for(var i=0; i<RAW_DATA.length; i++){
-    var c = RAW_DATA[i];
+  for(var i=0; i<_list.length; i++){
+    var c = _list[i];
     if(c.num === target.num) continue;
     if(!resolMap[c.num]) continue;  // só inclui se há texto de solução
     var av = _simAvaliar(target, c, tw, targetMod, resolMap[c.num]);
