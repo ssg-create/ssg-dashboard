@@ -4552,7 +4552,7 @@ if(_u)_u.addEventListener("keydown",_enterKey);
             <div class="at-hero-tag"><span class="at-dot"></span>ATENDENTES · PERFORMANCE DA EQUIPE</div>
             <div class="at-hero-status" id="at-hero-status">—</div>
             <div class="at-hero-sub" id="at-hero-sub">carregando equipe…</div>
-            <div class="at-hero-meta" id="at-hero-meta">monitoramento via GWMS · sync 10min</div>
+            <div class="at-hero-meta" id="at-hero-meta">monitoramento via GWMS · sync ~3min</div>
           </div>
           <div class="at-ring" id="at-ring">
             <svg viewBox="0 0 200 200">
@@ -4579,7 +4579,7 @@ if(_u)_u.addEventListener("keydown",_enterKey);
       <!-- ── ZONA: Carga atual (live GWMS) ── -->
       <div class="al-zona-hd">
         <span class="al-zona-titulo">⚡ Carga atual · live GWMS</span>
-        <span class="al-zona-hint">snapshot do "agora" · sync ~10min · clique no nome pra espelhar</span>
+        <span class="al-zona-hint">snapshot do "agora" · sync ~3min · clique no nome pra espelhar</span>
       </div>
       <div class="card card-mb" id="at-util-card">
         <div class="card-title">Carga atual (tempo real via GWMS)
@@ -5875,7 +5875,7 @@ if(_u)_u.addEventListener("keydown",_enterKey);
     <div>
       <span class="ial-drawer-badge">GLOBAL · ignora filtros</span>
       <h2 style="margin:6px 0 0 0;font-size:18px;color:var(--text)">📡 Sinais ao Vivo · GWMS</h2>
-      <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)">Atualizado a cada 10 min · operação inteira</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)">Atualizado a cada ~3 min · operação inteira</div>
     </div>
     <button class="ial-drawer-close" onclick="closeIALive()" aria-label="Fechar">×</button>
   </div>
@@ -7688,7 +7688,7 @@ function fetchSilenciosos(){
     .catch(function(){renderSilenciosos(null);});
 }
 
-// ─── Triagem / Reaberturas / Utilização — dados GWMS via workflow a cada 10min ──
+// ─── Triagem / Reaberturas / Utilização — dados GWMS via workflow (sync a cada 2min) ──
 var TRI_DATA=null, REAB_DATA=null, UTIL_DATA=null;
 function _gwmsFilters(){
   var norm=function(s){return (s||'').toLowerCase().replace(/[_\s]/g,'');};
@@ -8096,7 +8096,7 @@ function renderIALive(data){
   if(hero){hero.classList.remove('ial-s-ok','ial-s-warn');}
   if(ring){ring.classList.remove('ial-s-ok','ial-s-warn');}
   if(!data||!data.insights){
-    if(cards) cards.innerHTML='<div class="ial-empty"><div class="ial-empty-icon">◌</div>gwms-insights.json ainda não disponível — aguarde o próximo ciclo (~10min)</div>';
+    if(cards) cards.innerHTML='<div class="ial-empty"><div class="ial-empty-icon">◌</div>gwms-insights.json ainda não disponível — aguarde o próximo ciclo (~3min)</div>';
     ['ial-kpi-total','ial-kpi-crit','ial-kpi-warn','ial-kpi-status'].forEach(function(id){var e=g(id);if(e)e.textContent='—';});
     if(hero){hero.textContent='—';hero.classList.add('ial-s-ok');}
     if(sub)sub.innerHTML='sem dados ainda';
@@ -8119,7 +8119,7 @@ function renderIALive(data){
   if(sub){sub.innerHTML='<strong>'+(c.crit||0)+'</strong> crítico'+((c.crit||0)===1?'':'s')+' · <strong>'+(c.warn||0)+'</strong> em atenção · <strong>'+(total-(c.crit||0)-(c.warn||0))+'</strong> informativos';}
   var tsMin=Math.floor((Date.now()/1000-data.generated_at)/60);
   var tsTxt='atualizado há '+(tsMin<1?'agora':tsMin+' min');
-  if(meta)meta.textContent=tsTxt+' · 4 regras ativas · ciclo 10min';
+  if(meta)meta.textContent=tsTxt+' · 4 regras ativas · ciclo ~3min';
   setv('ial-kpi-ts',tsTxt);
   // Ring progress (porcentagem baseada em total·max6)
   if(ringFg&&ringNum){
@@ -12139,7 +12139,7 @@ function exportExecutivePDF(scope){
   var k4_reabReady=(typeof REAB_DATA!=='undefined'&&REAB_DATA&&REAB_DATA.rows);
   var k4_status=k4.val==null?'none':(k4.val>=85?'ok':k4.val>=75?'warn':'bad');
   var k4_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% de chamados resolvidos sem reabertura nos 90 dias seguintes.</div><div class="tlbl">Fórmula</div><div class="tval">(fechados − reabertos) ÷ fechados × 100</div>':'';
-  var k4_leitura=k4.val==null?(k4_reabReady?'Nenhum chamado fechado no escopo selecionado para calcular FCR.':'Dataset de reaberturas (<code>reaberturas.json</code>) ainda não sincronizado. Abra a aba <strong>Chamados → Reaberturas</strong> ou aguarde o próximo ciclo do GWMS (~10min) e gere o relatório novamente.'):
+  var k4_leitura=k4.val==null?(k4_reabReady?'Nenhum chamado fechado no escopo selecionado para calcular FCR.':'Dataset de reaberturas (<code>reaberturas.json</code>) ainda não sincronizado. Abra a aba <strong>Chamados → Reaberturas</strong> ou aguarde o próximo ciclo do GWMS (~3min) e gere o relatório novamente.'):
     k4.val>=85?'Acima da meta. Equipe com alta resolutividade em primeiro contato — KB madura. Baseado em <strong>'+k4.n+'</strong> fechados e <strong>'+(k4.reabertos||0)+'</strong> reabertura(s).':
     k4.val>=75?'Dentro do benchmark MSP mas abaixo da meta. <strong>'+(k4.reabertos||0)+'</strong> reabertura(s) em <strong>'+k4.n+'</strong> fechados — analisar padrão.':
     'Abaixo de meta e mercado. <strong>'+(k4.reabertos||0)+'</strong> reabertura(s) em <strong>'+k4.n+'</strong> fechados indica qualidade de solução inicial comprometida.';
@@ -12153,7 +12153,7 @@ function exportExecutivePDF(scope){
   var k6_utilReady=(typeof UTIL_DATA!=='undefined'&&UTIL_DATA&&UTIL_DATA.rows);
   var k6_status=k6.val==null?'none':(k6.val<=70?'ok':k6.val<=85?'warn':'bad');
   var k6_tech=techOn?'<div class="tlbl">Definição</div><div class="tval">% da capacidade operacional da equipe em uso no momento (snapshot tempo real).</div><div class="tlbl">Fórmula</div><div class="tval">Σ(tickets_ativos) ÷ (atendentes × 6 capacidade) × 100</div>':'';
-  var k6_leitura=k6.val==null?'Dataset de utilização (<code>utilizacao.json</code>) ainda não sincronizado. Abra a aba <strong>Atendentes</strong> ou aguarde o próximo ciclo do GWMS (~10min) e gere o relatório novamente.':
+  var k6_leitura=k6.val==null?'Dataset de utilização (<code>utilizacao.json</code>) ainda não sincronizado. Abra a aba <strong>Atendentes</strong> ou aguarde o próximo ciclo do GWMS (~3min) e gere o relatório novamente.':
     k6.val<=70?'Capacidade saudável. Equipe com margem para picos de demanda. <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes.':
     k6.val<=85?'Capacidade apertada. <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes — risco de atraso se volume subir.':
     'Sobrecarga. Com <strong>'+(k6.carga||0)+'</strong> tickets ativos para <strong>'+(k6.n||0)+'</strong> atendentes — risco imediato de SLA.';
@@ -12266,7 +12266,7 @@ function exportExecutivePDF(scope){
   if(missingDs.length){
     H+='<div style="margin-top:22px;padding:10px 16px;background:#fef3c7;border:1px solid #f59e0b;border-left:4px solid #f59e0b;border-radius:8px;display:flex;align-items:center;gap:10px;max-width:560px">';
     H+='<span style="font-size:16px">⚠️</span>';
-    H+='<span style="font-size:11px;color:#78350f;line-height:1.5"><strong>Dataset parcial:</strong> alguns dados auxiliares ('+missingDs.join(', ')+') não estavam sincronizados no momento da geração. KPIs afetados podem aparecer sem valor. Aguarde o próximo ciclo do GWMS (~10min) e regenere.</span>';
+    H+='<span style="font-size:11px;color:#78350f;line-height:1.5"><strong>Dataset parcial:</strong> alguns dados auxiliares ('+missingDs.join(', ')+') não estavam sincronizados no momento da geração. KPIs afetados podem aparecer sem valor. Aguarde o próximo ciclo do GWMS (~3min) e regenere.</span>';
     H+='</div>';
   }
   H+='</div>';
@@ -12295,7 +12295,7 @@ function exportExecutivePDF(scope){
     H+='<div class="body-hd"><div class="body-hd-icon" style="background:linear-gradient(135deg,#22d3ee,#0891b2)">M</div><div class="body-hd-ttl">Metodologia</div><div class="body-hd-sub">Como os números são calculados</div></div>';
     H+='<div class="method">';
     H+='<h3>Fonte dos dados</h3>';
-    H+='<p>Os indicadores são calculados a partir do banco de dados MySQL do OTRS/Znuny via Grafana API, consolidados no arquivo <code>historico_completo.json</code> gerado a cada 10 minutos pelo workflow <code>gwms-sync.yml</code>.</p>';
+    H+='<p>Os indicadores são calculados a partir do banco de dados MySQL do OTRS/Znuny via Grafana API, consolidados no arquivo <code>historico_completo.json</code> gerado a cada ~3 minutos pelo workflow <code>gwms-sync.yml</code> (sync disparado a cada 2 min).</p>';
     H+='<p>Dados complementares de reaberturas (<code>reaberturas.json</code>) e utilização (<code>utilizacao.json</code>) também são sincronizados no mesmo ciclo.</p>';
     H+='</div>';
     H+='<div class="method">';
@@ -16172,7 +16172,7 @@ function renderSimilarResolutions(target, esc){
 }
 
 function openTicketDetail(num){
-  // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <10min).
+  // Tenta primeiro os tickets ativos do GWMS (estado ao vivo, <5min).
   // Se achar, usa isso. Senão, cai no RAW_DATA do XLSX (histórico, pode estar defasado).
   var t=null, live=false;
   if(typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
@@ -16301,9 +16301,10 @@ function fetchTicketsAtivos(){
 }
 // Busca no load e em intervalo adaptativo:
 // - Squad/Triagem/Diretor: 30s (operacional, precisa ver mudança rápido)
-// - Gestão: 10min (sync GWMS é a cada 10min mesmo, sem ganho refetchar antes)
-// Nota: sync GWMS continua sendo o gargalo (10min via cron-job.org). Reduzir
-// poll abaixo de 30s não traz ganho prático até o sync rodar mais rápido.
+// - Gestão: 10min (dado de gestão não precisa de mais)
+// Nota: sync GWMS dispara a cada 2min (cron-job.org) e a run leva ~1-3min;
+// latência real do dado: ~2-5min. Poll de 30s já cobre — o gargalo é a
+// duração da run do sync, não o poll.
 fetchTicketsAtivos();
 setInterval(function(){
   var isSq = (typeof isSquadMode==='function') && isSquadMode();
@@ -29249,7 +29250,7 @@ window.renderTriagemView = function(){
     listEl.innerHTML = '<div class="tri-card-empty">'
       + '<div class="tri-card-empty-icon">✨</div>'
       + '<div style="font-weight:700;color:var(--text);font-size:18px;font-family:var(--display)">Sem chamados pra triar agora</div>'
-      + '<div style="margin-top:8px;font-size:13px;color:var(--muted)">Quando entrar algo novo, aparece aqui em até 1 minuto.</div>'
+      + '<div style="margin-top:8px;font-size:13px;color:var(--muted)">Quando entrar algo novo, aparece aqui em até 3 minutos.</div>'
       + (stats.count > 0 ? '<div style="margin-top:18px;font-size:13.5px;color:var(--text);font-weight:500">'+FRASES_VAZIO[fraseIdx]+'</div>' : '')
       + statsHtml
       + '</div>';
@@ -29600,10 +29601,10 @@ function bootSquadMode(){
     }
   };
   tryRender(20); // ~6s
-  // Re-render quando dados refrescarem (a cada 10min o fetch atualiza)
+  // Re-render quando dados refrescarem (sync GWMS a cada ~2-3min)
   setInterval(function(){
     if(isSquadMode()) renderSquadView();
-  }, 60*1000); // refresh visual a cada 1min (dados refrescam a cada 10min)
+  }, 60*1000); // refresh visual a cada 1min (dados refrescam a cada ~2-3min)
   // Clock leve a cada 30s + atualiza indicador "vivo" do meta
   // (sem re-renderizar a view inteira)
   setInterval(function(){
@@ -29970,7 +29971,7 @@ function bootAtendenteMode(){
     }
   };
   tryRender(20);
-  // Refresh visual a cada 1min (dados sincronizam a cada 10min via cron)
+  // Refresh visual a cada 1min (dados sincronizam a cada ~2-3min via cron)
   setInterval(function(){
     if(isAtendenteMode()) renderAtendenteAba(AT_CUR_SEC);
   }, 60*1000);

@@ -511,12 +511,16 @@ def main() -> None:
     s = requests.Session()
     login(s, user, password)
 
+    # Ordem importa: tickets_ativos e triagem alimentam telas operacionais
+    # (Fila Agora / Triagem) que precisam de dado fresco — publicam PRIMEIRO,
+    # antes das consultas pesadas (historico_completo etc.). Reordenado em
+    # 12/06/26 pra cortar a latência percebida na triagem.
     datasets = [
-        ("silenciosos.json",       q_silenciosos,       {"silencio_min_sec": 86400}),
+        ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("triagem.json",           q_triagem,           None),
+        ("silenciosos.json",       q_silenciosos,       {"silencio_min_sec": 86400}),
         ("reaberturas.json",       q_reaberturas,       {"janela_dias": 90}),
         ("utilizacao.json",        q_utilizacao,        None),
-        ("tickets_ativos.json",    q_tickets_ativos,    None),
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
     ]
 
