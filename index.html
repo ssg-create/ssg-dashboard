@@ -28855,10 +28855,36 @@ function _triClienteSquad(alvoCli){
 // Override manual OPCIONAL (escape hatch). Vazio: o dado acima resolve sozinho.
 // Só preencher se algum cliente sem histórico precisar de regra fixa.
 var _TRI_CLIENTE_SQUAD = {};
+// ── Termos técnicos → squad (determinístico, sem LLM) ─────────────────
+// Pedido do Fabio (12/06/26): assunto com contexto claro de banco de dados
+// vai pra DBA, MESMO que o histórico do cliente aponte outra squad.
+// Caso real: METALNOX "Eliminar tabelas de Backup DB PROTHEUS_PRD" caiu
+// em SSG porque 94% do histórico dela é SSG — mas o conteúdo é DBA.
+// Cada regra: TODOS os padrões em `all` precisam casar no texto normalizado
+// (minúsculo, sem acento). "tabela" sozinha NÃO decide — "tabela de preço"
+// é Protheus — precisa de contexto de banco junto (backup/expurgo/espaço...).
+var _TRI_TERMOS = [
+  { squadId:'dba', termo:'backup de banco',      all:[/\b(bkp|backup)s?\b/, /\b(db|database|banco|sql|tabela)/] },
+  { squadId:'dba', termo:'banco de dados',       all:[/banco de dados/] },
+  { squadId:'dba', termo:'manutenção de tabela', all:[/\btabelas?\b/, /\b(expurg|elimina|limpez|espaco|tamanho|compacta|bkp|backup|db\b|database|sql)/] },
+  { squadId:'dba', termo:'SGBD',                 all:[/\b(sql ?server|oracle|mysql|postgres\w*|tablespace|shrink|restore|dump|sgbd|dbcc)\b/] }
+];
+function _triTermoTecnico(t){
+  var txt = ((t.assunto||'')+' '+(t.servico||'')+' '+_triBodyText(t, 600)).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/_/g,' ');
+  for(var i=0;i<_TRI_TERMOS.length;i++){
+    var r = _TRI_TERMOS[i], ok = true;
+    for(var j=0;j<r.all.length;j++){ if(!r.all[j].test(txt)){ ok = false; break; } }
+    if(ok) return r;
+  }
+  return null;
+}
 // Sugestão de squad — prioridade decrescente de confiança:
 //   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD)
-//   2) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
-//   3) similaridade por palavras-chave do assunto/descrição (último recurso)
+//   2) TERMO TÉCNICO inequívoco no assunto/corpo (_TRI_TERMOS) — conteúdo
+//      claro de banco → DBA ganha até do histórico do cliente
+//   3) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
+//   4) similaridade por palavras-chave do assunto/descrição (último recurso)
 // O cliente manda mais que palavra-chave solta — evita o caso "TJBA (GWMS)"
 // virar Protheus só porque 'dashboard/topologia' apareceu em chamados Protheus.
 function _triSugerirSquad(t){
@@ -28875,7 +28901,13 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 2) Squad dominante do histórico do próprio cliente (derivado do dado:
+  // 2) Termo técnico inequívoco — ganha do histórico do cliente
+  var termo = _triTermoTecnico(t);
+  if(termo){
+    return { squadId: termo.squadId, pct: 100, total: 0, motivo: 'termo', termo: termo.termo };
+  }
+
+  // 3) Squad dominante do histórico do próprio cliente (derivado do dado:
   //    cliente × fila do XLSX + snapshot ativo). Sem lista manual — o TJBA
   //    vira GWMS porque os chamados dele moram nas filas do GWMS.
   if(temCli){
@@ -28885,7 +28917,7 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 3) Similaridade por palavras-chave (assunto + descrição)
+  // 4) Similaridade por palavras-chave (assunto + descrição)
   var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
   var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
   if(!kw.length) return null;
@@ -29329,6 +29361,8 @@ window.renderTriagemView = function(){
       var txtSug;
       if(sug.motivo === 'cliente_fixo'){
         txtSug = '✅ <strong>'+cli+'</strong> é cliente de <strong>'+sugNome+'</strong>';
+      } else if(sug.motivo === 'termo'){
+        txtSug = '🔧 Assunto fala de <strong>'+sug.termo+'</strong> → vai pra <strong>'+sugNome+'</strong>';
       } else if(sug.motivo === 'cliente_hist'){
         txtSug = '👥 <strong>'+cli+'</strong> costuma ir pra <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' do cliente)';
       } else {
