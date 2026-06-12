@@ -56,15 +56,30 @@ jobs:
               ? Math.round((Date.now() - new Date(lastSuccess.created_at).getTime()) / 60000)
               : 9999;
 
-            core.info('Falhas consecutivas: ' + consecFails + ' | Ultima success ha ' + ageMin + 'min');
+            core.info('Falhas consecutivas: ' + consecFails + ' | Ultima success (run) ha ' + ageMin + 'min');
+
+            // ---- FRESCOR REAL: idade do DADO (generated_at), nao sucesso de run ----
+            // Runs manuais mascaravam a realidade (run "success" recente, mas o dado
+            // podia estar velho). Medimos a idade do tickets_ativos.json publicado.
+            let dataAgeMin = 9999;
+            try {
+              const dr = await fetch('https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/tickets_ativos.json',
+                { headers: process.env.DISPATCH_PAT ? { Authorization: 'Bearer ' + process.env.DISPATCH_PAT } : {} });
+              if (dr.ok) {
+                const dj = await dr.json();
+                if (dj.generated_at) dataAgeMin = Math.round((Date.now() / 1000 - dj.generated_at) / 60);
+              }
+            } catch (e) {
+              core.warning('Watchdog: falha lendo frescor do dado: ' + e.message);
+            }
+            core.info('Idade do DADO: ' + dataAgeMin + 'min');
 
             // ---- AUTO-CURA ----
-            // FIX (12/06): o dispatch PRECISA usar um PAT, nao o GITHUB_TOKEN.
-            // Regra do GitHub: workflow_dispatch disparado pelo GITHUB_TOKEN NAO
-            // inicia outro workflow (protecao anti-loop) — o disparo era "engolido"
-            // e o auto-cura nunca funcionava de fato. Com o PAT, o sync roda mesmo.
+            // FIX (12/06): dispara via PAT, NAO via GITHUB_TOKEN (o GitHub suprime
+            // workflow disparado pelo GITHUB_TOKEN — protecao anti-loop). E decide
+            // pela idade do DADO, nao por sucesso de run.
             const STALE_MIN = 6;
-            if (ageMin > STALE_MIN && consecFails < 3) {
+            if (dataAgeMin > STALE_MIN && consecFails < 3) {
               const running = items.find(r => r.status === 'in_progress' || r.status === 'queued');
               if (running) {
                 core.info('Sync stale, mas ha run em andamento (#' + running.run_number + '). Aguardando.');
@@ -92,9 +107,9 @@ jobs:
             if (consecFails >= 3) {
               shouldAlert = true;
               reason = consecFails + ' runs falharam seguidas';
-            } else if (ageMin > 60) {
+            } else if (dataAgeMin > 60) {
               shouldAlert = true;
-              reason = 'Ultima sync bem-sucedida ha ' + ageMin + ' minutos (auto-cura nao resolveu)';
+              reason = 'Dado parado ha ' + dataAgeMin + ' minutos (auto-cura nao resolveu)';
             }
             if (!shouldAlert) {
               core.info('Sync saudavel ou auto-cura em andamento - sem alerta.');
