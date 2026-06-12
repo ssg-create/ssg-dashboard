@@ -29743,7 +29743,26 @@ window.renderTriagemView = function(){
 
   var corpoCards = ticketsView.length ? pendentesHtml
     : '<div class="tri-card-empty" style="padding:34px 24px">Nenhum chamado sugerido pra essa squad. <a href="#" onclick="_triSetFiltroSquad(\'all\');return false" style="color:var(--teal);text-decoration:none">ver todas</a></div>';
-  listEl.innerHTML = filtroBar + corpoCards + recentHtml;
+  // Fase 3 — aceite real da sugestão (só aparece com base mínima de 5 triagens)
+  var _fb = _triFeedbackStats();
+  var _fbBlock = '';
+  if(_fb.total >= 5){
+    var _cor = _fb.taxa >= 80 ? 'var(--teal)' : (_fb.taxa >= 60 ? 'var(--warn)' : 'var(--red)');
+    var _divTxt = _fb.topDivs.length
+      ? ' · onde mais erra: ' + _fb.topDivs.map(function(d){
+          var p = d.k.split('→');
+          var a = SQUADS[p[0]] ? SQUADS[p[0]].nome : p[0];
+          var b = SQUADS[p[1]] ? SQUADS[p[1]].nome : p[1];
+          return a + '→' + b + ' (' + d.n + ')';
+        }).join(', ')
+      : '';
+    _fbBlock = '<div style="margin:0 0 12px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted)">'
+      + '🎯 Aceite da sugestão: <strong style="color:' + _cor + '">' + _fb.taxa + '%</strong> '
+      + '<span style="opacity:.8">(' + _fb.aceitos + '/' + _fb.total + ' triagens medidas)</span>'
+      + '<span style="opacity:.9">' + _divTxt + '</span>'
+      + '</div>';
+  }
+  listEl.innerHTML = _fbBlock + filtroBar + corpoCards + recentHtml;
 };
 // Tick local pra ampulheta de SLA — atualiza só os badges sem re-render full.
 // Evita flicker da animação a cada 30s do refresh de dados.
@@ -29759,6 +29778,56 @@ function _triTickSLA(){
   });
 }
 // Click numa squad → abre modal de atendentes daquela squad
+// ── Fase 3: feedback loop da triagem (determinístico, sem LLM) ──
+// Registra "sugerido vs escolhido" a cada triagem confirmada (_triAssign),
+// pra medir o ACEITE REAL em produção e onde o motor mais erra.
+// NÃO altera o motor (_triSugerirSquad) — só observa a decisão.
+// Guardado em localStorage (por dispositivo/triador); versão global = endpoint futuro.
+function _triLogFeedback(ticket, escolhido){
+  try {
+    var t = null;
+    if(typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows){
+      var rows = TICKETS_ATIVOS_DATA.rows;
+      for(var i=0;i<rows.length;i++){ if(String(rows[i].ticket)===String(ticket)){ t=rows[i]; break; } }
+    }
+    var sug = t ? _triSugerirSquad(t) : null;
+    var log = [];
+    try { log = JSON.parse(localStorage.getItem('tri.feedback')||'[]') || []; } catch(e){}
+    log.push({
+      ticket: String(ticket),
+      sugerido: sug ? sug.squadId : null,
+      pct: sug ? sug.pct : null,
+      motivo: sug ? sug.motivo : null,
+      escolhido: escolhido,
+      aceito: !!(sug && sug.squadId === escolhido),
+      ts: Date.now()
+    });
+    if(log.length > 800) log = log.slice(log.length - 800);
+    localStorage.setItem('tri.feedback', JSON.stringify(log));
+  } catch(e){}
+}
+function _triFeedbackStats(){
+  var log = [];
+  try { log = JSON.parse(localStorage.getItem('tri.feedback')||'[]') || []; } catch(e){}
+  var comSug = log.filter(function(e){ return e && e.sugerido; });
+  var total = comSug.length;
+  var aceitos = comSug.filter(function(e){ return e.aceito; }).length;
+  var divs = {};
+  comSug.forEach(function(e){
+    if(e.aceito) return;
+    var k = e.sugerido + '→' + e.escolhido;
+    divs[k] = (divs[k]||0) + 1;
+  });
+  var topDivs = Object.keys(divs).map(function(k){ return { k:k, n:divs[k] }; })
+                 .sort(function(a,b){ return b.n - a.n; }).slice(0, 3);
+  return {
+    total: total,
+    aceitos: aceitos,
+    taxa: total ? Math.round(aceitos / total * 100) : null,
+    topDivs: topDivs,
+    semSug: log.length - total
+  };
+}
 window._triPickSquad = function(ticket, squadId){
   var cfg = SQUADS[squadId];
   if(!cfg) return;
@@ -29823,6 +29892,7 @@ window._triAssign = function(ticket, squadId, atendente){
   // com badge "aguardando confirmação OTRS"; quando próximo sync confirmar
   // que saiu de NOC, vira "✓ confirmado".
   _triMarkRecent(ticket, squadId, sNome, atendente);
+  try { _triLogFeedback(ticket, squadId); } catch(e){}   // Fase 3: registra sugerido vs escolhido
   // Feedback gostoso: contador do dia sobe + frase de incentivo
   try {
     var _st = (typeof _triStatsHoje==='function') ? _triStatsHoje() : {count:0};
