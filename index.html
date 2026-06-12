@@ -19575,7 +19575,7 @@ var SSG_CONTRATOS = [
   { alias:'AUTOZONE',       nome:'Autozone',           limite_mes:170, ativo:true },
   { alias:'ALMEIDA JR',     nome:'Almeida Junior',     limite_mes:55,  ativo:true },
   { alias:'PAMPLASTICOS',   nome:'PAM Plásticos',      limite_mes:20,  ativo:true },
-  { alias:'GRUPO_METALNOX', nome:'Metalnox',           limite_mes:100, ativo:true, obs:'contrato cancelado — sai do OTRS em breve' },
+  { alias:'GRUPO_METALNOX', nome:'Metalnox',           limite_mes:100, ativo:false, obs:'SSG cancelado (jun/26) — cliente segue só com Banco de Horas' },
   { alias:'CNN',            nome:'Cal Norte Nordeste', limite_mes:5,   ativo:true },
   { alias:'CONTINENTAL',    nome:'Aumovio',            limite_mes:16,  ativo:true, obs:'no OTRS aparece como CONTINENTAL (Aumovio é spin-off)' },
   { alias:'FINPEC',         nome:'Finpec',             limite_mes:6,   ativo:true },
@@ -28855,10 +28855,153 @@ function _triClienteSquad(alvoCli){
 // Override manual OPCIONAL (escape hatch). Vazio: o dado acima resolve sozinho.
 // Só preencher se algum cliente sem histórico precisar de regra fixa.
 var _TRI_CLIENTE_SQUAD = {};
-// Sugestão de squad — prioridade decrescente de confiança:
-//   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD)
-//   2) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
-//   3) similaridade por palavras-chave do assunto/descrição (último recurso)
+// ── Termos técnicos → squad (determinístico, sem LLM) ─────────────────
+// Pedido do Fabio (12/06/26): assunto com contexto claro de banco de dados
+// vai pra DBA, MESMO que o histórico do cliente aponte outra squad.
+// Caso real: METALNOX "Eliminar tabelas de Backup DB PROTHEUS_PRD" caiu
+// em SSG porque 94% do histórico dela é SSG — mas o conteúdo é DBA.
+// Cada regra: TODOS os padrões em `all` precisam casar no texto normalizado
+// (minúsculo, sem acento). "tabela" sozinha NÃO decide — "tabela de preço"
+// é Protheus — precisa de contexto de banco junto (backup/expurgo/espaço...).
+var _TRI_TERMOS = [
+  { squadId:'dba', termo:'backup de banco',      all:[/\b(bkp|backup)s?\b/, /\b(db|database|banco|sql|tabela)/] },
+  { squadId:'dba', termo:'banco de dados',       all:[/banco de dados/] },
+  { squadId:'dba', termo:'manutenção de tabela', all:[/\btabelas?\b/, /\b(expurg|elimina|limpez|espaco|tamanho|compacta|bkp|backup|db\b|database|sql)/] },
+  { squadId:'dba', termo:'SGBD',                 all:[/\b(sql ?server|oracle|mysql|postgres\w*|tablespace|shrink|restore|dump|sgbd|dbcc)\b/] }
+];
+function _triTermoTecnico(t){
+  var txt = ((t.assunto||'')+' '+(t.servico||'')+' '+_triBodyText(t, 600)).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/_/g,' ');
+  for(var i=0;i<_TRI_TERMOS.length;i++){
+    var r = _TRI_TERMOS[i], ok = true;
+    for(var j=0;j<r.all.length;j++){ if(!r.all[j].test(txt)){ ok = false; break; } }
+    if(ok) return r;
+  }
+  return null;
+}
+// Contrato SSG ativo no CADASTRO do painel (SSG_CONTRATOS) — pedido do
+// Fabio (12/06/26): usar a inteligência que já existe (cliente setado por
+// fila/contrato) em vez de só palavras. Alias do contrato = cli_id do OTRS.
+function _triContratoSSG(alvoCli){
+  if(typeof SSG_CONTRATOS === 'undefined' || !SSG_CONTRATOS || !alvoCli) return null;
+  var up = String(alvoCli).toUpperCase().trim();
+  if(!up) return null;
+  for(var i=0;i<SSG_CONTRATOS.length;i++){
+    var c = SSG_CONTRATOS[i];
+    if(!c.ativo) continue;
+    var a = String(c.alias||'').toUpperCase().trim();
+    if(!a) continue;
+    if(up === a || up.indexOf(a) !== -1 || a.indexOf(up) !== -1) return c;
+  }
+  return null;
+}
+// ── MOTOR DE EVIDÊNCIAS (aprendizado do histórico, sem LLM) ───────────
+// Pedido do Fabio (12/06/26): triagem inteligente baseada em filas,
+// histórico e leitura do chamado — sem custo e sem LLM.
+// Como funciona: o histórico (~2300 chamados já roteados) é uma base
+// rotulada. O painel aprende sozinho quais PALAVRAS são típicas de cada
+// squad (ex.: 'jobs'→DBA, 'monitoramento'→GWMS, 'requisição'→SSG) e
+// combina 3 evidências com peso: conteúdo do chamado (45%), histórico
+// do cliente (35%) e contrato SSG no cadastro (20%). Tudo transparente:
+// o card mostra as palavras que pesaram e os conflitos.
+// Índice token→squad: aprendido 1x por carga de dados (cache por assinatura).
+var _TRI_TOK_IDX = null, _TRI_TOK_SIG = '';
+function _triBuildTokenIdx(){
+  var nRaw = (typeof RAW_DATA!=='undefined' && RAW_DATA) ? RAW_DATA.length : 0;
+  var nAtv = (typeof TICKETS_ATIVOS_DATA!=='undefined' && TICKETS_ATIVOS_DATA && TICKETS_ATIVOS_DATA.rows) ? TICKETS_ATIVOS_DATA.rows.length : 0;
+  var sig = nRaw + '/' + nAtv;
+  if(_TRI_TOK_IDX && _TRI_TOK_SIG === sig) return _TRI_TOK_IDX;
+  // Tokens que são nome de cliente não entram (cliente já é outra evidência)
+  var cliTok = {};
+  Object.keys(_triBuildCliIdx()).forEach(function(k){
+    _triKeywords(k).forEach(function(w){ cliTok[w] = 1; });
+  });
+  var counts = {}; // token → {squadId: n}
+  function feed(assunto, servico, fila){
+    var sq = FILA_TO_SQUAD[fila]; if(!sq) return;
+    var seen = {};
+    _triKeywords((assunto||'') + ' ' + (servico||'')).forEach(function(w){
+      if(seen[w] || cliTok[w]) return; seen[w] = 1;
+      if(!counts[w]) counts[w] = {};
+      counts[w][sq] = (counts[w][sq]||0) + 1;
+    });
+  }
+  if(nRaw) RAW_DATA.forEach(function(r){ feed(r.assunto, r.servico, r.fila); });
+  if(nAtv) TICKETS_ATIVOS_DATA.rows.forEach(function(r){ if(r.fila !== FILA_TRIAGEM) feed(r.assunto, r.servico, r.fila); });
+  // Só guarda tokens DISCRIMINATIVOS: ≥4 ocorrências e ≥70% concentradas
+  // numa squad. Peso cresce com a concentração e o volume (log).
+  var idx = {};
+  Object.keys(counts).forEach(function(w){
+    var c = counts[w], tot = 0, top = null, topN = 0;
+    for(var s in c){ tot += c[s]; if(c[s] > topN){ topN = c[s]; top = s; } }
+    if(tot >= 4 && topN/tot >= 0.7){
+      idx[w] = { squadId: top, w: (topN/tot) * Math.log(1+tot) };
+    }
+  });
+  _TRI_TOK_IDX = idx; _TRI_TOK_SIG = sig;
+  return idx;
+}
+// Score combinado por squad. Retorna ranking + explicação legível.
+function _triScoreSquads(t, alvoCli, temCli){
+  var W_CONT = 0.45, W_CLI = 0.35, W_CTR = 0.20;
+  var scores = {}, expl = { palavras: [], cliSquad: null, cliPct: 0, contrato: false, termo: null };
+  function add(sq, v){ scores[sq] = (scores[sq]||0) + v; }
+
+  // Evidência 1: CONTEÚDO — palavras do chamado vs dicionário aprendido
+  var idx = _triBuildTokenIdx();
+  var contScores = {}, contTot = 0, matched = [];
+  var seen = {};
+  _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600)).forEach(function(w){
+    if(seen[w]) return; seen[w] = 1;
+    var e = idx[w]; if(!e) return;
+    contScores[e.squadId] = (contScores[e.squadId]||0) + e.w;
+    contTot += e.w;
+    matched.push({ w: w, squadId: e.squadId, peso: e.w });
+  });
+  // Termo técnico manual (_TRI_TERMOS) reforça o conteúdo — garante casos
+  // óbvios (backup de banco → DBA) mesmo com histórico fino.
+  var termo = _triTermoTecnico(t);
+  if(termo){
+    contScores[termo.squadId] = (contScores[termo.squadId]||0) + 3;
+    contTot += 3;
+    expl.termo = termo.termo;
+  }
+  var temCont = contTot > 0;
+  if(temCont){
+    for(var s1 in contScores) add(s1, W_CONT * (contScores[s1]/contTot));
+    matched.sort(function(a,b){ return b.peso - a.peso; });
+    expl.palavras = matched.slice(0,3).map(function(m){ return m.w; });
+  }
+
+  // Evidência 2: HISTÓRICO do cliente (cliente × fila)
+  var temCliEv = false;
+  if(temCli){
+    var ch = _triClienteSquad(alvoCli);
+    if(ch && ch.total >= 1){
+      temCliEv = true;
+      add(ch.squadId, W_CLI * (ch.n/ch.total));
+      expl.cliSquad = ch.squadId; expl.cliPct = Math.round(ch.n/ch.total*100);
+    }
+  }
+
+  // Evidência 3: CONTRATO SSG ativo (cadastro)
+  var temCtr = false;
+  if(temCli && _triContratoSSG(alvoCli)){ temCtr = true; add('ssg', W_CTR); expl.contrato = true; }
+
+  var keys = Object.keys(scores);
+  if(!keys.length) return null;
+  // Normaliza pelo peso das evidências PRESENTES (ausência não pune)
+  var wTot = (temCont?W_CONT:0) + (temCliEv?W_CLI:0) + (temCtr?W_CTR:0);
+  keys.sort(function(a,b){ return scores[b]-scores[a]; });
+  var top = keys[0];
+  return { squadId: top, pct: Math.round(scores[top]/wTot*100), expl: expl, segundo: keys[1]||null };
+}
+// Sugestão de squad:
+//   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD) — override absoluto
+//   2) MOTOR DE EVIDÊNCIAS (_triScoreSquads): conteúdo aprendido do
+//      histórico (45%) + histórico do cliente (35%) + contrato SSG (20%)
+//   3) similaridade por palavras-chave (fallback raro — quando o motor
+//      não tem evidência nenhuma)
 // O cliente manda mais que palavra-chave solta — evita o caso "TJBA (GWMS)"
 // virar Protheus só porque 'dashboard/topologia' apareceu em chamados Protheus.
 function _triSugerirSquad(t){
@@ -28875,17 +29018,21 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 2) Squad dominante do histórico do próprio cliente (derivado do dado:
-  //    cliente × fila do XLSX + snapshot ativo). Sem lista manual — o TJBA
-  //    vira GWMS porque os chamados dele moram nas filas do GWMS.
-  if(temCli){
-    var ch = _triClienteSquad(alvoCli);
-    if(ch && ch.n >= 1){
-      return { squadId: ch.squadId, pct: Math.round(ch.n/ch.total*100), total: ch.total, motivo: 'cliente_hist' };
+  // 2) Motor de evidências: conteúdo aprendido + histórico + contrato
+  var sc = _triScoreSquads(t, alvoCli, temCli);
+  if(sc){
+    // Conflito relevante? (histórico do cliente discorda do vencedor)
+    var alt = null;
+    if(sc.expl.cliSquad && sc.expl.cliSquad !== sc.squadId && sc.expl.cliPct >= 50){
+      var nmC = SQUADS[sc.expl.cliSquad] ? SQUADS[sc.expl.cliSquad].nome : sc.expl.cliSquad;
+      alt = 'histórico do cliente aponta ' + nmC + ' (' + sc.expl.cliPct + '%)';
+    } else if(sc.expl.contrato && sc.squadId !== 'ssg'){
+      alt = 'cliente tem contrato SSG ativo';
     }
+    return { squadId: sc.squadId, pct: sc.pct, total: 0, motivo: 'score', expl: sc.expl, alt: alt };
   }
 
-  // 3) Similaridade por palavras-chave (assunto + descrição)
+  // 3) Similaridade por palavras-chave (assunto + descrição) — fallback
   var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
   var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
   if(!kw.length) return null;
@@ -29329,6 +29476,16 @@ window.renderTriagemView = function(){
       var txtSug;
       if(sug.motivo === 'cliente_fixo'){
         txtSug = '✅ <strong>'+cli+'</strong> é cliente de <strong>'+sugNome+'</strong>';
+      } else if(sug.motivo === 'score'){
+        // Motor de evidências: mostra O PORQUÊ (palavras, histórico, contrato)
+        var partes = [];
+        if(sug.expl.termo) partes.push('assunto fala de <strong>'+sug.expl.termo+'</strong>');
+        else if(sug.expl.palavras.length) partes.push('palavras: <strong>'+sug.expl.palavras.join(', ')+'</strong>');
+        if(sug.expl.cliSquad === sug.squadId && sug.expl.cliPct) partes.push('histórico do cliente ('+sug.expl.cliPct+'%)');
+        if(sug.expl.contrato && sug.squadId === 'ssg') partes.push('contrato SSG ativo');
+        var conf = sug.pct >= 70 ? '' : (sug.pct >= 45 ? ' · confira' : ' · palpite fraco, confira');
+        txtSug = '🧠 <strong>'+sugNome+'</strong> ('+sug.pct+'%) — '+(partes.length ? partes.join(' + ') : 'evidência fraca')+conf
+          + (sug.alt ? ' <span style="color:var(--warn)">· ⚠ '+sug.alt+'</span>' : '');
       } else if(sug.motivo === 'cliente_hist'){
         txtSug = '👥 <strong>'+cli+'</strong> costuma ir pra <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' do cliente)';
       } else {
