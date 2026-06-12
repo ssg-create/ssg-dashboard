@@ -28879,12 +28879,31 @@ function _triTermoTecnico(t){
   }
   return null;
 }
+// Contrato SSG ativo no CADASTRO do painel (SSG_CONTRATOS) — pedido do
+// Fabio (12/06/26): usar a inteligência que já existe (cliente setado por
+// fila/contrato) em vez de só palavras. Alias do contrato = cli_id do OTRS.
+function _triContratoSSG(alvoCli){
+  if(typeof SSG_CONTRATOS === 'undefined' || !SSG_CONTRATOS || !alvoCli) return null;
+  var up = String(alvoCli).toUpperCase().trim();
+  if(!up) return null;
+  for(var i=0;i<SSG_CONTRATOS.length;i++){
+    var c = SSG_CONTRATOS[i];
+    if(!c.ativo) continue;
+    var a = String(c.alias||'').toUpperCase().trim();
+    if(!a) continue;
+    if(up === a || up.indexOf(a) !== -1 || a.indexOf(up) !== -1) return c;
+  }
+  return null;
+}
 // Sugestão de squad — prioridade decrescente de confiança:
 //   1) cliente fixo conhecido (_TRI_CLIENTE_SQUAD)
 //   2) TERMO TÉCNICO inequívoco no assunto/corpo (_TRI_TERMOS) — conteúdo
-//      claro de banco → DBA ganha até do histórico do cliente
-//   3) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
-//   4) similaridade por palavras-chave do assunto/descrição (último recurso)
+//      claro de banco → DBA ganha até do histórico/contrato; se houver
+//      conflito (cliente com contrato SSG, p.ex.) o card mostra o aviso
+//   3) CONTRATO SSG ativo no cadastro (SSG_CONTRATOS) — cliente setado
+//      por contrato é evidência de cadastro, não de adivinhação
+//   4) squad dominante do HISTÓRICO DO PRÓPRIO CLIENTE (sinal forte)
+//   5) similaridade por palavras-chave do assunto/descrição (último recurso)
 // O cliente manda mais que palavra-chave solta — evita o caso "TJBA (GWMS)"
 // virar Protheus só porque 'dashboard/topologia' apareceu em chamados Protheus.
 function _triSugerirSquad(t){
@@ -28901,13 +28920,35 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 2) Termo técnico inequívoco — ganha do histórico do cliente
+  // 2) Termo técnico inequívoco — ganha do histórico/contrato do cliente.
+  //    Se contradiz o cadastro, anexa aviso pro card (quem tria decide).
   var termo = _triTermoTecnico(t);
   if(termo){
-    return { squadId: termo.squadId, pct: 100, total: 0, motivo: 'termo', termo: termo.termo };
+    var alt = null;
+    if(temCli && termo.squadId !== 'ssg'){
+      var ctrConf = _triContratoSSG(alvoCli);
+      if(ctrConf){
+        alt = 'cliente tem contrato SSG ativo';
+      } else {
+        var chConf = _triClienteSquad(alvoCli);
+        if(chConf && chConf.n >= 3 && chConf.squadId !== termo.squadId){
+          var nmConf = SQUADS[chConf.squadId] ? SQUADS[chConf.squadId].nome : chConf.squadId;
+          alt = 'histórico do cliente aponta ' + nmConf;
+        }
+      }
+    }
+    return { squadId: termo.squadId, pct: 100, total: 0, motivo: 'termo', termo: termo.termo, alt: alt };
   }
 
-  // 3) Squad dominante do histórico do próprio cliente (derivado do dado:
+  // 3) Contrato SSG ativo no cadastro do painel
+  if(temCli){
+    var ctr = _triContratoSSG(alvoCli);
+    if(ctr){
+      return { squadId: 'ssg', pct: 100, total: 0, motivo: 'contrato', contrato: ctr.nome };
+    }
+  }
+
+  // 4) Squad dominante do histórico do próprio cliente (derivado do dado:
   //    cliente × fila do XLSX + snapshot ativo). Sem lista manual — o TJBA
   //    vira GWMS porque os chamados dele moram nas filas do GWMS.
   if(temCli){
@@ -28917,7 +28958,7 @@ function _triSugerirSquad(t){
     }
   }
 
-  // 4) Similaridade por palavras-chave (assunto + descrição)
+  // 5) Similaridade por palavras-chave (assunto + descrição)
   var kw = _triKeywords((t.assunto||'') + ' ' + (t.servico||'') + ' ' + _triBodyText(t, 600));
   var kwSet = {}; kw.forEach(function(w){ kwSet[w]=1; });
   if(!kw.length) return null;
@@ -29362,7 +29403,10 @@ window.renderTriagemView = function(){
       if(sug.motivo === 'cliente_fixo'){
         txtSug = '✅ <strong>'+cli+'</strong> é cliente de <strong>'+sugNome+'</strong>';
       } else if(sug.motivo === 'termo'){
-        txtSug = '🔧 Assunto fala de <strong>'+sug.termo+'</strong> → vai pra <strong>'+sugNome+'</strong>';
+        txtSug = '🔧 Assunto fala de <strong>'+sug.termo+'</strong> → vai pra <strong>'+sugNome+'</strong>'
+          + (sug.alt ? ' <span style="color:var(--warn)">· ⚠ '+sug.alt+' — confira</span>' : '');
+      } else if(sug.motivo === 'contrato'){
+        txtSug = '📄 <strong>'+cli+'</strong> tem contrato <strong>SSG</strong> ativo (cadastro do painel)';
       } else if(sug.motivo === 'cliente_hist'){
         txtSug = '👥 <strong>'+cli+'</strong> costuma ir pra <strong>'+sugNome+'</strong> ('+sug.pct+'% de '+sug.total+' chamado'+(sug.total!==1?'s':'')+' do cliente)';
       } else {
