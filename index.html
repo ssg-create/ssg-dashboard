@@ -19310,6 +19310,54 @@ window._eqCobrancaColetiva = function(filaNome, preview){
   var blocoSugestoes = sugestoes.length
     ? '\n\n💡 *Sugestão IA de ação:*\n' + sugestoes.join('\n')
     : '';
+
+  // ─── COBRANÇA NOMINAL +90d (pedido do Fabio 12/06) ─────────────────────
+  // Problema: chamados antigos não mudavam de status — a mensagem informava
+  // mas não cobrava ninguém por chamado específico, sem prazo e sem memória.
+  // Agora: lista nominal com pergunta objetiva + histórico de cobranças em
+  // localStorage — reincidência vira '⛔ Nª cobrança' e escala pro gestor.
+  // (Memória vive no navegador de quem envia a cobrança — o Fabio.)
+  var EQ_ANTIGO_DIAS = 90, EQ_COBR_KEY = 'eq.cobranca.hist';
+  var blocoCobranca = '', reincidentes = [];
+  try {
+    var antigosAll = ticketsSobControle.filter(function(it){ return _daysAgo(it._t.criado) >= EQ_ANTIGO_DIAS; })
+      .sort(function(a,b){ return (a._t.criado||'').localeCompare(b._t.criado||''); })
+      .slice(0, 10);
+    if(antigosAll.length){
+      var histC = {};
+      try { histC = JSON.parse(localStorage.getItem(EQ_COBR_KEY)||'{}') || {}; } catch(e){}
+      var agoraC = Date.now();
+      var fmtDC = function(ts){ var d=new Date(ts); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2); };
+      var linhasCobr = antigosAll.map(function(it){
+        var tk = String(it._t.ticket||'?');
+        var rec = histC[tk];
+        // Gerar 2x na mesma manhã não conta como nova cobrança (janela 12h)
+        var conta = rec ? (agoraC - (rec.last||0) > 12*3600*1000) : false;
+        var vezes = rec ? (conta ? rec.n + 1 : rec.n) : 1;
+        histC[tk] = { n: vezes, first: rec ? rec.first : agoraC, last: (conta || !rec) ? agoraC : rec.last };
+        var tag = '';
+        if(vezes >= 2){
+          tag = ' ⛔ ' + vezes + 'ª cobrança — sem evolução desde ' + fmtDC(histC[tk].first);
+          reincidentes.push({ tk: tk, atend: _nomeCurto(it._atend||''), vezes: vezes });
+        }
+        var ass = (it._t.assunto||'').replace(/\s+/g,' ').slice(0, 40);
+        return '• *' + _nomeCurto(it._atend||'?') + '* → #' + tk + ' · ' + _daysAgo(it._t.criado) + 'd · ' + _disp(it._t.cli_id) + ' · ' + ass + tag;
+      });
+      // Poda: cobranças de tickets que sumiram da fila expiram em 120d
+      Object.keys(histC).forEach(function(k){ if(agoraC - (histC[k].last||0) > 120*86400000) delete histC[k]; });
+      try { localStorage.setItem(EQ_COBR_KEY, JSON.stringify(histC)); } catch(e){}
+      blocoCobranca = '\n\n📌 *RESPONDER HOJE — parados há +' + EQ_ANTIGO_DIAS + 'd:*\n'
+        + linhasCobr.join('\n')
+        + '\n↳ Cada citado responde *aqui na thread*: (1) qual o bloqueio real? (2) próxima ação? (3) que data? Sem resposta até o fim do dia, sobe pro gestor.';
+    }
+  } catch(e){ console.warn('bloco cobrança nominal:', e); }
+  var blocoEscala = '';
+  if(reincidentes.length){
+    var quemR = reincidentes.map(function(r){ return '#' + r.tk + ' (' + r.atend + ', ' + r.vezes + 'ª)'; }).join(', ');
+    blocoEscala = '\n\n🚨 ' + (gestor ? '*' + gestor + '*: ' : '') + quemR
+      + (reincidentes.length === 1 ? ' já foi cobrado antes e não andou' : ' já foram cobrados antes e não andaram')
+      + ' — decisão sua: redistribuir, escalar ou tratar direto com o cliente.';
+  }
   // ──────────────────────────────────────────────────────────────────────
 
   var alinhaGestor = gestor
@@ -19335,6 +19383,8 @@ window._eqCobrancaColetiva = function(filaNome, preview){
     + blocoClientes
     + blocoSugestoes
     + blocoAging
+    + blocoCobranca
+    + blocoEscala
     + '\n\n'
     + alinhaGestor
     + fech;
