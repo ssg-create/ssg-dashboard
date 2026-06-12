@@ -19,10 +19,13 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*'); // só um número de idade, ok ser público
 
   const token = process.env.GH_DATA_TOKEN;
-  const headers = token ? { Authorization: 'Bearer ' + token } : {};
 
   try {
-    const r = await fetch(REPO_RAW + 'tickets_ativos.json', { headers });
+    // Com token: Contents API (lê repo privado). Sem token: raw público (fallback).
+    const r = token
+      ? await fetch('https://api.github.com/repos/ssg-create/ssg-dashboard-data/contents/tickets_ativos.json?ref=main',
+          { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github.raw', 'User-Agent': 'gw-command', 'X-GitHub-Api-Version': '2022-11-28' } })
+      : await fetch(REPO_RAW + 'tickets_ativos.json');
     if (!r.ok) {
       return res.status(503).json({ ok: false, error: 'upstream ' + r.status });
     }

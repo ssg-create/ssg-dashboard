@@ -1,26 +1,26 @@
 // ════════════════════════════════════════════════════════════
-// Proxy de dados do painel — 12/06/2026
+// Proxy de dados do painel — 12/06/2026 (rev. Contents API)
 //
-// Problema: os 8 JSONs operacionais (tickets, histórico, clientes…) eram
-// servidos por rewrite direto pro raw.githubusercontent — acessíveis por
-// qualquer pessoa com a URL, sem login (e o repo precisava ser público).
+// Serve os 8 JSONs operacionais sem expor o repo direto. Aplica o guardião
+// (só o painel chama) e busca no GitHub.
 //
-// Agora: o rewrite aponta pra cá. Este proxy (1) aplica o mesmo guardião
-// dos outros endpoints (só o painel consegue chamar) e (2) busca no GitHub
-// com token (env GH_DATA_TOKEN) — o que permite tornar o repo PRIVADO sem
-// quebrar nada.
+// COM token (env GH_DATA_TOKEN): usa a GitHub Contents API com Accept: raw —
+//   caminho DOCUMENTADO que funciona pra repo PRIVADO. Limite 5000 req/h (folga).
+// SEM token: cai no raw.githubusercontent (repo público, sem rate limit) —
+//   fallback pra não quebrar enquanto o token não está configurado.
 //
 // Ordem de ativação segura (zero downtime):
-//   1. merge deste PR → painel continua funcionando (repo ainda público,
-//      proxy busca sem token)
-//   2. criar token fine-grained no GitHub (só leitura de conteúdo do repo
-//      ssg-dashboard-data) e salvar como GH_DATA_TOKEN no Vercel
-//   3. tornar o repo privado → proxy passa a usar o token, painel nem nota
+//   1. merge → painel segue funcionando (repo público, fallback raw)
+//   2. criar PAT fine-grained (Contents: Read no ssg-dashboard-data) e salvar
+//      como GH_DATA_TOKEN no Vercel → proxy passa a usar a Contents API
+//   3. tornar o repo privado → o token lê normal, painel nem nota
 // ════════════════════════════════════════════════════════════
 
 import { guard } from './_guard.js';
 
-const REPO_RAW = 'https://raw.githubusercontent.com/ssg-create/ssg-dashboard-data/main/';
+const OWNER_REPO = 'ssg-create/ssg-dashboard-data';
+const BRANCH = 'main';
+const RAW = `https://raw.githubusercontent.com/${OWNER_REPO}/${BRANCH}/`;
 const FILES = new Set([
   'historico_completo.json',
   'tickets_ativos.json',
@@ -41,12 +41,28 @@ export default async function handler(req, res) {
   }
 
   const token = process.env.GH_DATA_TOKEN;
-  const headers = token ? { Authorization: 'Bearer ' + token } : {};
 
   try {
-    const upstream = await fetch(REPO_RAW + file, { headers });
+    let upstream;
+    if (token) {
+      // Contents API — funciona pra repo privado. Accept: raw devolve o arquivo direto.
+      upstream = await fetch(
+        `https://api.github.com/repos/${OWNER_REPO}/contents/${encodeURIComponent(file)}?ref=${BRANCH}`,
+        {
+          headers: {
+            'Authorization': 'Bearer ' + token,
+            'Accept': 'application/vnd.github.raw',
+            'User-Agent': 'gw-command',
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        }
+      );
+    } else {
+      // Fallback público (sem token): raw.githubusercontent, sem rate limit.
+      upstream = await fetch(RAW + file);
+    }
+
     if (!upstream.ok) {
-      // 404 com repo privado e sem token = falta configurar GH_DATA_TOKEN
       return res.status(upstream.status).json({
         error: 'upstream ' + upstream.status,
         hint: upstream.status === 404 && !token
@@ -54,12 +70,13 @@ export default async function handler(req, res) {
           : undefined
       });
     }
+
     const body = await upstream.text();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    // Cache curto na CDN — o painel já fura cache com ?v=, isso protege o GitHub
+    // Cache curto na CDN — protege o GitHub do volume de polling do painel.
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
     return res.status(200).send(body);
   } catch (e) {
-    return res.status(502).json({ error: 'falha ao buscar dado', detail: String(e && e.message || e) });
+    return res.status(502).json({ error: 'falha ao buscar dado', detail: String((e && e.message) || e) });
   }
 }
