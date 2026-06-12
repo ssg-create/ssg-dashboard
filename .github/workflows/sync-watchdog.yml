@@ -6,14 +6,14 @@ name: Sync Watchdog
 #  2) ALERTA SUAVE: se auto-cura ja foi tentada e ainda esta parado, abre/atualiza issue.
 #  3) ALERTA DURO: se 3+ runs consecutivas falharam, abre issue imediatamente.
 #
-# Roda a cada 15 minutos. O proprio watchdog tambem sofre atraso do scheduler do GitHub,
-# por isso o trigger primario do sync continua sendo o cron-job.org (a cada 2min).
+# Roda a cada 5 minutos e dispara o sync via PAT quando o dado passa de ~6min.
+# Virou o MOTOR do sync: nao depende de cron-job.org nem de maquina local.
 #
-# Criado em 26/05/2026; reforcado em 26/05/2026 com auto-cura.
+# Criado em 26/05/2026; auto-cura corrigida em 12/06/2026 (usar PAT no dispatch).
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Verificar saude do GWMS Sync (com auto-cura)
         uses: actions/github-script@v7
+        env:
+          DISPATCH_PAT: ${{ secrets.GH_PAT_CROSS_REPO }}
         with:
           script: |
             const owner = context.repo.owner;
@@ -57,22 +59,29 @@ jobs:
             core.info('Falhas consecutivas: ' + consecFails + ' | Ultima success ha ' + ageMin + 'min');
 
             // ---- AUTO-CURA ----
-            const STALE_MIN = 20;
+            // FIX (12/06): o dispatch PRECISA usar um PAT, nao o GITHUB_TOKEN.
+            // Regra do GitHub: workflow_dispatch disparado pelo GITHUB_TOKEN NAO
+            // inicia outro workflow (protecao anti-loop) — o disparo era "engolido"
+            // e o auto-cura nunca funcionava de fato. Com o PAT, o sync roda mesmo.
+            const STALE_MIN = 6;
             if (ageMin > STALE_MIN && consecFails < 3) {
               const running = items.find(r => r.status === 'in_progress' || r.status === 'queued');
               if (running) {
                 core.info('Sync stale, mas ha run em andamento (#' + running.run_number + '). Aguardando.');
+              } else if (!process.env.DISPATCH_PAT) {
+                core.warning('AUTO-CURA impossivel: secret GH_PAT_CROSS_REPO ausente. Configure um PAT com escopo Actions: write.');
               } else {
-                core.info('AUTO-CURA: disparando gwms-sync.yml via workflow_dispatch.');
+                core.info('AUTO-CURA: disparando gwms-sync.yml via PAT (workflow_dispatch).');
                 try {
-                  await github.rest.actions.createWorkflowDispatch({
+                  const dispatcher = require('@actions/github').getOctokit(process.env.DISPATCH_PAT);
+                  await dispatcher.rest.actions.createWorkflowDispatch({
                     owner, repo,
                     workflow_id: 'gwms-sync.yml',
                     ref: 'main'
                   });
-                  core.info('Dispatch enviado com sucesso.');
+                  core.info('Dispatch (PAT) enviado — o sync deve iniciar em segundos.');
                 } catch (e) {
-                  core.warning('Falha ao disparar auto-cura: ' + e.message);
+                  core.warning('Falha ao disparar auto-cura via PAT: ' + e.message + ' (o PAT tem escopo Actions: write neste repo?)');
                 }
               }
             }
