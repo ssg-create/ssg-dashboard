@@ -16072,6 +16072,77 @@ function _simAvaliar(target, c, tw, targetMod, resolText){
 }
 
 // Conta rapidamente quantos similares RELEVANTES existem (short-circuit em 10).
+// ════════════════════════════════════════════════════════════
+// ANÁLISE AUTOMÁTICA POR PLAYBOOK (determinístico — sem LLM)
+// Biblioteca curada de diagnósticos, indexada por módulo/rotina + gatilhos.
+// Match por pontuação de palavras-chave no assunto. Renderiza no card da
+// pilha (tag "⚡ análise") e no modal de detalhe (bloco completo).
+// A equipe alimenta PLAYBOOKS conforme novos padrões recorrem.
+// ════════════════════════════════════════════════════════════
+var PLAYBOOKS = [
+  {
+    id: 'fin-variacao-cambial-nao-contabiliza',
+    titulo: 'Variação cambial não contabiliza para moeda específica',
+    modulo: 'SIGAFIN',
+    rotina: 'FINA350',
+    gatilhos: ['variac', 'monetar', 'cambial', 'contabil', 'moeda', 'fina350'],
+    minScore: 3,
+    hipotese: 'Conta de variação cambial (ativa/passiva) não cadastrada para a(s) moeda(s) afetada(s). O lançamento padronizado sai vazio e o FINA350 pula sem erro — por isso reflete no financeiro mas não na contabilidade.',
+    verificar: [
+      'Cadastro de moedas: comparar uma moeda que funciona (ex: 3) com a que falha — achar a conta de variação em branco',
+      'Lançamento padronizado de variação (CP e CR): a conta resolve vazia nessas moedas?',
+      'CT2 por data do cálculo: tem partida das moedas que funcionam e zero da que falha?'
+    ],
+    perguntar: [
+      'Print do cadastro da moeda que funciona vs a que falha',
+      'Qual o número do LP de variação que vocês usam?'
+    ],
+    tdn: 'FINA350 contabilização variação cambial por moeda lançamento padronizado'
+  }
+];
+function _normPB(s){ return (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+// Retorna o playbook de maior pontuação para um assunto, ou null.
+function _matchPlaybook(assunto){
+  var a = _normPB(assunto);
+  if(!a) return null;
+  var best = null, bestScore = 0, i = 0, g = 0;
+  for(i=0; i<PLAYBOOKS.length; i++){
+    var pb = PLAYBOOKS[i], score = 0;
+    for(g=0; g<pb.gatilhos.length; g++){ if(a.indexOf(pb.gatilhos[g]) !== -1) score++; }
+    if(score >= (pb.minScore||3) && score > bestScore){ best = pb; bestScore = score; }
+  }
+  return best;
+}
+function _pbTdnLink(pb){
+  return 'https://tdn.totvs.com/dosearchsite.action?queryString=' + encodeURIComponent(pb.tdn || pb.rotina || pb.modulo);
+}
+// Render do bloco de análise no modal de detalhe (tkd-overlay).
+function renderAnalisePlaybook(t, esc){
+  var pb = null;
+  try { pb = _matchPlaybook(t && t.assunto); } catch(e){ return ''; }
+  if(!pb) return '';
+  var li = function(arr, icon){
+    var h = '', i = 0;
+    for(i=0; i<arr.length; i++){
+      h += '<div style="display:flex;gap:8px;margin-bottom:6px;font-size:12px;line-height:1.5;color:var(--text)"><span style="color:var(--muted);flex:0 0 auto">'+icon+'</span><span>'+esc(arr[i])+'</span></div>';
+    }
+    return h;
+  };
+  return ''
+    + '<div style="margin-top:16px;border:1px solid rgba(255,100,0,.30);border-radius:10px;background:rgba(255,100,0,.05);padding:14px 16px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+        + '<span style="font-size:13px;font-weight:700;color:var(--text)">⚡ Análise automática</span>'
+        + '<span style="font-size:10px;color:var(--muted);font-family:var(--mono)">'+esc(pb.modulo)+' · '+esc(pb.rotina)+' · por regra</span>'
+      + '</div>'
+      + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">Hipótese mais provável</div>'
+      + '<div style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.30);border-radius:6px;padding:9px 11px;font-size:12px;line-height:1.5;color:#fbbf24;margin-bottom:12px">'+esc(pb.hipotese)+'</div>'
+      + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px">Verificar</div>'
+      + li(pb.verificar, '☐')
+      + '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 6px">Perguntar ao cliente</div>'
+      + li(pb.perguntar, '?')
+      + '<a href="'+_pbTdnLink(pb)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#4f8ef7;text-decoration:none">🔎 Buscar no TDN / gwoogle</a>'
+    + '</div>';
+}
 function countSimilarResolutions(target){
   if(typeof RAW_DATA === 'undefined' || !RAW_DATA || !RAW_DATA.length) return 0;
   if(!target || !target.assunto) return 0;
@@ -16259,6 +16330,7 @@ function openTicketDetail(num){
     + cell('Idade',idade)
     + cell('1ª Resposta',respTxt)
     + '</div>'
+    + renderAnalisePlaybook(t, esc)
     + renderSimilarResolutions(t, esc);
   var otrsLink = document.getElementById('tkd-otrs-link');
   if(otrsLink && t.num){
@@ -26916,14 +26988,23 @@ function _ticketCard(t){
   // no histórico. Clique no chip abre modal interno (não vai pro OTRS).
   var simCount = 0;
   try { simCount = countSimilarResolutions({num: num, assunto: t.assunto||'', fila: t.fila||'', cli_id: t.cliente||''}); } catch(e){}
-  var simChip = simCount > 0
-    ? '<div class="sq-card-sim" onclick="event.stopPropagation();openTicketDetail(\''+(num||'').replace(/\x27/g,"\\\\\\\'")+'\')" title="Ver chamados parecidos resolvidos antes" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;background:rgba(79,142,247,.10);border:1px solid rgba(79,142,247,.30);border-radius:6px;color:#4f8ef7;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(79,142,247,.20)\'" onmouseout="this.style.background=\'rgba(79,142,247,.10)\'">💡 ver ' + (simCount >= 10 ? '10+' : simCount) + ' similar' + (simCount > 1 ? 'es' : '') + '</div>'
-    : '';
+  var pbHit = null;
+  try { pbHit = _matchPlaybook(t.assunto||''); } catch(e){}
+  var _abreTkd = 'event.stopPropagation();openTicketDetail(\''+(num||'').replace(/\x27/g,"\\\\\\\'")+'\')';
+  var _simSuf = simCount > 0 ? ' · ' + (simCount >= 10 ? '10+' : simCount) + ' similar' + (simCount > 1 ? 'es' : '') : '';
+  var simChip = '';
+  if(pbHit){
+    simChip = '<div class="sq-card-sim" onclick="'+_abreTkd+'" title="Análise pronta — hipótese, checklist e similares" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;background:rgba(255,100,0,.12);border:1px solid rgba(255,100,0,.32);border-radius:6px;color:#ff9a52;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(255,100,0,.22)\'" onmouseout="this.style.background=\'rgba(255,100,0,.12)\'">⚡ ver análise' + _simSuf + '</div>';
+  } else if(simCount > 0){
+    simChip = '<div class="sq-card-sim" onclick="'+_abreTkd+'" title="Ver chamados parecidos resolvidos antes" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;background:rgba(79,142,247,.10);border:1px solid rgba(79,142,247,.30);border-radius:6px;color:#4f8ef7;font-size:11px;font-weight:600;cursor:pointer;transition:background .15s" onmouseover="this.style.background=\'rgba(79,142,247,.20)\'" onmouseout="this.style.background=\'rgba(79,142,247,.10)\'">💡 ver ' + (simCount >= 10 ? '10+' : simCount) + ' similar' + (simCount > 1 ? 'es' : '') + '</div>';
+  }
+  var pbTag = pbHit ? '<span title="Tem análise pronta" style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:9px;font-weight:700;letter-spacing:.06em;background:rgba(255,100,0,.15);color:#ff9a52;border:1px solid rgba(255,100,0,.35);vertical-align:middle">⚡ ANÁLISE</span>' : '';
 
   return '<div class="sq-card sla-'+sla.status+'" onclick="openTicketOTRS(\''+(num||'')+'\',event)" title="Clique para abrir '+num+' no OTRS">'
     + '<div class="sq-card-top">'
       + '<span class="sq-card-num">#' + (num||'—') + '<span class="sq-num-arrow">↗</span></span>'
       + '<div class="sq-card-spacer"></div>'
+      + pbTag
       + slaBadge
     + '</div>'
     + '<div class="sq-card-assunto" title="' + assunto + '">' + assunto + '</div>'
