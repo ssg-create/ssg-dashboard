@@ -75,11 +75,10 @@ async function appendRow(token, row) {
   }
 }
 
+import { guard } from './_guard.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (!guard(req, res, 'POST, GET, OPTIONS')) return;
 
   let atendente, evento, detalhe;
   if (req.method === 'POST') {

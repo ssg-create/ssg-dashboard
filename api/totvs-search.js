@@ -61,11 +61,11 @@ async function logToSheet(sa, { query, product, count, atendente }) {
 
 // ── Handler principal ──────────────────────────────────────────────────────
 
+import { guard } from './_guard.js';
+
 export default async function handler(req, res) {
+  if (!guard(req, res, 'GET, OPTIONS')) return;
   // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { query, per_page = 10, page = 1, product = '', atendente = '' } = req.query;
 

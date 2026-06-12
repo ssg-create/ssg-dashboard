@@ -17,10 +17,10 @@
 //   bruto sem fator hora; minutes_efective é o consumo com fator aplicado
 //   (= o que efetivamente conta como horas cobradas/descontadas do pool).
 // ════════════════════════════════════════════════════════════
+import { guard } from './_guard.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (!guard(req, res, 'GET, OPTIONS')) return;
 
   const TOKEN = process.env.APONTAMENTO_TOKEN;
   if (!TOKEN) {
