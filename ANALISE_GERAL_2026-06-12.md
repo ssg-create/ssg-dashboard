@@ -14,9 +14,9 @@ medido), a cobrança ganhou memória e escalonamento, a pilha do atendente parou
 
 Os 3 riscos que importam **não são de funcionalidade**:
 
-1. **Segurança de dados (urgente, parado há 2 dias):** os 4 endpoints `/api/*` continuam
-   abertos pra internet — confirmei hoje no código. Dado financeiro de contrato BH de
-   cliente sai pra qualquer um com a URL.
+1. **Segurança de dados:** os 4 endpoints `/api/*` já foram fechados (PR #27/#28). Resta o
+   que pesa: os **dois repos ainda PÚBLICOS** (proxy+token prontos, falta privar) e as
+   senhas "123456".
 2. **Processo depende de 1 pessoa:** só o Fabio edita, publica e cobra. Se o Fabio parar
    uma semana, o painel congela (bus factor = 1).
 3. **Fundação:** monólito de 30,5 mil linhas / 2 MB, ES5 puro, 289 onclick inline.
@@ -36,8 +36,10 @@ Os 3 riscos que importam **não são de funcionalidade**:
 | Atendente real aparecia como "PILOTO" (rótulo de teste) | ✅ Resolvido — badge só no modo espelho (PR #21) |
 | Análise inicial do chamado dependia da cabeça do analista | ✅ Novo — análise automática por playbook no card/detalhe (PR #29); 1ª entrada: variação cambial / FINA350 |
 | Similares varria o histórico (~4,5k) por card e a cada re-render | ✅ Resolvido — índice de candidatos + memoização (PR #30), sem mudar o match |
-| **Endpoints `/api/*` abertos (achado nº 1 da auditoria)** | ❌ **Sem mudança — segue crítico** |
-| Repo `ssg-dashboard-data` privado? | ❓ **Ainda não confirmado** (1 minuto de checagem) |
+| Endpoints `/api/*` abertos (achado nº 1 da auditoria) | ✅ Fechados — guard + proxy (PR #27/#28): acesso anônimo → 403 |
+| **Sync ~2 dias parado / dependia de cutucão manual** | ✅ **Reconstruído (12/06)** — Cloudflare Worker (relógio 2min) + Watchdog por frescor + `/api/health` + UptimeRobot. Não depende mais da máquina do Fabio |
+| Telefones pessoais no git (`equipe-ssg.md`) | ✅ Removidos do versionamento; token de dispatch rotacionado |
+| Repos `ssg-dashboard` e `ssg-dashboard-data` privados? | ⚠️ **Confirmado: ambos PÚBLICOS** (via API GitHub). Proxy+token prontos; falta privar — repo de dados = grátis, repo de código tem custo de Actions |
 | Senhas "123456" | ❌ Sem mudança |
 | Monólito 30k linhas | ❌ Sem mudança (cresceu ~700 linhas em 2 dias) |
 
@@ -61,29 +63,38 @@ Alinhado à tese da casa: determinístico antes de LLM, custo zero, fecha o cicl
 primeira resposta e reduz a dependência do conhecimento do sênior — ataca o bus factor pela
 via do conhecimento reutilizável).
 
-## O sistema de ponta a ponta (onde a cadeia é frágil)
+## O sistema de ponta a ponta (reconstruído em 12/06)
 
 ```
-OTRS/Znuny ──► cron-job.org (2min) ──► GitHub Actions (gwms-sync) ──► repo ssg-dashboard-data
-                                                                            │
-Apontamento ──► /api/banco-horas ──────────────► Vercel (gw-command) ◄─── rewrites JSON
-                                                       │
-                                              Painel (navegador)
+[Cloudflare Worker · cron 2min] ──(PAT)──► workflow_dispatch
+        │
+        ▼
+GitHub Actions (gwms-sync · só executor) ──► repo ssg-dashboard-data ──► /api/data (proxy+token) ──► Painel
+        ▲                                                                          │
+        └─ Watchdog (schedule) · lê generated_at do JSON · re-dispara via PAT ─────┘   (rede de segurança)
+
+UptimeRobot ── ping /api/health ── e-mail se o dado passar de 15min   (alerta externo, independe do painel)
 ```
 
-Elos e risco de cada um:
+**Por que reconstruiu (12/06):** o sync ficou ~2 dias parado. Diagnóstico em 3 camadas:
+1. **`schedule` do GitHub é estrangulado** em repo público — rodava a cada ~2-3h, não a cada 5-15min.
+2. **cron-job.org (o gatilho real) morreu** — ponto único externo, fora do controle.
+3. **Auto-cura do Watchdog nunca funcionou:** disparava com `GITHUB_TOKEN`, e o GitHub
+   **suprime** workflow disparado por esse token (proteção anti-loop). Corrigido pra usar PAT.
 
-- **cron-job.org (gratuito, conta pessoal):** é o coração do tempo real. Se a conta cair,
-  o backup é o schedule do GitHub (atrasa 1–2h em pico). Watchdog cobre, mas o serviço é
-  um ponto único fora do seu controle. *Mitigação barata: segundo trigger (outro serviço
-  de cron gratuito) apontando pro mesmo workflow_dispatch.*
-- **GitHub Actions:** runs de 2–5min. Hoje com concurrency e cache — saudável.
-- **Repo de dados no GitHub:** se for público, é vazamento de dado operacional de cliente
-  — indexável. **Checar visibilidade é a ação de 1 minuto mais importante desta análise.**
-- **Vercel:** deployment protection é a única segurança real do painel (login interno é
-  cosmético, como a auditoria já disse). Confirmar que está ligada.
-- **/api/banco-horas e irmãos:** porta dos fundos aberta — entrega o dado sem passar por
-  nenhuma das proteções acima.
+Elos e risco, agora:
+
+- **Cloudflare Worker (free):** relógio confiável, cron a cada 2min, PAT em secret criptografado.
+  Substituiu o cron-job.org. **Não depende da máquina do Fabio.** (PR `claude/sync-resiliente`)
+- **GitHub Actions:** só executor (disparado por fora). O `schedule` nativo fica como 3º backup.
+- **Watchdog:** rede de segurança — decide por **frescor do dado** (`generated_at`), não por
+  sucesso de run (runs manuais não mascaram mais). Dispara via PAT.
+- **/api/health + UptimeRobot:** observabilidade independente — alerta por e-mail mesmo sem
+  ninguém com o painel aberto. Acabou a cegueira de 2 dias.
+- **Token (PAT):** fine-grained, menor privilégio (Actions: write só no `ssg-dashboard`),
+  expira em 1 ano, rotacionado em 12/06. É o único ponto único sistêmico — o UptimeRobot
+  avisa se ele expirar.
+- **Vercel:** deployment protection é a única segurança real do painel (login interno é cosmético).
 
 ## A dimensão que nenhuma auditoria olhou: processo e pessoas
 
@@ -113,7 +124,7 @@ card — sem LLM, sem custo, alinhado ao padrão da casa.
 | 2 | ✅ Fechar os 4 endpoints — FEITO 12/06 (`api/_guard.js`, PR #27) + JSONs atrás de proxy (PR #28): acesso anônimo → 403 | — | Porta fechada | Concluído |
 | 3 | Trocar senhas "123456" por senhas únicas | 1h | Higiene básica | Esta semana |
 | 4 | Medir aceite da sugestão de triagem (feedback loop) | ~2h | Calibra o motor com dado real | Próxima sprint |
-| 5 | Segundo trigger de cron (redundância do cron-job.org) | 1h | Tira ponto único externo | Próxima sprint |
+| 5 | ✅ Relógio de sync confiável — FEITO 12/06: Cloudflare Worker (cron 2min via PAT) substitui o cron-job.org + Watchdog por frescor + UptimeRobot. Sem máquina local, sem ponto único externo | — | Sync autônomo | Concluído |
 | 6 | Plugar endpoint histórico BH do Adriano | médio | Mata manutenção manual | Quando o endpoint existir |
 | 7 | Externalizar dados embutidos restantes (~130 KB) | médio | Performance + passo 1 da quebra do monólito | Fundo |
 | 8 | Quebra faseada do monólito (dados → estilos → JS por aba) | alto | Destrava evolução e revisão | Fundo, faseado |
