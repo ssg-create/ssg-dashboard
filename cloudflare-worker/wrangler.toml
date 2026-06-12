@@ -1,0 +1,8 @@
+name = "gw-sync-cron"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Relógio do sync: dispara o GWMS Sync a cada 2 minutos.
+# Cloudflare cron é confiável (ao contrário do schedule do GitHub).
+[triggers]
+crons = ["*/2 * * * *"]
