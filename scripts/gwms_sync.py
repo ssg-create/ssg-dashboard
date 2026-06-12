@@ -487,6 +487,57 @@ def github_upload(path: str, payload_bytes: bytes, message: str) -> None:
     log(f"Upload {path} OK ({put.status_code}) [branch={branch}]")
 
 
+def github_commit_files(files: dict, message: str) -> None:
+    """Cria UM commit com VÁRIOS arquivos (Git Data API), em vez de 1 commit por
+    arquivo. Reduz o bloat do histórico do repo de dados. files = {path: bytes}.
+    Faz retry se outra run mover a ref no meio do caminho."""
+    if not files:
+        return
+    token = os.environ["DEPLOY_TOKEN"]
+    repo = os.environ["GH_REPO"]
+    branch = os.environ.get("GH_BRANCH", "data")
+    api = f"https://api.github.com/repos/{repo}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    # Blobs não dependem da ref — cria uma vez.
+    tree = []
+    for path, content in files.items():
+        rb = requests.post(f"{api}/git/blobs", headers=headers, timeout=60,
+                           json={"content": base64.b64encode(content).decode(), "encoding": "base64"})
+        if rb.status_code not in (200, 201):
+            raise RuntimeError(f"Blob {path} falhou: HTTP {rb.status_code} — {rb.text[:200]}")
+        tree.append({"path": path, "mode": "100644", "type": "blob", "sha": rb.json()["sha"]})
+
+    last_err = ""
+    for _attempt in range(3):
+        rr = requests.get(f"{api}/git/ref/heads/{branch}", headers=headers, timeout=30)
+        if rr.status_code != 200:
+            raise RuntimeError(f"Ref {branch} falhou: HTTP {rr.status_code} — {rr.text[:200]}")
+        base_commit = rr.json()["object"]["sha"]
+        rc = requests.get(f"{api}/git/commits/{base_commit}", headers=headers, timeout=30)
+        if rc.status_code != 200:
+            raise RuntimeError(f"Commit base falhou: HTTP {rc.status_code} — {rc.text[:200]}")
+        base_tree = rc.json()["tree"]["sha"]
+        rt = requests.post(f"{api}/git/trees", headers=headers, timeout=60,
+                           json={"base_tree": base_tree, "tree": tree})
+        if rt.status_code not in (200, 201):
+            raise RuntimeError(f"Tree falhou: HTTP {rt.status_code} — {rt.text[:200]}")
+        rco = requests.post(f"{api}/git/commits", headers=headers, timeout=60,
+                            json={"message": message, "tree": rt.json()["sha"], "parents": [base_commit]})
+        if rco.status_code not in (200, 201):
+            raise RuntimeError(f"Commit falhou: HTTP {rco.status_code} — {rco.text[:200]}")
+        ru = requests.patch(f"{api}/git/refs/heads/{branch}", headers=headers, timeout=30,
+                            json={"sha": rco.json()["sha"], "force": False})
+        if ru.status_code == 200:
+            log(f"Commit OK: {message} — {len(files)} arquivo(s) em 1 commit [branch={branch}]")
+            return
+        last_err = f"HTTP {ru.status_code} — {ru.text[:200]}"
+        time.sleep(1)  # ref moveu (outra run); recalcula sobre a nova base e tenta de novo
+    raise RuntimeError(f"Update ref {branch} falhou após retries: {last_err}")
+
+
 def make_envelope(rows: list, extra=None) -> dict:
     now = datetime.now(timezone.utc)
     env = {
@@ -524,25 +575,38 @@ def main() -> None:
         ("historico_completo.json", q_historico_completo, {"janela_meses": 4, "obs": "shadow mode — substitui dados.xlsx na fase 4"}),
     ]
 
+    # ANTES: 1 commit por arquivo (8/ciclo) → histórico do repo de dados inchava.
+    # AGORA: junta em 2 commits/ciclo — operacional (tickets/triagem) PRIMEIRO, pra
+    # latência baixa na triagem; depois o resto + insights. Mesmo dado, ~4× menos commits.
+    FAST = ("tickets_ativos.json", "triagem.json")
     collected = {}
     failures = []
+    fast_files = {}
+    rest_files = {}
     for fname, qfn, extra in datasets:
         try:
             rows = qfn(s)
             log(f"{fname}: {len(rows)} linhas")
             collected[fname] = rows
             payload = json.dumps(make_envelope(rows, extra), ensure_ascii=False, indent=2).encode("utf-8")
-            github_upload(fname, payload, f"chore: sync {fname} ({len(rows)} linhas)")
+            (fast_files if fname in FAST else rest_files)[fname] = payload
         except Exception as e:
             log(f"ERRO em {fname}: {e}")
             failures.append(fname)
 
-    # ── Insights (regras determinísticas sobre os dados em memória) ──
+    # Commit 1 — operacional (publica rápido pra triagem não atrasar)
+    if fast_files:
+        try:
+            github_commit_files(fast_files, f"chore: sync operacional ({len(fast_files)} arquivos)")
+        except Exception as e:
+            log(f"ERRO commit operacional: {e}")
+            failures.append("commit-operacional")
+
+    # ── Insights (regras determinísticas sobre os dados em memória) — vão no 2º commit ──
     try:
         ins = generate_insights(collected)
         log(f"gwms-insights.json: {len(ins['insights'])} insights (crit={ins['counts']['crit']}, warn={ins['counts']['warn']})")
-        payload = json.dumps(ins, ensure_ascii=False, indent=2).encode("utf-8")
-        github_upload("gwms-insights.json", payload, f"chore: sync gwms-insights ({len(ins['insights'])} insights)")
+        rest_files["gwms-insights.json"] = json.dumps(ins, ensure_ascii=False, indent=2).encode("utf-8")
     except Exception as e:
         log(f"ERRO em gwms-insights.json: {e}")
         failures.append("gwms-insights.json")
@@ -558,13 +622,20 @@ def main() -> None:
             m = aios_analysis.calcular_metricas(tickets)
             aios_ins = aios_analysis.gerar_insights(m)
             log(f"aios-insights.json: health={m['health']} · {len(aios_ins.get('riscos_operacionais',[]))} riscos op · {len(aios_ins.get('riscos_clientes',[]))} clientes")
-            payload = json.dumps(aios_ins, ensure_ascii=False, indent=2, default=str).encode("utf-8")
-            github_upload("aios-insights.json", payload, f"chore: sync aios-insights (health={m['health']})")
+            rest_files["aios-insights.json"] = json.dumps(aios_ins, ensure_ascii=False, indent=2, default=str).encode("utf-8")
         else:
             log("AVISO: historico_completo vazio, pulando aios-insights")
     except Exception as e:
         log(f"ERRO em aios-insights.json: {e}")
         failures.append("aios-insights.json")
+
+    # Commit 2 — dados restantes + insights
+    if rest_files:
+        try:
+            github_commit_files(rest_files, f"chore: sync dados+insights ({len(rest_files)} arquivos)")
+        except Exception as e:
+            log(f"ERRO commit dados+insights: {e}")
+            failures.append("commit-dados")
 
     if failures:
         print(f"FALHAS: {failures}", file=sys.stderr)
