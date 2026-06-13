@@ -26112,6 +26112,68 @@ function _cockpitStatusFila(fd){
 }
 function _cockpitStatusAtend(ab){ return ab>=12?'crit':(ab>=8?'warn':'ok'); }
 
+// ── #1 TENDÊNCIA (sinais reais: OP_MESES, reincidência) ─────────
+function _cpkTendencia(){
+  var t={};
+  t.sla=_cpkSafe(function(){
+    if(typeof OP_MESES==='undefined'||!OP_MESES) return null;
+    var ms=Object.keys(OP_MESES).filter(function(k){return k!=='all'&&OP_MESES[k]&&OP_MESES[k].sla_pct!=null;}).sort();
+    if(ms.length<2) return null;
+    var serie=ms.slice(-4).map(function(k){return {m:k,v:Math.round(OP_MESES[k].sla_pct)};});
+    var cur=serie[serie.length-1].v, prev=serie[serie.length-2].v;
+    var st=(cur<90)?'crit':((cur<prev-2)||cur<95)?'warn':'ok';
+    return {serie:serie,cur:cur,prev:prev,delta:cur-prev,status:st};
+  });
+  t.backlog=_cpkSafe(function(){
+    if(typeof OP_MESES==='undefined'||!OP_MESES) return null;
+    var ms=Object.keys(OP_MESES).filter(function(k){return k!=='all'&&OP_MESES[k];}).sort().slice(-4);
+    if(ms.length<2) return null;
+    var serie=ms.map(function(k){var m=OP_MESES[k];return {m:k,inn:m.total||0,out:m.fechados||0};});
+    var last=serie[serie.length-1];
+    var ratio=last.out>0?(last.inn/last.out):(last.inn>0?9:1);
+    var st=(ratio>=1.25)?'crit':(ratio>=1.05)?'warn':'ok';
+    return {serie:serie,ratio:ratio,status:st,inn:last.inn,out:last.out};
+  });
+  t.reinc=_cpkSafe(function(){
+    if(typeof buildRecurringDataForTickets!=='function'||typeof RAW_DATA==='undefined'||!RAW_DATA) return null;
+    var tk=RAW_DATA.filter(function(d){ return (typeof ticketInFilter!=='function')||ticketInFilter(d); });
+    var rec=(buildRecurringDataForTickets(tk,'open')||[]).filter(function(r){return (r.count||r.total||0)>=3;}).slice(0,6);
+    if(!rec.length) return null;
+    var st=rec.some(function(r){return (r.count||r.total||0)>=5;})?'warn':'ok';
+    return {itens:rec,status:st,n:rec.length};
+  });
+  return t;
+}
+// ── #2 RISCO (cliente em risco + Banco de Horas estourando) ─────
+function _cpkRisco(){
+  var r={};
+  r.clientes=_cpkSafe(function(){
+    if(typeof computeChurnRisk!=='function') return null;
+    var cr=(computeChurnRisk()||[]).filter(function(c){return c.risk==='critico'||c.risk==='alto';})
+      .sort(function(a,b){return (b.score||0)-(a.score||0);}).slice(0,8);
+    if(!cr.length) return null;
+    return {itens:cr,status:cr.some(function(c){return c.risk==='critico';})?'crit':'warn',n:cr.length};
+  });
+  r.bh=_cpkSafe(function(){
+    if(typeof BH_CONTRATOS==='undefined'||!BH_CONTRATOS||!BH_CONTRATOS.length) return null;
+    var lst=[];
+    BH_CONTRATOS.forEach(function(c){
+      var pct=c.pct_mes||0, st=pct>=100?'crit':(pct>=85?'warn':'ok');
+      if(st!=='ok') lst.push({cli:c.cli,pct:Math.round(pct),saldo:c.saldo_mes||'',status:st});
+    });
+    lst.sort(function(a,b){return b.pct-a.pct;}); lst=lst.slice(0,8);
+    if(!lst.length) return null;
+    return {itens:lst,status:lst.some(function(x){return x.status==='crit';})?'crit':'warn',n:lst.length};
+  });
+  return r;
+}
+// marca decisão sem rebuild brusco (persiste + reabre núcleo)
+function _cpkMarkAcao(id,status){
+  _cpkSafe(function(){ var m=(typeof _loadAcoesStatus==='function')?_loadAcoesStatus():{}; m[id]=status; if(typeof _saveAcoesStatus==='function')_saveAcoesStatus(m); });
+  try{ window._cpkReopenCore=true; }catch(e){}
+  if(typeof renderAcoes==='function') renderAcoes();
+}
+
 // ── monta os nós a partir do dado real ──────────────────────────
 function _cockpitBuildData(){
   var src=(typeof OP_FILAS!=='undefined'&&OP_FILAS)?OP_FILAS:{};
@@ -26146,17 +26208,31 @@ function _cockpitBuildData(){
   // decisões reais (o cérebro que já existe)
   var op=_cpkSafe(function(){return (typeof getActiveOP==='function')?getActiveOP():null;});
   var acoes=(op && typeof gerarAcoes==='function') ? (_cpkSafe(function(){return gerarAcoes(op);})||[]) : [];
-  return {filas:filas, acoes:acoes, totalAb:totalAb, totalCrit:totalCrit};
+  return {filas:filas, acoes:acoes, totalAb:totalAb, totalCrit:totalCrit, tend:_cpkTendencia(), risco:_cpkRisco()};
 }
 
 // ── drawers (HTML) ──────────────────────────────────────────────
 function _cpkLiAcao(a){
   var cor = a.prioridade==='critico'?'crit':(a.prioridade==='atencao'?'warn':'ok');
   var prazo = ({imediato:'⚡ Imediato',hoje:'📅 Hoje',semana:'📆 Semana'})[a.prazo]||a.prazo;
-  return '<div class="cpk-li '+cor+'"><div class="cpk-li-top"><span class="cpk-li-t">'+_cpkEsc(a.problema)+'</span>'
+  var st=a.status||'pendente';
+  var sid=String(a.id||'').replace(/'/g,"\\'");
+  function btn(v,lbl){ return '<button class="cpk-st'+(st===v?' on '+v:'')+'" onclick="_cpkMarkAcao(\''+sid+'\',\''+v+'\')">'+lbl+'</button>'; }
+  return '<div class="cpk-li '+cor+(st==='concluido'?' done':'')+'"><div class="cpk-li-top"><span class="cpk-li-t">'+_cpkEsc(a.problema)+'</span>'
     +'<span class="cpk-li-b '+cor+'">'+prazo+'</span></div>'
     +'<div class="cpk-li-m">'+_cpkEsc(a.responsavel||'')+' · '+_cpkOTRS(_cpkEsc(a.origem||''))+'</div>'
-    +(a.acao?'<div class="cpk-li-n"><span class="cpk-ar">→</span><span>'+_cpkEsc(a.acao)+'</span></div>':'')+'</div>';
+    +(a.acao?'<div class="cpk-li-n"><span class="cpk-ar">→</span><span>'+_cpkEsc(a.acao)+'</span></div>':'')
+    +'<div class="cpk-sts">'+btn('pendente','Pendente')+btn('andamento','Em andamento')+btn('concluido','✓ Concluído')+'</div>'
+    +'</div>';
+}
+// linha de indicador (tendência/risco) no drawer
+function _cpkSpark(serie,key){
+  if(!serie||!serie.length) return '';
+  var mx=Math.max.apply(null,serie.map(function(s){return s[key]||0;}))||1;
+  var bars=serie.map(function(s){var h=Math.round(((s[key]||0)/mx)*100); var c=s.col||'#5ad1ff';
+    return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px"><div style="width:100%;height:'+Math.max(h,6)+'%;min-height:5px;background:'+c+';border-radius:3px 3px 0 0"></div><div style="font-size:8px;color:#54607e;font-family:var(--mono)">'+String(s.m||'').slice(5)+'</div></div>';
+  }).join('');
+  return '<div style="display:flex;align-items:flex-end;gap:5px;height:60px;margin:4px 0 8px">'+bars+'</div>';
 }
 function _cpkLiTicket(t){
   var cor='warn';
@@ -26174,6 +26250,20 @@ function renderAcoesCockpit(){
   if(!data.filas.length) throw new Error('cockpit: sem filas visíveis — usa fallback');
   var _h=new Date().getHours(); var _greet=_h<12?'Bom dia':(_h<18?'Boa tarde':'Boa noite');
   var _foco=data.totalCrit>0?('<b>'+data.totalCrit+' foco'+(data.totalCrit===1?'':'s')+'</b> aceso'+(data.totalCrit===1?'':'s')+' no mapa'):'operação tranquila no mapa';
+
+  // pills de Tendência & Risco (#1+#2) — só renderiza o que tem dado real
+  var _pills='', _pc={crit:'#ff4d6d',warn:'#ffb43d',ok:'#22e0a6'};
+  function _pill(id,lbl,val,st){ if(!st)return; _pills+='<div class="cpk-pill '+st+'" data-ind="'+id+'"><span class="pd" style="background:'+_pc[st]+'"></span>'+lbl+(val?' <span class="pv">'+val+'</span>':'')+'</div>'; }
+  if(data.tend){
+    if(data.tend.sla) _pill('sla','SLA',data.tend.sla.cur+'%'+(data.tend.sla.delta<0?' ↓':(data.tend.sla.delta>0?' ↑':'')),data.tend.sla.status);
+    if(data.tend.backlog) _pill('backlog','Backlog',(data.tend.backlog.ratio>=1.05?'↑':'→'),data.tend.backlog.status);
+    if(data.tend.reinc) _pill('reinc','Reincidência',String(data.tend.reinc.n),data.tend.reinc.status);
+  }
+  if(data.risco){
+    if(data.risco.clientes) _pill('clientes','Clientes risco',String(data.risco.clientes.n),data.risco.clientes.status);
+    if(data.risco.bh) _pill('bh','Banco de Horas',String(data.risco.bh.n),data.risco.bh.status);
+  }
+  var bandHTML=_pills?('<div class="cpk-ov cpk-band"><span class="cpk-bandlbl">Tendência &amp; Risco</span>'+_pills+'</div>'):'';
 
   var css='<style>'
   +'.cpk-wrap{position:relative;width:100%;height:calc(100vh - 190px);min-height:520px;border-radius:16px;overflow:hidden;background:#06080f;border:1px solid rgba(255,255,255,.06)}'
@@ -26226,6 +26316,19 @@ function renderAcoesCockpit(){
   +'.cpk-seg{display:flex;background:rgba(12,16,28,.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:3px}'
   +'.cpk-seg button{border:0;background:transparent;color:#8a99bd;font-family:var(--font);font-size:11px;font-weight:600;padding:6px 13px;border-radius:30px;cursor:pointer}'
   +'.cpk-seg button.on{background:linear-gradient(135deg,#ff7a45,#ff4d6d);color:#fff}'
+  +'.cpk-sts{display:flex;gap:5px;margin-top:8px}'
+  +'.cpk-st{flex:1;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#8a99bd;font-family:var(--font);font-size:9.5px;font-weight:600;padding:4px 6px;border-radius:6px;cursor:pointer}'
+  +'.cpk-st.on.pendente{background:rgba(255,255,255,.12);color:#eef2fb;border-color:rgba(255,255,255,.25)}'
+  +'.cpk-st.on.andamento{background:#ffb43d;color:#1a1300;border-color:#ffb43d}'
+  +'.cpk-st.on.concluido{background:#22e0a6;color:#04130d;border-color:#22e0a6}'
+  +'.cpk-li.done{opacity:.55}.cpk-li.done .cpk-li-t{text-decoration:line-through}'
+  +'.cpk-band{bottom:58px;left:50%;transform:translateX(-50%);display:flex;gap:7px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:72%}'
+  +'.cpk-bandlbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#54607e;align-self:center}'
+  +'.cpk-pill{display:flex;align-items:center;gap:6px;background:rgba(12,16,28,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:5px 11px;cursor:pointer;font-size:10.5px;font-weight:600;color:#c8d2e6;transition:.15s}'
+  +'.cpk-pill:hover{background:rgba(22,30,50,.92)}'
+  +'.cpk-pill .pd{width:7px;height:7px;border-radius:50%}'
+  +'.cpk-pill .pv{font-family:var(--mono);font-weight:700}'
+  +'.cpk-pill.crit{border-color:rgba(255,77,109,.45)}.cpk-pill.warn{border-color:rgba(255,180,61,.4)}.cpk-pill.ok{border-color:rgba(34,224,166,.3)}'
   +'</style>';
 
   host.innerHTML = css
@@ -26236,7 +26339,8 @@ function renderAcoesCockpit(){
     +'<div class="cpk-ov cpk-leg"><div class="lg"><span class="sw" style="background:#ff4d6d"></span> Crítico</div>'
       +'<div class="lg"><span class="rg"></span> Atenção (tracejado)</div>'
       +'<div class="lg"><span class="sw" style="background:#22e0a6"></span> Saudável</div></div>'
-    +'<div class="cpk-ov cpk-ctrl"><div class="cpk-seg" id="cpk-seg"><button class="on" data-m="agg">Agregado</button><button data-m="all">Ver tudo</button></div><div class="cpk-tg" id="cpk-calm"><span class="sw"></span> Modo calmo</div></div>'
+    +bandHTML
+    +'<div class="cpk-ov cpk-ctrl"><div class="cpk-seg" id="cpk-seg"><button class="on" data-m="agg">Agregado</button><button data-m="all">Ver tudo</button></div><div class="cpk-tg" id="cpk-onlycrit"><span class="sw"></span> Só críticos</div><div class="cpk-tg" id="cpk-calm"><span class="sw"></span> Modo calmo</div></div>'
     +'<div class="cpk-ov cpk-panel" id="cpk-panel"><div class="c"><span class="d"></span><span id="cpk-pc">FILA</span></div>'
       +'<div class="tt" id="cpk-pt">—</div><div id="cpk-pm"></div><div class="hint" id="cpk-ph">clique para detalhe</div></div>'
     +'<div class="cpk-drawer" id="cpk-drawer"><div class="cpk-dwh"><div class="cpk-bk" id="cpk-bk">← voltar ao mapa</div>'
@@ -26281,7 +26385,7 @@ function _cockpitInit(data){
   var _onResize=function(){ if(gen===_cockpitGen) resize(); };
   window.addEventListener('resize',_onResize);
 
-  var t0=performance.now(),lastT=t0,driftT=0,calm=false,active=null,selected=null,mode='agg';
+  var t0=performance.now(),lastT=t0,driftT=0,calm=false,active=null,selected=null,mode='agg',onlyCrit=false;
 
   function filaTarget(F){
     if(mode!=='all' && selected){
@@ -26296,14 +26400,15 @@ function _cockpitInit(data){
   function coreTarget(){ return selected?{x:0.9*W,y:0.09*H,s:0.5,a:0.45}:{x:0.5*W,y:0.5*H,s:1,a:1}; }
   function childTarget(ch){
     var Ft=cur['f_'+ch.fila]; if(!Ft) return null;
+    var fade=(onlyCrit && ch.status==='ok');   // #5 só críticos: apaga os ok
     if(mode==='all'){
       var n=Math.max(ch.count,1), ang=(ch.idx/n)*6.283+ch.a0*0.25, ring=0.05+(ch.idx%3)*0.022;
-      return {x:Ft.x+Math.cos(ang)*ring*W, y:Ft.y+Math.sin(ang)*ring*H, s:0.6, a:0.9};
+      return {x:Ft.x+Math.cos(ang)*ring*W, y:Ft.y+Math.sin(ang)*ring*H, s:fade?0.38:0.6, a:fade?0.07:0.9};
     }
     if(selected!==ch.fila) return null;
     var layer=Math.floor(ch.idx/14), per=Math.min(14,ch.count-layer*14), k=ch.idx%14;
     var ring=0.17+layer*0.075, ang=(k/Math.max(per,1))*6.283+layer*0.3;
-    return {x:Ft.x+Math.cos(ang)*ring*W, y:Ft.y+Math.sin(ang)*ring*H, s:1, a:1};
+    return {x:Ft.x+Math.cos(ang)*ring*W, y:Ft.y+Math.sin(ang)*ring*H, s:fade?0.6:1, a:fade?0.12:1};
   }
   function lerp(o,t){ if(!t)return; o.x+=(t.x-o.x)*0.14;o.y+=(t.y-o.y)*0.14;o.s+=(t.s-o.s)*0.14;o.a+=(t.a-o.a)*0.14; }
   function bez(p0,pc,p1,u){var v=1-u;return{x:v*v*p0.x+2*v*u*pc.x+u*u*p1.x,y:v*v*p0.y+2*v*u*pc.y+u*u*p1.y};}
@@ -26464,6 +26569,50 @@ function _cockpitInit(data){
   calmBtn.addEventListener('click',function(){calm=!calm;calmBtn.classList.toggle('on',calm);});
   var segEl=document.getElementById('cpk-seg');
   if(segEl) segEl.addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;mode=b.getAttribute('data-m');if(mode==='all'){selected=null;drawer.classList.remove('open');}this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});});
+  // #5 — só críticos
+  var ocBtn=document.getElementById('cpk-onlycrit');
+  if(ocBtn) ocBtn.addEventListener('click',function(){onlyCrit=!onlyCrit;ocBtn.classList.toggle('on',onlyCrit);});
+
+  // navega p/ uma seção dentro da Operação Interna (best-effort)
+  function _cpkGoSec(secId){ _cpkSafe(function(){ var sec=document.getElementById(secId); if(!sec)return; document.querySelectorAll('#view-op .sec').forEach(function(s){s.classList.remove('on');}); sec.classList.add('on'); if(typeof renderSec==='function') renderSec(secId); }); }
+
+  // #1/#2 — pills de Tendência & Risco → drawer com detalhe real
+  function openIndDrawer(ind){
+    var T=data.tend||{}, R=data.risco||{}, col,cat,tt,ss,b='',link;
+    if(ind==='sla' && T.sla){ col=COL[T.sla.status]; cat='TENDÊNCIA'; tt='SLA — últimos meses'; ss=T.sla.cur+'% agora · '+(T.sla.delta>=0?'+':'')+T.sla.delta+'pt vs mês anterior';
+      var ser=T.sla.serie.map(function(s){return {m:s.m,v:s.v,col:(s.v<90?'#ff4d6d':s.v<95?'#ffb43d':'#22e0a6')};});
+      b=_cpkSpark(ser,'v')+'<div class="cpk-li '+T.sla.status+'"><div class="cpk-li-m">'+(T.sla.status==='crit'?'SLA abaixo da meta — atacar a causa raiz da fila mais lenta.':T.sla.status==='warn'?'SLA caindo — vigiar a fila que mais pesa.':'SLA saudável.')+'</div></div>'; link='Abrir SLA & Tempos →'; }
+    else if(ind==='backlog' && T.backlog){ col=COL[T.backlog.status]; cat='TENDÊNCIA'; tt='Backlog — entrada vs saída'; ss='entrada '+T.backlog.inn+' · saída '+T.backlog.out+' (último mês)';
+      var ser2=T.backlog.serie.map(function(s){return {m:s.m,v:s.inn,col:'#5ad1ff'};});
+      b=_cpkSpark(ser2,'v')+'<div class="cpk-li '+T.backlog.status+'"><div class="cpk-li-m">'+(T.backlog.status==='crit'?'Entra mais do que sai — reforçar atendimento ou o backlog cresce.':T.backlog.status==='warn'?'Entrada perto da saída — atenção.':'Saída acompanha a entrada.')+'</div></div>'; link='Abrir Backlog →'; }
+    else if(ind==='reinc' && T.reinc){ col=COL[T.reinc.status]; cat='REINCIDÊNCIA'; tt='Problemas recorrentes'; ss=T.reinc.n+' temas reaparecendo';
+      b=T.reinc.itens.map(function(r){return '<div class="cpk-li warn"><div class="cpk-li-top"><span class="cpk-li-t">'+_cpkEsc(r.term||r.termo||'—')+'</span><span class="cpk-li-b warn">'+(r.count||r.total||0)+'x</span></div>'+((r.open!=null)?'<div class="cpk-li-m">'+r.open+' ainda em aberto</div>':'')+'</div>';}).join(''); link='Abrir Chamados →'; }
+    else if(ind==='clientes' && R.clientes){ col=COL[R.clientes.status]; cat='CLIENTE EM RISCO'; tt='Risco de churn'; ss=R.clientes.n+' clientes em risco';
+      b=R.clientes.itens.map(function(c){var cc=c.risk==='critico'?'crit':'warn';return '<div class="cpk-li '+cc+'"><div class="cpk-li-top"><span class="cpk-li-t">'+_cpkEsc(c.nome||c.id)+'</span><span class="cpk-li-b '+cc+'">'+_cpkEsc(c.risk)+'</span></div><div class="cpk-li-m">'+(c.abertos||0)+' abertos · idade méd '+Math.round(c.avgAge||0)+'d</div></div>';}).join(''); link='Abrir Customer Success →'; }
+    else if(ind==='bh' && R.bh){ col=COL[R.bh.status]; cat='BANCO DE HORAS'; tt='Contratos no limite'; ss=R.bh.n+' contratos ≥85% do pool';
+      b=R.bh.itens.map(function(x){var cc=x.status==='crit'?'crit':'warn';return '<div class="cpk-li '+cc+'"><div class="cpk-li-top"><span class="cpk-li-t">'+_cpkEsc(x.cli)+'</span><span class="cpk-li-b '+cc+'">'+x.pct+'%</span></div><div class="cpk-li-m">saldo do mês: '+_cpkEsc(x.saldo||'—')+'</div></div>';}).join(''); link='Abrir Contratos BH →'; }
+    else return;
+    selected=null;
+    document.getElementById('cpk-dd').style.background=col;
+    document.getElementById('cpk-dc').textContent=cat; document.getElementById('cpk-dc').style.color=col;
+    document.getElementById('cpk-dt').textContent=tt;
+    document.getElementById('cpk-ds').textContent=ss;
+    document.getElementById('cpk-db').innerHTML=b||'<div class="cpk-empty">Sem dados.</div>';
+    var dl=document.getElementById('cpk-dl'); dl.textContent=link;
+    dl.onclick=function(){ _cpkSafe(function(){ if(typeof setMode!=='function')return;
+      if(ind==='clientes'){ setMode('cs'); }
+      else if(ind==='bh'){ setMode('op'); _cpkGoSec('s-bh'); }
+      else if(ind==='sla'){ setMode('op'); _cpkGoSec('s-sl'); }
+      else if(ind==='backlog'){ setMode('op'); _cpkGoSec('s-bl'); }
+      else { setMode('op'); _cpkGoSec('s-ch'); }
+    }); };
+    panel.style.opacity=0; drawer.classList.add('open');
+  }
+  var bandEl=document.querySelector('.cpk-band');
+  if(bandEl) bandEl.addEventListener('click',function(ev){var p=ev.target.closest('.cpk-pill');if(!p)return;openIndDrawer(p.getAttribute('data-ind'));});
+
+  // reabre o núcleo após marcar uma decisão (sem perder o contexto)
+  if(window._cpkReopenCore){ try{window._cpkReopenCore=false;}catch(e){} setTimeout(function(){ if(gen===_cockpitGen) openDrawer('core'); }, 80); }
 
   requestAnimationFrame(frame);
 }
