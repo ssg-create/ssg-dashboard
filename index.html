@@ -1192,6 +1192,8 @@ body.squad-mode .topbar{display:none!important}
 body.squad-mode .sidebar{display:none!important}
 body.squad-mode .app{padding-top:0!important}
 body.squad-mode .main{margin-left:0!important}
+body.cockpit-full .sidebar{display:none!important}
+body.cockpit-full .main{margin-left:0!important}
 body.squad-mode #view-op,
 body.squad-mode #view-cli,
 body.squad-mode #view-cs,
@@ -6428,6 +6430,7 @@ function setMode(m){
   document.getElementById('btn-cs').classList.toggle('on',isCS);
   document.getElementById('btn-ia').classList.toggle('on',isIA);
   document.getElementById('btn-acoes').classList.toggle('on',isAcoes);
+  document.body.classList.toggle('cockpit-full',isAcoes);
   document.getElementById('tb-alerts').style.display=isOp?'flex':'none';
   document.getElementById('sb-import-btn').className='sb-import-btn'+(isOp?'':' cli-mode');
   document.getElementById('import-drop-zone').className='import-drop-zone'+(isOp?'':' cli-mode');
@@ -26266,7 +26269,7 @@ function renderAcoesCockpit(){
   var bandHTML=_pills?('<div class="cpk-ov cpk-band"><span class="cpk-bandlbl">Tendência &amp; Risco</span>'+_pills+'</div>'):'';
 
   var css='<style>'
-  +'.cpk-wrap{position:relative;width:100%;height:calc(100vh - 190px);min-height:520px;border-radius:16px;overflow:hidden;background:#06080f;border:1px solid rgba(255,255,255,.06)}'
+  +'.cpk-wrap{position:relative;width:100%;height:calc(100vh - 150px);min-height:580px;border-radius:16px;overflow:hidden;background:#06080f;border:1px solid rgba(255,255,255,.06)}'
   +'.cpk-wrap canvas{display:block;width:100%;height:100%}'
   +'.cpk-ov{position:absolute;z-index:4;pointer-events:none}'
   +'.cpk-lead{top:16px;left:18px;max-width:320px}'
