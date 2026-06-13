@@ -26457,7 +26457,7 @@ function _cockpitInit(data){
     // ── fundo cósmico: emblema GW girando + estrelas orbitando (como o universo rodando) ──
     var _csp=calm?0.35:1, _md=Math.max(W,H);
     for(var _k=0;_k<stars.length;_k++){var st=stars[_k];var _a=st.ang+time*0.00003*st.sp*_csp;var _x=co.x+Math.cos(_a)*st.r*_md*0.5,_y=co.y+Math.sin(_a)*st.r*_md*0.5;var _tw=0.3+0.7*(0.5+0.5*Math.sin(time*0.002+st.tw));ctx.beginPath();ctx.arc(_x,_y,st.sz*S,0,7);ctx.fillStyle='rgba(180,200,240,'+(0.16*_tw)+')';ctx.fill();}
-    if(_logo&&_logo.complete&&_logo.naturalWidth){var _sz=Math.min(W,H)*0.78;ctx.save();ctx.translate(co.x,co.y);ctx.rotate(time*0.0000165*_csp);ctx.globalAlpha=0.06;ctx.drawImage(_logo,-_sz/2,-_sz/2,_sz,_sz);ctx.globalAlpha=1;ctx.restore();}
+    if(_logo&&_logo.complete&&_logo.naturalWidth){var _sz=Math.min(W,H)*0.82;ctx.save();ctx.translate(co.x,co.y);ctx.rotate(time*0.0000165*_csp);ctx.shadowColor='rgba(232,98,42,.5)';ctx.shadowBlur=40*S;ctx.globalAlpha=0.11;ctx.drawImage(_logo,-_sz/2,-_sz/2,_sz,_sz);ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.restore();}
     function dr(o,id){var ph=id.length*1.3+o.x*0.01;return{x:o.x+Math.sin(driftT*0.0004+ph)*5*S*Math.min(o.s,1),y:o.y+Math.cos(driftT*0.00033+ph*1.3)*5*S*Math.min(o.s,1)};}
 
     filas.forEach(function(F){ lerp(ensure('f_'+F.id,F.r),filaTarget(F)); });
