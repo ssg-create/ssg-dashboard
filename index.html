@@ -26365,6 +26365,8 @@ function _cockpitInit(data){
   var COL={crit:'#ff4d6d',warn:'#ffb43d',ok:'#22e0a6',core:'#5ad1ff'};
   var gen= ++_cockpitGen;
   function hexA(h,a){var n=parseInt(h.slice(1),16);return'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+  var _logo=document.querySelector('.tb-logo img');
+  var stars=[]; for(var _si=0;_si<90;_si++){ stars.push({r:0.12+Math.random()*0.5, ang:Math.random()*6.283, sz:0.5+Math.random()*1.3, tw:Math.random()*6.283, sp:0.6+Math.random()*0.9}); }
 
   var core={id:'core',kind:'core',status:'core',r:30,label:'COMANDO'};
   var filas=data.filas.map(function(f,i){
@@ -26452,6 +26454,10 @@ function _cockpitInit(data){
     var co=ensure('core',core.r); lerp(co,coreTarget());
     var bg=ctx.createRadialGradient(co.x,co.y,0,co.x,co.y,Math.max(W,H)*0.55);
     bg.addColorStop(0,'rgba(20,30,55,.4)');bg.addColorStop(1,'rgba(6,8,15,0)');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+    // ── fundo cósmico: emblema GW girando + estrelas orbitando (como o universo rodando) ──
+    var _csp=calm?0.35:1, _md=Math.max(W,H);
+    for(var _k=0;_k<stars.length;_k++){var st=stars[_k];var _a=st.ang+time*0.00003*st.sp*_csp;var _x=co.x+Math.cos(_a)*st.r*_md*0.5,_y=co.y+Math.sin(_a)*st.r*_md*0.5;var _tw=0.3+0.7*(0.5+0.5*Math.sin(time*0.002+st.tw));ctx.beginPath();ctx.arc(_x,_y,st.sz*S,0,7);ctx.fillStyle='rgba(180,200,240,'+(0.16*_tw)+')';ctx.fill();}
+    if(_logo&&_logo.complete&&_logo.naturalWidth){var _sz=Math.min(W,H)*0.82;ctx.save();ctx.translate(co.x,co.y);ctx.rotate(time*0.0000165*_csp);ctx.shadowColor='rgba(232,98,42,.5)';ctx.shadowBlur=40*S;ctx.globalAlpha=0.11;ctx.drawImage(_logo,-_sz/2,-_sz/2,_sz,_sz);ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.restore();}
     function dr(o,id){var ph=id.length*1.3+o.x*0.01;return{x:o.x+Math.sin(driftT*0.0004+ph)*5*S*Math.min(o.s,1),y:o.y+Math.cos(driftT*0.00033+ph*1.3)*5*S*Math.min(o.s,1)};}
 
     filas.forEach(function(F){ lerp(ensure('f_'+F.id,F.r),filaTarget(F)); });
