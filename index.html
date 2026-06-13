@@ -26322,7 +26322,7 @@ function renderAcoesCockpit(){
   +'.cpk-st.on.andamento{background:#ffb43d;color:#1a1300;border-color:#ffb43d}'
   +'.cpk-st.on.concluido{background:#22e0a6;color:#04130d;border-color:#22e0a6}'
   +'.cpk-li.done{opacity:.55}.cpk-li.done .cpk-li-t{text-decoration:line-through}'
-  +'.cpk-band{bottom:58px;left:50%;transform:translateX(-50%);display:flex;gap:7px;pointer-events:auto;flex-wrap:wrap;justify-content:center;max-width:72%}'
+  +'.cpk-bandh{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:64%}'
   +'.cpk-bandlbl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#54607e;align-self:center}'
   +'.cpk-pill{display:flex;align-items:center;gap:6px;background:rgba(12,16,28,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:5px 11px;cursor:pointer;font-size:10.5px;font-weight:600;color:#c8d2e6;transition:.15s}'
   +'.cpk-pill:hover{background:rgba(22,30,50,.92)}'
@@ -26339,7 +26339,6 @@ function renderAcoesCockpit(){
     +'<div class="cpk-ov cpk-leg"><div class="lg"><span class="sw" style="background:#ff4d6d"></span> Crítico</div>'
       +'<div class="lg"><span class="rg"></span> Atenção (tracejado)</div>'
       +'<div class="lg"><span class="sw" style="background:#22e0a6"></span> Saudável</div></div>'
-    +bandHTML
     +'<div class="cpk-ov cpk-ctrl"><div class="cpk-seg" id="cpk-seg"><button class="on" data-m="agg">Agregado</button><button data-m="all">Ver tudo</button></div><div class="cpk-tg" id="cpk-onlycrit"><span class="sw"></span> Só críticos</div><div class="cpk-tg" id="cpk-calm"><span class="sw"></span> Modo calmo</div></div>'
     +'<div class="cpk-ov cpk-panel" id="cpk-panel"><div class="c"><span class="d"></span><span id="cpk-pc">FILA</span></div>'
       +'<div class="tt" id="cpk-pt">—</div><div id="cpk-pm"></div><div class="hint" id="cpk-ph">clique para detalhe</div></div>'
@@ -26350,6 +26349,8 @@ function renderAcoesCockpit(){
       +'<div class="cpk-dwf"><a class="cpk-dwlink" id="cpk-dl">Abrir lista completa →</a></div></div>'
     +'</div>';
 
+  var _hdr=document.getElementById('acoes-print-skip');
+  if(_hdr){ _hdr.className='cpk-bandh'; _hdr.innerHTML=_pills?('<span class="cpk-bandlbl">Tendência &amp; Risco</span>'+_pills):''; }
   _cockpitInit(data);
 }
 
@@ -26395,7 +26396,8 @@ function _cockpitInit(data){
       return {x:0.93*W,y:(0.16+idx/n*0.68)*H,s:0.46,a:0.25};
     }
     var sp = mode==='all' ? 0.28 : 0.31;
-    return {x:(0.5+Math.cos(F.ang)*sp)*W, y:(0.5+Math.sin(F.ang)*sp*1.05)*H, s:mode==='all'?0.88:1, a:1};
+    var fadeF=(onlyCrit && F.status==='ok');   // #5 — esconde filas saudáveis
+    return {x:(0.5+Math.cos(F.ang)*sp)*W, y:(0.5+Math.sin(F.ang)*sp*1.05)*H, s:(mode==='all'?0.88:1)*(fadeF?0.72:1), a:fadeF?0.12:1};
   }
   function coreTarget(){ return selected?{x:0.9*W,y:0.09*H,s:0.5,a:0.45}:{x:0.5*W,y:0.5*H,s:1,a:1}; }
   function childTarget(ch){
@@ -26608,7 +26610,7 @@ function _cockpitInit(data){
     }); };
     panel.style.opacity=0; drawer.classList.add('open');
   }
-  var bandEl=document.querySelector('.cpk-band');
+  var bandEl=document.getElementById('acoes-print-skip');
   if(bandEl) bandEl.addEventListener('click',function(ev){var p=ev.target.closest('.cpk-pill');if(!p)return;openIndDrawer(p.getAttribute('data-ind'));});
 
   // reabre o núcleo após marcar uma decisão (sem perder o contexto)
